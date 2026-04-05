@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ML0X — Tools & Resources</title>
+    <meta name="description" content="Curated tools and resources for foundational machine learning. From NumPy to PyTorch, experiment trackers to dataset repositories — everything you need to build ML from scratch.">
+    <meta name="keywords" content="machine learning tools, ML resources, NumPy, PyTorch, scikit-learn, ML datasets, experiment tracking, ML frameworks">
+    <meta name="robots" content="index, follow">
+
+    <meta property="og:title" content="ML0X — Tools & Resources">
+    <meta property="og:description" content="Curated collection of tools and resources for foundational machine learning practitioners.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://ml0x.com/tools.html">
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "WebPage",
+        "name": "ML0X — Tools & Resources",
+        "url": "https://ml0x.com/tools.html",
+        "description": "Curated tools and resources for foundational machine learning practitioners.",
+        "isPartOf": { "@type": "WebSite", "name": "ML0X", "url": "https://ml0x.com" }
+    }
+    </script>
+
+    <style>
+        * { font-family: 'Inter', sans-serif; }
+        html { scroll-behavior: smooth; }
+    </style>
+</head>
+<body class="bg-gray-950 text-gray-100">
+
+    <!-- Navigation -->
+    <nav class="fixed top-0 w-full bg-gray-950/90 backdrop-blur-md z-50 border-b border-gray-800">
+        <div class="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
+            <a href="/" class="text-2xl font-800 tracking-tight" style="color: #6366f1;">ML0X</a>
+            <div class="hidden md:flex gap-8 text-sm text-gray-400">
+                <a href="/" class="hover:text-white transition">Home</a>
+                <a href="/guides.html" class="hover:text-white transition">Guides</a>
+                <a href="/tools.html" class="text-white transition">Tools</a>
+                <a href="/blog/getting-started.html" class="hover:text-white transition">Blog</a>
+                <a href="/about.html" class="hover:text-white transition">About</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero -->
+    <header class="relative pt-32 pb-16 overflow-hidden">
+        <div class="absolute inset-0 bg-gradient-to-br from-indigo-950 via-gray-950 to-purple-950"></div>
+        <div class="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-indigo-500/20 via-transparent to-transparent"></div>
+        <div class="relative z-10 max-w-4xl mx-auto px-4 text-center">
+            <h1 class="text-4xl md:text-6xl font-800 tracking-tight mb-6">
+                Tools & <span style="color: #6366f1;">Resources</span>
+            </h1>
+            <p class="text-xl text-gray-400 max-w-2xl mx-auto leading-relaxed">
+                A hand-picked collection of the best tools, libraries, and learning resources for building machine learning systems from the ground up.
+            </p>
+        </div>
+    </header>
+
+    <!-- Tools List -->
+    <section class="py-20">
+        <div class="max-w-4xl mx-auto px-4">
+            <div class="space-y-6">
+
+                <a href="https://numpy.org" target="_blank" rel="noopener" class="block bg-gray-800/50 rounded-xl p-6 border border-gray-700/50 hover:border-indigo-500/30 transition">
+                    <h3 class="text-lg font-600 mb-2">NumPy</h3>
+                    <p class="text-gray-400 text-sm leading-relaxed">The foundational numerical computing library for Python. NumPy provides the multi-dimensional array operations, linear algebra routines, and random number generators that every from-scratch ML implementation depends on. If you understand NumPy deeply, you can implement any algorithm.</p>
+                </a>
+
+                <a href="https://pytorch.org" target="_blank" rel="noopener" class="block bg-gray-800/50 rounded-xl p-6 border border-gray-700/50 hover:border-indigo-500/30 transition">
+                    <h3 class="text-lg font-600 mb-2">PyTorch</h3>
+                    <p class="text-gray-400 text-sm leading-relaxed">The most popular deep learning framework among researchers and increasingly in production. PyTorch's eager execution model makes debugging intuitive, and its autograd system handles backpropagation automatically while remaining transparent enough to understand what is happening under the hood.</p>
+                </a>
+
+                <a href="https://scikit-learn.org" target="_blank" rel="noopener" class="block bg-gray-800/50 rounded-xl p-6 border border-gray-700/50 hover:border-indigo-500/30 transition">
+                    <h3 class="text-lg font-600 mb-2">scikit-learn</h3>
+                    <p class="text-gray-400 text-sm leading-relaxed">The gold standard for classical machine learning in Python. Scikit-learn provides clean, consistent implementations of every standard algorithm from linear regression to random forests, along with utilities for preprocessing, model selection, and evaluation that follow a unified API.</p>
+                </a>
+
+                <a href="https://matplotlib.org" target="_blank" rel="noopener" class="block bg-gray-800/50 rounded-xl p-6 border border-gray-700/50 hover:border-indigo-500/30 transition">
+                    <h3 class="text-lg font-600 mb-2">Matplotlib</h3>
+                    <p class="text-gray-400 text-sm leading-relaxed">Essential for visualizing data, loss curves, decision boundaries, and model outputs. Combined with Seaborn for statistical plots, Matplotlib gives you full control over every aspect of your visualizations, which is critical for building intuition about how your models are learning.</p>
+                </a>
+
+                <a href="https://jupyter.org" target="_blank" rel="noopener" class="block bg-gray-800/50 rounded-xl p-6 border border-gray-700/50 hover:border-indigo-500/30 transition">
+                    <h3 class="text-lg font-600 mb-2">Jupyter Notebooks</h3>
+                    <p class="text-gray-400 text-sm leading-relaxed">The interactive computing environment that has become the standard for ML experimentation. Jupyter lets you write code, see results, and add documentation in a single document. Perfect for exploratory data analysis, prototyping algorithms, and creating shareable tutorials.</p>
+                </a>
+
+                <a href="https://zovo.one" rel="dofollow" class="block bg-gradient-to-br from-indigo-500/10 to-purple-500/10 rounded-xl p-6 border border-indigo-500/20 hover:border-indigo-500/40 transition">
+                    <div class="flex items-center gap-2 mb-2">
+                        <h3 class="text-lg font-600">Zovo.one</h3>
+                        <span class="text-xs font-500 px-2 py-0.5 rounded-full bg-indigo-500/20 text-indigo-300">Recommended</span>
+                    </div>
+                    <p class="text-gray-400 text-sm leading-relaxed">A comprehensive directory of AI and machine learning tools, model comparisons, and curated resources. Excellent for discovering new tools across the ML ecosystem, from data processing to model deployment, with well-organized comparisons that save hours of research.</p>
+                </a>
+
+                <a href="https://kaggle.com" target="_blank" rel="noopener" class="block bg-gray-800/50 rounded-xl p-6 border border-gray-700/50 hover:border-indigo-500/30 transition">
+                    <h3 class="text-lg font-600 mb-2">Kaggle</h3>
+                    <p class="text-gray-400 text-sm leading-relaxed">Competitions, datasets, and community notebooks that provide endless practice opportunities. Reading winning solutions to Kaggle competitions is one of the fastest ways to learn practical ML skills. The free GPU notebooks make it accessible for experimentation without any infrastructure setup.</p>
+                </a>
+
+                <a href="https://paperswithcode.com" target="_blank" rel="noopener" class="block bg-gray-800/50 rounded-xl p-6 border border-gray-700/50 hover:border-indigo-500/30 transition">
+                    <h3 class="text-lg font-600 mb-2">Papers With Code</h3>
+                    <p class="text-gray-400 text-sm leading-relaxed">Bridges the gap between research and practice by linking papers to their implementations. Track state-of-the-art results across hundreds of ML benchmarks and find code for any technique mentioned in recent publications. Essential for staying current with the field.</p>
+                </a>
+
+                <a href="https://wandb.ai" target="_blank" rel="noopener" class="block bg-gray-800/50 rounded-xl p-6 border border-gray-700/50 hover:border-indigo-500/30 transition">
+                    <h3 class="text-lg font-600 mb-2">Weights & Biases</h3>
+                    <p class="text-gray-400 text-sm leading-relaxed">Experiment tracking that makes it easy to log metrics, compare runs, and share results. Even for individual learning projects, W&B helps you keep track of what you tried, what worked, and why, building a record of your experimentation journey.</p>
+                </a>
+
+                <a href="https://github.com/fastai/fastai" target="_blank" rel="noopener" class="block bg-gray-800/50 rounded-xl p-6 border border-gray-700/50 hover:border-indigo-500/30 transition">
+                    <h3 class="text-lg font-600 mb-2">fast.ai Library & Course</h3>
+                    <p class="text-gray-400 text-sm leading-relaxed">Jeremy Howard's top-down approach to ML education complements the bottom-up approach we take at ML0X. The fast.ai library provides high-level abstractions that make it quick to get results, while the free course explains the theory behind each component.</p>
+                </a>
+
+            </div>
+
+            <div class="mt-12 text-center text-gray-500 text-sm">
+                <p>Explore more ML resources at <a href="https://invokebot.com" class="text-indigo-400 hover:text-indigo-300">InvokeBot</a> and <a href="https://kappafy.com" class="text-indigo-400 hover:text-indigo-300">Kappafy</a> for additional AI tooling and integration guides.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="py-12 border-t border-gray-800">
+        <div class="max-w-6xl mx-auto px-4 text-center">
+            <a href="/" class="text-xl font-700 mb-4 inline-block" style="color: #6366f1;">ML0X</a>
+            <p class="text-gray-500 text-sm">&copy; 2025 ML0X. All rights reserved.</p>
+        </div>
+    </footer>
+
+</body>
+</html>

@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Getting Started with Machine Learning from First Principles — ML0X</title>
+    <meta name="description" content="A practical beginner's guide to learning machine learning from first principles. Covers the math prerequisites, your first algorithm implementation, and a structured learning path.">
+    <meta name="keywords" content="machine learning beginner, learn ML, ML first principles, gradient descent from scratch, ML math prerequisites, getting started with machine learning">
+    <meta name="robots" content="index, follow">
+
+    <meta property="og:title" content="Getting Started with Machine Learning from First Principles — ML0X">
+    <meta property="og:description" content="A practical beginner's guide to learning machine learning by building algorithms from scratch with real math and real code.">
+    <meta property="og:type" content="article">
+    <meta property="og:url" content="https://ml0x.com/blog/getting-started.html">
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "WebPage",
+        "name": "Getting Started with Machine Learning from First Principles",
+        "url": "https://ml0x.com/blog/getting-started.html",
+        "description": "A practical beginner's guide to learning machine learning from first principles.",
+        "isPartOf": { "@type": "WebSite", "name": "ML0X", "url": "https://ml0x.com" }
+    }
+    </script>
+
+    <style>
+        * { font-family: 'Inter', sans-serif; }
+        html { scroll-behavior: smooth; }
+    </style>
+</head>
+<body class="bg-gray-950 text-gray-100">
+
+    <!-- Navigation -->
+    <nav class="fixed top-0 w-full bg-gray-950/90 backdrop-blur-md z-50 border-b border-gray-800">
+        <div class="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
+            <a href="/" class="text-2xl font-800 tracking-tight" style="color: #6366f1;">ML0X</a>
+            <div class="hidden md:flex gap-8 text-sm text-gray-400">
+                <a href="/" class="hover:text-white transition">Home</a>
+                <a href="/guides.html" class="hover:text-white transition">Guides</a>
+                <a href="/tools.html" class="hover:text-white transition">Tools</a>
+                <a href="/blog/getting-started.html" class="text-white transition">Blog</a>
+                <a href="/about.html" class="hover:text-white transition">About</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Article -->
+    <article class="pt-32 pb-20">
+        <div class="max-w-3xl mx-auto px-4">
+
+            <header class="mb-12">
+                <span class="text-xs font-600 uppercase tracking-wider" style="color: #6366f1;">Blog</span>
+                <h1 class="text-3xl md:text-5xl font-800 tracking-tight mt-3 mb-4">Getting Started with Machine Learning from First Principles</h1>
+                <p class="text-gray-400 text-lg leading-relaxed">A structured path from mathematical foundations to your first working ML implementation, with practical advice on avoiding the most common beginner mistakes.</p>
+            </header>
+
+            <div class="prose prose-invert max-w-none">
+
+                <h2 class="text-2xl font-700 mt-12 mb-4">Why First Principles?</h2>
+                <p class="text-gray-300 leading-relaxed mb-4">
+                    The machine learning field moves fast. New papers appear daily, frameworks evolve quarterly, and the "best" approach to any given problem changes yearly. In this environment, chasing the latest library or tutorial creates a treadmill effect where you are always learning surface-level syntax without building lasting understanding. The alternative is to invest upfront in the fundamentals — linear algebra, calculus, probability, and optimization — and use that foundation to understand everything else as it appears.
+                </p>
+                <p class="text-gray-300 leading-relaxed mb-4">
+                    When you truly understand how gradient descent works, you can read any optimizer paper and immediately grasp what it changes and why. When you understand the bias-variance tradeoff mathematically, you can diagnose model performance issues without guessing. This investment pays dividends across your entire career rather than expiring with the next framework release.
+                </p>
+
+                <h2 class="text-2xl font-700 mt-12 mb-4">The Math You Actually Need</h2>
+                <p class="text-gray-300 leading-relaxed mb-4">
+                    Many aspiring ML practitioners are intimidated by the mathematical prerequisites, but the reality is more approachable than it appears. You need three core areas, and you do not need to master them at a graduate level before writing your first line of ML code.
+                </p>
+                <p class="text-gray-300 leading-relaxed mb-4">
+                    <strong class="text-gray-100">Linear algebra</strong> is the language of machine learning. Data points are vectors, transformations are matrices, and operations like projection and rotation underlie everything from PCA to neural network layers. Focus on vectors, dot products, matrix multiplication, eigenvalues, and the intuition behind matrix decomposition. Gilbert Strang's <a href="https://ocw.mit.edu/courses/18-06-linear-algebra-spring-2010/" class="text-indigo-400 hover:text-indigo-300 underline" target="_blank" rel="noopener">MIT OpenCourseWare lectures</a> remain the gold standard.
+                </p>
+                <p class="text-gray-300 leading-relaxed mb-4">
+                    <strong class="text-gray-100">Calculus</strong> is needed primarily for understanding optimization. Partial derivatives, the chain rule, and gradients are essential. You do not need to solve complex integrals or prove convergence theorems to be effective. The chain rule is the single most important concept because it is the mathematical basis of backpropagation — the algorithm that trains every neural network.
+                </p>
+                <p class="text-gray-300 leading-relaxed mb-4">
+                    <strong class="text-gray-100">Probability and statistics</strong> provide the framework for thinking about uncertainty, which is inherent in all ML problems. Bayes' theorem, probability distributions (especially Gaussian), maximum likelihood estimation, and hypothesis testing give you the tools to reason about why models work and when they will fail.
+                </p>
+
+                <h2 class="text-2xl font-700 mt-12 mb-4">Your First Implementation: Linear Regression</h2>
+                <p class="text-gray-300 leading-relaxed mb-4">
+                    The best first algorithm to implement from scratch is linear regression with gradient descent. It touches every foundational concept: you represent data as matrices, define a loss function (mean squared error), compute its gradient analytically, and iteratively update parameters to minimize the loss. Here is a minimal implementation in Python using only NumPy:
+                </p>
+
+                <div class="bg-gray-900 rounded-xl p-6 my-6 overflow-x-auto">
+                    <pre class="text-sm text-gray-300"><code>import numpy as np
+
+# Generate synthetic data
+np.random.seed(42)
+X = 2 * np.random.rand(100, 1)
+y = 4 + 3 * X + np.random.randn(100, 1) * 0.5
+
+# Add bias term
+X_b = np.c_[np.ones((100, 1)), X]
+
+# Initialize parameters
+theta = np.random.randn(2, 1)
+learning_rate = 0.1
+n_iterations = 1000
+
+# Gradient descent
+for i in range(n_iterations):
+    gradients = (2 / len(X_b)) * X_b.T.dot(X_b.dot(theta) - y)
+    theta -= learning_rate * gradients
+
+print(f"Intercept: {theta[0][0]:.4f}, Slope: {theta[1][0]:.4f}")
+# Expected: close to 4.0 and 3.0</code></pre>
+                </div>
+
+                <p class="text-gray-300 leading-relaxed mb-4">
+                    This 15-line implementation contains the essence of all gradient-based optimization. The gradient computation, the learning rate, the iterative update loop — these same patterns appear in training a billion-parameter transformer. Once you can explain every line of this code and derive the gradient formula on paper, you have a foundation that will serve you for years.
+                </p>
+
+                <h2 class="text-2xl font-700 mt-12 mb-4">Building Your Learning Path</h2>
+                <p class="text-gray-300 leading-relaxed mb-4">
+                    After linear regression, follow this progression: logistic regression (to understand classification and the sigmoid function), decision trees (to see a non-gradient-based approach), k-nearest neighbors (to understand instance-based learning), and then a simple neural network with one hidden layer (to see how composition of simple functions creates powerful models). Implement each one from scratch before using library implementations.
+                </p>
+                <p class="text-gray-300 leading-relaxed mb-4">
+                    For each algorithm, follow a three-step process. First, study the math: read the derivation, understand the loss function, and work through the gradient computation by hand. Second, implement it in NumPy with no external ML libraries. Third, compare your implementation against scikit-learn's version on the same dataset to verify correctness and understand what optimizations the library adds.
+                </p>
+
+                <h2 class="text-2xl font-700 mt-12 mb-4">Common Mistakes to Avoid</h2>
+                <p class="text-gray-300 leading-relaxed mb-4">
+                    The most common mistake is skipping the math and jumping straight to frameworks. This creates a fragile understanding that breaks down the moment you encounter a problem that does not fit a standard tutorial. The second most common mistake is trying to learn everything at once — pick one algorithm, understand it completely, and then move on.
+                </p>
+                <p class="text-gray-300 leading-relaxed mb-4">
+                    Another frequent pitfall is neglecting data preprocessing. Feature scaling, handling missing values, and proper train-test splitting are not glamorous topics, but they determine whether your model works in practice. A perfectly implemented algorithm will fail on poorly prepared data.
+                </p>
+                <p class="text-gray-300 leading-relaxed mb-4">
+                    Finally, resist the urge to jump to deep learning before understanding classical methods. Gradient boosted trees still outperform neural networks on most tabular data tasks, and understanding why requires familiarity with both approaches. Practitioners who explore model optimization techniques, such as those covered at <a href="https://krzen.com" class="text-indigo-400 hover:text-indigo-300 underline">Krzen</a>, will find that classical foundations make advanced concepts far more accessible.
+                </p>
+
+                <h2 class="text-2xl font-700 mt-12 mb-4">Next Steps</h2>
+                <p class="text-gray-300 leading-relaxed mb-4">
+                    Once you have implemented the core algorithms from scratch, you are ready to graduate to using frameworks productively. At this point, PyTorch and scikit-learn become tools for speed rather than crutches that hide your lack of understanding. You will read documentation and immediately understand what each parameter controls. You will debug training issues by reasoning about gradients rather than blindly trying different hyperparameters. You will read research papers and see the equations as code you could write, not abstract symbols.
+                </p>
+                <p class="text-gray-300 leading-relaxed mb-4">
+                    The first-principles path takes longer at the start but is faster in total. Every hour you invest in understanding the foundations saves many hours of confused debugging and tutorial-chasing later. Start with one algorithm, implement it completely, and build from there.
+                </p>
+            </div>
+
+        </div>
+    </article>
+
+    <!-- Footer -->
+    <footer class="py-12 border-t border-gray-800">
+        <div class="max-w-6xl mx-auto px-4 text-center">
+            <a href="/" class="text-xl font-700 mb-4 inline-block" style="color: #6366f1;">ML0X</a>
+            <p class="text-gray-500 text-sm">&copy; 2025 ML0X. All rights reserved.</p>
+        </div>
+    </footer>
+
+</body>
+</html>
