@@ -20,9 +20,7 @@ Select a machine learning topic from the menu. The generator assembles a compreh
 
 - Vanilla JavaScript (no frameworks, no dependencies)
 - Client-side only — your data never leaves your browser
-- Part of the [Zovo Tools](https://zovo.one) open network
 
-## Related Tools
 
 - [ML Model Comparison](https://lockml.com) — compare 30+ models by architecture and benchmarks
 - [Matrix Calculator](https://ml3x.com) — compute the linear algebra behind ML algorithms

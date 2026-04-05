@@ -43,7 +43,7 @@
     <p>The practical issue is numerical stability. If your logits are large (say, 1000), exp(1000) overflows. The standard fix is to subtract the maximum logit before computing: softmax(z - max(z)). Every major framework does this automatically, but it is worth understanding why when you encounter NaN values during training.</p>
 
     <h2>4. Attention Mechanism</h2>
-    <p>The scaled dot-product attention formula is the heart of the transformer architecture that powers GPT, Claude, and every other large language model (compare models at <a href="https://gpt0x.com">gpt0x.com</a>):</p>
+    <p>The scaled dot-product attention formula is the heart of the transformer architecture that powers GPT, Claude, and every other large language model (compare models at <a href="https://gpt0x.com" rel="nofollow">gpt0x.com</a>):</p>
     <pre>Attention(Q, K, V) = softmax(Q @ K.T / sqrt(d_k)) @ V</pre>
     <p>Q (queries), K (keys), and V (values) are linear projections of the input. The scaling factor sqrt(d_k) prevents the dot products from growing too large in high dimensions, which would push softmax into regions with tiny gradients. Multi-head attention runs this computation in parallel across multiple representation subspaces, then concatenates the results.</p>
 
@@ -75,10 +75,7 @@ F1        = 2 * P * R / (P + R)  # Harmonic mean of both</pre>
   </article>
 
   <footer>
-    <div class="container">
-      <span>Built by <a href="https://zovo.one">zovo.one</a> &middot; More tools: <a href="https://gen8x.com">gen8x.com</a>, <a href="https://enhio.com">enhio.com</a></span>
-      <span>&copy; 2025 ml0x.com</span>
-    </div>
+    <p>ML0X &mdash; Machine learning cheat sheets</p>
   </footer>
 </body>
 </html>
