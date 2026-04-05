@@ -1,115 +1,60 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>About ML0X</title>
-    <meta name="description" content="ML0X is a deep-dive resource for foundational machine learning. Learn about our mission to teach ML from first principles with mathematical rigor and practical implementations.">
-    <meta name="keywords" content="about ML0X, machine learning education, ML from scratch, foundational ML">
-    <meta name="robots" content="index, follow">
-
-    <meta property="og:title" content="About ML0X">
-    <meta property="og:description" content="Learn about ML0X's mission to teach machine learning from first principles with mathematical rigor and practical code.">
-    <meta property="og:type" content="website">
-    <meta property="og:url" content="https://ml0x.com/about.html">
-
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-
-    <script type="application/ld+json">
-    {
-        "@context": "https://schema.org",
-        "@type": "WebPage",
-        "name": "About ML0X",
-        "url": "https://ml0x.com/about.html",
-        "description": "ML0X is a deep-dive resource for foundational machine learning education.",
-        "isPartOf": { "@type": "WebSite", "name": "ML0X", "url": "https://ml0x.com" }
-    }
-    </script>
-
-    <style>
-        * { font-family: 'Inter', sans-serif; }
-        html { scroll-behavior: smooth; }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>About | ml0x.com</title>
+  <meta name="description" content="About ml0x.com — a free ML cheat sheet generator for developers and data scientists.">
+  <link rel="canonical" href="https://ml0x.com/about.html">
+  <link rel="stylesheet" href="assets/style.css">
 </head>
-<body class="bg-gray-950 text-gray-100">
+<body>
+  <header>
+    <div class="container">
+      <a href="/" class="logo">ml0x</a>
+      <nav>
+        <a href="/">Tool</a>
+        <a href="/blog/">Blog</a>
+        <a href="/about.html">About</a>
+      </nav>
+    </div>
+  </header>
 
-    <!-- Navigation -->
-    <nav class="fixed top-0 w-full bg-gray-950/90 backdrop-blur-md z-50 border-b border-gray-800">
-        <div class="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
-            <a href="/" class="text-2xl font-800 tracking-tight" style="color: #6366f1;">ML0X</a>
-            <div class="hidden md:flex gap-8 text-sm text-gray-400">
-                <a href="/" class="hover:text-white transition">Home</a>
-                <a href="/guides.html" class="hover:text-white transition">Guides</a>
-                <a href="/tools.html" class="hover:text-white transition">Tools</a>
-                <a href="/blog/getting-started.html" class="hover:text-white transition">Blog</a>
-                <a href="/about.html" class="text-white transition">About</a>
-            </div>
-        </div>
-    </nav>
+  <main class="about-content">
+    <h1>About <span>ml0x</span></h1>
+    <p>ml0x.com is a free, open-source machine learning reference tool. Select any core ML algorithm and instantly generate a formatted cheat sheet with the key formulas, hyperparameter guides, pros and cons, and working Python code snippets.</p>
+    <p>Every cheat sheet is designed to be printable (use the Print button for a clean layout) or copyable as Markdown for your notes, documentation, or team wiki.</p>
 
-    <!-- Hero -->
-    <header class="relative pt-32 pb-16 overflow-hidden">
-        <div class="absolute inset-0 bg-gradient-to-br from-indigo-950 via-gray-950 to-purple-950"></div>
-        <div class="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-indigo-500/20 via-transparent to-transparent"></div>
-        <div class="relative z-10 max-w-4xl mx-auto px-4 text-center">
-            <h1 class="text-4xl md:text-6xl font-800 tracking-tight mb-6">
-                About <span style="color: #6366f1;">ML0X</span>
-            </h1>
-            <p class="text-xl text-gray-400 max-w-2xl mx-auto leading-relaxed">
-                Teaching machine learning the way it should be taught — from the math up.
-            </p>
-        </div>
-    </header>
+    <h2>What's Covered</h2>
+    <ul>
+      <li>Convolutional Neural Networks (CNN)</li>
+      <li>Recurrent Networks (RNN, LSTM, GRU)</li>
+      <li>Transformers and Self-Attention</li>
+      <li>Decision Trees and Ensemble Methods</li>
+      <li>Support Vector Machines</li>
+      <li>K-Nearest Neighbors</li>
+      <li>Linear and Logistic Regression</li>
+      <li>Gradient Descent Variants (SGD, Adam, AdamW)</li>
+      <li>Regularization (L1, L2, Dropout, BatchNorm)</li>
+    </ul>
 
-    <!-- Mission -->
-    <section class="py-20">
-        <div class="max-w-3xl mx-auto px-4">
-            <h2 class="text-2xl font-700 mb-6">Our Mission</h2>
-            <p class="text-gray-300 leading-relaxed mb-4">
-                ML0X was created out of a belief that the best way to learn machine learning is to build it from the ground up. In an ecosystem increasingly dominated by high-level APIs and pre-trained models, there is a growing gap between people who use ML tools and people who understand how those tools work. We exist to close that gap.
-            </p>
-            <p class="text-gray-300 leading-relaxed mb-4">
-                Every guide on ML0X starts with the mathematical foundation of the topic, derives the algorithm step by step, and then implements it in code using only fundamental libraries like NumPy. This approach takes longer than copying code from a framework tutorial, but it builds a depth of understanding that pays compounding dividends throughout your career. When you have built a neural network's forward pass, backward pass, and optimization loop by hand, no framework will ever feel like magic again.
-            </p>
-            <p class="text-gray-300 leading-relaxed mb-4">
-                We cover the full spectrum of foundational ML: linear models, tree-based methods, ensemble techniques, neural network architectures, dimensionality reduction, clustering, and the mathematical underpinnings that connect them all. Our content is designed for practitioners who want to go deep rather than wide, who prefer understanding to memorization, and who believe that the fundamentals of mathematics and computer science are the most durable skills in a rapidly evolving field.
-            </p>
-            <p class="text-gray-300 leading-relaxed mb-8">
-                ML0X is part of a network of specialized AI and machine learning resources. Our flagship resource, <a href="https://zovo.one" class="text-indigo-400 hover:text-indigo-300 underline">zovo.one</a>, provides a comprehensive directory of AI tools and comparisons across the entire ecosystem. Together with our sister sites, we aim to cover every aspect of AI and ML education, tooling, and practice.
-            </p>
+    <h2>Why We Built This</h2>
+    <p>Most ML references are either too academic (30-page papers) or too shallow (one-paragraph summaries). ml0x sits in the middle: enough depth to be useful during implementation, concise enough to fit on a single screen.</p>
 
-            <h2 class="text-2xl font-700 mb-6">Related Sites</h2>
-            <div class="grid sm:grid-cols-2 gap-4">
-                <a href="https://gen8x.com" class="block bg-gray-800/50 rounded-xl p-5 border border-gray-700/50 hover:border-indigo-500/30 transition">
-                    <h3 class="text-lg font-600 mb-1">Gen8X</h3>
-                    <p class="text-gray-400 text-sm">Generative AI tutorials, diffusion models, and creative AI tools.</p>
-                </a>
-                <a href="https://gpt0x.com" class="block bg-gray-800/50 rounded-xl p-5 border border-gray-700/50 hover:border-indigo-500/30 transition">
-                    <h3 class="text-lg font-600 mb-1">GPT0X</h3>
-                    <p class="text-gray-400 text-sm">Advanced language model techniques, fine-tuning, and LLM engineering.</p>
-                </a>
-                <a href="https://enhio.com" class="block bg-gray-800/50 rounded-xl p-5 border border-gray-700/50 hover:border-indigo-500/30 transition">
-                    <h3 class="text-lg font-600 mb-1">Enhio</h3>
-                    <p class="text-gray-400 text-sm">AI-powered enhancement tools for images, audio, video, and text.</p>
-                </a>
-                <a href="https://krzen.com" class="block bg-gray-800/50 rounded-xl p-5 border border-gray-700/50 hover:border-indigo-500/30 transition">
-                    <h3 class="text-lg font-600 mb-1">Krzen</h3>
-                    <p class="text-gray-400 text-sm">Model compression, quantization, pruning, and deployment optimization.</p>
-                </a>
-            </div>
-        </div>
-    </section>
+    <h2>Part of the zovo.one Network</h2>
+    <p>ml0x.com is built by <a href="https://zovo.one">zovo.one</a>, a network of focused developer tools. Check out our other projects:</p>
+    <ul>
+      <li><a href="https://gpt0x.com">gpt0x.com</a> — searchable AI model database with specs for 40+ models</li>
+      <li><a href="https://enhio.com">enhio.com</a> — client-side text analysis and readability scoring</li>
+      <li><a href="https://gen8x.com">gen8x.com</a> — color palette generator for developers</li>
+    </ul>
+  </main>
 
-    <!-- Footer -->
-    <footer class="py-12 border-t border-gray-800">
-        <div class="max-w-6xl mx-auto px-4 text-center">
-            <a href="/" class="text-xl font-700 mb-4 inline-block" style="color: #6366f1;">ML0X</a>
-            <p class="text-gray-500 text-sm">&copy; 2025 ML0X. All rights reserved.</p>
-        </div>
-    </footer>
-
+  <footer>
+    <div class="container">
+      <span>Built by <a href="https://zovo.one">zovo.one</a> &middot; More tools: <a href="https://gen8x.com">gen8x.com</a>, <a href="https://enhio.com">enhio.com</a></span>
+      <span>&copy; 2025 ml0x.com</span>
+    </div>
+  </footer>
 </body>
 </html>

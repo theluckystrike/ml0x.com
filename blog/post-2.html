@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CNN vs RNN vs Transformer: When to Use Which | ml0x.com</title>
+  <meta name="description" content="A practical guide to choosing between CNN, RNN, and Transformer architectures. Comparison of strengths, use cases, performance, and training requirements.">
+  <link rel="canonical" href="https://ml0x.com/blog/post-2.html">
+  <link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+  <header>
+    <div class="container">
+      <a href="/" class="logo">ml0x</a>
+      <nav>
+        <a href="/">Tool</a>
+        <a href="/blog/">Blog</a>
+        <a href="/about.html">About</a>
+      </nav>
+    </div>
+  </header>
+
+  <article class="blog-post">
+    <h1>CNN vs RNN vs Transformer: When to Use Which</h1>
+    <p class="meta">Published April 2025 &middot; 9 min read</p>
+
+    <p>Choosing the right architecture is the most consequential decision in any deep learning project. It determines your training time, data requirements, and performance ceiling. Here is a practical framework for deciding between the three dominant architectures, based on the task at hand rather than hype.</p>
+
+    <h2>Understanding the Fundamental Differences</h2>
+    <p>Each architecture processes data with a fundamentally different inductive bias. CNNs assume spatial locality: nearby pixels or features are more related than distant ones. RNNs assume temporal ordering: the sequence matters, and earlier elements influence later ones. Transformers make no structural assumptions; instead, they learn which elements to attend to from the data itself.</p>
+    <p>These biases are features, not bugs. When your data matches the bias, the model learns faster with less data. When it does not, you are fighting the architecture.</p>
+
+    <h2>When to Use CNNs</h2>
+    <p>CNNs remain the best choice for tasks where spatial locality is the primary signal:</p>
+    <ul>
+      <li><strong>Image classification and detection</strong> — The original CNN use case, still dominant. ResNet, EfficientNet, and ConvNeXt are proven architectures with extensive pretrained weights.</li>
+      <li><strong>Medical imaging</strong> — X-rays, MRIs, and pathology slides where spatial patterns (textures, edges, shapes) carry diagnostic information.</li>
+      <li><strong>Audio spectrograms</strong> — When audio is converted to mel spectrograms, CNNs can treat them as images and achieve strong results.</li>
+      <li><strong>Edge deployment</strong> — MobileNet and other lightweight CNN architectures run efficiently on phones and embedded devices. The parameter sharing in convolutions is extremely memory-efficient.</li>
+    </ul>
+    <p>The key advantage of CNNs is translation invariance through weight sharing. A cat detector that works in the top-left corner automatically works in the bottom-right. This dramatically reduces the number of training examples needed compared to fully connected networks.</p>
+    <p>For a deeper look at CNN architectures, parameters, and code, see the <a href="https://ml0x.com">ml0x.com cheat sheet generator</a>.</p>
+
+    <h2>When to Use RNNs (LSTM/GRU)</h2>
+    <p>RNNs are increasingly niche, but they still have valid use cases:</p>
+    <ul>
+      <li><strong>Real-time time series</strong> — When you need to process one step at a time with minimal latency, RNNs process sequentially by design. Streaming predictions on sensor data or financial ticks benefit from this.</li>
+      <li><strong>Small sequential datasets</strong> — With fewer than 10,000 training sequences, an LSTM with 256 hidden units often outperforms a transformer that would need more data to learn attention patterns.</li>
+      <li><strong>Resource-constrained environments</strong> — A 2-layer LSTM has far fewer parameters than even a small transformer, making it suitable for microcontrollers or scenarios where model size is strictly limited.</li>
+    </ul>
+    <p>The critical limitation of RNNs is sequential processing. Training cannot be parallelized across time steps, which means an LSTM on a sequence of length 1000 takes 1000 serial steps. This makes training slow on modern GPUs designed for parallel computation.</p>
+
+    <h2>When to Use Transformers</h2>
+    <p>Transformers dominate when you have sufficient data and compute:</p>
+    <ul>
+      <li><strong>Natural language processing</strong> — Text classification, generation, translation, summarization. Pretrained models like BERT, GPT, and Claude (compare specs at <a href="https://gpt0x.com">gpt0x.com</a>) provide strong starting points.</li>
+      <li><strong>Large-scale vision</strong> — Vision Transformers (ViT) match or exceed CNNs on ImageNet when pretrained on large datasets. DINOv2 and similar self-supervised approaches reduce the data requirement.</li>
+      <li><strong>Multi-modal tasks</strong> — Combining text, images, and audio. The attention mechanism naturally handles cross-modal alignment.</li>
+      <li><strong>Long-range dependencies</strong> — Any task where elements far apart in the input need to interact directly. Document-level NLP, protein structure prediction, music generation.</li>
+    </ul>
+    <p>The transformer weakness is the quadratic attention cost. A sequence of 10,000 tokens requires computing 100 million attention weights per layer per head. Linear attention variants and sparse attention patterns mitigate this, but standard transformers struggle with very long inputs.</p>
+
+    <h2>The Decision Framework</h2>
+    <h3>Start with your data type:</h3>
+    <ul>
+      <li><strong>Images/spatial grids</strong> — CNN first. Try a pretrained ResNet or EfficientNet. Only switch to ViT if you have 100K+ images or use a pretrained vision transformer.</li>
+      <li><strong>Text</strong> — Transformer. Fine-tune a pretrained model. The text domain is so thoroughly dominated by transformers that starting with anything else wastes time.</li>
+      <li><strong>Time series (short, real-time)</strong> — LSTM/GRU for streaming; transformer for batch processing where you have full sequences at inference time.</li>
+      <li><strong>Tabular data</strong> — None of the above. Use gradient-boosted trees (XGBoost, LightGBM). They still beat deep learning on most tabular benchmarks.</li>
+    </ul>
+
+    <h3>Then consider your constraints:</h3>
+    <ul>
+      <li><strong>Small dataset (&lt;10K samples)</strong> — CNN with transfer learning, or LSTM. Transformers need more data unless you fine-tune a pretrained one.</li>
+      <li><strong>Limited compute</strong> — CNN or LSTM. Transformers need GPUs with significant memory, especially during training.</li>
+      <li><strong>Latency requirements</strong> — CNN inference is fast and predictable. Transformer inference scales with sequence length. LSTM is sequential but lightweight per step.</li>
+      <li><strong>Interpretability</strong> — CNN attention maps and gradient visualizations are well-developed. Transformer attention weights can be misleading (attention does not equal importance). LSTM hidden states are opaque.</li>
+    </ul>
+
+    <h2>Hybrid Approaches</h2>
+    <p>Modern architectures increasingly blur the lines. ConvNeXt applies transformer-inspired design principles to CNNs. Conformer combines convolutions with transformer attention for speech recognition. The practical takeaway is: match the architecture to your data's structure, use pretrained weights when available, and measure rather than assume.</p>
+
+    <p>For quick reference cards on each architecture, including hyperparameter ranges and implementation code, use the <a href="https://ml0x.com">ml0x.com cheat sheet generator</a>. You can also check <a href="https://zovo.one">zovo.one</a> for our full suite of developer tools.</p>
+  </article>
+
+  <footer>
+    <div class="container">
+      <span>Built by <a href="https://zovo.one">zovo.one</a> &middot; More tools: <a href="https://gen8x.com">gen8x.com</a>, <a href="https://enhio.com">enhio.com</a></span>
+      <span>&copy; 2025 ml0x.com</span>
+    </div>
+  </footer>
+</body>
+</html>

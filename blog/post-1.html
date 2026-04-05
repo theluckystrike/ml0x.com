@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Machine Learning Formulas You Actually Need (With Examples) | ml0x.com</title>
+  <meta name="description" content="A practical guide to the ML formulas that matter most in real projects — from gradient descent to attention mechanisms, with worked examples.">
+  <link rel="canonical" href="https://ml0x.com/blog/post-1.html">
+  <link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+  <header>
+    <div class="container">
+      <a href="/" class="logo">ml0x</a>
+      <nav>
+        <a href="/">Tool</a>
+        <a href="/blog/">Blog</a>
+        <a href="/about.html">About</a>
+      </nav>
+    </div>
+  </header>
+
+  <article class="blog-post">
+    <h1>Machine Learning Formulas You Actually Need (With Examples)</h1>
+    <p class="meta">Published April 2025 &middot; 8 min read</p>
+
+    <p>Machine learning textbooks are filled with hundreds of equations, but the truth is that most practitioners use the same core set of formulas repeatedly. Whether you are training your first model or debugging a production pipeline, these are the formulas you need to understand deeply, not just memorize.</p>
+
+    <h2>1. The Gradient Descent Update Rule</h2>
+    <p>Every optimization algorithm builds on this foundation. The basic update is deceptively simple: adjust each parameter in the direction that reduces the loss, scaled by a learning rate.</p>
+    <pre>theta = theta - learning_rate * gradient(loss, theta)</pre>
+    <p>In practice, you rarely use vanilla gradient descent. Adam combines momentum (exponentially weighted moving average of gradients) with adaptive learning rates (exponentially weighted moving average of squared gradients). The bias-corrected estimates ensure the optimizer works well from the very first step.</p>
+    <p>A common mistake is setting the learning rate too high. If your loss spikes or oscillates wildly in the first few epochs, reduce it by a factor of 10. Most modern models train well with learning rates between 1e-4 and 3e-4 when using Adam or AdamW.</p>
+
+    <h2>2. Cross-Entropy Loss</h2>
+    <p>For classification, cross-entropy measures the distance between your predicted probability distribution and the true distribution. For binary classification:</p>
+    <pre>L = -(y * log(p) + (1 - y) * log(1 - p))</pre>
+    <p>Where y is the true label (0 or 1) and p is the predicted probability. For multi-class, this extends to summing over all classes. The key insight is that cross-entropy penalizes confident wrong predictions much more severely than uncertain ones. Predicting 0.99 for the wrong class produces a loss of about 4.6, while predicting 0.6 for the wrong class only produces 0.92.</p>
+
+    <h2>3. Softmax Function</h2>
+    <p>Softmax converts raw logits (any real numbers) into a valid probability distribution. Each output is between 0 and 1, and all outputs sum to 1:</p>
+    <pre>softmax(z_i) = exp(z_i) / sum(exp(z_j) for all j)</pre>
+    <p>The practical issue is numerical stability. If your logits are large (say, 1000), exp(1000) overflows. The standard fix is to subtract the maximum logit before computing: softmax(z - max(z)). Every major framework does this automatically, but it is worth understanding why when you encounter NaN values during training.</p>
+
+    <h2>4. Attention Mechanism</h2>
+    <p>The scaled dot-product attention formula is the heart of the transformer architecture that powers GPT, Claude, and every other large language model (compare models at <a href="https://gpt0x.com">gpt0x.com</a>):</p>
+    <pre>Attention(Q, K, V) = softmax(Q @ K.T / sqrt(d_k)) @ V</pre>
+    <p>Q (queries), K (keys), and V (values) are linear projections of the input. The scaling factor sqrt(d_k) prevents the dot products from growing too large in high dimensions, which would push softmax into regions with tiny gradients. Multi-head attention runs this computation in parallel across multiple representation subspaces, then concatenates the results.</p>
+
+    <h2>5. Batch Normalization</h2>
+    <p>BatchNorm normalizes each feature to zero mean and unit variance within a mini-batch, then applies a learned affine transform:</p>
+    <pre>y = gamma * (x - mean_batch) / sqrt(var_batch + epsilon) + beta</pre>
+    <p>This solves the internal covariate shift problem: as earlier layers change during training, the distribution of inputs to later layers shifts, slowing convergence. BatchNorm stabilizes these distributions. The epsilon (typically 1e-5) prevents division by zero. Gamma and beta are learned parameters that allow the network to undo the normalization if needed.</p>
+
+    <h2>6. Convolution Output Size</h2>
+    <p>For any convolutional layer, you need to know the spatial dimensions of the output:</p>
+    <pre>output_size = (input_size - kernel_size + 2 * padding) / stride + 1</pre>
+    <p>This formula prevents the most common CNN debugging issue: dimension mismatches at the boundary between convolutional and fully connected layers. For a 32x32 input with a 3x3 kernel, stride 1, and padding 1, the output is 32x32 (same padding). With stride 2, it halves to 16x16.</p>
+
+    <h2>7. R-squared (Coefficient of Determination)</h2>
+    <p>For regression, R-squared tells you the proportion of variance in the target that your model explains:</p>
+    <pre>R2 = 1 - sum((y_true - y_pred)**2) / sum((y_true - y_mean)**2)</pre>
+    <p>An R-squared of 0.85 means your model explains 85% of the variance. A value of 0 means you are no better than predicting the mean. Negative values are possible when your model is worse than the mean predictor, which signals serious issues like data leakage in the test set or a fundamentally wrong model.</p>
+
+    <h2>8. Precision, Recall, and F1</h2>
+    <p>Classification accuracy is misleading for imbalanced datasets. Instead, use:</p>
+    <pre>Precision = TP / (TP + FP)    # Of predicted positives, how many correct?
+Recall    = TP / (TP + FN)    # Of actual positives, how many found?
+F1        = 2 * P * R / (P + R)  # Harmonic mean of both</pre>
+    <p>If you have 1000 transactions and 10 are fraud, a model that predicts "not fraud" for everything gets 99% accuracy but 0% recall. F1 score balances the trade-off. Use precision-weighted decisions when false positives are costly (spam filtering); use recall-weighted decisions when false negatives are costly (medical diagnosis).</p>
+
+    <h2>Putting It Together</h2>
+    <p>These eight formulas cover the core of what you need for building, training, and evaluating machine learning models. You can generate formatted cheat sheets for each algorithm on the <a href="https://ml0x.com">ml0x.com homepage</a>, complete with hyperparameter guides and code snippets.</p>
+    <p>The difference between a junior and senior ML engineer is not knowing more formulas; it is understanding fewer formulas more deeply. Know what each term controls, what happens when it goes wrong, and how to diagnose issues from the symptoms.</p>
+  </article>
+
+  <footer>
+    <div class="container">
+      <span>Built by <a href="https://zovo.one">zovo.one</a> &middot; More tools: <a href="https://gen8x.com">gen8x.com</a>, <a href="https://enhio.com">enhio.com</a></span>
+      <span>&copy; 2025 ml0x.com</span>
+    </div>
+  </footer>
+</body>
+</html>
