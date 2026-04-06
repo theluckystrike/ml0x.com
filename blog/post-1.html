@@ -6,24 +6,38 @@
   <title>Machine Learning Formulas You Actually Need (With Examples) | ml0x.com</title>
   <meta name="description" content="A practical guide to the ML formulas that matter most in real projects — from gradient descent to attention mechanisms, with worked examples.">
   <link rel="canonical" href="https://ml0x.com/blog/post-1.html">
-<link rel="alternate" type="application/atom+xml" title="ML Cheat Sheet Generator Blog Feed" href="/blog/feed.xml">
+  <link rel="alternate" hreflang="en" href="https://ml0x.com/blog/post-1.html">
+  <link rel="alternate" hreflang="x-default" href="https://ml0x.com/blog/post-1.html">
+  <link rel="alternate" type="application/atom+xml" title="ML Cheat Sheet Generator Blog Feed" href="/blog/feed.xml">
+  <meta property="og:type" content="article">
+  <meta property="og:title" content="Machine Learning Formulas You Actually Need (With Examples)">
+  <meta property="og:description" content="A practical guide to the ML formulas that matter most in real projects — from gradient descent to attention mechanisms, with worked examples.">
+  <meta property="og:url" content="https://ml0x.com/blog/post-1.html">
+  <meta property="og:image" content="https://ml0x.com/assets/og-image.png">
+  <meta property="og:site_name" content="Zovo Tools">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Machine Learning Formulas You Actually Need (With Examples)">
+  <meta name="twitter:description" content="A practical guide to the ML formulas that matter most in real projects — from gradient descent to attention mechanisms, with worked examples.">
+  <meta name="twitter:image" content="https://ml0x.com/assets/og-image.png">
   <link rel="stylesheet" href="../assets/style.css">
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
   "@type": "Article",
   "headline": "Machine Learning Formulas You Actually Need (With Examples)",
+  "description": "A practical guide to the ML formulas that matter most in real projects — from gradient descent to attention mechanisms, with worked examples.",
   "datePublished": "2026-04-01",
   "dateModified": "2026-04-06",
   "author": {
     "@type": "Person",
-    "name": "Zovo"
+    "name": "Michael Lip",
+    "url": "https://zovo.one"
   },
   "publisher": {
     "@type": "Organization",
     "name": "ml0x"
   },
-  "mainEntityOfPage": "http://ml0x.com/blog/post-1.html"
+  "mainEntityOfPage": "https://ml0x.com/blog/post-1.html"
 }
 </script>
 </head>
@@ -36,7 +50,7 @@
         <a href="/blog/">Blog</a>
         <a href="/about.html">About</a>
           <div class="nav-right">
-      <a href="https://zovo.one/pricing?utm_source=ml0x.com&amp;utm_medium=satellite&amp;utm_campaign=nav-link" class="nav-pro" target="_blank">Go Pro ✦</a>
+      <a href="https://zovo.one/pricing?utm_source=ml0x.com&amp;utm_medium=satellite&amp;utm_campaign=nav-link" class="nav-pro" target="_blank">Go Pro &#10022;</a>
       <a href="https://zovo.one/tools" class="nav-zovo">Zovo Tools</a>
     </div>
   </nav>
@@ -45,7 +59,7 @@
 
   <article class="blog-post">
     <h1>Machine Learning Formulas You Actually Need (With Examples)</h1>
-    <p class="meta">Published April 2025 &middot; 8 min read</p>
+    <p class="meta">Published April 2025 &middot; 8 min read &middot; By <a href="/about.html">Michael Lip</a></p>
 
     <p>Machine learning textbooks are filled with hundreds of equations, but the truth is that most practitioners use the same core set of formulas repeatedly. Whether you are training your first model or debugging a production pipeline, these are the formulas you need to understand deeply, not just memorize.</p>
 
@@ -66,7 +80,7 @@
     <p>The practical issue is numerical stability. If your logits are large (say, 1000), exp(1000) overflows. The standard fix is to subtract the maximum logit before computing: softmax(z - max(z)). Every major framework does this automatically, but it is worth understanding why when you encounter NaN values during training.</p>
 
     <h2>4. Attention Mechanism</h2>
-    <p>The scaled dot-product attention formula is the heart of the transformer architecture that powers GPT, Claude, and every other large language model (compare models at <a href="https://gpt0x.com" rel="nofollow">gpt0x.com</a>):</p>
+    <p>The scaled dot-product attention formula is the heart of the transformer architecture that powers GPT, Claude, and every other large language model (compare models at <a href="https://gpt0x.com">gpt0x.com</a>):</p>
     <pre>Attention(Q, K, V) = softmax(Q @ K.T / sqrt(d_k)) @ V</pre>
     <p>Q (queries), K (keys), and V (values) are linear projections of the input. The scaling factor sqrt(d_k) prevents the dot products from growing too large in high dimensions, which would push softmax into regions with tiny gradients. Multi-head attention runs this computation in parallel across multiple representation subspaces, then concatenates the results.</p>
 
@@ -90,7 +104,7 @@
     <pre>Precision = TP / (TP + FP)    # Of predicted positives, how many correct?
 Recall    = TP / (TP + FN)    # Of actual positives, how many found?
 F1        = 2 * P * R / (P + R)  # Harmonic mean of both</pre>
-    <p>If you have 1000 transactions and 10 are fraud, a model that predicts "not fraud" for everything gets 99% accuracy but 0% recall. F1 score balances the trade-off. Use precision-weighted decisions when false positives are costly (spam filtering); use recall-weighted decisions when false negatives are costly (medical diagnosis).</p>
+    <p>If you have 1000 transactions and 10 are fraud, a model that predicts "not fraud" for everything gets 99% accuracy but 0% recall. F1 score balances the trade-off. Use precision-weighted decisions when false positives are costly (spam filtering); use recall-weighted decisions when false negatives are costly (medical diagnosis). For a deeper dive into validating ML experiments, tools like <a href="https://abwex.com">abwex.com</a> can help you assess statistical significance of your model comparisons.</p>
 
     <h2>Putting It Together</h2>
     <p>These eight formulas cover the core of what you need for building, training, and evaluating machine learning models. You can generate formatted cheat sheets for each algorithm on the <a href="https://ml0x.com">ml0x.com homepage</a>, complete with hyperparameter guides and code snippets.</p>
