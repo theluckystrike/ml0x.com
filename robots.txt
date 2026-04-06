@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://ml0x.com/sitemap.xml
+Sitemap: http://ml0x.com/sitemap.xml

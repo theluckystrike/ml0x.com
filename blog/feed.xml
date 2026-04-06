@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+  <title>ML Cheat Sheet Generator Blog</title>
+  <link href="http://ml0x.com/blog/" rel="alternate"/>
+  <link href="http://ml0x.com/blog/feed.xml" rel="self"/>
+  <id>http://ml0x.com/blog/</id>
+  <updated>2026-04-06T00:00:00Z</updated>
+  <author><name>ML Cheat Sheet Generator</name></author>
+  <entry>
+    <title>Machine Learning Formulas You Actually Need (With Examples) | ml0x.com</title>
+    <link href="https://ml0x.com/blog/post-1.html" rel="alternate"/>
+    <id>https://ml0x.com/blog/post-1.html</id>
+    <updated>2026-04-06T00:00:00Z</updated>
+    <summary>A practical guide to the ML formulas that matter most in real projects — from gradient descent to attention mechanisms, with worked examples.</summary>
+  </entry>
+  <entry>
+    <title>CNN vs RNN vs Transformer: When to Use Which | ml0x.com</title>
+    <link href="https://ml0x.com/blog/post-2.html" rel="alternate"/>
+    <id>https://ml0x.com/blog/post-2.html</id>
+    <updated>2026-04-06T00:00:00Z</updated>
+    <summary>A practical guide to choosing between CNN, RNN, and Transformer architectures. Comparison of strengths, use cases, performance, and training requirements.</summary>
+  </entry>
+</feed>
