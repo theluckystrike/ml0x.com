@@ -1,34 +1,37 @@
-# ML Cheat Sheet Generator — Quick-Reference Cards for Machine Learning Concepts
+# ML0X -- Machine Learning Cheat Sheet Generator
 
-**[Generate Cheat Sheets →](https://ml0x.com)** | [About](https://ml0x.com/about.html) | [Blog](https://ml0x.com/blog/)
+**[-> Use ML0X (live tool)](https://ml0x.com/)**
 
-ML Cheat Sheet Generator creates printable, exportable quick-reference cards for 10 core machine learning topics. Each sheet includes key formulas, code snippets in Python, visual diagrams, and practical tips. Covers linear regression, neural networks, decision trees, SVMs, clustering, dimensionality reduction, and more. Built for students cramming for exams and engineers who need a fast refresher.
+ML0X is a free ML cheat sheet generator that produces formatted reference cards for 10 core machine learning algorithms. Each cheat sheet includes key mathematical formulas, hyperparameter guides, pros/cons comparisons, and working Python code snippets. Print-friendly layout and Markdown export included.
 
 ## Features
 
-- **10 ML topics covered** — regression, classification, clustering, neural nets, NLP, and more
-- **Key formulas with LaTeX rendering** — clean mathematical notation for every concept
-- **Python code snippets** — scikit-learn and PyTorch examples for each algorithm
-- **Print-optimized layout** — one-page cheat sheets designed for printing or PDF export
-- **Export as PDF or image** — save and share your generated reference cards
+- Cheat sheets for 10 core ML algorithms (CNN, RNN, Transformers, SVM, and more)
+- Key mathematical formulas rendered in readable format
+- Hyperparameter guides with recommended value ranges
+- Pros and cons comparison for each algorithm
+- Working Python code snippets for scikit-learn, PyTorch, and TensorFlow
+- Print-optimized layout for clean paper output
+- Copy as Markdown for notes, wikis, and documentation
+- 100% client-side -- your data never leaves your browser
+- Open source -- inspect the code yourself
 
-## How It Works
+## Tech Stack
 
-Select a machine learning topic from the menu. The generator assembles a comprehensive cheat sheet with the essential formulas, algorithm descriptions, complexity analysis, Python implementation snippets, and practical tips. Each section is formatted for quick scanning. Hit the print button for a clean, one-page layout optimized for paper, or export as PDF or PNG for digital reference. All content is pre-loaded and rendered client-side.
+- Vanilla JavaScript (no frameworks, no build step)
+- Static HTML hosted on GitHub Pages
+- Cloudflare DNS + SSL
+- Zero dependencies, zero tracking, zero cookies
 
-## Built With
+## Part of Zovo Tools
 
-- Vanilla JavaScript (no frameworks, no dependencies)
-- Client-side only — your data never leaves your browser
+ML0X is part of [Zovo Tools](https://zovo.one/tools) -- a collection of free developer tools.
 
-
-- [ML Model Comparison](https://lockml.com) — compare 30+ models by architecture and benchmarks
-- [Matrix Calculator](https://ml3x.com) — compute the linear algebra behind ML algorithms
-- [Tensor Shape Calculator](https://heytensor.com) — debug neural network dimensions layer by layer
-
-## Contributing
-
-Found a bug or have a feature request? [Open an issue](https://github.com/theluckystrike/ml0x.com/issues).
+**Other tools in the network:**
+- [EpochPilot](https://epochpilot.com) -- 30+ timestamp and timezone tools
+- [HeyTensor](https://heytensor.com) -- PyTorch tensor shape calculator
+- [LochBot](https://lochbot.com) -- Prompt injection vulnerability checker
+- [KappaKit](https://kappakit.com) -- Developer toolkit (Base64, JWT, hash, UUID)
 
 ## License
 
