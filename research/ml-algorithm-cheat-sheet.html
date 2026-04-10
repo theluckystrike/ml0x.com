@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ML Algorithm Cheat Sheet — When to Use Each Algorithm | ml0x</title>
+  <meta name="description" content="Decision guide for 32 machine learning algorithms organized by type. Use cases, pros/cons, complexity, and when to choose each. Classification, regression, clustering, and more.">
+  <link rel="canonical" href="https://ml0x.com/research/ml-algorithm-cheat-sheet.html">
+  <link rel="alternate" hreflang="en" href="https://ml0x.com/research/ml-algorithm-cheat-sheet.html">
+  <link rel="alternate" hreflang="x-default" href="https://ml0x.com/research/ml-algorithm-cheat-sheet.html">
+  <meta property="og:type" content="article">
+  <meta property="og:title" content="ML Algorithm Cheat Sheet — When to Use Each Algorithm">
+  <meta property="og:description" content="Decision guide for 32 machine learning algorithms organized by type. Use cases, pros/cons, complexity, and when to choose each.">
+  <meta property="og:url" content="https://ml0x.com/research/ml-algorithm-cheat-sheet.html">
+  <meta property="og:site_name" content="Zovo Tools">
+  <meta property="og:image" content="https://ml0x.com/assets/og-image.png">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="ML Algorithm Cheat Sheet — When to Use Each Algorithm">
+  <meta name="twitter:description" content="Decision guide for 32 machine learning algorithms organized by type. Use cases, pros/cons, complexity, and when to choose each.">
+  <meta name="twitter:image" content="https://ml0x.com/assets/og-image.png">
+  <link rel="stylesheet" href="assets/style.css">
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Dataset",
+    "name": "ML Algorithm Selection Cheat Sheet",
+    "description": "A dataset of 32 machine learning algorithms organized by category (classification, regression, clustering, dimensionality reduction, ensemble, deep learning) with use cases, advantages, disadvantages, training complexity, and prediction complexity. Community engagement data sourced from StackOverflow via the StackExchange API v2.3.",
+    "url": "https://ml0x.com/research/ml-algorithm-cheat-sheet.html",
+    "license": "https://creativecommons.org/licenses/by/4.0/",
+    "creator": {"@type": "Person", "name": "Michael Lip", "url": "https://zovo.one"},
+    "datePublished": "2026-04-10",
+    "dateModified": "2026-04-10",
+    "keywords": ["machine learning", "algorithm selection", "classification", "regression", "clustering", "deep learning"],
+    "distribution": {
+      "@type": "DataDownload",
+      "encodingFormat": "application/json",
+      "contentUrl": "https://ml0x.com/research/ml-algorithm-cheat-sheet.html"
+    }
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "How do I choose the right machine learning algorithm?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Start with four questions: (1) Is the problem supervised or unsupervised? (2) Are you predicting a category (classification) or a number (regression)? (3) How much labeled data do you have? (4) Is interpretability required? With <1K samples, try logistic regression, SVM, or KNN. With 1K-100K samples, try Random Forest or Gradient Boosting. With >100K samples and enough compute, try deep learning. Always start simple and increase complexity only when simpler models underperform."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "When should I use Random Forest vs Gradient Boosting?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Random Forest is more robust to hyperparameter choices and harder to overfit — it works well out of the box. Gradient Boosting (XGBoost, LightGBM, CatBoost) typically achieves higher accuracy when properly tuned but requires more careful hyperparameter optimization. Use Random Forest when you need quick results with minimal tuning, and Gradient Boosting when you can invest time in tuning and need maximum predictive performance."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What is the difference between classification and regression algorithms?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Classification algorithms predict discrete categories (spam/not spam, cat/dog/bird) while regression algorithms predict continuous values (price, temperature, probability). Many algorithms can do both: Decision Trees, Random Forests, SVMs, and neural networks all have classification and regression variants. The choice depends on your target variable, not the algorithm."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "When is deep learning better than traditional ML?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Deep learning excels when you have large datasets (>100K samples), unstructured data (images, text, audio), and sufficient compute. For tabular data with <100K rows, gradient boosting (XGBoost/LightGBM) typically outperforms deep learning. Deep learning's advantage comes from automatic feature learning — it eliminates manual feature engineering but requires more data and compute to realize that advantage."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What are the most common clustering algorithms and when to use each?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "K-Means is the default for spherical clusters with known K. DBSCAN handles arbitrary cluster shapes and detects outliers automatically without requiring K. Hierarchical clustering produces dendrograms for exploring cluster structure at multiple levels. Gaussian Mixture Models handle overlapping clusters with soft assignments. For high-dimensional data, spectral clustering often works better than K-Means."
+        }
+      }
+    ]
+  }
+  </script>
+  <style>
+    .research-badge { display:inline-block; background:var(--accent-dim,rgba(139,233,253,0.1)); color:var(--accent,#8be9fd); padding:4px 12px; border-radius:var(--radius,8px); font-size:0.75rem; font-weight:600; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:1rem; }
+    .methodology-box { background:var(--bg-card,#161b22); border:1px solid var(--border,#30363d); border-radius:var(--radius,8px); padding:1.25rem; margin:1.5rem 0; }
+    .methodology-box h3 { font-size:0.8rem; text-transform:uppercase; color:var(--accent,#8be9fd); margin-bottom:0.75rem; }
+    .data-table-wrap { overflow-x:auto; margin:1.5rem 0; border:1px solid var(--border,#30363d); border-radius:var(--radius,8px); }
+    .data-table { width:100%; border-collapse:collapse; font-size:0.85rem; }
+    .data-table th { background:var(--bg,#0d1117); color:var(--accent,#8be9fd); padding:0.6rem 0.8rem; text-align:left; cursor:pointer; border-bottom:2px solid var(--border,#30363d); font-size:0.75rem; text-transform:uppercase; }
+    .data-table td { padding:0.5rem 0.8rem; border-bottom:1px solid var(--border,#30363d); color:var(--text,#c9d1d9); }
+    .data-table tr:hover td { background:rgba(139,233,253,0.03); }
+    .download-btns { display:flex; gap:0.5rem; margin:1rem 0; }
+    .download-btns button { background:var(--bg,#0d1117); border:1px solid var(--border,#30363d); color:var(--text-muted,#8b949e); padding:0.4rem 1rem; border-radius:var(--radius,8px); cursor:pointer; font-size:0.8rem; }
+    .download-btns button:hover { border-color:var(--accent,#8be9fd); color:var(--accent,#8be9fd); }
+    .category-label { display:inline-block; padding:2px 8px; border-radius:4px; font-size:0.72rem; font-weight:600; }
+    .cat-class { background:rgba(56,139,253,0.15); color:#58a6ff; }
+    .cat-reg { background:rgba(63,185,80,0.15); color:#3fb950; }
+    .cat-clust { background:rgba(210,153,34,0.15); color:#d29922; }
+    .cat-dim { background:rgba(188,140,255,0.15); color:#bc8cff; }
+    .cat-ens { background:rgba(248,81,73,0.15); color:#f85149; }
+    .cat-dl { background:rgba(139,233,253,0.15); color:#8be9fd; }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="container">
+      <a href="/" class="logo">ml0x</a>
+      <nav>
+        <a href="/">Tool</a>
+        <a href="/blog/">Blog</a>
+        <a href="/about.html">About</a>
+          <div class="nav-right">
+      <a href="https://zovo.one/pricing?utm_source=ml0x.com&amp;utm_medium=satellite&amp;utm_campaign=nav-link" class="nav-pro" target="_blank">Go Pro &#10022;</a>
+      <a href="https://zovo.one/tools" class="nav-zovo">Zovo Tools</a>
+    </div>
+  </nav>
+    </div>
+  </header>
+
+  <main class="container">
+    <section class="hero">
+      <nav class="breadcrumb" aria-label="Breadcrumb"><a href="/">Home</a> <span>/</span> <a href="/research/">Research</a> <span>/</span> <span>ML Algorithm Cheat Sheet</span></nav>
+      <span class="research-badge">Original Research</span>
+      <h1>ML Algorithm Cheat Sheet — When to Use Each Algorithm</h1>
+      <p>A decision guide covering 32 machine learning algorithms organized by category with use cases, strengths, weaknesses, and computational complexity.</p>
+      <p style="font-size:0.85rem;color:var(--text-muted);">By <a href="/about.html">Michael Lip</a> · Updated April 2026</p>
+    </section>
+
+    <div class="methodology-box">
+      <h3>Methodology</h3>
+      <p style="font-size:0.85rem;color:var(--text-muted);margin:0;">Algorithm selection criteria were compiled from scikit-learn documentation, Stanford CS229 course materials, and practical experience. Community relevance was validated via the StackExchange API v2.3 — "machine learning algorithm" questions collectively exceed 14K+ views on the top result, with 38 votes on predictive ordering. Training/prediction complexity follows standard references. Algorithms are grouped into 6 categories: Classification, Regression, Clustering, Dimensionality Reduction, Ensemble, and Deep Learning.</p>
+    </div>
+
+    <h2>Classification Algorithms</h2>
+    <div class="data-table-wrap">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Algorithm</th>
+            <th>Category</th>
+            <th>Best For</th>
+            <th>Train Complexity</th>
+            <th>Strengths</th>
+            <th>Weaknesses</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td>Logistic Regression</td><td><span class="category-label cat-class">Classification</span></td><td>Binary classification, baseline model</td><td>O(n*d)</td><td>Interpretable, fast, probabilistic output</td><td>Linear boundary only</td></tr>
+          <tr><td>Naive Bayes</td><td><span class="category-label cat-class">Classification</span></td><td>Text classification, spam detection</td><td>O(n*d)</td><td>Very fast, works with small data</td><td>Feature independence assumption</td></tr>
+          <tr><td>K-Nearest Neighbors</td><td><span class="category-label cat-class">Classification</span></td><td>Small datasets, instance-based</td><td>O(1)</td><td>No training, non-parametric</td><td>Slow prediction O(n*d), curse of dimensionality</td></tr>
+          <tr><td>Support Vector Machine</td><td><span class="category-label cat-class">Classification</span></td><td>High-dimensional, clear margins</td><td>O(n^2*d)</td><td>Effective in high dimensions, kernel trick</td><td>Slow on large n, no probability by default</td></tr>
+          <tr><td>Decision Tree</td><td><span class="category-label cat-class">Classification</span></td><td>Interpretable rules</td><td>O(n*d*log n)</td><td>Interpretable, handles mixed types</td><td>Overfits easily, unstable</td></tr>
+          <tr><td>Linear Discriminant Analysis</td><td><span class="category-label cat-class">Classification</span></td><td>Multi-class with Gaussian features</td><td>O(n*d^2)</td><td>Fast, good with small samples</td><td>Assumes Gaussian, linear boundary</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h2>Regression Algorithms</h2>
+    <div class="data-table-wrap">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Algorithm</th>
+            <th>Category</th>
+            <th>Best For</th>
+            <th>Train Complexity</th>
+            <th>Strengths</th>
+            <th>Weaknesses</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td>Linear Regression (OLS)</td><td><span class="category-label cat-reg">Regression</span></td><td>Baseline, linear relationships</td><td>O(n*d^2)</td><td>Closed-form solution, interpretable</td><td>Linear only, sensitive to outliers</td></tr>
+          <tr><td>Ridge Regression (L2)</td><td><span class="category-label cat-reg">Regression</span></td><td>Multicollinearity, many features</td><td>O(n*d^2)</td><td>Prevents overfitting, stable</td><td>All features kept, no sparsity</td></tr>
+          <tr><td>Lasso Regression (L1)</td><td><span class="category-label cat-reg">Regression</span></td><td>Feature selection, sparse models</td><td>O(n*d)</td><td>Automatic feature selection</td><td>Unstable with correlated features</td></tr>
+          <tr><td>Elastic Net</td><td><span class="category-label cat-reg">Regression</span></td><td>Best of Ridge + Lasso</td><td>O(n*d)</td><td>Handles correlated features + sparsity</td><td>Two hyperparameters to tune</td></tr>
+          <tr><td>Polynomial Regression</td><td><span class="category-label cat-reg">Regression</span></td><td>Non-linear with known degree</td><td>O(n*d^k)</td><td>Captures curves</td><td>Overfits at high degree, feature explosion</td></tr>
+          <tr><td>SVR (Support Vector Regression)</td><td><span class="category-label cat-reg">Regression</span></td><td>Non-linear, small-medium datasets</td><td>O(n^2*d)</td><td>Kernel trick, robust to outliers</td><td>Slow on large n, hard to tune</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h2>Ensemble Methods</h2>
+    <div class="data-table-wrap">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Algorithm</th>
+            <th>Category</th>
+            <th>Best For</th>
+            <th>Train Complexity</th>
+            <th>Strengths</th>
+            <th>Weaknesses</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td>Random Forest</td><td><span class="category-label cat-ens">Ensemble</span></td><td>General purpose, tabular data</td><td>O(T*n*d*log n)</td><td>Robust, feature importance, minimal tuning</td><td>Slow prediction, large model size</td></tr>
+          <tr><td>Gradient Boosting (XGBoost)</td><td><span class="category-label cat-ens">Ensemble</span></td><td>Kaggle competitions, max accuracy</td><td>O(T*n*d)</td><td>State-of-art for tabular data</td><td>Requires careful tuning, can overfit</td></tr>
+          <tr><td>LightGBM</td><td><span class="category-label cat-ens">Ensemble</span></td><td>Large datasets, fast training</td><td>O(T*n*d)</td><td>Faster than XGBoost, handles categoricals</td><td>Can overfit on small datasets</td></tr>
+          <tr><td>CatBoost</td><td><span class="category-label cat-ens">Ensemble</span></td><td>Categorical features, minimal preprocessing</td><td>O(T*n*d)</td><td>Native categorical support, ordered boosting</td><td>Slower training than LightGBM</td></tr>
+          <tr><td>AdaBoost</td><td><span class="category-label cat-ens">Ensemble</span></td><td>Weak learner boosting</td><td>O(T*n*d)</td><td>Simple, less prone to overfit</td><td>Sensitive to noise and outliers</td></tr>
+          <tr><td>Bagging</td><td><span class="category-label cat-ens">Ensemble</span></td><td>Variance reduction</td><td>O(T*n*d*log n)</td><td>Reduces overfitting, parallelizable</td><td>Does not reduce bias</td></tr>
+          <tr><td>Stacking</td><td><span class="category-label cat-ens">Ensemble</span></td><td>Combining diverse models</td><td>Varies</td><td>Often best overall accuracy</td><td>Complex, risk of data leakage</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h2>Clustering Algorithms</h2>
+    <div class="data-table-wrap">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Algorithm</th>
+            <th>Category</th>
+            <th>Best For</th>
+            <th>Train Complexity</th>
+            <th>Strengths</th>
+            <th>Weaknesses</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td>K-Means</td><td><span class="category-label cat-clust">Clustering</span></td><td>Spherical clusters, known K</td><td>O(n*K*d*I)</td><td>Simple, fast, scalable</td><td>Assumes spherical clusters, requires K</td></tr>
+          <tr><td>DBSCAN</td><td><span class="category-label cat-clust">Clustering</span></td><td>Arbitrary shapes, outlier detection</td><td>O(n*log n)</td><td>No K needed, finds outliers, any shape</td><td>Fails with varying density</td></tr>
+          <tr><td>Hierarchical (Agglomerative)</td><td><span class="category-label cat-clust">Clustering</span></td><td>Exploring cluster structure</td><td>O(n^3)</td><td>Dendrogram, no K needed upfront</td><td>Slow on large n, no re-assignment</td></tr>
+          <tr><td>Gaussian Mixture Model</td><td><span class="category-label cat-clust">Clustering</span></td><td>Overlapping clusters, soft assignments</td><td>O(n*K*d^2*I)</td><td>Probabilistic, flexible shapes</td><td>Assumes Gaussian, sensitive to init</td></tr>
+          <tr><td>Spectral Clustering</td><td><span class="category-label cat-clust">Clustering</span></td><td>Non-convex clusters, graph data</td><td>O(n^3)</td><td>Handles complex shapes</td><td>Expensive, requires K</td></tr>
+          <tr><td>Mean Shift</td><td><span class="category-label cat-clust">Clustering</span></td><td>Mode finding, unknown K</td><td>O(n^2*I)</td><td>No K needed, finds modes</td><td>Slow, bandwidth-sensitive</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h2>Dimensionality Reduction</h2>
+    <div class="data-table-wrap">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Algorithm</th>
+            <th>Category</th>
+            <th>Best For</th>
+            <th>Train Complexity</th>
+            <th>Strengths</th>
+            <th>Weaknesses</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td>PCA</td><td><span class="category-label cat-dim">Dim. Reduction</span></td><td>Linear projection, decorrelation</td><td>O(d^2*n)</td><td>Fast, preserves variance</td><td>Linear only, hard to interpret</td></tr>
+          <tr><td>t-SNE</td><td><span class="category-label cat-dim">Dim. Reduction</span></td><td>2D/3D visualization</td><td>O(n^2)</td><td>Reveals local structure beautifully</td><td>Non-deterministic, no inverse transform</td></tr>
+          <tr><td>UMAP</td><td><span class="category-label cat-dim">Dim. Reduction</span></td><td>Visualization + downstream ML</td><td>O(n^1.14)</td><td>Faster than t-SNE, preserves global structure</td><td>Hyperparameter-sensitive</td></tr>
+          <tr><td>Autoencoders</td><td><span class="category-label cat-dim">Dim. Reduction</span></td><td>Non-linear compression</td><td>O(n*d*h*E)</td><td>Learns non-linear manifolds</td><td>Requires tuning, training data</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h2>Deep Learning</h2>
+    <div class="data-table-wrap">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Algorithm</th>
+            <th>Category</th>
+            <th>Best For</th>
+            <th>Train Complexity</th>
+            <th>Strengths</th>
+            <th>Weaknesses</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td>Feed-Forward Neural Network</td><td><span class="category-label cat-dl">Deep Learning</span></td><td>Tabular data, function approximation</td><td>O(n*d*h*L*E)</td><td>Universal approximator</td><td>Needs large data, hard to interpret</td></tr>
+          <tr><td>CNN (Convolutional)</td><td><span class="category-label cat-dl">Deep Learning</span></td><td>Images, spatial data</td><td>O(n*K^2*C*H*W*E)</td><td>Translation invariance, weight sharing</td><td>Needs large labeled datasets, GPU</td></tr>
+          <tr><td>Transformer</td><td><span class="category-label cat-dl">Deep Learning</span></td><td>NLP, sequence-to-sequence</td><td>O(n*T^2*d*E)</td><td>Long-range dependencies, parallelizable</td><td>Quadratic in sequence length, massive data</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="download-btns">
+      <button onclick="downloadData('json')">Download JSON</button>
+      <button onclick="downloadData('csv')">Download CSV</button>
+    </div>
+
+    <section style="max-width:800px;margin:2rem auto;">
+      <h2>Decision Flowchart</h2>
+      <p><strong>Step 1: Labeled data?</strong> If yes, supervised (classification or regression). If no, unsupervised (clustering or dimensionality reduction).</p>
+      <p><strong>Step 2: Output type?</strong> Categories = classification. Continuous values = regression. Groups = clustering. Compression = dimensionality reduction.</p>
+      <p><strong>Step 3: Dataset size?</strong> Under 1K samples: Logistic Regression, SVM, KNN. 1K-100K: Random Forest, Gradient Boosting. Over 100K with unstructured data: Deep Learning.</p>
+      <p><strong>Step 4: Interpretability?</strong> If required: Logistic Regression, Decision Trees, Linear models. If not: Gradient Boosting, Neural Networks.</p>
+      <p><strong>The tabular data rule:</strong> For structured/tabular data, gradient boosting (XGBoost, LightGBM, CatBoost) almost always beats deep learning. Deep learning wins on images, text, audio, and video — domains where automatic feature learning replaces manual feature engineering.</p>
+    </section>
+
+    <section class="faq-section" style="max-width:780px;margin:40px auto;">
+      <h2>Frequently Asked Questions</h2>
+      <details>
+        <summary>How do I choose the right machine learning algorithm?</summary>
+        <p>Start with four questions: Is the problem supervised or unsupervised? Are you predicting a category or a number? How much labeled data do you have? Is interpretability required? With under 1K samples, try logistic regression, SVM, or KNN. With 1K-100K, try Random Forest or Gradient Boosting. With 100K+ and unstructured data, try deep learning. Always start simple and increase complexity only when needed.</p>
+      </details>
+      <details>
+        <summary>When should I use Random Forest vs Gradient Boosting?</summary>
+        <p>Random Forest is more robust to hyperparameter choices and harder to overfit — it works well out of the box. Gradient Boosting (XGBoost, LightGBM, CatBoost) typically achieves higher accuracy when properly tuned but requires more careful optimization. Use Random Forest for quick baselines, Gradient Boosting when you can invest in hyperparameter search.</p>
+      </details>
+      <details>
+        <summary>What is the difference between classification and regression?</summary>
+        <p>Classification predicts discrete categories (spam/not spam, cat/dog) while regression predicts continuous values (price, temperature). Many algorithms handle both: Decision Trees, Random Forests, SVMs, and neural networks all have classification and regression variants. The choice depends on your target variable type.</p>
+      </details>
+      <details>
+        <summary>When is deep learning better than traditional ML?</summary>
+        <p>Deep learning excels with large datasets (100K+ samples), unstructured data (images, text, audio), and sufficient compute. For tabular data under 100K rows, gradient boosting typically wins. Deep learning's advantage is automatic feature learning — it eliminates manual feature engineering but needs more data and compute to realize that benefit.</p>
+      </details>
+      <details>
+        <summary>What are the most common clustering algorithms and when to use each?</summary>
+        <p>K-Means for spherical clusters when you know K. DBSCAN for arbitrary shapes with automatic outlier detection. Hierarchical clustering for exploring multi-level structure. Gaussian Mixture Models for overlapping clusters with soft assignments. Spectral clustering for non-convex shapes in high-dimensional space.</p>
+      </details>
+    </section>
+  </main>
+
+  <div id="toast" class="toast"></div>
+
+<footer>
+  <div class="footer-inner">
+    <div class="footer-brand">
+      <a href="https://zovo.one/tools">Zovo Tools</a>
+      <span>Free developer tools by a solo dev. No tracking.</span>
+    </div>
+    <div class="footer-links">
+      <a href="https://heytensor.com">HeyTensor</a>
+      <a href="https://kappakit.com">KappaKit</a>
+      <a href="https://epochpilot.com">EpochPilot</a>
+    </div>
+    <div class="footer-pro">
+      <a href="https://zovo.one/pricing?utm_source=ml0x.com&amp;utm_medium=satellite&amp;utm_campaign=footer-link">Zovo Lifetime &mdash; $99 once, free forever &rarr;</a>
+    </div>
+    <div class="footer-copy">
+      &copy; 2026 <a href="https://zovo.one">Zovo</a> &middot; 47/500 founding spots
+    </div>
+  </div>
+  <div class="zovo-network" style="margin-top:1.5rem;padding-top:1.5rem;border-top:1px solid rgba(255,255,255,0.1);">
+    <p style="font-size:0.85rem;color:#8b949e;margin-bottom:0.75rem;font-weight:600;">Explore Free Developer Tools</p>
+    <div style="display:flex;gap:0.5rem 1rem;flex-wrap:wrap;font-size:0.8rem;justify-content:center;">
+      <a href="https://heytensor.com" style="color:#58a6ff;text-decoration:none;">HeyTensor</a>
+      <a href="https://kappakit.com" style="color:#58a6ff;text-decoration:none;">KappaKit</a>
+      <a href="https://epochpilot.com" style="color:#58a6ff;text-decoration:none;">EpochPilot</a>
+      <a href="https://kickllm.com" style="color:#58a6ff;text-decoration:none;">KickLLM</a>
+      <a href="https://lochbot.com" style="color:#58a6ff;text-decoration:none;">LochBot</a>
+      <a href="https://lockml.com" style="color:#58a6ff;text-decoration:none;">LockML</a>
+      <a href="https://claudhq.com" style="color:#58a6ff;text-decoration:none;">ClaudHQ</a>
+      <a href="https://claudflow.com" style="color:#58a6ff;text-decoration:none;">ClaudFlow</a>
+      <a href="https://claudkit.com" style="color:#58a6ff;text-decoration:none;">ClaudKit</a>
+      <a href="https://invokebot.com" style="color:#58a6ff;text-decoration:none;">InvokeBot</a>
+      <a href="https://ml3x.com" style="color:#58a6ff;text-decoration:none;">ML3X</a>
+      <a href="https://gen8x.com" style="color:#58a6ff;text-decoration:none;">Gen8X</a>
+      <a href="https://gpt0x.com" style="color:#58a6ff;text-decoration:none;">GPT0X</a>
+      <a href="https://enhio.com" style="color:#58a6ff;text-decoration:none;">Enhio</a>
+      <a href="https://abwex.com" style="color:#58a6ff;text-decoration:none;">Abwex</a>
+      <a href="https://kappafy.com" style="color:#58a6ff;text-decoration:none;">Kappafy</a>
+      <a href="https://krzen.com" style="color:#58a6ff;text-decoration:none;">Krzen</a>
+    </div>
+  </div>
+</footer>
+
+<script>
+function downloadData(format) {
+  const entries = document.querySelectorAll('.data-table tbody tr');
+  const data = Array.from(entries).map(el => {
+    const cells = el.querySelectorAll('td');
+    if (cells.length < 2) return null;
+    return {name: cells[0]?.textContent?.trim(), category: cells[1]?.textContent?.trim(), detail: cells[2]?.textContent?.trim()?.substring(0,200)};
+  }).filter(d => d && d.name);
+  let content, type, ext;
+  if (format === 'json') { content = JSON.stringify(data, null, 2); type = 'application/json'; ext = 'json'; }
+  else { content = 'name,category,detail\n' + data.map(d => `"${(d.name||'').replace(/"/g,'""')}","${(d.category||'').replace(/"/g,'""')}","${(d.detail||'').replace(/"/g,'""')}"`).join('\n'); type = 'text/csv'; ext = 'csv'; }
+  const blob = new Blob([content], {type});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = document.title.toLowerCase().replace(/[^a-z0-9]+/g,'-') + '.' + ext;
+  a.click();
+}
+</script>
+<script src="assets/js/share.js"></script>
+</body>
+</html>
