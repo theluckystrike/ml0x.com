@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ML Training Complexity — Time and Compute for Every Common Algorithm | ml0x</title>
+  <meta name="description" content="Reference table of 25 ML algorithms with training time complexity (Big-O), prediction complexity, memory requirements, scalability notes, and typical training time for 1M samples.">
+  <link rel="canonical" href="https://ml0x.com/research/ml-training-complexity.html">
+  <link rel="alternate" hreflang="en" href="https://ml0x.com/research/ml-training-complexity.html">
+  <link rel="alternate" hreflang="x-default" href="https://ml0x.com/research/ml-training-complexity.html">
+  <meta property="og:type" content="article">
+  <meta property="og:title" content="ML Training Complexity — Time and Compute for Every Common Algorithm">
+  <meta property="og:description" content="Reference table of 25 ML algorithms with training time complexity, prediction complexity, memory requirements, and scalability notes.">
+  <meta property="og:url" content="https://ml0x.com/research/ml-training-complexity.html">
+  <meta property="og:site_name" content="Zovo Tools">
+  <meta property="og:image" content="https://ml0x.com/assets/og-image.png">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="ML Training Complexity — Time and Compute for Every Common Algorithm">
+  <meta name="twitter:description" content="Reference table of 25 ML algorithms with training time complexity, prediction complexity, memory requirements, and scalability notes.">
+  <meta name="twitter:image" content="https://ml0x.com/assets/og-image.png">
+  <link rel="stylesheet" href="assets/style.css">
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Dataset",
+    "name": "ML Training Complexity — Time and Compute for Every Common Algorithm",
+    "description": "A dataset of 25 machine learning algorithms with training time complexity (Big-O notation), prediction time complexity, memory complexity, scalability ratings, and estimated wall-clock training time for 1 million samples with 100 features. Covers linear models, tree-based methods, SVMs, clustering, dimensionality reduction, and deep learning architectures.",
+    "url": "https://ml0x.com/research/ml-training-complexity.html",
+    "license": "https://creativecommons.org/licenses/by/4.0/",
+    "creator": {"@type": "Person", "name": "Michael Lip", "url": "https://zovo.one"},
+    "datePublished": "2026-04-11",
+    "dateModified": "2026-04-11",
+    "keywords": ["machine learning", "training complexity", "Big-O", "compute cost", "algorithm scalability", "training time"],
+    "distribution": {
+      "@type": "DataDownload",
+      "encodingFormat": "application/json",
+      "contentUrl": "https://ml0x.com/research/ml-training-complexity.html"
+    }
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "What ML algorithm has the fastest training time?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Naive Bayes has the fastest training time at O(n*d) with a single pass over the data — it simply counts occurrences and computes conditional probabilities. For 1 million samples with 100 features, Naive Bayes trains in under 1 second. Linear Regression with the closed-form solution (Normal Equation) is O(n*d^2 + d^3), which is also very fast when d << n. SGD-based linear models (Logistic Regression, Linear SVM) are O(n*d*I) where I is the number of iterations, typically training in 2-5 seconds on 1M samples."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Why does SVM training scale poorly with dataset size?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "The standard SVM formulation using SMO (Sequential Minimal Optimization) has O(n^2*d) to O(n^3) training complexity because it must compute and store the kernel matrix, which is n x n. For 1 million samples, this kernel matrix alone would require 8 TB of memory in float64. LinearSVC avoids this by solving the primal problem with SGD in O(n*d), making it practical for large datasets, but it only supports linear kernels."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "How does XGBoost compare to Random Forest in training complexity?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Both have similar theoretical complexity: Random Forest is O(T*n*d*log(n)) and XGBoost is O(T*n*d*log(n)) where T is the number of trees. However, XGBoost is sequential (each tree depends on the previous), while Random Forest trees are independent and embarrassingly parallel. In practice, XGBoost with histogram-based splitting (like LightGBM) reduces to O(T*n*b) where b is the number of bins (typically 256), making it faster on large datasets. For 1M samples, Random Forest takes ~30s and XGBoost ~20s with default hyperparameters."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What is the memory complexity of common ML algorithms?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Linear models store only the weight vector: O(d) memory. Tree-based models store the tree structures: O(T*2^depth) per tree. KNN stores the entire training set: O(n*d). SVM stores support vectors: O(n_sv*d) where n_sv can approach n for noisy data. Neural networks store weights: O(sum of layer_i * layer_{i+1}). The most memory-intensive algorithm is kernel SVM which needs the full n x n kernel matrix: O(n^2). For 1M samples, that is 8 TB — completely impractical."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "How does the number of features affect training time?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "The effect depends on the algorithm. Linear models scale linearly with features: O(n*d). Tree-based models also scale linearly since each split considers d features: O(T*n*d*log(n)). SVM with RBF kernel is independent of d in the kernel computation (it is O(n^2) regardless). PCA scales with O(d^2*n) — quadratic in features. Neural networks scale with the layer widths, not input dimensionality directly. For very high-dimensional sparse data (d > 100K, like text), use models that handle sparsity efficiently: Naive Bayes, Linear SVM, or Logistic Regression with SGD."
+        }
+      }
+    ]
+  }
+  </script>
+  <style>
+    .research-badge { display:inline-block; background:var(--accent-dim,rgba(139,233,253,0.1)); color:var(--accent,#8be9fd); padding:4px 12px; border-radius:var(--radius,8px); font-size:0.75rem; font-weight:600; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:1rem; }
+    .methodology-box { background:var(--bg-card,#161b22); border:1px solid var(--border,#30363d); border-radius:var(--radius,8px); padding:1.25rem; margin:1.5rem 0; }
+    .methodology-box h3 { font-size:0.8rem; text-transform:uppercase; color:var(--accent,#8be9fd); margin-bottom:0.75rem; }
+    .data-table-wrap { overflow-x:auto; margin:1.5rem 0; border:1px solid var(--border,#30363d); border-radius:var(--radius,8px); }
+    .data-table { width:100%; border-collapse:collapse; font-size:0.85rem; }
+    .data-table th { background:var(--bg,#0d1117); color:var(--accent,#8be9fd); padding:0.6rem 0.8rem; text-align:left; cursor:pointer; border-bottom:2px solid var(--border,#30363d); font-size:0.75rem; text-transform:uppercase; }
+    .data-table td { padding:0.5rem 0.8rem; border-bottom:1px solid var(--border,#30363d); color:var(--text,#c9d1d9); }
+    .data-table tr:hover td { background:rgba(139,233,253,0.03); }
+    .download-btns { display:flex; gap:0.5rem; margin:1rem 0; }
+    .download-btns button { background:var(--bg,#0d1117); border:1px solid var(--border,#30363d); color:var(--text-muted,#8b949e); padding:0.4rem 1rem; border-radius:var(--radius,8px); cursor:pointer; font-size:0.8rem; }
+    .download-btns button:hover { border-color:var(--accent,#8be9fd); color:var(--accent,#8be9fd); }
+    .scale-great { color:#3fb950; }
+    .scale-good { color:#58a6ff; }
+    .scale-fair { color:#d29922; }
+    .scale-poor { color:#f85149; }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="container">
+      <a href="/" class="logo">ml0x</a>
+      <nav>
+        <a href="/">Tool</a>
+        <a href="/blog/">Blog</a>
+        <a href="/about.html">About</a>
+          <div class="nav-right">
+      <a href="https://zovo.one/pricing?utm_source=ml0x.com&amp;utm_medium=satellite&amp;utm_campaign=nav-link" class="nav-pro" target="_blank">Go Pro &#10022;</a>
+      <a href="https://zovo.one/tools" class="nav-zovo">Zovo Tools</a>
+    </div>
+  </nav>
+    </div>
+  </header>
+
+  <main class="container">
+    <section class="hero">
+      <nav class="breadcrumb" aria-label="Breadcrumb"><a href="/">Home</a> <span>/</span> <a href="/research/">Research</a> <span>/</span> <span>ML Training Complexity</span></nav>
+      <span class="research-badge">Original Research</span>
+      <h1>ML Training Complexity — Time and Compute for Every Common Algorithm</h1>
+      <p>A complete reference of 25 machine learning algorithms with training complexity (Big-O), prediction complexity, memory requirements, scalability ratings, and estimated training time for 1 million samples.</p>
+      <p style="font-size:0.85rem;color:var(--text-muted);">By <a href="/about.html">Michael Lip</a> · Updated April 2026</p>
+    </section>
+
+    <div class="methodology-box">
+      <h3>Methodology</h3>
+      <p style="font-size:0.85rem;color:var(--text-muted);margin:0;">Training complexities are sourced from scikit-learn documentation, original algorithm papers, and standard ML textbooks (Bishop, Murphy, Hastie). Estimated wall-clock times assume 1M samples with 100 float64 features on a modern machine (8-core CPU, 32 GB RAM, single NVIDIA A100 for GPU workloads). Scalability ratings: Excellent (&gt;10M samples practical), Good (1-10M), Fair (100K-1M), Poor (&lt;100K only). Variables: n = samples, d = features, T = trees, I = iterations, K = clusters/classes, E = epochs.</p>
+    </div>
+
+    <div class="data-table-wrap">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Algorithm</th>
+            <th>Train Complexity</th>
+            <th>Predict Complexity</th>
+            <th>Memory</th>
+            <th>Scalability</th>
+            <th>~Time (1M samples)</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td>1</td><td>Linear Regression (OLS)</td><td>O(n*d^2 + d^3)</td><td>O(d)</td><td>O(d^2)</td><td class="scale-great">Excellent</td><td>~1 sec</td></tr>
+          <tr><td>2</td><td>Linear Regression (SGD)</td><td>O(n*d*I)</td><td>O(d)</td><td>O(d)</td><td class="scale-great">Excellent</td><td>~2 sec</td></tr>
+          <tr><td>3</td><td>Logistic Regression</td><td>O(n*d*I)</td><td>O(d)</td><td>O(d)</td><td class="scale-great">Excellent</td><td>~3 sec</td></tr>
+          <tr><td>4</td><td>Naive Bayes</td><td>O(n*d)</td><td>O(d*K)</td><td>O(d*K)</td><td class="scale-great">Excellent</td><td>&lt;1 sec</td></tr>
+          <tr><td>5</td><td>KNN</td><td>O(1) / O(n*d*log n) tree</td><td>O(n*d) / O(d*log n)</td><td>O(n*d)</td><td class="scale-poor">Poor</td><td>0 sec (lazy)</td></tr>
+          <tr><td>6</td><td>SVM (Linear, SGD)</td><td>O(n*d*I)</td><td>O(d)</td><td>O(d)</td><td class="scale-great">Excellent</td><td>~5 sec</td></tr>
+          <tr><td>7</td><td>SVM (RBF Kernel)</td><td>O(n^2*d) to O(n^3)</td><td>O(n_sv*d)</td><td>O(n^2)</td><td class="scale-poor">Poor</td><td>Impractical</td></tr>
+          <tr><td>8</td><td>Decision Tree</td><td>O(n*d*log n)</td><td>O(log n)</td><td>O(2^depth)</td><td class="scale-good">Good</td><td>~10 sec</td></tr>
+          <tr><td>9</td><td>Random Forest</td><td>O(T*n*d*log n)</td><td>O(T*log n)</td><td>O(T*2^depth)</td><td class="scale-good">Good</td><td>~30 sec</td></tr>
+          <tr><td>10</td><td>Gradient Boosting</td><td>O(T*n*d*log n)</td><td>O(T*log n)</td><td>O(T*2^depth)</td><td class="scale-good">Good</td><td>~60 sec</td></tr>
+          <tr><td>11</td><td>XGBoost (histogram)</td><td>O(T*n*b)</td><td>O(T*depth)</td><td>O(T*2^depth)</td><td class="scale-great">Excellent</td><td>~20 sec</td></tr>
+          <tr><td>12</td><td>LightGBM</td><td>O(T*n*b)</td><td>O(T*depth)</td><td>O(T*leaves)</td><td class="scale-great">Excellent</td><td>~10 sec</td></tr>
+          <tr><td>13</td><td>CatBoost</td><td>O(T*n*b)</td><td>O(T*depth)</td><td>O(T*leaves)</td><td class="scale-great">Excellent</td><td>~25 sec</td></tr>
+          <tr><td>14</td><td>AdaBoost</td><td>O(T*n*d)</td><td>O(T)</td><td>O(T)</td><td class="scale-good">Good</td><td>~45 sec</td></tr>
+          <tr><td>15</td><td>K-Means</td><td>O(n*K*d*I)</td><td>O(K*d)</td><td>O(K*d)</td><td class="scale-great">Excellent</td><td>~5 sec (K=10)</td></tr>
+          <tr><td>16</td><td>DBSCAN</td><td>O(n*log n) / O(n^2)</td><td>N/A (transductive)</td><td>O(n^2) distance</td><td class="scale-fair">Fair</td><td>~60 sec</td></tr>
+          <tr><td>17</td><td>Gaussian Mixture Model</td><td>O(n*K*d^2*I)</td><td>O(K*d^2)</td><td>O(K*d^2)</td><td class="scale-good">Good</td><td>~20 sec (K=10)</td></tr>
+          <tr><td>18</td><td>PCA</td><td>O(d^2*n + d^3)</td><td>O(d*k)</td><td>O(d^2)</td><td class="scale-good">Good</td><td>~15 sec</td></tr>
+          <tr><td>19</td><td>t-SNE</td><td>O(n^2) / O(n*log n) BH</td><td>N/A (no transform)</td><td>O(n^2) / O(n)</td><td class="scale-poor">Poor</td><td>~30 min (BH)</td></tr>
+          <tr><td>20</td><td>UMAP</td><td>O(n^1.14)</td><td>O(log n)</td><td>O(n)</td><td class="scale-fair">Fair</td><td>~5 min</td></tr>
+          <tr><td>21</td><td>Feed-Forward NN (MLP)</td><td>O(n*d*h*L*E)</td><td>O(d*h*L)</td><td>O(d*h + h^2*L)</td><td class="scale-great">Excellent (GPU)</td><td>~5 min (GPU)</td></tr>
+          <tr><td>22</td><td>CNN</td><td>O(n*K^2*C*H*W*L*E)</td><td>O(K^2*C*H*W*L)</td><td>O(params)</td><td class="scale-great">Excellent (GPU)</td><td>~30 min (GPU)</td></tr>
+          <tr><td>23</td><td>Transformer (small)</td><td>O(n*T^2*d*L*E)</td><td>O(T^2*d*L)</td><td>O(T^2 + params)</td><td class="scale-good">Good (GPU)</td><td>~2 hrs (GPU)</td></tr>
+          <tr><td>24</td><td>Transformer (LLM, 7B)</td><td>O(n*T^2*d*L*E)</td><td>O(T*d*L)</td><td>O(params) ~14 GB</td><td class="scale-fair">Fair (multi-GPU)</td><td>~weeks (cluster)</td></tr>
+          <tr><td>25</td><td>Graph Neural Network</td><td>O(|E|*d*L*E)</td><td>O(|E|*d*L)</td><td>O(|V|*d + |E|)</td><td class="scale-fair">Fair (GPU)</td><td>~1 hr (GPU)</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="download-btns">
+      <button onclick="downloadData('json')">Download JSON</button>
+      <button onclick="downloadData('csv')">Download CSV</button>
+    </div>
+
+    <section style="max-width:800px;margin:2rem auto;">
+      <h2>Key Findings</h2>
+      <p><strong>Linear models are absurdly fast.</strong> Logistic Regression, Linear SVM, and Naive Bayes all train on 1M samples in under 5 seconds. Their O(n*d) or O(n*d*I) complexity means they scale linearly with data size. They should always be your first baseline.</p>
+      <p><strong>Kernel SVM is impractical beyond 100K samples.</strong> The O(n^2) to O(n^3) training complexity and O(n^2) memory make kernel SVM unusable for large datasets. At 1M samples, the kernel matrix alone requires 8 TB. Use LinearSVC with SGD for large-scale classification.</p>
+      <p><strong>LightGBM is the fastest tree-based method.</strong> With histogram-based splitting (b=256 bins instead of n thresholds) and leaf-wise growth, LightGBM trains on 1M samples in ~10 seconds — 3x faster than XGBoost and 6x faster than scikit-learn's GradientBoosting.</p>
+      <p><strong>Deep learning compute scales with hardware, not algorithms.</strong> A small MLP trains on 1M samples in 5 minutes on a GPU. A 7B-parameter Transformer requires weeks on a GPU cluster. The algorithm complexity is similar (O(n*params*E)), but the constant factor (params) ranges from 10K to 7B — a 700,000x difference.</p>
+    </section>
+
+    <section class="faq-section" style="max-width:780px;margin:40px auto;">
+      <h2>Frequently Asked Questions</h2>
+      <details>
+        <summary>What ML algorithm has the fastest training time?</summary>
+        <p>Naive Bayes at O(n*d) with a single data pass — under 1 second for 1M samples. Linear Regression (Normal Equation) at O(n*d^2+d^3) is also very fast when d is small. SGD-based linear models train in 2-5 seconds on 1M samples.</p>
+      </details>
+      <details>
+        <summary>Why does SVM training scale poorly with dataset size?</summary>
+        <p>Standard SVM (SMO) has O(n^2*d) to O(n^3) complexity because it computes the n x n kernel matrix. For 1M samples in float64, this requires 8 TB of memory. LinearSVC avoids this by solving the primal with SGD in O(n*d), but only supports linear kernels.</p>
+      </details>
+      <details>
+        <summary>How does XGBoost compare to Random Forest in training complexity?</summary>
+        <p>Both are O(T*n*d*log(n)), but XGBoost is sequential (each tree depends on previous) while Random Forest is embarrassingly parallel. With histogram splitting, XGBoost reduces to O(T*n*b) where b=256 bins. For 1M samples: Random Forest ~30s, XGBoost ~20s with defaults.</p>
+      </details>
+      <details>
+        <summary>What is the memory complexity of common ML algorithms?</summary>
+        <p>Linear models: O(d). Trees: O(T*2^depth). KNN: O(n*d) — stores entire dataset. SVM: O(n_sv*d) support vectors. Neural networks: O(params). Kernel SVM: O(n^2) — 8 TB at 1M samples, completely impractical.</p>
+      </details>
+      <details>
+        <summary>How does the number of features affect training time?</summary>
+        <p>Linear models scale linearly: O(n*d). Trees also linear: O(T*n*d*log n). SVM with RBF is O(n^2) regardless of d. PCA is quadratic: O(d^2*n). For very high-dimensional sparse data (d > 100K), use Naive Bayes, Linear SVM, or Logistic Regression with SGD.</p>
+      </details>
+    </section>
+  </main>
+
+  <div id="toast" class="toast"></div>
+
+<footer>
+  <div class="footer-inner">
+    <div class="footer-brand">
+      <a href="https://zovo.one/tools">Zovo Tools</a>
+      <span>Free developer tools by a solo dev. No tracking.</span>
+    </div>
+    <div class="footer-links">
+      <a href="https://heytensor.com">HeyTensor</a>
+      <a href="https://kappakit.com">KappaKit</a>
+      <a href="https://epochpilot.com">EpochPilot</a>
+    </div>
+    <div class="footer-pro">
+      <a href="https://zovo.one/pricing?utm_source=ml0x.com&amp;utm_medium=satellite&amp;utm_campaign=footer-link">Zovo Lifetime &mdash; $99 once, free forever &rarr;</a>
+    </div>
+    <div class="footer-copy">
+      &copy; 2026 <a href="https://zovo.one">Zovo</a> &middot; 47/500 founding spots
+    </div>
+  </div>
+  <div class="zovo-network" style="margin-top:1.5rem;padding-top:1.5rem;border-top:1px solid rgba(255,255,255,0.1);">
+    <p style="font-size:0.85rem;color:#8b949e;margin-bottom:0.75rem;font-weight:600;">Explore Free Developer Tools</p>
+    <div style="display:flex;gap:0.5rem 1rem;flex-wrap:wrap;font-size:0.8rem;justify-content:center;">
+      <a href="https://heytensor.com" style="color:#58a6ff;text-decoration:none;">HeyTensor</a>
+      <a href="https://kappakit.com" style="color:#58a6ff;text-decoration:none;">KappaKit</a>
+      <a href="https://epochpilot.com" style="color:#58a6ff;text-decoration:none;">EpochPilot</a>
+      <a href="https://kickllm.com" style="color:#58a6ff;text-decoration:none;">KickLLM</a>
+      <a href="https://lochbot.com" style="color:#58a6ff;text-decoration:none;">LochBot</a>
+      <a href="https://lockml.com" style="color:#58a6ff;text-decoration:none;">LockML</a>
+      <a href="https://claudhq.com" style="color:#58a6ff;text-decoration:none;">ClaudHQ</a>
+      <a href="https://claudflow.com" style="color:#58a6ff;text-decoration:none;">ClaudFlow</a>
+      <a href="https://claudkit.com" style="color:#58a6ff;text-decoration:none;">ClaudKit</a>
+      <a href="https://invokebot.com" style="color:#58a6ff;text-decoration:none;">InvokeBot</a>
+      <a href="https://ml3x.com" style="color:#58a6ff;text-decoration:none;">ML3X</a>
+      <a href="https://gen8x.com" style="color:#58a6ff;text-decoration:none;">Gen8X</a>
+      <a href="https://gpt0x.com" style="color:#58a6ff;text-decoration:none;">GPT0X</a>
+      <a href="https://enhio.com" style="color:#58a6ff;text-decoration:none;">Enhio</a>
+      <a href="https://abwex.com" style="color:#58a6ff;text-decoration:none;">Abwex</a>
+      <a href="https://kappafy.com" style="color:#58a6ff;text-decoration:none;">Kappafy</a>
+      <a href="https://krzen.com" style="color:#58a6ff;text-decoration:none;">Krzen</a>
+    </div>
+  </div>
+</footer>
+
+<script>
+function downloadData(format) {
+  const entries = document.querySelectorAll('.data-table tbody tr');
+  const data = Array.from(entries).map(el => {
+    const cells = el.querySelectorAll('td');
+    if (cells.length < 2) return null;
+    return {algorithm: cells[1]?.textContent?.trim(), train_complexity: cells[2]?.textContent?.trim(), predict_complexity: cells[3]?.textContent?.trim(), memory: cells[4]?.textContent?.trim(), scalability: cells[5]?.textContent?.trim(), time_1m: cells[6]?.textContent?.trim()};
+  }).filter(d => d && d.algorithm);
+  let content, type, ext;
+  if (format === 'json') { content = JSON.stringify(data, null, 2); type = 'application/json'; ext = 'json'; }
+  else { content = 'algorithm,train_complexity,predict_complexity,memory,scalability,time_1m\n' + data.map(d => `"${(d.algorithm||'').replace(/"/g,'""')}","${(d.train_complexity||'').replace(/"/g,'""')}","${(d.predict_complexity||'').replace(/"/g,'""')}","${(d.memory||'').replace(/"/g,'""')}","${(d.scalability||'').replace(/"/g,'""')}","${(d.time_1m||'').replace(/"/g,'""')}"`).join('\n'); type = 'text/csv'; ext = 'csv'; }
+  const blob = new Blob([content], {type});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'ml-training-complexity.' + ext;
+  a.click();
+}
+</script>
+<script src="assets/js/share.js"></script>
+</body>
+</html>
