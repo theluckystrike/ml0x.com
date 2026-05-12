@@ -1,60 +1,55 @@
-# ML0X
+# ml0x
 
-> Free machine learning cheat sheet generator — printable reference cards for CNN, RNN, Transformers, SVM, and more.
+> Your engineering multiplier. One developer. 100-person output.
 
-**[Use ML0X live](https://ml0x.com/)**
+**[ml0x.com](https://ml0x.com/)** — Open-source agentic engineering pipeline built on Karpathy's context engineering, Claude Code, NASA-grade quality gates, and cost-optimized model routing.
 
-ML0X is a free ML cheat sheet generator that produces formatted reference cards for 10 core machine learning algorithms. Each cheat sheet includes key mathematical formulas, hyperparameter guides, pros/cons comparisons, and working Python code snippets for scikit-learn, PyTorch, and TensorFlow. Print-friendly layouts and Markdown export make ML0X ideal for students, interview prep, and desk references.
+## What This Is
 
-## Features
+A copy-paste ready framework that turns a solo developer into a 100-person team using autonomous AI agents. Every script production-tested. Every claim sourced from 150+ references.
 
-- Cheat sheets for 10 core ML algorithms: CNN, RNN, Transformers, SVM, Decision Trees, Random Forest, Gradient Boosting, K-Means, Logistic Regression, PCA
-- Key mathematical formulas rendered in readable format
-- Hyperparameter guides with recommended value ranges
-- Pros and cons comparison for every algorithm
-- Working Python code snippets for scikit-learn, PyTorch, and TensorFlow
-- Print-optimized layout for clean paper output
-- Copy-as-Markdown for notes, wikis, and documentation
-- Interview-prep friendly one-page format
-- 100% client-side — no data leaves your browser
-- MIT licensed
-- No signup, no tracking
+## Key Multipliers
 
-## Tech Stack
+| Multiplier | Impact | Source |
+|---|---|---|
+| Harness engineering | 6-10x on same model | Hashline: 6.7% → 68.3% |
+| Model routing | 48-85% cost savings | RouteLLM (ICLR 2025) |
+| Prompt caching | 90% input savings | Anthropic cache pricing |
+| Loop budgets | $0 runaway costs | Prevents $47K incidents |
+| Quality gates | 7-stage fail-fast | NASA Power of 10 |
+| Multi-agent | Parallel execution | Separate write/review |
+| Memory system | Compounding knowledge | Karpathy's LLM Wiki |
 
-- Pure HTML, CSS, and vanilla JavaScript
-- No build step
-- No external dependencies (except Google Fonts on some pages)
-- Hosted on GitHub Pages with Cloudflare CDN
+## Quick Start
 
-## Part of Zovo Tools
+```bash
+git clone https://github.com/theluckystrike/100xagenticdev.git
+cd 100xagenticdev
+cp CLAUDE.md ~/your-project/
+bash config/mcp-setup.sh
+bash scripts/pipeline.sh "Your task here"
+```
 
-ML0X is part of [Zovo Tools](https://zovo.one/tools) — free developer tools by a solo developer. No tracking, no signup, no nonsense.
+## Pipeline Architecture
 
-**Other tools in the network:**
+```
+ORCHESTRATOR    Shell scripts · Cron · GitHub Actions
+─────────────────────────────────────────────────────
+AGENT LAYER     PLAN (Opus) · CODE (Sonnet) · REVIEW (Opus) · TEST (Haiku)
+─────────────────────────────────────────────────────
+MCP SERVERS     Memory · GitHub · Search · Browser · Context7
+─────────────────────────────────────────────────────
+QUALITY GATES   Prettier → ESLint → tsc → Vitest → Semgrep → Gitleaks
+─────────────────────────────────────────────────────
+COST CONTROL    Model routing · Prompt caching · Token budgets
+─────────────────────────────────────────────────────
+MEMORY          Conversations → Daily Logs → Wiki → Next Session
+```
 
-- [HeyTensor](https://heytensor.com) — PyTorch tensor shape calculator
-- [EpochPilot](https://epochpilot.com) — Timestamp, timezone, and cron tools
-- [KappaKit](https://kappakit.com) — Developer toolkit (Base64, JWT, hash, regex)
-- [LochBot](https://lochbot.com) — Prompt injection vulnerability checker
-- [ABWex](https://abwex.com) — A/B test significance calculator
-- [KickLLM](https://kickllm.com) — LLM cost calculator
-- [Gen8X](https://gen8x.com) — Color palette generator with WCAG checks
-- [GPT0X](https://gpt0x.com) — AI model database
-- [ML3X](https://ml3x.com) — Matrix calculator
-- [Enhio](https://enhio.com) — Text enhancement utilities
-- [Krzen](https://krzen.com) — Image compression
-- [Kappafy](https://kappafy.com) — JSON formatter and explorer
-- [LockML](https://lockml.com) — Open source ML model comparison
-- [InvokeBot](https://invokebot.com) — Webhook testing
-- [ClaudHQ](https://claudhq.com) — Claude prompt library
-- [ClaudKit](https://claudkit.com) — Claude API utilities
-- [ClaudFlow](https://claudflow.com) — AI workflow builder
+## Source Repository
+
+All pipeline code, configs, scripts, and research: **[theluckystrike/100xagenticdev](https://github.com/theluckystrike/100xagenticdev)**
 
 ## License
 
-MIT licensed.
-
-## Contact
-
-Built and maintained by [Michael Lip](https://zovo.one). For questions or feedback: support@zovo.one
+MIT
