@@ -1,0 +1,1580 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Machine Learning Cheatsheet 2026 — Algorithms, Metrics & Code | ML0X</title>
+<meta name="description" content="The definitive machine learning cheatsheet. Covers supervised &amp; unsupervised algorithms, evaluation metrics, sklearn code snippets, hyperparameter guides, data preprocessing, and common pitfalls. Updated for 2026.">
+<meta name="keywords" content="machine learning cheatsheet, ml cheat sheet, machine learning quick reference, ml algorithms cheatsheet, sklearn cheatsheet, python machine learning, data science reference">
+<link rel="canonical" href="https://ml0x.com/research/ml-cheatsheet.html">
+
+<meta property="og:title" content="Machine Learning Cheatsheet 2026 — Algorithms, Metrics & Code">
+<meta property="og:description" content="The definitive ML cheatsheet: algorithms, metrics, sklearn code, hyperparameters, preprocessing, and pitfalls. One page, everything you need.">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://ml0x.com/research/ml-cheatsheet.html">
+<meta property="og:site_name" content="Zovo Tools">
+<meta property="og:locale" content="en_US">
+
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Machine Learning Cheatsheet 2026 — Algorithms, Metrics & Code">
+<meta name="twitter:description" content="The definitive ML cheatsheet: algorithms, metrics, sklearn code, hyperparameters, preprocessing, and pitfalls.">
+
+<meta name="author" content="Michael Lip">
+<meta name="robots" content="index, follow">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/assets/style.css">
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Article",
+  "headline": "Machine Learning Cheatsheet 2026 — Algorithms, Metrics & Code",
+  "description": "The definitive machine learning cheatsheet covering supervised and unsupervised algorithms, evaluation metrics, sklearn code snippets, hyperparameter tuning, data preprocessing, and common pitfalls.",
+  "author": {
+    "@type": "Person",
+    "name": "Michael Lip",
+    "url": "https://zovo.one"
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": "Zovo Tools",
+    "url": "https://zovo.one/tools"
+  },
+  "datePublished": "2026-05-16",
+  "dateModified": "2026-05-16",
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "https://ml0x.com/research/ml-cheatsheet.html"
+  },
+  "url": "https://ml0x.com/research/ml-cheatsheet.html"
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "Which machine learning algorithm should I use?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "It depends on your data type and goal. For tabular data classification, start with Gradient Boosting (XGBoost/LightGBM). For regression, try Linear Regression first then Random Forest. For clustering, use K-Means for spherical clusters or DBSCAN for arbitrary shapes. For images, use Convolutional Neural Networks. For text, use transformer-based models or TF-IDF with Logistic Regression."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "What is the difference between precision and recall?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Precision measures how many of your positive predictions were correct (TP / (TP + FP)). Recall measures how many actual positives you found (TP / (TP + FN)). Use precision when false positives are costly (spam detection). Use recall when false negatives are costly (disease screening). F1 score is the harmonic mean of both."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "How do I prevent overfitting in machine learning?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Use cross-validation to detect overfitting early. Apply regularization (L1/L2). Reduce model complexity (fewer features, shallower trees). Increase training data or use data augmentation. Use dropout for neural networks. Apply early stopping during training. Ensure your validation set is representative of production data."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "What is data leakage in machine learning?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Data leakage occurs when information from outside the training dataset is used to create the model. Common causes include: using test data during preprocessing (fit_transform on the whole dataset instead of fit on train only), including features derived from the target variable, and using future data to predict past events. Always split data before any preprocessing steps."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "When should I use Random Forest vs Gradient Boosting?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Random Forest trains trees independently in parallel, making it faster and more robust to hyperparameter choices. Gradient Boosting trains trees sequentially, correcting previous errors, and usually achieves higher accuracy but is slower and more prone to overfitting. Start with Random Forest for baselines and switch to Gradient Boosting (XGBoost, LightGBM) when you need maximum performance."
+      }
+    }
+  ]
+}
+</script>
+
+<style>
+:root {
+  --bg: #0a0e17;
+  --bg-card: #111827;
+  --bg-card-hover: #1a2332;
+  --border: #1e293b;
+  --border-accent: #3b82f6;
+  --text: #e2e8f0;
+  --text-muted: #94a3b8;
+  --text-dim: #64748b;
+  --accent: #3b82f6;
+  --accent-light: #60a5fa;
+  --green: #22c55e;
+  --green-dim: #16a34a;
+  --yellow: #eab308;
+  --orange: #f97316;
+  --red: #ef4444;
+  --purple: #a855f7;
+  --cyan: #06b6d4;
+  --font-sans: 'IBM Plex Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-mono: 'Space Mono', 'Fira Code', monospace;
+  --max-width: 920px;
+  --radius: 8px;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  font-family: var(--font-sans);
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.7;
+  font-size: 16px;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Nav */
+.nav {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 24px;
+  height: 56px;
+  background: rgba(10,14,23,0.92);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--border);
+}
+.nav-logo {
+  font-family: var(--font-mono);
+  font-weight: 700;
+  font-size: 1.15rem;
+  color: var(--accent-light);
+  text-decoration: none;
+}
+.nav-links {
+  display: flex;
+  list-style: none;
+  gap: 24px;
+}
+.nav-links a {
+  color: var(--text-muted);
+  text-decoration: none;
+  font-size: 0.9rem;
+  font-weight: 500;
+  transition: color 0.2s;
+}
+.nav-links a:hover { color: var(--text); }
+.nav-right { display: flex; align-items: center; }
+.nav-zovo {
+  font-size: 0.8rem;
+  color: var(--text-dim);
+  text-decoration: none;
+  border: 1px solid var(--border);
+  padding: 4px 12px;
+  border-radius: 4px;
+  transition: border-color 0.2s, color 0.2s;
+}
+.nav-zovo:hover { border-color: var(--text-muted); color: var(--text-muted); }
+
+/* Layout */
+.container {
+  max-width: var(--max-width);
+  margin: 0 auto;
+  padding: 0 24px;
+}
+.hero {
+  padding: 64px 0 40px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 48px;
+}
+.hero h1 {
+  font-size: 2.2rem;
+  font-weight: 700;
+  line-height: 1.25;
+  margin-bottom: 16px;
+  letter-spacing: -0.02em;
+}
+.hero h1 span { color: var(--accent-light); }
+.hero-sub {
+  font-size: 1.1rem;
+  color: var(--text-muted);
+  max-width: 640px;
+  line-height: 1.6;
+}
+.hero-meta {
+  margin-top: 16px;
+  font-size: 0.85rem;
+  color: var(--text-dim);
+}
+.hero-meta a { color: var(--accent); text-decoration: none; }
+.hero-meta a:hover { text-decoration: underline; }
+
+/* TOC */
+.toc {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 24px 28px;
+  margin-bottom: 48px;
+}
+.toc h2 {
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-dim);
+  margin-bottom: 12px;
+}
+.toc ol {
+  list-style: decimal;
+  padding-left: 20px;
+}
+.toc li {
+  margin-bottom: 6px;
+}
+.toc a {
+  color: var(--accent-light);
+  text-decoration: none;
+  font-size: 0.95rem;
+}
+.toc a:hover { text-decoration: underline; }
+
+/* Section headers */
+h2.section-title {
+  font-size: 1.6rem;
+  font-weight: 700;
+  margin: 56px 0 8px;
+  padding-top: 24px;
+  border-top: 1px solid var(--border);
+  letter-spacing: -0.01em;
+}
+h3.sub-title {
+  font-size: 1.2rem;
+  font-weight: 600;
+  margin: 32px 0 12px;
+  color: var(--accent-light);
+}
+h4.algo-name {
+  font-size: 1.05rem;
+  font-weight: 600;
+  margin: 24px 0 8px;
+  color: var(--text);
+}
+
+/* Prose */
+p { margin-bottom: 16px; color: var(--text); }
+p.muted { color: var(--text-muted); }
+ul, ol { margin-bottom: 16px; padding-left: 24px; }
+li { margin-bottom: 6px; color: var(--text-muted); }
+li strong { color: var(--text); }
+strong { font-weight: 600; }
+a { color: var(--accent-light); }
+
+/* Code */
+code {
+  font-family: var(--font-mono);
+  font-size: 0.85em;
+  background: rgba(59,130,246,0.1);
+  color: var(--accent-light);
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+pre {
+  background: #0d1117;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px 20px;
+  overflow-x: auto;
+  margin-bottom: 20px;
+  font-size: 0.85rem;
+  line-height: 1.6;
+}
+pre code {
+  background: none;
+  padding: 0;
+  color: #c9d1d9;
+}
+.kw { color: #ff7b72; }
+.fn { color: #d2a8ff; }
+.str { color: #a5d6ff; }
+.cm { color: #8b949e; font-style: italic; }
+.num { color: #79c0ff; }
+
+/* Algorithm Cards */
+.algo-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 24px;
+  margin-bottom: 20px;
+  transition: border-color 0.2s;
+}
+.algo-card:hover { border-color: var(--border-accent); }
+.algo-card h4 {
+  margin: 0 0 4px;
+  font-size: 1.1rem;
+  color: var(--text);
+}
+.algo-card .algo-type {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-dim);
+  margin-bottom: 12px;
+}
+.algo-card .when-to-use {
+  font-size: 0.9rem;
+  color: var(--text-muted);
+  margin-bottom: 12px;
+}
+.algo-card .complexity {
+  font-size: 0.8rem;
+  font-family: var(--font-mono);
+  color: var(--cyan);
+  margin-bottom: 12px;
+}
+.algo-card .params {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 14px;
+}
+.param-tag {
+  font-size: 0.75rem;
+  font-family: var(--font-mono);
+  background: rgba(168,85,247,0.12);
+  color: var(--purple);
+  padding: 3px 8px;
+  border-radius: 4px;
+}
+
+/* Selector Tool */
+.selector-box {
+  background: var(--bg-card);
+  border: 2px solid var(--accent);
+  border-radius: 12px;
+  padding: 28px;
+  margin-bottom: 48px;
+}
+.selector-box h2 {
+  font-size: 1.25rem;
+  margin-bottom: 4px;
+}
+.selector-box p.muted {
+  font-size: 0.9rem;
+  margin-bottom: 20px;
+}
+.selector-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+.sel-group label {
+  display: block;
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-dim);
+  margin-bottom: 6px;
+}
+.sel-group select {
+  width: 100%;
+  padding: 10px 14px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--text);
+  font-family: var(--font-sans);
+  font-size: 0.95rem;
+  cursor: pointer;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%2364748b' stroke-width='1.5' fill='none'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+}
+.sel-group select:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+#selector-results {
+  min-height: 60px;
+}
+.result-item {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 16px;
+  margin-bottom: 10px;
+}
+.result-item h4 {
+  margin: 0 0 4px;
+  font-size: 1rem;
+}
+.result-item .result-reason {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  margin: 0;
+}
+.result-item .result-badge {
+  display: inline-block;
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 2px 8px;
+  border-radius: 4px;
+  margin-bottom: 6px;
+}
+.badge-best { background: rgba(34,197,94,0.15); color: var(--green); }
+.badge-alt { background: rgba(249,115,22,0.15); color: var(--orange); }
+.badge-also { background: rgba(59,130,246,0.12); color: var(--accent-light); }
+
+/* Metric table */
+.metric-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 24px;
+  font-size: 0.9rem;
+}
+.metric-table th {
+  text-align: left;
+  padding: 10px 14px;
+  background: var(--bg-card);
+  border-bottom: 2px solid var(--border);
+  font-weight: 600;
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--text-dim);
+}
+.metric-table td {
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--border);
+  color: var(--text-muted);
+  vertical-align: top;
+}
+.metric-table td:first-child {
+  font-family: var(--font-mono);
+  font-weight: 600;
+  color: var(--text);
+  white-space: nowrap;
+}
+.metric-table tr:hover td { background: rgba(59,130,246,0.04); }
+
+/* Pitfall boxes */
+.pitfall {
+  background: var(--bg-card);
+  border-left: 3px solid var(--red);
+  border-radius: 0 var(--radius) var(--radius) 0;
+  padding: 20px 24px;
+  margin-bottom: 16px;
+}
+.pitfall h4 {
+  color: var(--red);
+  margin: 0 0 8px;
+  font-size: 0.95rem;
+}
+.pitfall p { margin: 0; font-size: 0.9rem; color: var(--text-muted); }
+
+/* Tip box */
+.tip {
+  background: rgba(34,197,94,0.06);
+  border-left: 3px solid var(--green);
+  border-radius: 0 var(--radius) var(--radius) 0;
+  padding: 16px 20px;
+  margin-bottom: 16px;
+}
+.tip p { margin: 0; font-size: 0.9rem; color: var(--text-muted); }
+.tip strong { color: var(--green); }
+
+/* Footer */
+.footer {
+  margin-top: 64px;
+  padding: 32px 0;
+  border-top: 1px solid var(--border);
+  text-align: center;
+  font-size: 0.8rem;
+  color: var(--text-dim);
+}
+.footer a { color: var(--text-muted); text-decoration: none; }
+.footer a:hover { color: var(--text); }
+
+/* Responsive */
+@media (max-width: 640px) {
+  .hero h1 { font-size: 1.6rem; }
+  .selector-grid { grid-template-columns: 1fr; }
+  .metric-table { font-size: 0.8rem; }
+  .metric-table th, .metric-table td { padding: 8px 10px; }
+  .nav { padding: 0 16px; }
+  .container { padding: 0 16px; }
+}
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <a href="/" class="nav-logo">ml0x</a>
+  <ul class="nav-links">
+    <li><a href="/">Tool</a></li>
+    <li><a href="/research/">Research</a></li>
+  </ul>
+  <div class="nav-right">
+    <a href="https://zovo.one/tools" class="nav-zovo">Zovo Tools</a>
+  </div>
+</nav>
+
+<div class="container">
+
+<!-- Hero -->
+<header class="hero">
+  <h1>Machine Learning Cheatsheet <span>2026</span></h1>
+  <p class="hero-sub">The complete quick reference for ML algorithms, evaluation metrics, sklearn code snippets, hyperparameters, data preprocessing, and common pitfalls. One page. Everything you need.</p>
+  <p class="hero-meta">By <a href="https://zovo.one">Michael Lip</a> &middot; Updated May 16, 2026 &middot; ~20 min read</p>
+</header>
+
+<!-- TOC -->
+<div class="toc">
+  <h2>Table of Contents</h2>
+  <ol>
+    <li><a href="#algorithm-selector">Algorithm Selector Tool</a></li>
+    <li><a href="#supervised-learning">Supervised Learning</a></li>
+    <li><a href="#unsupervised-learning">Unsupervised Learning</a></li>
+    <li><a href="#evaluation-metrics">Evaluation Metrics</a></li>
+    <li><a href="#data-preprocessing">Data Preprocessing</a></li>
+    <li><a href="#model-selection">Model Selection &amp; Tuning</a></li>
+    <li><a href="#common-pitfalls">Common Pitfalls</a></li>
+    <li><a href="#faq">FAQ</a></li>
+  </ol>
+</div>
+
+<!-- ======================== ALGORITHM SELECTOR ======================== -->
+<section id="algorithm-selector">
+<div class="selector-box">
+  <h2>Algorithm Selector Tool</h2>
+  <p class="muted">Pick your data type and goal. Get algorithm recommendations with reasoning.</p>
+  <div class="selector-grid">
+    <div class="sel-group">
+      <label for="data-type">Data Type</label>
+      <select id="data-type">
+        <option value="">Select data type...</option>
+        <option value="tabular">Tabular (structured / CSV)</option>
+        <option value="text">Text (NLP)</option>
+        <option value="image">Image (computer vision)</option>
+        <option value="timeseries">Time Series</option>
+      </select>
+    </div>
+    <div class="sel-group">
+      <label for="goal">Goal</label>
+      <select id="goal">
+        <option value="">Select goal...</option>
+        <option value="classify">Classification</option>
+        <option value="regress">Regression</option>
+        <option value="cluster">Clustering</option>
+        <option value="reduce">Dimensionality Reduction</option>
+      </select>
+    </div>
+  </div>
+  <div id="selector-results">
+    <p class="muted" style="font-size:0.85rem;">Select both options above to get personalized algorithm recommendations.</p>
+  </div>
+</div>
+</section>
+
+<!-- ======================== SUPERVISED LEARNING ======================== -->
+<section id="supervised-learning">
+<h2 class="section-title">1. Supervised Learning</h2>
+<p>Supervised learning algorithms learn a mapping from input features X to an output y using labeled training data. The two main tasks are <strong>classification</strong> (predicting a discrete label) and <strong>regression</strong> (predicting a continuous value).</p>
+
+<h3 class="sub-title">1.1 Linear Regression</h3>
+<div class="algo-card">
+  <h4>Linear Regression</h4>
+  <div class="algo-type">Regression &middot; Parametric &middot; Linear</div>
+  <p class="when-to-use"><strong>When to use:</strong> Continuous target variable with approximately linear relationship to features. Good baseline for any regression task. Works best when features are not highly correlated (multicollinearity).</p>
+  <div class="complexity">Train: O(n&middot;d&sup2;) &middot; Predict: O(d) &middot; Space: O(d)</div>
+  <div class="params">
+    <span class="param-tag">fit_intercept=True</span>
+    <span class="param-tag">normalize=False</span>
+  </div>
+<pre><code><span class="kw">from</span> sklearn.linear_model <span class="kw">import</span> <span class="fn">LinearRegression</span>
+
+model = <span class="fn">LinearRegression</span>()
+model.<span class="fn">fit</span>(X_train, y_train)
+predictions = model.<span class="fn">predict</span>(X_test)
+
+<span class="cm"># Coefficients reveal feature importance</span>
+<span class="kw">print</span>(model.coef_)       <span class="cm"># feature weights</span>
+<span class="kw">print</span>(model.intercept_)  <span class="cm"># bias term</span></code></pre>
+  <p class="muted" style="font-size:0.85rem;margin:0;"><strong>Regularized variants:</strong> Use <code>Ridge</code> (L2) when features are correlated, <code>Lasso</code> (L1) when you want feature selection, <code>ElasticNet</code> for both.</p>
+</div>
+
+<h3 class="sub-title">1.2 Logistic Regression</h3>
+<div class="algo-card">
+  <h4>Logistic Regression</h4>
+  <div class="algo-type">Classification &middot; Parametric &middot; Linear</div>
+  <p class="when-to-use"><strong>When to use:</strong> Binary or multiclass classification. Strong baseline for any classification task. Excellent when you need probability estimates and interpretable coefficients. Works well with high-dimensional sparse data (text classification).</p>
+  <div class="complexity">Train: O(n&middot;d&middot;k) &middot; Predict: O(d&middot;k) &middot; Space: O(d&middot;k)</div>
+  <div class="params">
+    <span class="param-tag">C=1.0</span>
+    <span class="param-tag">penalty='l2'</span>
+    <span class="param-tag">solver='lbfgs'</span>
+    <span class="param-tag">max_iter=100</span>
+    <span class="param-tag">multi_class='auto'</span>
+  </div>
+<pre><code><span class="kw">from</span> sklearn.linear_model <span class="kw">import</span> <span class="fn">LogisticRegression</span>
+
+model = <span class="fn">LogisticRegression</span>(C=<span class="num">1.0</span>, max_iter=<span class="num">1000</span>)
+model.<span class="fn">fit</span>(X_train, y_train)
+
+y_pred = model.<span class="fn">predict</span>(X_test)
+y_prob = model.<span class="fn">predict_proba</span>(X_test)  <span class="cm"># probability estimates</span>
+
+<span class="cm"># C controls regularization strength (smaller = stronger)</span></code></pre>
+</div>
+
+<h3 class="sub-title">1.3 Decision Trees</h3>
+<div class="algo-card">
+  <h4>Decision Tree</h4>
+  <div class="algo-type">Classification &amp; Regression &middot; Non-parametric &middot; Tree-based</div>
+  <p class="when-to-use"><strong>When to use:</strong> When interpretability is critical. Handles mixed feature types and missing values natively. No feature scaling needed. Use as a building block for understanding your data before trying ensembles.</p>
+  <div class="complexity">Train: O(n&middot;d&middot;log n) &middot; Predict: O(log n) &middot; Space: O(nodes)</div>
+  <div class="params">
+    <span class="param-tag">max_depth=None</span>
+    <span class="param-tag">min_samples_split=2</span>
+    <span class="param-tag">min_samples_leaf=1</span>
+    <span class="param-tag">criterion='gini'</span>
+    <span class="param-tag">max_features=None</span>
+  </div>
+<pre><code><span class="kw">from</span> sklearn.tree <span class="kw">import</span> <span class="fn">DecisionTreeClassifier</span>, <span class="fn">export_text</span>
+
+model = <span class="fn">DecisionTreeClassifier</span>(max_depth=<span class="num">5</span>, min_samples_leaf=<span class="num">10</span>)
+model.<span class="fn">fit</span>(X_train, y_train)
+
+<span class="cm"># Print the tree rules</span>
+<span class="kw">print</span>(<span class="fn">export_text</span>(model, feature_names=feature_names))</code></pre>
+  <p class="muted" style="font-size:0.85rem;margin:0;"><strong>Key limitation:</strong> Prone to overfitting without depth constraints. Always set <code>max_depth</code> or <code>min_samples_leaf</code>.</p>
+</div>
+
+<h3 class="sub-title">1.4 Random Forest</h3>
+<div class="algo-card">
+  <h4>Random Forest</h4>
+  <div class="algo-type">Classification &amp; Regression &middot; Ensemble &middot; Bagging</div>
+  <p class="when-to-use"><strong>When to use:</strong> Excellent general-purpose algorithm for tabular data. Robust to overfitting, handles nonlinear relationships, provides feature importance scores. Great when you need a strong model without much tuning. Parallelizable.</p>
+  <div class="complexity">Train: O(T&middot;n&middot;d&middot;log n) &middot; Predict: O(T&middot;log n) &middot; Space: O(T&middot;nodes)</div>
+  <div class="params">
+    <span class="param-tag">n_estimators=100</span>
+    <span class="param-tag">max_depth=None</span>
+    <span class="param-tag">max_features='sqrt'</span>
+    <span class="param-tag">min_samples_leaf=1</span>
+    <span class="param-tag">n_jobs=-1</span>
+    <span class="param-tag">oob_score=False</span>
+  </div>
+<pre><code><span class="kw">from</span> sklearn.ensemble <span class="kw">import</span> <span class="fn">RandomForestClassifier</span>
+<span class="kw">import</span> numpy <span class="kw">as</span> np
+
+model = <span class="fn">RandomForestClassifier</span>(
+    n_estimators=<span class="num">200</span>,
+    max_depth=<span class="num">15</span>,
+    min_samples_leaf=<span class="num">5</span>,
+    max_features=<span class="str">'sqrt'</span>,
+    n_jobs=-<span class="num">1</span>,
+    random_state=<span class="num">42</span>
+)
+model.<span class="fn">fit</span>(X_train, y_train)
+
+<span class="cm"># Feature importance</span>
+importances = model.feature_importances_
+sorted_idx = np.<span class="fn">argsort</span>(importances)[::-<span class="num">1</span>]
+<span class="kw">for</span> i <span class="kw">in</span> sorted_idx[:<span class="num">10</span>]:
+    <span class="kw">print</span>(<span class="str">f"{feature_names[i]}: {importances[i]:.4f}"</span>)</code></pre>
+</div>
+
+<h3 class="sub-title">1.5 Support Vector Machines (SVM)</h3>
+<div class="algo-card">
+  <h4>SVM</h4>
+  <div class="algo-type">Classification &amp; Regression &middot; Kernel-based</div>
+  <p class="when-to-use"><strong>When to use:</strong> Small to medium datasets with clear margin of separation. Effective in high-dimensional spaces (text classification). Kernel trick enables non-linear decision boundaries. Less effective on noisy data with overlapping classes or datasets with more than 100K samples (slow training).</p>
+  <div class="complexity">Train: O(n&sup2;&middot;d) to O(n&sup3;) &middot; Predict: O(sv&middot;d) &middot; Space: O(sv&middot;d)</div>
+  <div class="params">
+    <span class="param-tag">C=1.0</span>
+    <span class="param-tag">kernel='rbf'</span>
+    <span class="param-tag">gamma='scale'</span>
+    <span class="param-tag">class_weight=None</span>
+  </div>
+<pre><code><span class="kw">from</span> sklearn.svm <span class="kw">import</span> <span class="fn">SVC</span>
+<span class="kw">from</span> sklearn.preprocessing <span class="kw">import</span> <span class="fn">StandardScaler</span>
+
+<span class="cm"># SVM requires feature scaling!</span>
+scaler = <span class="fn">StandardScaler</span>()
+X_train_scaled = scaler.<span class="fn">fit_transform</span>(X_train)
+X_test_scaled = scaler.<span class="fn">transform</span>(X_test)
+
+model = <span class="fn">SVC</span>(C=<span class="num">1.0</span>, kernel=<span class="str">'rbf'</span>, probability=<span class="num">True</span>)
+model.<span class="fn">fit</span>(X_train_scaled, y_train)
+y_prob = model.<span class="fn">predict_proba</span>(X_test_scaled)</code></pre>
+</div>
+
+<h3 class="sub-title">1.6 K-Nearest Neighbors (KNN)</h3>
+<div class="algo-card">
+  <h4>K-Nearest Neighbors</h4>
+  <div class="algo-type">Classification &amp; Regression &middot; Instance-based &middot; Lazy Learner</div>
+  <p class="when-to-use"><strong>When to use:</strong> Small datasets, simple decision boundaries, or as a baseline. Non-parametric with no training phase. Struggles with high-dimensional data (curse of dimensionality) and large datasets (slow predictions). Requires feature scaling.</p>
+  <div class="complexity">Train: O(1) &middot; Predict: O(n&middot;d) &middot; Space: O(n&middot;d)</div>
+  <div class="params">
+    <span class="param-tag">n_neighbors=5</span>
+    <span class="param-tag">weights='uniform'</span>
+    <span class="param-tag">metric='minkowski'</span>
+    <span class="param-tag">p=2</span>
+  </div>
+<pre><code><span class="kw">from</span> sklearn.neighbors <span class="kw">import</span> <span class="fn">KNeighborsClassifier</span>
+
+model = <span class="fn">KNeighborsClassifier</span>(n_neighbors=<span class="num">5</span>, weights=<span class="str">'distance'</span>)
+model.<span class="fn">fit</span>(X_train_scaled, y_train)  <span class="cm"># must scale features first</span>
+
+<span class="cm"># Finding optimal k: try odd values to avoid ties</span>
+<span class="cm"># Typical range: 3 to sqrt(n)</span></code></pre>
+</div>
+
+<h3 class="sub-title">1.7 Gradient Boosting</h3>
+<div class="algo-card">
+  <h4>Gradient Boosting (XGBoost / LightGBM / CatBoost)</h4>
+  <div class="algo-type">Classification &amp; Regression &middot; Ensemble &middot; Boosting</div>
+  <p class="when-to-use"><strong>When to use:</strong> The go-to algorithm for tabular data competitions and production systems. Sequentially builds trees that correct previous errors. Consistently wins Kaggle competitions. XGBoost, LightGBM, and CatBoost are the three major implementations. LightGBM is fastest, CatBoost handles categoricals best, XGBoost is most widely deployed.</p>
+  <div class="complexity">Train: O(T&middot;n&middot;d&middot;log n) &middot; Predict: O(T&middot;depth) &middot; Space: O(T&middot;leaves)</div>
+  <div class="params">
+    <span class="param-tag">n_estimators=100</span>
+    <span class="param-tag">learning_rate=0.1</span>
+    <span class="param-tag">max_depth=6</span>
+    <span class="param-tag">subsample=0.8</span>
+    <span class="param-tag">colsample_bytree=0.8</span>
+    <span class="param-tag">reg_alpha=0</span>
+    <span class="param-tag">reg_lambda=1</span>
+  </div>
+<pre><code><span class="cm"># Option A: sklearn API</span>
+<span class="kw">from</span> sklearn.ensemble <span class="kw">import</span> <span class="fn">GradientBoostingClassifier</span>
+
+model = <span class="fn">GradientBoostingClassifier</span>(
+    n_estimators=<span class="num">200</span>, learning_rate=<span class="num">0.1</span>, max_depth=<span class="num">5</span>
+)
+
+<span class="cm"># Option B: XGBoost (recommended)</span>
+<span class="kw">import</span> xgboost <span class="kw">as</span> xgb
+
+model = xgb.<span class="fn">XGBClassifier</span>(
+    n_estimators=<span class="num">500</span>,
+    learning_rate=<span class="num">0.05</span>,
+    max_depth=<span class="num">6</span>,
+    subsample=<span class="num">0.8</span>,
+    colsample_bytree=<span class="num">0.8</span>,
+    eval_metric=<span class="str">'logloss'</span>,
+    early_stopping_rounds=<span class="num">50</span>,
+    n_jobs=-<span class="num">1</span>
+)
+model.<span class="fn">fit</span>(X_train, y_train, eval_set=[(X_val, y_val)])
+
+<span class="cm"># Option C: LightGBM (fastest)</span>
+<span class="kw">import</span> lightgbm <span class="kw">as</span> lgb
+
+model = lgb.<span class="fn">LGBMClassifier</span>(
+    n_estimators=<span class="num">1000</span>,
+    learning_rate=<span class="num">0.03</span>,
+    num_leaves=<span class="num">31</span>,
+    subsample=<span class="num">0.8</span>
+)</code></pre>
+  <div class="tip"><p><strong>Tip:</strong> Always use early stopping with boosting. Set <code>n_estimators</code> high and let early stopping find the optimal number. Reduce <code>learning_rate</code> and increase <code>n_estimators</code> for better performance.</p></div>
+</div>
+
+<h3 class="sub-title">1.8 Neural Networks</h3>
+<div class="algo-card">
+  <h4>Neural Networks (MLP / Deep Learning)</h4>
+  <div class="algo-type">Classification &amp; Regression &middot; Non-linear &middot; Deep Learning</div>
+  <p class="when-to-use"><strong>When to use:</strong> Large datasets (100K+ samples), image recognition, natural language processing, speech, and any task where feature engineering is difficult. Requires significant data and compute. For tabular data, gradient boosting usually wins unless you have millions of rows. Use sklearn's MLPClassifier for quick experiments; switch to PyTorch/TensorFlow for production deep learning.</p>
+  <div class="complexity">Train: O(epochs&middot;n&middot;layers&middot;neurons&sup2;) &middot; Predict: O(layers&middot;neurons&sup2;)</div>
+  <div class="params">
+    <span class="param-tag">hidden_layer_sizes=(100,)</span>
+    <span class="param-tag">activation='relu'</span>
+    <span class="param-tag">solver='adam'</span>
+    <span class="param-tag">learning_rate_init=0.001</span>
+    <span class="param-tag">batch_size='auto'</span>
+    <span class="param-tag">max_iter=200</span>
+    <span class="param-tag">early_stopping=True</span>
+  </div>
+<pre><code><span class="kw">from</span> sklearn.neural_network <span class="kw">import</span> <span class="fn">MLPClassifier</span>
+
+model = <span class="fn">MLPClassifier</span>(
+    hidden_layer_sizes=(<span class="num">128</span>, <span class="num">64</span>, <span class="num">32</span>),
+    activation=<span class="str">'relu'</span>,
+    solver=<span class="str">'adam'</span>,
+    learning_rate_init=<span class="num">0.001</span>,
+    early_stopping=<span class="num">True</span>,
+    validation_fraction=<span class="num">0.1</span>,
+    max_iter=<span class="num">500</span>,
+    random_state=<span class="num">42</span>
+)
+model.<span class="fn">fit</span>(X_train_scaled, y_train)  <span class="cm"># must scale features first</span>
+
+<span class="cm"># For deep learning: use PyTorch or TensorFlow</span>
+<span class="cm"># import torch.nn as nn</span>
+<span class="cm"># model = nn.Sequential(nn.Linear(d, 128), nn.ReLU(), ...)</span></code></pre>
+</div>
+</section>
+
+<!-- ======================== UNSUPERVISED LEARNING ======================== -->
+<section id="unsupervised-learning">
+<h2 class="section-title">2. Unsupervised Learning</h2>
+<p>Unsupervised learning finds patterns in data without labeled targets. The two primary tasks are <strong>clustering</strong> (grouping similar data points) and <strong>dimensionality reduction</strong> (compressing features while preserving structure).</p>
+
+<h3 class="sub-title">2.1 K-Means Clustering</h3>
+<div class="algo-card">
+  <h4>K-Means</h4>
+  <div class="algo-type">Clustering &middot; Centroid-based &middot; Partitional</div>
+  <p class="when-to-use"><strong>When to use:</strong> Clusters are roughly spherical and similarly sized. You know (or can estimate) the number of clusters. Fast and scalable to large datasets. Sensitive to initialization (use k-means++) and outliers.</p>
+  <div class="complexity">Train: O(n&middot;k&middot;d&middot;iterations) &middot; Predict: O(k&middot;d)</div>
+  <div class="params">
+    <span class="param-tag">n_clusters=8</span>
+    <span class="param-tag">init='k-means++'</span>
+    <span class="param-tag">n_init=10</span>
+    <span class="param-tag">max_iter=300</span>
+  </div>
+<pre><code><span class="kw">from</span> sklearn.cluster <span class="kw">import</span> <span class="fn">KMeans</span>
+<span class="kw">from</span> sklearn.metrics <span class="kw">import</span> <span class="fn">silhouette_score</span>
+
+<span class="cm"># Find optimal k using elbow method or silhouette score</span>
+scores = []
+<span class="kw">for</span> k <span class="kw">in</span> <span class="fn">range</span>(<span class="num">2</span>, <span class="num">11</span>):
+    km = <span class="fn">KMeans</span>(n_clusters=k, random_state=<span class="num">42</span>, n_init=<span class="num">10</span>)
+    labels = km.<span class="fn">fit_predict</span>(X_scaled)
+    scores.<span class="fn">append</span>(<span class="fn">silhouette_score</span>(X_scaled, labels))
+
+<span class="cm"># Best k = max silhouette score</span>
+best_k = scores.<span class="fn">index</span>(<span class="fn">max</span>(scores)) + <span class="num">2</span>
+model = <span class="fn">KMeans</span>(n_clusters=best_k, random_state=<span class="num">42</span>)
+clusters = model.<span class="fn">fit_predict</span>(X_scaled)</code></pre>
+</div>
+
+<h3 class="sub-title">2.2 DBSCAN</h3>
+<div class="algo-card">
+  <h4>DBSCAN</h4>
+  <div class="algo-type">Clustering &middot; Density-based</div>
+  <p class="when-to-use"><strong>When to use:</strong> Clusters have arbitrary shapes, unknown number of clusters, or data contains outliers/noise. Does not require specifying k in advance. Automatically detects noise points. Struggles with varying density clusters (use HDBSCAN instead).</p>
+  <div class="complexity">Train: O(n&middot;log n) with spatial indexing &middot; Space: O(n)</div>
+  <div class="params">
+    <span class="param-tag">eps=0.5</span>
+    <span class="param-tag">min_samples=5</span>
+    <span class="param-tag">metric='euclidean'</span>
+  </div>
+<pre><code><span class="kw">from</span> sklearn.cluster <span class="kw">import</span> <span class="fn">DBSCAN</span>
+<span class="kw">from</span> sklearn.neighbors <span class="kw">import</span> <span class="fn">NearestNeighbors</span>
+<span class="kw">import</span> numpy <span class="kw">as</span> np
+
+<span class="cm"># Find optimal eps using k-distance graph</span>
+nn = <span class="fn">NearestNeighbors</span>(n_neighbors=<span class="num">5</span>)
+nn.<span class="fn">fit</span>(X_scaled)
+distances, _ = nn.<span class="fn">kneighbors</span>(X_scaled)
+k_distances = np.<span class="fn">sort</span>(distances[:, -<span class="num">1</span>])  <span class="cm"># find the "elbow"</span>
+
+model = <span class="fn">DBSCAN</span>(eps=<span class="num">0.5</span>, min_samples=<span class="num">5</span>)
+labels = model.<span class="fn">fit_predict</span>(X_scaled)
+
+n_clusters = <span class="fn">len</span>(<span class="fn">set</span>(labels) - {-<span class="num">1</span>})
+n_noise = (labels == -<span class="num">1</span>).<span class="fn">sum</span>()
+<span class="kw">print</span>(<span class="str">f"Clusters: {n_clusters}, Noise points: {n_noise}"</span>)</code></pre>
+</div>
+
+<h3 class="sub-title">2.3 PCA (Principal Component Analysis)</h3>
+<div class="algo-card">
+  <h4>PCA</h4>
+  <div class="algo-type">Dimensionality Reduction &middot; Linear &middot; Variance-preserving</div>
+  <p class="when-to-use"><strong>When to use:</strong> Reduce feature count while preserving maximum variance. Preprocessing step before other algorithms. Visualization (project to 2D/3D). Dealing with multicollinearity. Fast and deterministic. Does not work well when the important structure is non-linear.</p>
+  <div class="complexity">Train: O(min(n&middot;d&sup2;, n&sup2;&middot;d)) &middot; Transform: O(n&middot;d&middot;k)</div>
+  <div class="params">
+    <span class="param-tag">n_components=None</span>
+    <span class="param-tag">svd_solver='auto'</span>
+    <span class="param-tag">whiten=False</span>
+  </div>
+<pre><code><span class="kw">from</span> sklearn.decomposition <span class="kw">import</span> <span class="fn">PCA</span>
+<span class="kw">import</span> numpy <span class="kw">as</span> np
+
+<span class="cm"># Keep 95% of variance</span>
+pca = <span class="fn">PCA</span>(n_components=<span class="num">0.95</span>)
+X_reduced = pca.<span class="fn">fit_transform</span>(X_scaled)
+<span class="kw">print</span>(<span class="str">f"Reduced from {X_scaled.shape[1]} to {X_reduced.shape[1]} features"</span>)
+
+<span class="cm"># Explained variance per component</span>
+<span class="kw">print</span>(np.<span class="fn">cumsum</span>(pca.explained_variance_ratio_))
+
+<span class="cm"># For visualization only</span>
+pca_2d = <span class="fn">PCA</span>(n_components=<span class="num">2</span>)
+X_2d = pca_2d.<span class="fn">fit_transform</span>(X_scaled)</code></pre>
+</div>
+
+<h3 class="sub-title">2.4 t-SNE</h3>
+<div class="algo-card">
+  <h4>t-SNE</h4>
+  <div class="algo-type">Dimensionality Reduction &middot; Non-linear &middot; Visualization</div>
+  <p class="when-to-use"><strong>When to use:</strong> Visualizing high-dimensional data in 2D/3D. Preserves local neighborhood structure. Excellent for exploring cluster structure visually. Do <em>not</em> use for preprocessing before ML models (non-deterministic, no inverse transform, does not preserve global distances). Slow on large datasets.</p>
+  <div class="complexity">Train: O(n&sup2;) or O(n&middot;log n) with Barnes-Hut &middot; No transform method</div>
+  <div class="params">
+    <span class="param-tag">n_components=2</span>
+    <span class="param-tag">perplexity=30</span>
+    <span class="param-tag">learning_rate='auto'</span>
+    <span class="param-tag">n_iter=1000</span>
+  </div>
+<pre><code><span class="kw">from</span> sklearn.manifold <span class="kw">import</span> <span class="fn">TSNE</span>
+
+<span class="cm"># Apply PCA first for speed if d > 50</span>
+pca = <span class="fn">PCA</span>(n_components=<span class="num">50</span>)
+X_pca = pca.<span class="fn">fit_transform</span>(X_scaled)
+
+tsne = <span class="fn">TSNE</span>(n_components=<span class="num">2</span>, perplexity=<span class="num">30</span>, random_state=<span class="num">42</span>)
+X_2d = tsne.<span class="fn">fit_transform</span>(X_pca)
+
+<span class="cm"># perplexity: try values between 5-50</span>
+<span class="cm"># Higher = more global structure, lower = more local detail</span></code></pre>
+</div>
+
+<h3 class="sub-title">2.5 UMAP</h3>
+<div class="algo-card">
+  <h4>UMAP</h4>
+  <div class="algo-type">Dimensionality Reduction &middot; Non-linear &middot; Manifold Learning</div>
+  <p class="when-to-use"><strong>When to use:</strong> Modern alternative to t-SNE that is faster, preserves more global structure, and supports transforming new data points. Works for both visualization and as a preprocessing step. Better at preserving the relative distances between clusters. Requires the <code>umap-learn</code> package.</p>
+  <div class="complexity">Train: O(n^1.14) empirically &middot; Transform: O(n) for new points</div>
+  <div class="params">
+    <span class="param-tag">n_components=2</span>
+    <span class="param-tag">n_neighbors=15</span>
+    <span class="param-tag">min_dist=0.1</span>
+    <span class="param-tag">metric='euclidean'</span>
+  </div>
+<pre><code><span class="kw">import</span> umap
+
+reducer = umap.<span class="fn">UMAP</span>(
+    n_components=<span class="num">2</span>,
+    n_neighbors=<span class="num">15</span>,
+    min_dist=<span class="num">0.1</span>,
+    metric=<span class="str">'euclidean'</span>,
+    random_state=<span class="num">42</span>
+)
+X_2d = reducer.<span class="fn">fit_transform</span>(X_scaled)
+
+<span class="cm"># Unlike t-SNE, UMAP can transform new data</span>
+X_new_2d = reducer.<span class="fn">transform</span>(X_new_scaled)
+
+<span class="cm"># n_neighbors: controls local vs global (higher = more global)</span>
+<span class="cm"># min_dist: how tightly points cluster (lower = tighter)</span></code></pre>
+</div>
+</section>
+
+<!-- ======================== EVALUATION METRICS ======================== -->
+<section id="evaluation-metrics">
+<h2 class="section-title">3. Evaluation Metrics</h2>
+<p>Choosing the right metric is as important as choosing the right algorithm. A model optimized for accuracy might be useless for imbalanced classes. This section covers all the metrics you need, organized by task type, with when-to-use guidance and sklearn code.</p>
+
+<h3 class="sub-title">3.1 Classification Metrics</h3>
+
+<table class="metric-table">
+  <thead>
+    <tr><th>Metric</th><th>Formula</th><th>When to Use</th><th>Range</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Accuracy</td>
+      <td>(TP + TN) / Total</td>
+      <td>Balanced classes only. Misleading when one class dominates.</td>
+      <td>0 to 1</td>
+    </tr>
+    <tr>
+      <td>Precision</td>
+      <td>TP / (TP + FP)</td>
+      <td>When false positives are costly (spam detection, fraud alerts).</td>
+      <td>0 to 1</td>
+    </tr>
+    <tr>
+      <td>Recall</td>
+      <td>TP / (TP + FN)</td>
+      <td>When false negatives are costly (disease screening, safety).</td>
+      <td>0 to 1</td>
+    </tr>
+    <tr>
+      <td>F1 Score</td>
+      <td>2 &middot; (P &middot; R) / (P + R)</td>
+      <td>Balance precision and recall. Use when classes are imbalanced.</td>
+      <td>0 to 1</td>
+    </tr>
+    <tr>
+      <td>AUC-ROC</td>
+      <td>Area under ROC curve</td>
+      <td>Overall discrimination ability. Threshold-independent. Robust to class imbalance.</td>
+      <td>0.5 to 1</td>
+    </tr>
+    <tr>
+      <td>Log Loss</td>
+      <td>-mean(y&middot;log(p))</td>
+      <td>When you care about calibrated probabilities, not just labels.</td>
+      <td>0 to inf</td>
+    </tr>
+    <tr>
+      <td>Cohen's Kappa</td>
+      <td>(Accuracy - Expected) / (1 - Expected)</td>
+      <td>Accounts for chance agreement. Good for imbalanced multiclass.</td>
+      <td>-1 to 1</td>
+    </tr>
+  </tbody>
+</table>
+
+<pre><code><span class="kw">from</span> sklearn.metrics <span class="kw">import</span> (
+    <span class="fn">accuracy_score</span>, <span class="fn">precision_score</span>, <span class="fn">recall_score</span>,
+    <span class="fn">f1_score</span>, <span class="fn">roc_auc_score</span>, <span class="fn">classification_report</span>,
+    <span class="fn">confusion_matrix</span>, <span class="fn">log_loss</span>
+)
+
+<span class="cm"># Full classification report (precision, recall, f1 per class)</span>
+<span class="kw">print</span>(<span class="fn">classification_report</span>(y_test, y_pred))
+
+<span class="cm"># Individual metrics</span>
+<span class="kw">print</span>(<span class="str">f"Accuracy:  {accuracy_score(y_test, y_pred):.4f}"</span>)
+<span class="kw">print</span>(<span class="str">f"Precision: {precision_score(y_test, y_pred, average='weighted'):.4f}"</span>)
+<span class="kw">print</span>(<span class="str">f"Recall:    {recall_score(y_test, y_pred, average='weighted'):.4f}"</span>)
+<span class="kw">print</span>(<span class="str">f"F1:        {f1_score(y_test, y_pred, average='weighted'):.4f}"</span>)
+<span class="kw">print</span>(<span class="str">f"AUC-ROC:   {roc_auc_score(y_test, y_prob[:, 1]):.4f}"</span>)
+
+<span class="cm"># Confusion matrix</span>
+cm = <span class="fn">confusion_matrix</span>(y_test, y_pred)
+<span class="cm"># Rows = actual, Columns = predicted</span>
+<span class="cm"># [[TN, FP], [FN, TP]]</span></code></pre>
+
+<h3 class="sub-title">3.2 Regression Metrics</h3>
+
+<table class="metric-table">
+  <thead>
+    <tr><th>Metric</th><th>Formula</th><th>When to Use</th><th>Best Value</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>MSE</td>
+      <td>mean((y - y&#770;)&sup2;)</td>
+      <td>Default regression metric. Penalizes large errors heavily.</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <td>RMSE</td>
+      <td>sqrt(MSE)</td>
+      <td>Same as MSE but in original units. More interpretable.</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <td>MAE</td>
+      <td>mean(|y - y&#770;|)</td>
+      <td>Robust to outliers. When all errors matter equally.</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <td>R&sup2; Score</td>
+      <td>1 - SS_res / SS_tot</td>
+      <td>How much variance your model explains. Baseline: 0 (mean predictor).</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <td>MAPE</td>
+      <td>mean(|y - y&#770;| / |y|)</td>
+      <td>Percentage error. Scale-independent. Undefined when y=0.</td>
+      <td>0%</td>
+    </tr>
+  </tbody>
+</table>
+
+<pre><code><span class="kw">from</span> sklearn.metrics <span class="kw">import</span> (
+    <span class="fn">mean_squared_error</span>, <span class="fn">mean_absolute_error</span>,
+    <span class="fn">r2_score</span>, <span class="fn">mean_absolute_percentage_error</span>
+)
+<span class="kw">import</span> numpy <span class="kw">as</span> np
+
+<span class="kw">print</span>(<span class="str">f"MSE:  {mean_squared_error(y_test, y_pred):.4f}"</span>)
+<span class="kw">print</span>(<span class="str">f"RMSE: {np.sqrt(mean_squared_error(y_test, y_pred)):.4f}"</span>)
+<span class="kw">print</span>(<span class="str">f"MAE:  {mean_absolute_error(y_test, y_pred):.4f}"</span>)
+<span class="kw">print</span>(<span class="str">f"R2:   {r2_score(y_test, y_pred):.4f}"</span>)
+<span class="kw">print</span>(<span class="str">f"MAPE: {mean_absolute_percentage_error(y_test, y_pred):.2%}"</span>)</code></pre>
+</section>
+
+<!-- ======================== DATA PREPROCESSING ======================== -->
+<section id="data-preprocessing">
+<h2 class="section-title">4. Data Preprocessing</h2>
+<p>Data preprocessing is often 80% of the work in a machine learning project. The quality of your preprocessing directly determines model performance. Always preprocess <em>after</em> splitting into train/test to avoid data leakage.</p>
+
+<h3 class="sub-title">4.1 Feature Scaling</h3>
+<p>Many algorithms (SVM, KNN, Neural Networks, PCA, Gradient Descent-based) require features on the same scale. Tree-based algorithms (Random Forest, XGBoost) do not require scaling.</p>
+
+<table class="metric-table">
+  <thead>
+    <tr><th>Method</th><th>Formula</th><th>When to Use</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>StandardScaler</td>
+      <td>(x - mean) / std</td>
+      <td>Default choice. Assumes roughly normal distribution. Sensitive to outliers.</td>
+    </tr>
+    <tr>
+      <td>MinMaxScaler</td>
+      <td>(x - min) / (max - min)</td>
+      <td>When you need values in [0, 1]. Good for neural networks. Very sensitive to outliers.</td>
+    </tr>
+    <tr>
+      <td>RobustScaler</td>
+      <td>(x - median) / IQR</td>
+      <td>Data contains outliers. Uses median and interquartile range.</td>
+    </tr>
+    <tr>
+      <td>MaxAbsScaler</td>
+      <td>x / max(|x|)</td>
+      <td>Sparse data. Does not destroy sparsity.</td>
+    </tr>
+  </tbody>
+</table>
+
+<pre><code><span class="kw">from</span> sklearn.preprocessing <span class="kw">import</span> <span class="fn">StandardScaler</span>, <span class="fn">RobustScaler</span>
+
+<span class="cm"># CRITICAL: fit on train only, transform both</span>
+scaler = <span class="fn">StandardScaler</span>()
+X_train_scaled = scaler.<span class="fn">fit_transform</span>(X_train)  <span class="cm"># fit + transform</span>
+X_test_scaled = scaler.<span class="fn">transform</span>(X_test)         <span class="cm"># transform only!</span>
+
+<span class="cm"># With outliers? Use RobustScaler</span>
+scaler = <span class="fn">RobustScaler</span>()
+X_train_scaled = scaler.<span class="fn">fit_transform</span>(X_train)</code></pre>
+
+<h3 class="sub-title">4.2 Encoding Categorical Variables</h3>
+
+<table class="metric-table">
+  <thead>
+    <tr><th>Method</th><th>When to Use</th><th>Output</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>OrdinalEncoder</td>
+      <td>Ordinal categories (low/med/high). Tree-based models.</td>
+      <td>Integer per category</td>
+    </tr>
+    <tr>
+      <td>OneHotEncoder</td>
+      <td>Nominal categories (&lt;15 unique values). Linear models, SVM, KNN.</td>
+      <td>Binary column per category</td>
+    </tr>
+    <tr>
+      <td>TargetEncoder</td>
+      <td>High-cardinality categoricals (100+ values). Gradient boosting models.</td>
+      <td>Float (mean target per category)</td>
+    </tr>
+    <tr>
+      <td>LabelEncoder</td>
+      <td>Target variable encoding only. Not for features.</td>
+      <td>Integer</td>
+    </tr>
+  </tbody>
+</table>
+
+<pre><code><span class="kw">from</span> sklearn.preprocessing <span class="kw">import</span> <span class="fn">OneHotEncoder</span>, <span class="fn">OrdinalEncoder</span>
+<span class="kw">from</span> sklearn.compose <span class="kw">import</span> <span class="fn">ColumnTransformer</span>
+
+<span class="cm"># Best practice: use ColumnTransformer for mixed types</span>
+preprocessor = <span class="fn">ColumnTransformer</span>(transformers=[
+    (<span class="str">'num'</span>, <span class="fn">StandardScaler</span>(), numerical_cols),
+    (<span class="str">'cat'</span>, <span class="fn">OneHotEncoder</span>(drop=<span class="str">'first'</span>, handle_unknown=<span class="str">'ignore'</span>), categorical_cols)
+])
+
+X_train_processed = preprocessor.<span class="fn">fit_transform</span>(X_train)
+X_test_processed = preprocessor.<span class="fn">transform</span>(X_test)</code></pre>
+
+<h3 class="sub-title">4.3 Handling Missing Values</h3>
+
+<pre><code><span class="kw">from</span> sklearn.impute <span class="kw">import</span> <span class="fn">SimpleImputer</span>, <span class="fn">KNNImputer</span>
+
+<span class="cm"># Strategy: 'mean', 'median', 'most_frequent', 'constant'</span>
+imputer = <span class="fn">SimpleImputer</span>(strategy=<span class="str">'median'</span>)
+X_train_imputed = imputer.<span class="fn">fit_transform</span>(X_train)
+X_test_imputed = imputer.<span class="fn">transform</span>(X_test)
+
+<span class="cm"># For more sophisticated imputation</span>
+knn_imputer = <span class="fn">KNNImputer</span>(n_neighbors=<span class="num">5</span>)
+X_train_imputed = knn_imputer.<span class="fn">fit_transform</span>(X_train)
+
+<span class="cm"># When to use what:</span>
+<span class="cm"># - median: numeric features with outliers</span>
+<span class="cm"># - mean: numeric features, normally distributed</span>
+<span class="cm"># - most_frequent: categorical features</span>
+<span class="cm"># - KNNImputer: when values are not missing at random</span>
+<span class="cm"># - Always add a binary "is_missing" indicator column for important features</span></code></pre>
+
+<h3 class="sub-title">4.4 Feature Selection</h3>
+<p>Reducing the number of features improves model performance, reduces overfitting, and speeds up training. Three approaches, from simplest to most thorough.</p>
+
+<pre><code><span class="kw">from</span> sklearn.feature_selection <span class="kw">import</span> (
+    <span class="fn">SelectKBest</span>, <span class="fn">f_classif</span>, <span class="fn">mutual_info_classif</span>,
+    <span class="fn">RFE</span>, <span class="fn">SequentialFeatureSelector</span>
+)
+
+<span class="cm"># Method 1: Filter — fast, univariate</span>
+selector = <span class="fn">SelectKBest</span>(score_func=<span class="fn">f_classif</span>, k=<span class="num">20</span>)
+X_selected = selector.<span class="fn">fit_transform</span>(X_train, y_train)
+
+<span class="cm"># Method 2: Wrapper — uses model performance</span>
+<span class="kw">from</span> sklearn.ensemble <span class="kw">import</span> <span class="fn">RandomForestClassifier</span>
+selector = <span class="fn">RFE</span>(<span class="fn">RandomForestClassifier</span>(n_estimators=<span class="num">100</span>), n_features_to_select=<span class="num">15</span>)
+X_selected = selector.<span class="fn">fit_transform</span>(X_train, y_train)
+
+<span class="cm"># Method 3: Embedded — L1 regularization (built into model)</span>
+<span class="kw">from</span> sklearn.linear_model <span class="kw">import</span> <span class="fn">Lasso</span>
+<span class="kw">from</span> sklearn.feature_selection <span class="kw">import</span> <span class="fn">SelectFromModel</span>
+lasso = <span class="fn">Lasso</span>(alpha=<span class="num">0.01</span>)
+selector = <span class="fn">SelectFromModel</span>(lasso)
+X_selected = selector.<span class="fn">fit_transform</span>(X_train, y_train)
+
+<span class="cm"># Check which features were selected</span>
+selected_mask = selector.<span class="fn">get_support</span>()
+selected_features = [f <span class="kw">for</span> f, s <span class="kw">in</span> <span class="fn">zip</span>(feature_names, selected_mask) <span class="kw">if</span> s]</code></pre>
+</section>
+
+<!-- ======================== MODEL SELECTION ======================== -->
+<section id="model-selection">
+<h2 class="section-title">5. Model Selection &amp; Tuning</h2>
+<p>You have picked an algorithm and preprocessed your data. Now you need to validate that your model generalizes and tune its hyperparameters for best performance. This section covers the essential techniques.</p>
+
+<h3 class="sub-title">5.1 Cross-Validation</h3>
+<p>Never evaluate on training data. Never rely on a single train/test split. Cross-validation gives a reliable estimate of generalization performance.</p>
+
+<pre><code><span class="kw">from</span> sklearn.model_selection <span class="kw">import</span> (
+    <span class="fn">cross_val_score</span>, <span class="fn">StratifiedKFold</span>, <span class="fn">TimeSeriesSplit</span>
+)
+
+<span class="cm"># Standard: 5-fold stratified cross-validation</span>
+cv = <span class="fn">StratifiedKFold</span>(n_splits=<span class="num">5</span>, shuffle=<span class="num">True</span>, random_state=<span class="num">42</span>)
+scores = <span class="fn">cross_val_score</span>(model, X_train, y_train, cv=cv, scoring=<span class="str">'f1_weighted'</span>)
+<span class="kw">print</span>(<span class="str">f"F1: {scores.mean():.4f} +/- {scores.std():.4f}"</span>)
+
+<span class="cm"># Time series: NEVER shuffle, use temporal split</span>
+tscv = <span class="fn">TimeSeriesSplit</span>(n_splits=<span class="num">5</span>)
+scores = <span class="fn">cross_val_score</span>(model, X_train, y_train, cv=tscv, scoring=<span class="str">'neg_mean_squared_error'</span>)
+
+<span class="cm"># Common scoring values:</span>
+<span class="cm"># Classification: 'accuracy', 'f1', 'f1_weighted', 'roc_auc', 'precision', 'recall'</span>
+<span class="cm"># Regression: 'neg_mean_squared_error', 'neg_mean_absolute_error', 'r2'</span></code></pre>
+
+<h3 class="sub-title">5.2 Hyperparameter Tuning</h3>
+
+<pre><code><span class="kw">from</span> sklearn.model_selection <span class="kw">import</span> <span class="fn">GridSearchCV</span>, <span class="fn">RandomizedSearchCV</span>
+
+<span class="cm"># Grid Search: exhaustive, use when few parameters</span>
+param_grid = {
+    <span class="str">'n_estimators'</span>: [<span class="num">100</span>, <span class="num">200</span>, <span class="num">500</span>],
+    <span class="str">'max_depth'</span>: [<span class="num">5</span>, <span class="num">10</span>, <span class="num">15</span>, <span class="num">None</span>],
+    <span class="str">'min_samples_leaf'</span>: [<span class="num">1</span>, <span class="num">5</span>, <span class="num">10</span>]
+}
+grid = <span class="fn">GridSearchCV</span>(
+    <span class="fn">RandomForestClassifier</span>(random_state=<span class="num">42</span>),
+    param_grid, cv=<span class="num">5</span>, scoring=<span class="str">'f1_weighted'</span>, n_jobs=-<span class="num">1</span>
+)
+grid.<span class="fn">fit</span>(X_train, y_train)
+<span class="kw">print</span>(<span class="str">f"Best params: {grid.best_params_}"</span>)
+<span class="kw">print</span>(<span class="str">f"Best CV F1:  {grid.best_score_:.4f}"</span>)
+
+<span class="cm"># Randomized Search: faster, use when many parameters</span>
+<span class="kw">from</span> scipy.stats <span class="kw">import</span> randint, uniform
+param_dist = {
+    <span class="str">'n_estimators'</span>: <span class="fn">randint</span>(<span class="num">50</span>, <span class="num">500</span>),
+    <span class="str">'max_depth'</span>: <span class="fn">randint</span>(<span class="num">3</span>, <span class="num">20</span>),
+    <span class="str">'learning_rate'</span>: <span class="fn">uniform</span>(<span class="num">0.01</span>, <span class="num">0.3</span>),
+    <span class="str">'subsample'</span>: <span class="fn">uniform</span>(<span class="num">0.6</span>, <span class="num">0.4</span>)
+}
+search = <span class="fn">RandomizedSearchCV</span>(
+    xgb.<span class="fn">XGBClassifier</span>(), param_dist,
+    n_iter=<span class="num">100</span>, cv=<span class="num">5</span>, scoring=<span class="str">'f1_weighted'</span>,
+    random_state=<span class="num">42</span>, n_jobs=-<span class="num">1</span>
+)
+search.<span class="fn">fit</span>(X_train, y_train)</code></pre>
+
+<div class="tip"><p><strong>Tip:</strong> For serious tuning, use <code>Optuna</code> or <code>Hyperopt</code> instead of GridSearch. They use Bayesian optimization to find better hyperparameters in fewer trials. Optuna's pruning feature can 10x your search speed.</p></div>
+
+<h3 class="sub-title">5.3 Learning Curves</h3>
+<p>Learning curves diagnose whether your model suffers from <strong>high bias</strong> (underfitting) or <strong>high variance</strong> (overfitting), and whether more data would help.</p>
+
+<pre><code><span class="kw">from</span> sklearn.model_selection <span class="kw">import</span> <span class="fn">learning_curve</span>
+<span class="kw">import</span> numpy <span class="kw">as</span> np
+
+train_sizes, train_scores, val_scores = <span class="fn">learning_curve</span>(
+    model, X_train, y_train,
+    train_sizes=np.<span class="fn">linspace</span>(<span class="num">0.1</span>, <span class="num">1.0</span>, <span class="num">10</span>),
+    cv=<span class="num">5</span>, scoring=<span class="str">'f1_weighted'</span>, n_jobs=-<span class="num">1</span>
+)
+
+<span class="cm"># Interpretation:</span>
+<span class="cm"># Gap between train and val = overfitting (high variance)</span>
+<span class="cm">#   Fix: more data, regularization, simpler model</span>
+<span class="cm"># Both scores low = underfitting (high bias)</span>
+<span class="cm">#   Fix: more features, complex model, less regularization</span>
+<span class="cm"># Val score plateaus = more data won't help</span></code></pre>
+
+<h3 class="sub-title">5.4 Complete Pipeline</h3>
+<p>Always use sklearn Pipelines to chain preprocessing and modeling. This prevents data leakage, simplifies deployment, and makes cross-validation correct.</p>
+
+<pre><code><span class="kw">from</span> sklearn.pipeline <span class="kw">import</span> <span class="fn">Pipeline</span>
+<span class="kw">from</span> sklearn.compose <span class="kw">import</span> <span class="fn">ColumnTransformer</span>
+<span class="kw">from</span> sklearn.preprocessing <span class="kw">import</span> <span class="fn">StandardScaler</span>, <span class="fn">OneHotEncoder</span>
+<span class="kw">from</span> sklearn.impute <span class="kw">import</span> <span class="fn">SimpleImputer</span>
+<span class="kw">from</span> sklearn.ensemble <span class="kw">import</span> <span class="fn">RandomForestClassifier</span>
+
+<span class="cm"># Define preprocessing for different column types</span>
+numeric_pipe = <span class="fn">Pipeline</span>([
+    (<span class="str">'impute'</span>, <span class="fn">SimpleImputer</span>(strategy=<span class="str">'median'</span>)),
+    (<span class="str">'scale'</span>, <span class="fn">StandardScaler</span>())
+])
+
+categorical_pipe = <span class="fn">Pipeline</span>([
+    (<span class="str">'impute'</span>, <span class="fn">SimpleImputer</span>(strategy=<span class="str">'most_frequent'</span>)),
+    (<span class="str">'encode'</span>, <span class="fn">OneHotEncoder</span>(handle_unknown=<span class="str">'ignore'</span>))
+])
+
+preprocessor = <span class="fn">ColumnTransformer</span>([
+    (<span class="str">'num'</span>, numeric_pipe, numerical_cols),
+    (<span class="str">'cat'</span>, categorical_pipe, categorical_cols)
+])
+
+<span class="cm"># Full pipeline: preprocess + model</span>
+pipeline = <span class="fn">Pipeline</span>([
+    (<span class="str">'preprocess'</span>, preprocessor),
+    (<span class="str">'model'</span>, <span class="fn">RandomForestClassifier</span>(n_estimators=<span class="num">200</span>, random_state=<span class="num">42</span>))
+])
+
+<span class="cm"># Now cross-validation is fully correct</span>
+scores = <span class="fn">cross_val_score</span>(pipeline, X_train, y_train, cv=<span class="num">5</span>, scoring=<span class="str">'f1_weighted'</span>)
+
+<span class="cm"># Train final model</span>
+pipeline.<span class="fn">fit</span>(X_train, y_train)
+y_pred = pipeline.<span class="fn">predict</span>(X_test)</code></pre>
+</section>
+
+<!-- ======================== COMMON PITFALLS ======================== -->
+<section id="common-pitfalls">
+<h2 class="section-title">6. Common Pitfalls</h2>
+<p>These are the mistakes that silently destroy model performance. They will give you artificially high scores during development and catastrophic failures in production. Learn to spot and prevent them.</p>
+
+<div class="pitfall">
+  <h4>Data Leakage</h4>
+  <p>The number one killer of ML projects. Data leakage occurs when information from the test set bleeds into training. <strong>Common causes:</strong> (1) Fitting a scaler or imputer on the entire dataset before splitting. (2) Including features derived from the target (e.g., customer lifetime value to predict churn). (3) Time-series data split randomly instead of temporally. (4) Duplicate records spanning train and test. <strong>Prevention:</strong> Always split first, then preprocess. Use sklearn Pipelines. For time series, use <code>TimeSeriesSplit</code>. Check for duplicates with <code>df.duplicated()</code>.</p>
+</div>
+
+<div class="pitfall">
+  <h4>Class Imbalance</h4>
+  <p>When one class dominates (99% negative, 1% positive), a model that predicts "negative" always gets 99% accuracy. <strong>Solutions:</strong> (1) Use appropriate metrics: F1, AUC-ROC, precision-recall curves, not accuracy. (2) Use <code>class_weight='balanced'</code> in sklearn models. (3) Resample: SMOTE for oversampling minority, random undersampling for majority. (4) Stratified cross-validation with <code>StratifiedKFold</code>. (5) Adjust decision threshold based on precision-recall tradeoff.</p>
+</div>
+
+<pre><code><span class="cm"># Handling class imbalance</span>
+<span class="kw">from</span> sklearn.utils.class_weight <span class="kw">import</span> <span class="fn">compute_class_weight</span>
+<span class="kw">import</span> numpy <span class="kw">as</span> np
+
+<span class="cm"># Option 1: built-in class weights</span>
+model = <span class="fn">RandomForestClassifier</span>(class_weight=<span class="str">'balanced'</span>)
+
+<span class="cm"># Option 2: manual weights</span>
+weights = <span class="fn">compute_class_weight</span>(<span class="str">'balanced'</span>, classes=np.<span class="fn">unique</span>(y_train), y=y_train)
+model = xgb.<span class="fn">XGBClassifier</span>(scale_pos_weight=weights[<span class="num">1</span>]/weights[<span class="num">0</span>])
+
+<span class="cm"># Option 3: SMOTE oversampling</span>
+<span class="kw">from</span> imblearn.over_sampling <span class="kw">import</span> <span class="fn">SMOTE</span>
+smote = <span class="fn">SMOTE</span>(random_state=<span class="num">42</span>)
+X_train_resampled, y_train_resampled = smote.<span class="fn">fit_resample</span>(X_train, y_train)
+
+<span class="cm"># Option 4: threshold tuning</span>
+y_prob = model.<span class="fn">predict_proba</span>(X_test)[:, <span class="num">1</span>]
+threshold = <span class="num">0.3</span>  <span class="cm"># lower threshold to catch more positives</span>
+y_pred_adjusted = (y_prob >= threshold).<span class="fn">astype</span>(<span class="fn">int</span>)</code></pre>
+
+<div class="pitfall">
+  <h4>Overfitting</h4>
+  <p>Training score is high, test score is low. The model memorized noise instead of learning patterns. <strong>Signs:</strong> Large gap between train and validation scores. Model performance degrades on new data. <strong>Solutions:</strong> (1) Get more training data. (2) Reduce model complexity (lower max_depth, fewer features, fewer layers). (3) Add regularization (L1/L2 penalties, dropout). (4) Use cross-validation to detect early. (5) Apply early stopping (boosting, neural networks). (6) Use data augmentation.</p>
+</div>
+
+<div class="pitfall">
+  <h4>Not Scaling Features Before Distance-Based Algorithms</h4>
+  <p>SVM, KNN, Neural Networks, PCA, and K-Means all depend on distances between data points. If one feature ranges from 0 to 1000 while another ranges from 0 to 1, the first feature will dominate entirely. <strong>Always</strong> scale features before using these algorithms. Tree-based models (Random Forest, XGBoost) do not require scaling.</p>
+</div>
+
+<div class="pitfall">
+  <h4>Using Accuracy for Multiclass Problems</h4>
+  <p>Accuracy treats all classes equally, but some classes may be more important or harder to predict. Use <code>average='weighted'</code> for F1/precision/recall to account for class frequency, or <code>average='macro'</code> to treat all classes as equally important regardless of frequency. Always print the full <code>classification_report</code> to inspect per-class performance.</p>
+</div>
+
+<div class="pitfall">
+  <h4>Ignoring Feature Correlations</h4>
+  <p>Highly correlated features (multicollinearity) inflate feature importance, make coefficients unstable in linear models, and waste computation. <strong>Detection:</strong> Correlation matrix (<code>df.corr()</code>), VIF (Variance Inflation Factor). <strong>Solutions:</strong> Drop one of correlated pairs (threshold: |r| > 0.9), use PCA, use L1/L2 regularization, or use tree-based models (more robust to correlation).</p>
+</div>
+
+<div class="pitfall">
+  <h4>Training on Future Data (Time Series)</h4>
+  <p>When working with time-series data, you must split temporally. Random shuffling creates look-ahead bias where your model uses future information to predict the past. Use <code>TimeSeriesSplit</code> for cross-validation. Never use features that incorporate future values (e.g., a rolling average that includes future dates).</p>
+</div>
+</section>
+
+<!-- ======================== FAQ ======================== -->
+<section id="faq">
+<h2 class="section-title">7. Frequently Asked Questions</h2>
+
+<div class="algo-card">
+  <h4>Which machine learning algorithm should I use?</h4>
+  <p class="muted" style="margin:8px 0 0;">It depends on your data type and goal. For tabular data classification, start with Gradient Boosting (XGBoost/LightGBM). For regression, try Linear Regression first, then Random Forest. For clustering, use K-Means for spherical clusters or DBSCAN for arbitrary shapes. For images, use Convolutional Neural Networks. For text, use transformer-based models or TF-IDF with Logistic Regression. Use the <a href="#algorithm-selector">Algorithm Selector Tool</a> above to get personalized recommendations.</p>
+</div>
+
+<div class="algo-card">
+  <h4>What is the difference between precision and recall?</h4>
+  <p class="muted" style="margin:8px 0 0;">Precision measures how many of your positive predictions were correct (TP / (TP + FP)). Recall measures how many actual positives you found (TP / (TP + FN)). Use precision when false positives are costly (spam detection). Use recall when false negatives are costly (disease screening). F1 score is the harmonic mean of both, giving a balanced single number.</p>
+</div>
+
+<div class="algo-card">
+  <h4>How do I prevent overfitting in machine learning?</h4>
+  <p class="muted" style="margin:8px 0 0;">Use cross-validation to detect overfitting early. Apply regularization (L1/L2). Reduce model complexity (fewer features, shallower trees). Increase training data or use data augmentation. Use dropout for neural networks. Apply early stopping during training. Ensure your validation set is representative of production data.</p>
+</div>
+
+<div class="algo-card">
+  <h4>What is data leakage in machine learning?</h4>
+  <p class="muted" style="margin:8px 0 0;">Data leakage occurs when information from outside the training dataset is used to create the model. Common causes: using test data during preprocessing (<code>fit_transform</code> on the whole dataset instead of <code>fit</code> on train only), including features derived from the target variable, and using future data to predict past events. Always split data before any preprocessing steps and use sklearn Pipelines.</p>
+</div>
+
+<div class="algo-card">
+  <h4>When should I use Random Forest vs Gradient Boosting?</h4>
+  <p class="muted" style="margin:8px 0 0;">Random Forest trains trees independently in parallel, making it faster and more robust to hyperparameter choices. Gradient Boosting trains trees sequentially, correcting previous errors, and usually achieves higher accuracy but is slower and more prone to overfitting. Start with Random Forest for baselines and switch to Gradient Boosting (XGBoost, LightGBM) when you need maximum performance.</p>
+</div>
+</section>
+
+</div><!-- /container -->
+
+<footer class="footer">
+  <div class="container">
+    <p><a href="/">ml0x</a> &middot; A <a href="https://zovo.one/tools">Zovo Tools</a> project &middot; Machine Learning Cheatsheet 2026</p>
+  </div>
+</footer>
+
+<script>
+// Algorithm recommendation engine
+const algorithms = [
+  // Tabular + Classify
+  { data: 'tabular', goal: 'classify', name: 'XGBoost / LightGBM', rank: 'best', reason: 'State-of-the-art for tabular classification. Handles mixed features, missing values, non-linear relationships. Consistently wins competitions.', link: '#supervised-learning' },
+  { data: 'tabular', goal: 'classify', name: 'Random Forest', rank: 'alt', reason: 'Strong baseline with minimal tuning. Parallelizable, robust to overfitting. Use first, then try boosting.', link: '#supervised-learning' },
+  { data: 'tabular', goal: 'classify', name: 'Logistic Regression', rank: 'also', reason: 'Fast, interpretable baseline. Works well with high-dimensional sparse features. Always try it first.', link: '#supervised-learning' },
+
+  // Tabular + Regress
+  { data: 'tabular', goal: 'regress', name: 'XGBoost / LightGBM', rank: 'best', reason: 'Best accuracy for structured regression. Use XGBRegressor or LGBMRegressor with early stopping.', link: '#supervised-learning' },
+  { data: 'tabular', goal: 'regress', name: 'Random Forest Regressor', rank: 'alt', reason: 'Robust baseline. No feature scaling needed. Good feature importance.', link: '#supervised-learning' },
+  { data: 'tabular', goal: 'regress', name: 'Linear Regression (Ridge/Lasso)', rank: 'also', reason: 'Start here for interpretability. Ridge for correlated features, Lasso for feature selection.', link: '#supervised-learning' },
+
+  // Tabular + Cluster
+  { data: 'tabular', goal: 'cluster', name: 'K-Means', rank: 'best', reason: 'Fast, simple, scalable. Use silhouette score to find optimal k. Best for spherical clusters.', link: '#unsupervised-learning' },
+  { data: 'tabular', goal: 'cluster', name: 'DBSCAN / HDBSCAN', rank: 'alt', reason: 'Arbitrary cluster shapes, automatic noise detection, no need to specify k. Use HDBSCAN for varying densities.', link: '#unsupervised-learning' },
+  { data: 'tabular', goal: 'cluster', name: 'Gaussian Mixture Models', rank: 'also', reason: 'Soft clustering (probability of belonging to each cluster). Handles elliptical clusters.', link: '#unsupervised-learning' },
+
+  // Tabular + Reduce
+  { data: 'tabular', goal: 'reduce', name: 'PCA', rank: 'best', reason: 'Fast, deterministic, preserves global variance. Use for preprocessing or visualization. Set n_components=0.95.', link: '#unsupervised-learning' },
+  { data: 'tabular', goal: 'reduce', name: 'UMAP', rank: 'alt', reason: 'Better than t-SNE: faster, preserves global structure, supports transform(). Great for visualization.', link: '#unsupervised-learning' },
+  { data: 'tabular', goal: 'reduce', name: 'Feature Selection (RFE/Lasso)', rank: 'also', reason: 'Instead of transforming features, select the most important ones. More interpretable than PCA.', link: '#data-preprocessing' },
+
+  // Text + Classify
+  { data: 'text', goal: 'classify', name: 'Transformer (BERT / RoBERTa)', rank: 'best', reason: 'State-of-the-art for text classification. Fine-tune a pretrained model with HuggingFace. Best accuracy.', link: '#supervised-learning' },
+  { data: 'text', goal: 'classify', name: 'TF-IDF + Logistic Regression', rank: 'alt', reason: 'Fast, interpretable baseline. Often surprisingly competitive. Start here.', link: '#supervised-learning' },
+  { data: 'text', goal: 'classify', name: 'TF-IDF + SVM', rank: 'also', reason: 'Excellent for high-dimensional sparse text features. Use LinearSVC for speed.', link: '#supervised-learning' },
+
+  // Text + Regress
+  { data: 'text', goal: 'regress', name: 'Transformer Fine-tuning', rank: 'best', reason: 'Fine-tune BERT/RoBERTa with a regression head. Best for sentiment scoring and similar tasks.', link: '#supervised-learning' },
+  { data: 'text', goal: 'regress', name: 'TF-IDF + Ridge Regression', rank: 'alt', reason: 'Fast baseline for text regression. Combine TF-IDF features with numeric features in a pipeline.', link: '#supervised-learning' },
+  { data: 'text', goal: 'regress', name: 'TF-IDF + XGBoost', rank: 'also', reason: 'When you have mixed text and tabular features. Extract TF-IDF, combine, and boost.', link: '#supervised-learning' },
+
+  // Text + Cluster
+  { data: 'text', goal: 'cluster', name: 'Sentence Embeddings + K-Means', rank: 'best', reason: 'Use sentence-transformers to get dense embeddings, then cluster. Best semantic grouping.', link: '#unsupervised-learning' },
+  { data: 'text', goal: 'cluster', name: 'TF-IDF + K-Means', rank: 'alt', reason: 'Simple and fast. Works for keyword-based clustering. Less semantic than embeddings.', link: '#unsupervised-learning' },
+  { data: 'text', goal: 'cluster', name: 'LDA (Topic Modeling)', rank: 'also', reason: 'Discover latent topics. Each document is a mix of topics. Use gensim or sklearn LatentDirichletAllocation.', link: '#unsupervised-learning' },
+
+  // Text + Reduce
+  { data: 'text', goal: 'reduce', name: 'Sentence Embeddings', rank: 'best', reason: 'Pretrained sentence-transformers compress text to 384-768 dense features with semantic meaning.', link: '#unsupervised-learning' },
+  { data: 'text', goal: 'reduce', name: 'TruncatedSVD on TF-IDF', rank: 'alt', reason: 'PCA for sparse matrices. Reduces TF-IDF dimensions while preserving variance. Fast.', link: '#unsupervised-learning' },
+  { data: 'text', goal: 'reduce', name: 'UMAP on Embeddings', rank: 'also', reason: 'Reduce embedding dimensions for visualization or downstream clustering.', link: '#unsupervised-learning' },
+
+  // Image + Classify
+  { data: 'image', goal: 'classify', name: 'CNN (ResNet / EfficientNet)', rank: 'best', reason: 'Fine-tune a pretrained CNN. Transfer learning from ImageNet. Use torchvision or timm.', link: '#supervised-learning' },
+  { data: 'image', goal: 'classify', name: 'Vision Transformer (ViT)', rank: 'alt', reason: 'Transformer architecture for images. State-of-the-art with enough data. Use HuggingFace.', link: '#supervised-learning' },
+  { data: 'image', goal: 'classify', name: 'Transfer Learning + SVM', rank: 'also', reason: 'Extract features from pretrained CNN, then train SVM on top. Good for small datasets.', link: '#supervised-learning' },
+
+  // Image + Regress
+  { data: 'image', goal: 'regress', name: 'CNN with Regression Head', rank: 'best', reason: 'Fine-tune pretrained CNN, replace classification layer with regression output.', link: '#supervised-learning' },
+  { data: 'image', goal: 'regress', name: 'ResNet + Dense Layers', rank: 'alt', reason: 'Pretrained ResNet backbone with custom fully connected layers for regression.', link: '#supervised-learning' },
+  { data: 'image', goal: 'regress', name: 'Feature Extraction + XGBoost', rank: 'also', reason: 'Extract CNN features, combine with tabular features, and use gradient boosting.', link: '#supervised-learning' },
+
+  // Image + Cluster
+  { data: 'image', goal: 'cluster', name: 'CNN Embeddings + K-Means', rank: 'best', reason: 'Extract features from pretrained CNN, then cluster. Discovers visual similarity groups.', link: '#unsupervised-learning' },
+  { data: 'image', goal: 'cluster', name: 'Autoencoder + Clustering', rank: 'alt', reason: 'Train autoencoder to learn compressed representations, then cluster the latent space.', link: '#unsupervised-learning' },
+  { data: 'image', goal: 'cluster', name: 'CNN Embeddings + HDBSCAN', rank: 'also', reason: 'Density-based clustering on CNN features. Good when number of clusters is unknown.', link: '#unsupervised-learning' },
+
+  // Image + Reduce
+  { data: 'image', goal: 'reduce', name: 'Pretrained CNN Feature Extraction', rank: 'best', reason: 'Use a pretrained model (without final layer) to extract compact feature vectors.', link: '#unsupervised-learning' },
+  { data: 'image', goal: 'reduce', name: 'Autoencoder', rank: 'alt', reason: 'Learn a compressed representation. Bottleneck layer gives reduced features.', link: '#unsupervised-learning' },
+  { data: 'image', goal: 'reduce', name: 'UMAP on CNN Features', rank: 'also', reason: 'Reduce CNN features to 2D/3D for visualization or downstream tasks.', link: '#unsupervised-learning' },
+
+  // Timeseries + Classify
+  { data: 'timeseries', goal: 'classify', name: 'XGBoost on Engineered Features', rank: 'best', reason: 'Extract features (rolling stats, lags, Fourier coefficients) and classify with boosting. Most practical approach.', link: '#supervised-learning' },
+  { data: 'timeseries', goal: 'classify', name: '1D-CNN / LSTM', rank: 'alt', reason: 'Deep learning on raw time series. Good when feature engineering is unclear. Needs more data.', link: '#supervised-learning' },
+  { data: 'timeseries', goal: 'classify', name: 'TSFresh + Random Forest', rank: 'also', reason: 'Auto-extract hundreds of time series features with tsfresh, then classify.', link: '#supervised-learning' },
+
+  // Timeseries + Regress
+  { data: 'timeseries', goal: 'regress', name: 'XGBoost on Lag Features', rank: 'best', reason: 'Create lag features, rolling statistics, calendar features. Use XGBoost with TimeSeriesSplit.', link: '#supervised-learning' },
+  { data: 'timeseries', goal: 'regress', name: 'Prophet / ARIMA', rank: 'alt', reason: 'Dedicated time series forecasting models. Prophet handles seasonality, holidays, and trends automatically.', link: '#supervised-learning' },
+  { data: 'timeseries', goal: 'regress', name: 'LSTM / Transformer', rank: 'also', reason: 'Deep learning for sequence prediction. Use when patterns are complex and you have lots of data.', link: '#supervised-learning' },
+
+  // Timeseries + Cluster
+  { data: 'timeseries', goal: 'cluster', name: 'DTW + K-Medoids', rank: 'best', reason: 'Dynamic Time Warping measures similarity between sequences of different lengths. Use tslearn.', link: '#unsupervised-learning' },
+  { data: 'timeseries', goal: 'cluster', name: 'Feature Extraction + K-Means', rank: 'alt', reason: 'Extract summary statistics per series, then cluster. Fast and interpretable.', link: '#unsupervised-learning' },
+  { data: 'timeseries', goal: 'cluster', name: 'LSTM Autoencoder + Clustering', rank: 'also', reason: 'Learn compressed time series representations, then cluster the latent space.', link: '#unsupervised-learning' },
+
+  // Timeseries + Reduce
+  { data: 'timeseries', goal: 'reduce', name: 'PCA on Feature Matrix', rank: 'best', reason: 'Extract features per time step or per series, then apply PCA. Fast and deterministic.', link: '#unsupervised-learning' },
+  { data: 'timeseries', goal: 'reduce', name: 'LSTM Autoencoder', rank: 'alt', reason: 'Learn compressed sequence representations that capture temporal dynamics.', link: '#unsupervised-learning' },
+  { data: 'timeseries', goal: 'reduce', name: 'SAX (Symbolic Aggregate)', rank: 'also', reason: 'Convert continuous time series to symbolic representation. Enables fast similarity search.', link: '#unsupervised-learning' },
+];
+
+const badgeClass = { best: 'badge-best', alt: 'badge-alt', also: 'badge-also' };
+const badgeLabel = { best: 'Recommended', alt: 'Strong Alternative', also: 'Also Consider' };
+
+function updateRecommendations() {
+  const dataType = document.getElementById('data-type').value;
+  const goal = document.getElementById('goal').value;
+  const resultsDiv = document.getElementById('selector-results');
+
+  if (!dataType || !goal) {
+    resultsDiv.innerHTML = '<p class="muted" style="font-size:0.85rem;">Select both options above to get personalized algorithm recommendations.</p>';
+    return;
+  }
+
+  const matches = algorithms.filter(a => a.data === dataType && a.goal === goal);
+
+  if (matches.length === 0) {
+    resultsDiv.innerHTML = '<p class="muted">No specific recommendations for this combination.</p>';
+    return;
+  }
+
+  let html = '';
+  for (const m of matches) {
+    html += `<div class="result-item">
+      <span class="result-badge ${badgeClass[m.rank]}">${badgeLabel[m.rank]}</span>
+      <h4><a href="${m.link}" style="color:var(--text);text-decoration:none;">${m.name}</a></h4>
+      <p class="result-reason">${m.reason}</p>
+    </div>`;
+  }
+  resultsDiv.innerHTML = html;
+}
+
+document.getElementById('data-type').addEventListener('change', updateRecommendations);
+document.getElementById('goal').addEventListener('change', updateRecommendations);
+</script>
+
+</body>
+</html>

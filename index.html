@@ -54,6 +54,9 @@
 }
 </script>
 <script type="application/ld+json">
+{"@context":"https://schema.org","@type":"WebSite","name":"ml0x","url":"https://ml0x.com/","author":{"@type":"Organization","name":"ml0x"}}
+</script>
+<script type="application/ld+json">
 {
   "@context": "https://schema.org",
   "@type": "FAQPage",
@@ -373,6 +376,8 @@ a:hover{opacity:0.8}
   <div class="container">
     <a href="/" class="nav-logo"><span class="brand">ml0x</span></a>
     <div class="nav-links">
+      <a href="/research/">Research</a>
+      <a href="/about.html">About</a>
       <a href="#insights">Insights</a>
       <a href="#pipeline">Pipeline</a>
       <a href="#costs">Costs</a>
@@ -889,6 +894,27 @@ a:hover{opacity:0.8}
       <a href="https://platform.claude.com/docs/en/build-with-claude/prompt-caching" style="padding:10px 18px;background:var(--surface);border:1px solid var(--border);border-radius:100px;font-size:0.82rem;color:var(--text2);transition:border-color 0.2s" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--border)'">Anthropic Prompt Caching</a>
     </div>
     <p style="margin-top:2rem;font-size:0.82rem;color:var(--text3)">150+ sources researched. All claims sourced. Unverified claims explicitly flagged.</p>
+  </div>
+</section>
+
+<!-- RESOURCES -->
+<section class="section">
+  <div class="container">
+    <div class="section-label">Resources</div>
+    <h2 class="section-title">Explore <span>ml0x</span></h2>
+    <p class="section-desc">Deep dives, references, and cheatsheets from the ml0x research pipeline.</p>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(340px,1fr));gap:1.25rem;margin-top:3rem" class="reveal">
+      <a href="/research/ml-cheatsheet.html" style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:2rem;text-decoration:none;display:block;transition:border-color 0.3s" onmouseover="this.style.borderColor='rgba(124,108,240,0.25)'" onmouseout="this.style.borderColor='var(--border)'">
+        <div style="font-size:0.8rem;font-weight:700;color:var(--accent);margin-bottom:0.5rem;text-transform:uppercase;letter-spacing:0.08em">Research</div>
+        <h3 style="font-size:1.15rem;font-weight:700;color:var(--text);margin-bottom:0.5rem">Machine Learning Cheatsheet 2026</h3>
+        <p style="font-size:0.9rem;color:var(--text2);line-height:1.6;margin:0">Algorithms, evaluation metrics, sklearn code snippets, hyperparameter guides, and common pitfalls. One page, everything you need.</p>
+      </a>
+      <a href="/about.html" style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:2rem;text-decoration:none;display:block;transition:border-color 0.3s" onmouseover="this.style.borderColor='rgba(0,212,170,0.25)'" onmouseout="this.style.borderColor='var(--border)'">
+        <div style="font-size:0.8rem;font-weight:700;color:var(--accent2);margin-bottom:0.5rem;text-transform:uppercase;letter-spacing:0.08em">About</div>
+        <h3 style="font-size:1.15rem;font-weight:700;color:var(--text);margin-bottom:0.5rem">About ml0x</h3>
+        <p style="font-size:0.9rem;color:var(--text2);line-height:1.6;margin:0">The philosophy, architecture, and research behind the agentic engineering pipeline. Open source, sourced from 150+ references.</p>
+      </a>
+    </div>
   </div>
 </section>
 
