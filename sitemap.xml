@@ -80,4 +80,74 @@
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
+  <!-- Sprint 7 Auto-Added -->
+  <url>
+    <loc>https://ml0x.com/answers/batch-size-optimizer.html</loc>
+    <lastmod>2026-05-20</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  <!-- Sprint 7 Auto-Added -->
+  <url>
+    <loc>https://ml0x.com/answers/hyperparameter-tuning-guide.html</loc>
+    <lastmod>2026-05-20</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  <!-- Sprint 7 Auto-Added -->
+  <url>
+    <loc>https://ml0x.com/guides/data-augmentation-gallery.html</loc>
+    <lastmod>2026-05-20</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <!-- Sprint 7 Auto-Added -->
+  <url>
+    <loc>https://ml0x.com/index.html</loc>
+    <lastmod>2026-05-20</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <!-- Sprint 7 Auto-Added -->
+  <url>
+    <loc>https://ml0x.com/research/index.html</loc>
+    <lastmod>2026-05-20</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <!-- Sprint 7 Auto-Added -->
+  <url>
+    <loc>https://ml0x.com/research/ml-pipeline-builder.html</loc>
+    <lastmod>2026-05-20</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <!-- Sprint 7 Auto-Added -->
+  <url>
+    <loc>https://ml0x.com/research/transfer-learning-guide.html</loc>
+    <lastmod>2026-05-20</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <!-- Sprint 7 Auto-Added -->
+  <url>
+    <loc>https://ml0x.com/tools/dataset-splitter.html</loc>
+    <lastmod>2026-05-20</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <!-- Sprint 7 Auto-Added -->
+  <url>
+    <loc>https://ml0x.com/tools/learning-rate-finder.html</loc>
+    <lastmod>2026-05-20</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <!-- Sprint 7 Auto-Added -->
+  <url>
+    <loc>https://ml0x.com/tools/model-complexity-calculator.html</loc>
+    <lastmod>2026-05-20</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
 </urlset>
