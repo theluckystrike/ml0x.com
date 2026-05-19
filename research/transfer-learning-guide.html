@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Transfer Learning Guide — Decision Tree &amp; Model Compatibility Matrix | ml0x</title>
+<meta name="description" content="Interactive transfer learning guide with decision tree, model compatibility matrix, and layer freezing calculator. Choose between feature extraction, fine-tuning, and training from scratch based on your dataset size, task similarity, and compute budget.">
+<meta name="keywords" content="transfer learning, fine-tuning, feature extraction, pretrained models, model compatibility, layer freezing, ImageNet, BERT, GPT, domain adaptation, deep learning">
+<link rel="canonical" href="https://ml0x.com/research/transfer-learning-guide.html">
+<link rel="alternate" hreflang="en" href="https://ml0x.com/research/transfer-learning-guide.html">
+<link rel="alternate" hreflang="x-default" href="https://ml0x.com/research/transfer-learning-guide.html">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Transfer Learning Guide — Decision Tree & Model Compatibility Matrix">
+<meta property="og:description" content="Interactive decision tree recommends transfer learning strategy. Model compatibility matrix for 10 pretrained models across 8 target tasks.">
+<meta property="og:url" content="https://ml0x.com/research/transfer-learning-guide.html">
+<meta property="og:site_name" content="Zovo Tools">
+<meta property="og:locale" content="en_US">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Transfer Learning Guide — Decision Tree & Model Compatibility Matrix">
+<meta name="twitter:description" content="Interactive decision tree for transfer learning strategy selection. Model compatibility matrix and layer freezing calculator.">
+<meta name="author" content="Michael Lip">
+<meta name="robots" content="index, follow">
+<link rel="stylesheet" href="/assets/style.css">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Article",
+  "headline": "Transfer Learning Guide — Decision Tree & Model Compatibility Matrix",
+  "description": "Interactive transfer learning guide with decision tree, model compatibility matrix for 10 pretrained models across 8 tasks, and layer freezing strategy calculator.",
+  "url": "https://ml0x.com/research/transfer-learning-guide.html",
+  "author": {"@type": "Person", "name": "Michael Lip", "url": "https://zovo.one"},
+  "publisher": {"@type": "Organization", "name": "ML0X", "url": "https://ml0x.com"},
+  "datePublished": "2026-05-25",
+  "dateModified": "2026-05-25"
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {"@type": "Question", "name": "What is transfer learning and why does it work?", "acceptedAnswer": {"@type": "Answer", "text": "Transfer learning is the practice of reusing a model trained on one task (source) as the starting point for a different task (target). It works because neural networks learn hierarchical features: early layers capture universal low-level patterns (edges, textures, word frequencies) that are useful across many tasks, while later layers learn task-specific features. By transferring the learned representations, you leverage the knowledge from large datasets and expensive training runs, achieving better performance with less data and compute on your target task."}},
+    {"@type": "Question", "name": "When should I use feature extraction vs fine-tuning vs training from scratch?", "acceptedAnswer": {"@type": "Answer", "text": "Use feature extraction (freeze all pretrained layers, train only a new head) when your target dataset is small and similar to the source domain. Use fine-tuning (unfreeze some or all layers with a small learning rate) when your dataset is medium-to-large or moderately different from the source domain. Train from scratch only when your dataset is very large AND very different from the source domain (e.g., medical 3D scans when the source is ImageNet photos). In practice, fine-tuning is the most common choice and rarely performs worse than training from scratch."}},
+    {"@type": "Question", "name": "How many layers should I freeze during fine-tuning?", "acceptedAnswer": {"@type": "Answer", "text": "The number of layers to freeze depends on dataset size and domain similarity. With very small datasets (hundreds of examples), freeze most layers and only train the last 1-2 blocks plus the classification head. With medium datasets (thousands), unfreeze the top 30-50% of layers. With large datasets (tens of thousands+), unfreeze everything but use a lower learning rate for earlier layers (discriminative fine-tuning). A practical approach is to start fully frozen, then gradually unfreeze layers from top to bottom while monitoring validation performance."}},
+    {"@type": "Question", "name": "Which pretrained model should I use for my task?", "acceptedAnswer": {"@type": "Answer", "text": "For image classification, start with EfficientNet-B0 to B3 for efficiency or ConvNeXt/ViT for maximum accuracy. For object detection, use models pretrained on COCO (YOLOv8, DETR). For NLP, use BERT or RoBERTa for classification/NER, T5 for sequence-to-sequence tasks, and GPT-2/LLaMA for text generation. For medical imaging, consider models pretrained on RadImageNet or BiomedCLIP. Match the model size to your compute budget: larger models give better accuracy but need more memory and training time."}},
+    {"@type": "Question", "name": "What learning rate should I use for fine-tuning?", "acceptedAnswer": {"@type": "Answer", "text": "Fine-tuning learning rates are typically 10-100x smaller than training from scratch. Common ranges: 1e-5 to 5e-5 for BERT-style NLP models, 1e-4 to 1e-3 for CNN image models with frozen backbone, 1e-5 to 1e-4 for unfrozen CNN models. Use discriminative learning rates (lower LR for earlier layers, higher for later layers) to preserve learned features while adapting task-specific layers. Always use learning rate warmup for the first 5-10% of training, and consider cosine or linear decay schedules."}}
+  ]
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {"@type": "ListItem", "position": 1, "name": "Home", "item": "https://ml0x.com/"},
+    {"@type": "ListItem", "position": 2, "name": "Research", "item": "https://ml0x.com/research/"},
+    {"@type": "ListItem", "position": 3, "name": "Transfer Learning Guide"}
+  ]
+}
+</script>
+</head>
+<body>
+
+<header>
+  <div class="container header-inner">
+    <a href="/" class="logo">ml0x</a>
+    <nav>
+      <a href="/">Home</a>
+      <a href="/research/">Research</a>
+      <a href="/tools/">Tools</a>
+      <a href="/guides/">Guides</a>
+      <a href="/answers/">Answers</a>
+      <div class="nav-right">
+        <a href="https://zovo.one/pricing?utm_source=ml0x.com&utm_medium=satellite&utm_campaign=nav-link" class="nav-pro" target="_blank">Go Pro &#10022;</a>
+        <a href="https://zovo.one/tools" class="nav-zovo">Zovo Tools</a>
+      </div>
+    </nav>
+  </div>
+</header>
+
+<main class="container">
+  <div class="breadcrumb">
+    <a href="/">Home</a> <span>&rsaquo;</span> <a href="/research/">Research</a> <span>&rsaquo;</span> Transfer Learning Guide
+  </div>
+
+  <div class="hero">
+    <h1>Transfer Learning <span>Guide</span></h1>
+    <p>Select your source task, target task, dataset size, and compute budget to get a personalized transfer learning strategy recommendation. Explore the model compatibility matrix showing how 10 popular pretrained models perform across 8 common target tasks. Calculate the optimal layer freezing strategy for your specific scenario. All processing is local to your browser.</p>
+  </div>
+
+  <div class="tool-card">
+    <h3>Strategy Decision Tree</h3>
+    <div class="control-row">
+      <div class="control-group">
+        <label>Source Domain</label>
+        <select id="sourceDomain">
+          <option value="imagenet">ImageNet (Natural Images)</option>
+          <option value="coco">COCO (Object Detection)</option>
+          <option value="nlp_general">General NLP (Wikipedia/Books)</option>
+          <option value="code">Code (GitHub)</option>
+          <option value="medical">Medical Imaging</option>
+          <option value="audio">Audio (Speech/Music)</option>
+        </select>
+      </div>
+      <div class="control-group">
+        <label>Target Task</label>
+        <select id="targetTask">
+          <option value="img_classify">Image Classification</option>
+          <option value="obj_detect">Object Detection</option>
+          <option value="segmentation">Semantic Segmentation</option>
+          <option value="text_classify">Text Classification</option>
+          <option value="ner">Named Entity Recognition</option>
+          <option value="qa">Question Answering</option>
+          <option value="generation">Text Generation</option>
+          <option value="medical_img">Medical Image Analysis</option>
+        </select>
+      </div>
+    </div>
+    <div class="control-row" style="margin-top:12px;">
+      <div class="control-group">
+        <label>Target Dataset Size</label>
+        <select id="datasetSize">
+          <option value="tiny">Tiny (&lt;500 samples)</option>
+          <option value="small">Small (500-5K samples)</option>
+          <option value="medium" selected>Medium (5K-50K samples)</option>
+          <option value="large">Large (50K-500K samples)</option>
+          <option value="huge">Huge (&gt;500K samples)</option>
+        </select>
+      </div>
+      <div class="control-group">
+        <label>Compute Budget</label>
+        <select id="computeBudget">
+          <option value="minimal">Minimal (single consumer GPU, hours)</option>
+          <option value="moderate" selected>Moderate (single GPU, 1-3 days)</option>
+          <option value="high">High (multi-GPU, days)</option>
+          <option value="unlimited">Unlimited (cluster, weeks)</option>
+        </select>
+      </div>
+      <button class="btn" id="decideBtn">Get Recommendation</button>
+    </div>
+  </div>
+
+  <div class="tool-card" id="recommendSection" style="display:none;">
+    <h3>Recommended Strategy</h3>
+    <div id="recommendResult" style="padding:12px;"></div>
+  </div>
+
+  <div class="tool-card" style="margin-top:16px;">
+    <h3>Model Compatibility Matrix</h3>
+    <p style="color:#aaa;font-size:13px;margin-bottom:12px;">Compatibility score (1-5 stars) for pretrained models across target tasks. Higher = better expected transfer performance.</p>
+    <div style="overflow-x:auto;">
+      <table id="compatMatrix" style="width:100%;border-collapse:collapse;font-size:12px;"></table>
+    </div>
+  </div>
+
+  <div class="tool-card" style="margin-top:16px;">
+    <h3>Layer Freezing Strategy Calculator</h3>
+    <div class="control-row">
+      <div class="control-group">
+        <label>Total Model Layers</label>
+        <input type="number" id="totalLayers" value="50" min="2" max="1000" style="width:100%;padding:8px;background:#1a1a1a;border:1px solid #333;border-radius:6px;color:#e0e0e0;">
+      </div>
+      <div class="control-group">
+        <label>Domain Similarity (1-10)</label>
+        <input type="range" id="domainSim" min="1" max="10" value="7" style="width:100%;">
+        <span id="domSimVal" style="color:#aaa;font-size:12px;">7 (High)</span>
+      </div>
+      <div class="control-group">
+        <label>Dataset Size Factor (1-10)</label>
+        <input type="range" id="dataFactor" min="1" max="10" value="5" style="width:100%;">
+        <span id="dataFactVal" style="color:#aaa;font-size:12px;">5 (Medium)</span>
+      </div>
+      <button class="btn btn-secondary" id="freezeBtn">Calculate Freezing</button>
+    </div>
+    <div id="freezeResult" style="margin-top:16px;">
+      <div class="viz-container"><svg id="freezeSvg" width="700" height="200" viewBox="0 0 700 200"></svg></div>
+      <div style="display:flex;gap:16px;margin-top:8px;font-size:12px;color:#aaa;">
+        <span><span style="color:#3b82f6;">&#9632;</span> Frozen (keep pretrained weights)</span>
+        <span><span style="color:#22c55e;">&#9632;</span> Fine-tuned (low LR)</span>
+        <span><span style="color:#f59e0b;">&#9632;</span> Trained (full LR)</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="tool-card" style="margin-top:16px;">
+    <h3>Fine-Tuning Learning Rate Estimator</h3>
+    <div class="stat-grid" id="lrEstimate">
+      <div class="stat-card"><div class="value" id="lrFrozen">--</div><div class="label">Frozen Layers LR</div></div>
+      <div class="stat-card"><div class="value" id="lrMiddle">--</div><div class="label">Middle Layers LR</div></div>
+      <div class="stat-card"><div class="value" id="lrHead">--</div><div class="label">Classification Head LR</div></div>
+      <div class="stat-card"><div class="value" id="lrWarmup">--</div><div class="label">Warmup Steps</div></div>
+    </div>
+  </div>
+
+  <section class="explainer-section">
+    <h2>What Is Transfer Learning?</h2>
+    <p>Transfer learning is the machine learning technique of reusing a model trained on one task as the starting point for a model on a different but related task. Instead of training from randomly initialized weights, you begin with weights that already encode useful representations learned from a large dataset. This is arguably the most impactful practical technique in modern deep learning, enabling state-of-the-art results on tasks where training from scratch would require orders of magnitude more data and compute.</p>
+    <p>The theoretical foundation of transfer learning rests on the observation that neural networks learn hierarchical features. In vision models, early convolutional layers learn edge detectors and texture patterns that are universal across image domains. Middle layers compose these into parts (wheels, eyes, leaves) that are domain-specific but task-agnostic. Final layers combine parts into task-specific classifications. By transferring early and middle layer representations, you avoid relearning universal features and focus new training on task-specific adaptation.</p>
+    <p>In NLP, the same principle applies through language models like BERT and GPT. Pretraining on large text corpora learns syntactic structure, semantic relationships, world knowledge, and reasoning patterns. Fine-tuning on a specific task (sentiment analysis, question answering, named entity recognition) adapts these general language capabilities to the target domain with far less labeled data than training from scratch.</p>
+
+    <h2>The Three Transfer Learning Strategies</h2>
+    <p><strong>Feature extraction</strong> is the simplest strategy: freeze all pretrained layers and train only a new classification head (typically one or two fully connected layers). The pretrained model acts as a fixed feature extractor, converting inputs into high-dimensional representations that the new head learns to classify. This works best when the source and target domains are similar and the target dataset is small (hundreds to low thousands of examples). Training is fast because only the head parameters are updated.</p>
+    <p><strong>Fine-tuning</strong> unfreezes some or all pretrained layers and trains them with a small learning rate while training the new head with a larger learning rate. This allows the model to adapt its learned representations to the target domain while still benefiting from the pretrained initialization. Fine-tuning is the most versatile strategy and works well across a wide range of dataset sizes and domain similarities. The key decisions are how many layers to unfreeze and what learning rates to use.</p>
+    <p><strong>Training from scratch</strong> initializes all weights randomly and trains the entire model on the target dataset. This is appropriate only when the target dataset is very large AND very different from the source domain. Even in this case, practitioners often find that pretrained initialization still helps, because the optimization landscape from a pretrained starting point is more favorable than from random initialization. The bar for choosing to train from scratch over fine-tuning is very high.</p>
+
+    <h2>Domain Similarity and Its Impact</h2>
+    <p>The effectiveness of transfer learning depends critically on the similarity between the source and target domains. When domains are similar (ImageNet to wildlife photos, Wikipedia text to news articles), even feature extraction with a frozen backbone works well. When domains are moderately different (ImageNet to satellite imagery, general text to legal documents), fine-tuning the upper layers bridges the gap. When domains are very different (natural images to X-ray scans, English text to code), either extensive fine-tuning or domain-specific pretraining is needed.</p>
+    <p>Research by Yosinski et al. (2014) demonstrated this gradient of transferability. They systematically measured how transferable each layer of a neural network is by transferring subsets of layers between related and unrelated tasks. They found that first-layer features are general and transfer well regardless of task, while higher-layer features become increasingly task-specific and transfer less well. This finding directly informs the layer freezing strategy: freeze more layers when domains are similar, fewer when they differ.</p>
+    <p>Negative transfer occurs when transfer learning hurts performance compared to training from scratch. This typically happens when the source and target domains are so different that the pretrained features are misleading rather than helpful. Negative transfer is rare when using established pretrained models (ImageNet, BERT) but can occur with very domain-specific source models or when fine-tuning hyperparameters are poorly chosen (especially learning rate too high, which destroys the pretrained features).</p>
+
+    <h2>Layer Freezing Strategies</h2>
+    <p>Layer freezing determines which parameters are updated during fine-tuning. The most common approach is <strong>gradual unfreezing</strong> (Howard & Ruder, 2018): start by training only the head, then progressively unfreeze deeper layers over the course of training. This allows the head to adapt first, providing stable gradients for when deeper layers are unfrozen. An alternative is to unfreeze all layers from the start but use <strong>discriminative learning rates</strong>: earlier layers get a learning rate 2-10x smaller than later layers. This achieves a similar effect more simply.</p>
+    <p>The optimal number of frozen layers depends on three factors. First, <strong>domain similarity</strong>: higher similarity means more layers can remain frozen. Second, <strong>dataset size</strong>: larger datasets allow more layers to be trained without overfitting. Third, <strong>model depth</strong>: deeper models have more layers that learn increasingly abstract features, so the middle layers may need more adaptation. As a rough guideline for a 50-layer model: freeze 80-90% of layers for tiny datasets with high domain similarity, 50-70% for medium datasets, and 0-30% for large datasets with low domain similarity.</p>
+
+    <h2>Pretrained Model Selection</h2>
+    <p>Choosing the right pretrained model involves balancing accuracy, efficiency, and compatibility with your target task. For computer vision, the landscape includes: <strong>ResNet</strong> (reliable, well-studied, good baseline), <strong>EfficientNet</strong> (best accuracy-efficiency tradeoff for classification), <strong>ConvNeXt</strong> (modern CNN matching ViT accuracy), <strong>Vision Transformer (ViT)</strong> (state-of-the-art for large datasets, needs more data), and <strong>CLIP</strong> (vision-language model, excellent for zero-shot and few-shot scenarios).</p>
+    <p>For NLP: <strong>BERT/RoBERTa</strong> (bidirectional encoder, best for classification and extraction tasks), <strong>T5/FLAN-T5</strong> (encoder-decoder, flexible for any text-to-text task), <strong>GPT-2/LLaMA</strong> (decoder-only, best for generation), and <strong>DeBERTa</strong> (enhanced BERT with disentangled attention, often best on benchmarks). Model size matters: BERT-base (110M params) is sufficient for many tasks and trainable on consumer GPUs, while BERT-large (340M) or larger models need more compute but give better accuracy.</p>
+
+    <h2>Practical Fine-Tuning Recipes</h2>
+    <ul>
+      <li><strong>Vision (ImageNet pretrained):</strong> Use AdamW optimizer, learning rate 1e-4 to 3e-4 for the head and 1e-5 to 3e-5 for the backbone. Train for 20-50 epochs with cosine LR decay. Use standard augmentation (random crop, horizontal flip, color jitter).</li>
+      <li><strong>NLP (BERT pretrained):</strong> Use AdamW with learning rate 2e-5 to 5e-5, linear warmup over 6-10% of total steps, then linear decay. Train for 3-5 epochs. Use a batch size of 16-32. Weight decay of 0.01.</li>
+      <li><strong>Low-resource scenarios (&lt;1K samples):</strong> Use feature extraction first. If insufficient, fine-tune only the last 1-2 blocks. Apply heavy regularization (dropout 0.3-0.5, weight decay 0.1). Consider data augmentation to artificially expand the dataset.</li>
+      <li><strong>Domain adaptation (very different domains):</strong> Consider intermediate pretraining on unlabeled data from the target domain (e.g., continue BERT pretraining on legal texts before fine-tuning for legal classification). This bridges the domain gap more effectively than direct fine-tuning.</li>
+      <li><strong>Multi-task fine-tuning:</strong> Fine-tune on multiple related tasks simultaneously. This can improve performance on each individual task through shared representations and acts as implicit regularization.</li>
+    </ul>
+
+    <h2>Common Pitfalls and Solutions</h2>
+    <ul>
+      <li><strong>Catastrophic forgetting:</strong> Fine-tuning with too high a learning rate destroys pretrained features. Solution: use learning rates 10-100x smaller than training from scratch, and always use warmup.</li>
+      <li><strong>Overfitting on small datasets:</strong> The fine-tuned model memorizes the training set. Solution: freeze more layers, increase regularization, use augmentation, try feature extraction instead.</li>
+      <li><strong>Underfitting despite large dataset:</strong> The model capacity is insufficient. Solution: use a larger pretrained model, unfreeze more layers, increase the learning rate slightly.</li>
+      <li><strong>Distribution shift:</strong> The target data distribution differs significantly from what the model expects. Solution: normalize inputs using the same statistics as the pretrained model (e.g., ImageNet mean/std for ImageNet-pretrained CNNs).</li>
+      <li><strong>Label mismatch:</strong> Source and target tasks have different label spaces or granularity. Solution: always replace the classification head. For hierarchical labels, consider initializing the new head using the closest source classes.</li>
+    </ul>
+  </section>
+
+  <section class="faq-section">
+    <h2>Frequently Asked Questions</h2>
+    <details>
+      <summary>What is transfer learning and why does it work?</summary>
+      <p>Transfer learning reuses a model trained on one task as a starting point for a different task. It works because neural networks learn hierarchical features: early layers capture universal patterns useful across tasks, while later layers learn task-specific features. Transferring representations leverages knowledge from large datasets and expensive training.</p>
+    </details>
+    <details>
+      <summary>When should I use feature extraction vs fine-tuning vs training from scratch?</summary>
+      <p>Feature extraction (freeze all, train head only) for small, similar-domain datasets. Fine-tuning (unfreeze some layers, low LR) for medium-to-large datasets or different domains. Training from scratch only for very large datasets that are very different from the source. Fine-tuning rarely performs worse than from scratch.</p>
+    </details>
+    <details>
+      <summary>How many layers should I freeze during fine-tuning?</summary>
+      <p>With tiny datasets, freeze 80-90% of layers. With medium datasets, unfreeze the top 30-50%. With large datasets, unfreeze everything but use discriminative learning rates (lower for early layers). Start frozen and gradually unfreeze while monitoring validation performance.</p>
+    </details>
+    <details>
+      <summary>Which pretrained model should I use for my task?</summary>
+      <p>Vision: EfficientNet for efficiency, ConvNeXt/ViT for accuracy. Detection: COCO-pretrained YOLO/DETR. NLP: BERT/RoBERTa for classification, T5 for text-to-text, GPT-2/LLaMA for generation. Match model size to your compute budget.</p>
+    </details>
+    <details>
+      <summary>What learning rate should I use for fine-tuning?</summary>
+      <p>10-100x smaller than training from scratch. NLP: 2e-5 to 5e-5. Vision backbone: 1e-5 to 3e-5. Vision head: 1e-4 to 3e-4. Use discriminative rates (lower for early layers) and always apply warmup for the first 5-10% of training steps.</p>
+    </details>
+  </section>
+
+  <section class="explainer-section">
+    <h2>Related Tools</h2>
+    <div class="related-grid">
+      <a href="/tools/model-complexity-calculator.html" class="related-card">
+        <div class="related-title">Model Complexity Calculator</div>
+        <div class="related-desc">Calculate parameter count, FLOPS, and memory footprint for neural network architectures.</div>
+      </a>
+      <a href="/tools/learning-rate-finder.html" class="related-card">
+        <div class="related-title">Learning Rate Finder</div>
+        <div class="related-desc">Simulate an LR range test to find the optimal learning rate for your model.</div>
+      </a>
+      <a href="/guides/data-augmentation-gallery.html" class="related-card">
+        <div class="related-title">Data Augmentation Gallery</div>
+        <div class="related-desc">Interactive image augmentation preview with code generation for PyTorch and TensorFlow.</div>
+      </a>
+    </div>
+  </section>
+
+  <section class="explainer-section">
+    <h2>About the Author</h2>
+    <p><strong>Michael Lip</strong> builds open-source ML tools and developer utilities at <a href="https://zovo.one">zovo.one</a>. ml0x is part of the Zovo Tools network, a collection of free, privacy-first tools for developers and data scientists. No tracking, no accounts required, no data leaves your browser.</p>
+  </section>
+
+  <p class="last-updated">Last updated: May 25, 2026</p>
+</main>
+
+<footer class="site-footer">
+    <div class="footer-inner">
+        <div class="footer-brand">Zovo Tools</div>
+        <div class="footer-tagline">Free developer tools by a solo dev. No tracking.</div>
+        <a href="https://zovo.one/pricing?utm_source=ml0x.com&utm_medium=satellite&utm_campaign=footer-link" class="footer-cta">Zovo Lifetime — $99 once, free forever &rarr;</a>
+        <div class="footer-copy">&copy; 2026 <a href="https://zovo.one">Zovo</a> &middot; 47/500 founding spots</div>
+    </div>
+</footer>
+
+<nav class="zovo-network" aria-label="Zovo Tools Network">
+    <div class="zovo-network-inner">
+        <h3 class="zovo-network-title">Explore More Tools</h3>
+        <div class="zovo-network-links">
+            <a href="https://abwex.com">ABWex — A/B Testing</a>
+            <a href="https://claudflow.com">ClaudFlow — Workflows</a>
+            <a href="https://claudhq.com">ClaudHQ — AI Code Tools &amp; Fixes</a>
+            <a href="https://claudkit.com">ClaudKit — API</a>
+            <a href="https://enhio.com">Enhio — Text Tools</a>
+            <a href="https://epochpilot.com">EpochPilot — Timestamps</a>
+            <a href="https://gen8x.com">Gen8X — Color Tools</a>
+            <a href="https://gpt0x.com">GPT0X — AI Models</a>
+            <a href="https://heytensor.com">HeyTensor — ML Tools</a>
+            <a href="https://invokebot.com">InvokeBot — Webhooks</a>
+            <a href="https://kappafy.com">Kappafy — JSON</a>
+            <a href="https://kappakit.com">KappaKit — Dev Toolkit</a>
+            <a href="https://kickllm.com">KickLLM — LLM Costs</a>
+            <a href="https://krzen.com">Krzen — Image Tools</a>
+            <a href="https://lochbot.com">LochBot — Security</a>
+            <a href="https://lockml.com">LockML — ML Compare</a>
+            <a href="https://ml3x.com">ML3X — Matrix Math</a>
+        </div>
+    </div>
+</nav>
+
+<script>
+(function() {
+  var models = [
+    {name:'ResNet-50', type:'vision', params:'25M'},
+    {name:'EfficientNet-B3', type:'vision', params:'12M'},
+    {name:'ViT-B/16', type:'vision', params:'86M'},
+    {name:'ConvNeXt-T', type:'vision', params:'29M'},
+    {name:'CLIP ViT-B', type:'multimodal', params:'150M'},
+    {name:'BERT-base', type:'nlp', params:'110M'},
+    {name:'RoBERTa-base', type:'nlp', params:'125M'},
+    {name:'T5-base', type:'nlp', params:'220M'},
+    {name:'GPT-2 (124M)', type:'nlp', params:'124M'},
+    {name:'DeBERTa-v3', type:'nlp', params:'184M'}
+  ];
+
+  var tasks = ['Image Classification','Object Detection','Segmentation','Text Classification','NER','Question Answering','Text Generation','Medical Imaging'];
+
+  var compatibility = [
+    [5,4,4,1,1,1,1,3],
+    [5,3,3,1,1,1,1,3],
+    [5,4,4,1,1,1,1,3],
+    [5,4,4,1,1,1,1,3],
+    [4,3,3,3,2,2,1,2],
+    [1,1,1,5,5,4,2,1],
+    [1,1,1,5,5,5,2,1],
+    [1,1,1,4,4,5,4,1],
+    [1,1,1,3,2,3,5,1],
+    [1,1,1,5,5,5,2,1]
+  ];
+
+  function buildCompatMatrix() {
+    var table = document.getElementById('compatMatrix');
+    var html = '<thead><tr style="border-bottom:2px solid #333;"><th style="padding:8px;text-align:left;color:#aaa;font-size:11px;">Model</th><th style="padding:4px;color:#aaa;font-size:10px;">Params</th>';
+    for (var t = 0; t < tasks.length; t++) html += '<th style="padding:4px;text-align:center;color:#aaa;font-size:10px;max-width:70px;">'+tasks[t]+'</th>';
+    html += '</tr></thead><tbody>';
+    for (var m = 0; m < models.length; m++) {
+      html += '<tr style="border-bottom:1px solid #222;">';
+      html += '<td style="padding:6px;color:#e0e0e0;font-weight:600;font-size:12px;white-space:nowrap;">'+models[m].name+'</td>';
+      html += '<td style="padding:4px;color:#888;font-size:11px;">'+models[m].params+'</td>';
+      for (var t = 0; t < tasks.length; t++) {
+        var score = compatibility[m][t];
+        var color = score >= 4 ? '#22c55e' : score >= 3 ? '#f59e0b' : score >= 2 ? '#ef4444' : '#666';
+        var stars = '';
+        for (var s = 0; s < 5; s++) stars += s < score ? '<span style="color:'+color+';">&#9733;</span>' : '<span style="color:#333;">&#9733;</span>';
+        html += '<td style="padding:4px;text-align:center;font-size:10px;">'+stars+'</td>';
+      }
+      html += '</tr>';
+    }
+    html += '</tbody>';
+    table.innerHTML = html;
+  }
+
+  function getRecommendation() {
+    var source = document.getElementById('sourceDomain').value;
+    var target = document.getElementById('targetTask').value;
+    var dataSize = document.getElementById('datasetSize').value;
+    var compute = document.getElementById('computeBudget').value;
+
+    var isVisionSource = (source === 'imagenet' || source === 'coco' || source === 'medical');
+    var isNLPSource = (source === 'nlp_general' || source === 'code');
+    var isVisionTarget = (target === 'img_classify' || target === 'obj_detect' || target === 'segmentation' || target === 'medical_img');
+    var isNLPTarget = (target === 'text_classify' || target === 'ner' || target === 'qa' || target === 'generation');
+
+    var domainMatch = (isVisionSource && isVisionTarget) || (isNLPSource && isNLPTarget);
+    var highSimilarity = domainMatch && ((source === 'imagenet' && target === 'img_classify') || (source === 'nlp_general' && (target === 'text_classify' || target === 'ner')));
+
+    var strategy, model, details, lr, epochs, freezePct;
+
+    if (dataSize === 'tiny' || dataSize === 'small') {
+      if (highSimilarity) {
+        strategy = 'Feature Extraction';
+        freezePct = 95;
+        details = 'Your dataset is small and the domains are well-matched. Freeze the entire pretrained backbone and train only the classification head. This prevents overfitting while leveraging the strong pretrained features.';
+      } else if (domainMatch) {
+        strategy = 'Feature Extraction + Light Fine-Tuning';
+        freezePct = 80;
+        details = 'Small dataset with moderate domain match. Start with feature extraction for 5-10 epochs, then unfreeze the last 2-3 blocks and fine-tune with a very low learning rate. Use strong regularization (dropout 0.3+, weight decay 0.1).';
+      } else {
+        strategy = 'Feature Extraction (with caution)';
+        freezePct = 90;
+        details = 'Domain mismatch with limited data is challenging. Use feature extraction as a baseline, but consider intermediate pretraining on unlabeled target-domain data if available. Data augmentation is critical to prevent overfitting.';
+      }
+    } else if (dataSize === 'medium') {
+      if (domainMatch) {
+        strategy = 'Fine-Tuning (Discriminative LR)';
+        freezePct = 50;
+        details = 'Medium dataset with matching domain is the sweet spot for fine-tuning. Unfreeze the top 40-60% of layers. Use discriminative learning rates: 10x lower for early layers than for the head. This is the most common transfer learning scenario.';
+      } else {
+        strategy = 'Full Fine-Tuning with Warmup';
+        freezePct = 30;
+        details = 'Medium dataset with domain gap. Unfreeze most layers but start with aggressive warmup (10% of total steps). Use a low base LR and discriminative rates. Consider intermediate pretraining if domain gap is large.';
+      }
+    } else {
+      if (domainMatch) {
+        strategy = 'Full Fine-Tuning';
+        freezePct = 10;
+        details = 'Large dataset with matching domain. Unfreeze all layers and fine-tune end-to-end. The pretrained initialization still helps optimization find better minima faster. Use standard training LR with warmup.';
+      } else if (compute === 'unlimited') {
+        strategy = 'Training from Scratch (or Full Fine-Tuning)';
+        freezePct = 0;
+        details = 'Large dataset, different domain, and unlimited compute. You can afford to train from scratch, but fine-tuning from a pretrained checkpoint typically still converges faster and to a better minimum. Try both and compare.';
+      } else {
+        strategy = 'Full Fine-Tuning';
+        freezePct = 5;
+        details = 'Large dataset but limited compute favors fine-tuning over training from scratch. The pretrained initialization saves significant training time. Unfreeze all layers with discriminative learning rates.';
+      }
+    }
+
+    if (isVisionTarget) {
+      if (compute === 'minimal') model = 'EfficientNet-B0 or ResNet-34';
+      else if (target === 'obj_detect') model = 'YOLOv8 or DETR (COCO pretrained)';
+      else if (target === 'segmentation') model = 'ResNet-50 + DeepLabv3 or SegFormer';
+      else if (target === 'medical_img') model = 'ResNet-50 (RadImageNet) or BiomedCLIP';
+      else model = 'EfficientNet-B3, ConvNeXt-T, or ViT-B/16';
+    } else {
+      if (target === 'generation') model = 'GPT-2 (124M) or LLaMA-2 (7B)';
+      else if (target === 'qa') model = 'DeBERTa-v3 or RoBERTa-large';
+      else model = 'BERT-base, RoBERTa-base, or DeBERTa-v3';
+    }
+
+    var baseLR = isNLPTarget ? '2e-5' : '1e-4';
+    var backboneLR = isNLPTarget ? '5e-6' : '1e-5';
+
+    var html = '<div style="background:#0d1117;border:1px solid #3b82f6;border-radius:8px;padding:20px;margin-bottom:16px;">';
+    html += '<div style="display:flex;align-items:center;gap:12px;margin-bottom:12px;">';
+    html += '<span style="background:#3b82f6;color:#fff;padding:4px 12px;border-radius:4px;font-weight:700;font-size:14px;">'+strategy+'</span>';
+    html += '<span style="color:#aaa;font-size:13px;">Freeze '+freezePct+'% of layers</span>';
+    html += '</div>';
+    html += '<p style="color:#e0e0e0;font-size:14px;margin:0 0 12px;">'+details+'</p>';
+    html += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">';
+    html += '<div><strong style="color:#3b82f6;">Recommended Model:</strong> <span style="color:#e0e0e0;">'+model+'</span></div>';
+    html += '<div><strong style="color:#3b82f6;">Head Learning Rate:</strong> <span style="color:#e0e0e0;">'+baseLR+'</span></div>';
+    html += '<div><strong style="color:#3b82f6;">Backbone Learning Rate:</strong> <span style="color:#e0e0e0;">'+backboneLR+'</span></div>';
+    html += '<div><strong style="color:#3b82f6;">Warmup:</strong> <span style="color:#e0e0e0;">6-10% of total steps</span></div>';
+    html += '</div></div>';
+
+    document.getElementById('recommendResult').innerHTML = html;
+    document.getElementById('recommendSection').style.display = 'block';
+  }
+
+  function calculateFreezing() {
+    var total = parseInt(document.getElementById('totalLayers').value) || 50;
+    var sim = parseInt(document.getElementById('domainSim').value);
+    var dataF = parseInt(document.getElementById('dataFactor').value);
+
+    var unfreezeRatio = (1 - sim/10) * 0.5 + (dataF/10) * 0.5;
+    unfreezeRatio = Math.max(0.05, Math.min(0.95, unfreezeRatio));
+
+    var frozenLayers = Math.floor(total * (1 - unfreezeRatio));
+    var fineTunedLayers = Math.floor((total - frozenLayers) * 0.6);
+    var trainedLayers = total - frozenLayers - fineTunedLayers;
+
+    var baseLR = 3e-4;
+    var frozenLR = 0;
+    var middleLR = baseLR * 0.1;
+    var headLR = baseLR;
+
+    document.getElementById('lrFrozen').textContent = frozenLR === 0 ? '0 (frozen)' : middleLR.toExponential(1);
+    document.getElementById('lrMiddle').textContent = middleLR.toExponential(1);
+    document.getElementById('lrHead').textContent = headLR.toExponential(1);
+    document.getElementById('lrWarmup').textContent = '500-1000';
+
+    drawFreezeVisualization(total, frozenLayers, fineTunedLayers, trainedLayers);
+  }
+
+  function drawFreezeVisualization(total, frozen, fineTuned, trained) {
+    var svg = document.getElementById('freezeSvg');
+    var pad = {l:30, r:30, t:30, b:60};
+    var w = 700 - pad.l - pad.r, h = 200 - pad.t - pad.b;
+    var layerW = Math.min(12, (w - total) / total);
+    var gap = 1;
+    var totalW = total * (layerW + gap);
+    var startX = pad.l + (w - totalW) / 2;
+
+    var html = '<rect width="700" height="200" fill="#141414"/>';
+    html += '<text x="350" y="18" text-anchor="middle" fill="#ccc" font-size="12" font-family="IBM Plex Sans,sans-serif">Layer Freezing Strategy ('+total+' layers: '+frozen+' frozen, '+fineTuned+' fine-tuned, '+trained+' full LR)</text>';
+
+    for (var i = 0; i < total; i++) {
+      var x = startX + i * (layerW + gap);
+      var color;
+      if (i < frozen) color = '#3b82f6';
+      else if (i < frozen + fineTuned) color = '#22c55e';
+      else color = '#f59e0b';
+      html += '<rect x="'+x+'" y="'+pad.t+'" width="'+layerW+'" height="'+h+'" fill="'+color+'" opacity="0.7" rx="1"/>';
+    }
+
+    var frozenEnd = startX + frozen * (layerW + gap);
+    var ftEnd = frozenEnd + fineTuned * (layerW + gap);
+    if (frozen > 0) {
+      html += '<text x="'+(startX + frozenEnd)/2+'" y="'+(pad.t+h+20)+'" text-anchor="middle" fill="#3b82f6" font-size="10" font-family="IBM Plex Sans,sans-serif">Frozen ('+frozen+')</text>';
+    }
+    if (fineTuned > 0) {
+      html += '<text x="'+(frozenEnd + ftEnd)/2+'" y="'+(pad.t+h+20)+'" text-anchor="middle" fill="#22c55e" font-size="10" font-family="IBM Plex Sans,sans-serif">Fine-tuned ('+fineTuned+')</text>';
+    }
+    if (trained > 0) {
+      html += '<text x="'+(ftEnd + startX + totalW)/2+'" y="'+(pad.t+h+20)+'" text-anchor="middle" fill="#f59e0b" font-size="10" font-family="IBM Plex Sans,sans-serif">Full LR ('+trained+')</text>';
+    }
+
+    html += '<text x="'+startX+'" y="'+(pad.t+h+36)+'" fill="#666" font-size="9" font-family="IBM Plex Sans,sans-serif">Input</text>';
+    html += '<text x="'+(startX+totalW)+'" y="'+(pad.t+h+36)+'" text-anchor="end" fill="#666" font-size="9" font-family="IBM Plex Sans,sans-serif">Output/Head</text>';
+    html += '<line x1="'+startX+'" y1="'+(pad.t+h+40)+'" x2="'+(startX+totalW)+'" y2="'+(pad.t+h+40)+'" stroke="#444" stroke-width="1" marker-end="url(#arrow)"/>';
+    html += '<defs><marker id="arrow" markerWidth="6" markerHeight="4" refX="6" refY="2" orient="auto"><path d="M0,0 L6,2 L0,4" fill="#444"/></marker></defs>';
+
+    svg.innerHTML = html;
+  }
+
+  document.getElementById('domainSim').addEventListener('input', function() {
+    var v = parseInt(this.value);
+    var label = v <= 3 ? 'Low' : v <= 6 ? 'Medium' : 'High';
+    document.getElementById('domSimVal').textContent = v + ' (' + label + ')';
+  });
+
+  document.getElementById('dataFactor').addEventListener('input', function() {
+    var v = parseInt(this.value);
+    var label = v <= 3 ? 'Small' : v <= 6 ? 'Medium' : 'Large';
+    document.getElementById('dataFactVal').textContent = v + ' (' + label + ')';
+  });
+
+  document.getElementById('decideBtn').addEventListener('click', getRecommendation);
+  document.getElementById('freezeBtn').addEventListener('click', calculateFreezing);
+
+  buildCompatMatrix();
+  getRecommendation();
+  calculateFreezing();
+})();
+</script>
+</body>
+</html>

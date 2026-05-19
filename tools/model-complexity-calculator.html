@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Model Complexity Calculator — Parameter Count &amp; FLOPS Estimator | ml0x</title>
+<meta name="description" content="Free model complexity calculator. Build neural networks layer by layer to calculate parameter count, FLOPS, and memory footprint. Compare ResNet, VGG, BERT, GPT architectures. Supports Dense, Conv2D, LSTM, Attention, and BatchNorm layers.">
+<meta name="keywords" content="model complexity calculator, parameter count, FLOPS estimator, neural network size, memory footprint, ResNet parameters, VGG parameters, BERT parameters, GPT parameters, deep learning architecture">
+<link rel="canonical" href="https://ml0x.com/tools/model-complexity-calculator.html">
+<link rel="alternate" hreflang="en" href="https://ml0x.com/tools/model-complexity-calculator.html">
+<link rel="alternate" hreflang="x-default" href="https://ml0x.com/tools/model-complexity-calculator.html">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Model Complexity Calculator — Parameter Count & FLOPS Estimator">
+<meta property="og:description" content="Build models layer by layer. Calculate parameters, FLOPS, and memory footprint. Compare ResNet, VGG, BERT, and GPT architectures at different precisions.">
+<meta property="og:url" content="https://ml0x.com/tools/model-complexity-calculator.html">
+<meta property="og:site_name" content="Zovo Tools">
+<meta property="og:locale" content="en_US">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Model Complexity Calculator — Parameter Count & FLOPS Estimator">
+<meta name="twitter:description" content="Build neural networks layer by layer. Calculate parameters, FLOPS, memory footprint. Compare popular architectures.">
+<meta name="author" content="Michael Lip">
+<meta name="robots" content="index, follow">
+<link rel="stylesheet" href="/assets/style.css">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebApplication",
+  "name": "Model Complexity Calculator",
+  "description": "Build neural networks layer by layer to calculate parameter count, FLOPS, and memory footprint. Compare popular architectures like ResNet, VGG, BERT, and GPT.",
+  "url": "https://ml0x.com/tools/model-complexity-calculator.html",
+  "applicationCategory": "EducationalApplication",
+  "operatingSystem": "Any",
+  "offers": {"@type": "Offer", "price": "0", "priceCurrency": "USD"},
+  "author": {"@type": "Person", "name": "Michael Lip", "url": "https://zovo.one"},
+  "publisher": {"@type": "Organization", "name": "ML0X", "url": "https://ml0x.com"},
+  "datePublished": "2026-05-25",
+  "dateModified": "2026-05-25"
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {"@type": "Question", "name": "How do I count parameters in a neural network?", "acceptedAnswer": {"@type": "Answer", "text": "Each layer type has a specific formula. A Dense (fully connected) layer with input_dim I and output_dim O has I*O + O parameters (weights + biases). A Conv2D layer with kernel K, input channels C_in, and output channels C_out has K*K*C_in*C_out + C_out parameters. An LSTM with input_dim I and hidden_dim H has 4*(I*H + H*H + H) parameters. Multi-head attention with hidden_dim D has 4*D*D parameters (Q, K, V projections + output projection). BatchNorm has 2*features parameters (gamma + beta). Sum all layer parameters for the total model count."}},
+    {"@type": "Question", "name": "What is the difference between parameters and FLOPS?", "acceptedAnswer": {"@type": "Answer", "text": "Parameters measure model size (the number of trainable weights). FLOPS (Floating Point Operations Per Second, or more precisely, the total operation count FLOPs) measure computational cost per forward pass. A model can have few parameters but high FLOPS (e.g., a small model processing large inputs) or many parameters but relatively low FLOPS (e.g., large embedding tables with sparse lookups). Both matter: parameters determine memory requirements and model capacity, while FLOPS determine training/inference speed and hardware requirements."}},
+    {"@type": "Question", "name": "How much GPU memory does a model need?", "acceptedAnswer": {"@type": "Answer", "text": "During inference, memory equals parameters times bytes per parameter: fp32 uses 4 bytes, fp16/bf16 uses 2 bytes, int8 uses 1 byte. During training, memory also includes gradients (same size as parameters), optimizer states (8 bytes/param for Adam in fp32), and activations (scales with batch size and model architecture). A 7B parameter model needs approximately 14 GB for inference in fp16, but 70-100+ GB for training in fp32 with Adam due to optimizer states and activations."}},
+    {"@type": "Question", "name": "How do FLOPS scale with model size?", "acceptedAnswer": {"@type": "Answer", "text": "For Transformer models, FLOPS per token scale approximately as 2 * num_parameters (each parameter participates in roughly 2 floating point operations per forward pass: one multiply and one add). Total FLOPS per training step also scale with sequence length and batch size. Attention FLOPS scale quadratically with sequence length (O(n^2 * d) where n is sequence length and d is head dimension), which is why long-context models are so computationally expensive. For CNNs, FLOPS depend on spatial resolution, kernel size, and channel count."}},
+    {"@type": "Question", "name": "How do popular architectures compare in complexity?", "acceptedAnswer": {"@type": "Answer", "text": "VGG-16 has 138M parameters and 15.5 GFLOPS, mostly in fully connected layers. ResNet-50 has only 25.6M parameters and 4.1 GFLOPS, achieving better accuracy through residual connections. EfficientNet-B0 has just 5.3M parameters and 0.4 GFLOPS with competitive accuracy. BERT-base has 110M parameters. GPT-2 has 124M (small) to 1.5B (XL) parameters. GPT-3 has 175B parameters. Modern large language models like LLaMA-2 70B demonstrate that scaling parameters continues to improve performance, but with rapidly increasing compute and memory costs."}}
+  ]
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {"@type": "ListItem", "position": 1, "name": "Home", "item": "https://ml0x.com/"},
+    {"@type": "ListItem", "position": 2, "name": "Tools", "item": "https://ml0x.com/tools/"},
+    {"@type": "ListItem", "position": 3, "name": "Model Complexity Calculator"}
+  ]
+}
+</script>
+</head>
+<body>
+
+<header>
+  <div class="container header-inner">
+    <a href="/" class="logo">ml0x</a>
+    <nav>
+      <a href="/">Home</a>
+      <a href="/research/">Research</a>
+      <a href="/tools/">Tools</a>
+      <a href="/guides/">Guides</a>
+      <a href="/answers/">Answers</a>
+      <div class="nav-right">
+        <a href="https://zovo.one/pricing?utm_source=ml0x.com&utm_medium=satellite&utm_campaign=nav-link" class="nav-pro" target="_blank">Go Pro &#10022;</a>
+        <a href="https://zovo.one/tools" class="nav-zovo">Zovo Tools</a>
+      </div>
+    </nav>
+  </div>
+</header>
+
+<main class="container">
+  <div class="breadcrumb">
+    <a href="/">Home</a> <span>&rsaquo;</span> <a href="/tools/">Tools</a> <span>&rsaquo;</span> Model Complexity Calculator
+  </div>
+
+  <div class="hero">
+    <h1>Model Complexity <span>Calculator</span></h1>
+    <p>Build your neural network layer by layer and instantly see the parameter count, FLOPS, and memory footprint at each stage. Add Dense, Conv2D, LSTM, Multi-Head Attention, and BatchNorm layers with custom dimensions. Compare your architecture against popular models like ResNet, VGG, BERT, and GPT variants. Calculate memory requirements at different numerical precisions. Everything runs locally in your browser.</p>
+  </div>
+
+  <div class="tool-card">
+    <h3>Add Layer</h3>
+    <div class="control-row">
+      <div class="control-group">
+        <label>Layer Type</label>
+        <select id="layerType">
+          <option value="dense">Dense (Fully Connected)</option>
+          <option value="conv2d">Conv2D</option>
+          <option value="lstm">LSTM</option>
+          <option value="attention">Multi-Head Attention</option>
+          <option value="batchnorm">BatchNorm</option>
+          <option value="embedding">Embedding</option>
+          <option value="layernorm">LayerNorm</option>
+        </select>
+      </div>
+    </div>
+    <div id="layerParams" class="control-row" style="margin-top:12px;"></div>
+    <div class="control-row" style="margin-top:12px;">
+      <button class="btn" id="addLayerBtn">Add Layer</button>
+      <button class="btn btn-secondary" id="clearAllBtn">Clear All Layers</button>
+      <button class="btn btn-secondary" id="undoBtn">Remove Last Layer</button>
+    </div>
+  </div>
+
+  <div class="tool-card" style="margin-top:16px;">
+    <h3>Model Summary</h3>
+    <div class="stat-grid">
+      <div class="stat-card"><div class="value" id="totalParams">0</div><div class="label">Total Parameters</div></div>
+      <div class="stat-card"><div class="value" id="totalFlops">0</div><div class="label">Total FLOPS</div></div>
+      <div class="stat-card"><div class="value" id="memFP32">0 MB</div><div class="label">Memory (fp32)</div></div>
+      <div class="stat-card"><div class="value" id="memFP16">0 MB</div><div class="label">Memory (fp16/bf16)</div></div>
+      <div class="stat-card"><div class="value" id="memINT8">0 MB</div><div class="label">Memory (int8)</div></div>
+      <div class="stat-card"><div class="value" id="layerCount">0</div><div class="label">Layers</div></div>
+    </div>
+    <div style="overflow-x:auto;margin-top:16px;">
+      <table style="width:100%;border-collapse:collapse;font-size:13px;" id="layerTable">
+        <thead>
+          <tr style="border-bottom:2px solid #333;">
+            <th style="text-align:left;padding:8px;color:#aaa;">#</th>
+            <th style="text-align:left;padding:8px;color:#aaa;">Layer</th>
+            <th style="text-align:left;padding:8px;color:#aaa;">Config</th>
+            <th style="text-align:right;padding:8px;color:#aaa;">Parameters</th>
+            <th style="text-align:right;padding:8px;color:#aaa;">FLOPS</th>
+            <th style="text-align:right;padding:8px;color:#aaa;">Output Shape</th>
+          </tr>
+        </thead>
+        <tbody id="layerBody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="tool-card" style="margin-top:16px;">
+    <h3>Architecture Comparison</h3>
+    <p style="color:#aaa;font-size:13px;margin-bottom:12px;">Compare parameter count, FLOPS, and memory footprint of popular architectures.</p>
+    <div class="viz-container"><svg id="compareSvg" width="700" height="400" viewBox="0 0 700 400"></svg></div>
+    <div class="control-row" style="margin-top:12px;">
+      <div class="control-group">
+        <label>Compare By</label>
+        <select id="compareMetric">
+          <option value="params" selected>Parameters</option>
+          <option value="flops">FLOPS</option>
+          <option value="memory">Memory (fp16)</option>
+        </select>
+      </div>
+      <button class="btn btn-secondary" id="compareBtn">Update Chart</button>
+    </div>
+  </div>
+
+  <div class="tool-card" style="margin-top:16px;">
+    <h3>Memory at Different Precisions</h3>
+    <div class="viz-container"><svg id="precisionSvg" width="700" height="280" viewBox="0 0 700 280"></svg></div>
+  </div>
+
+  <section class="explainer-section">
+    <h2>Counting Parameters in Neural Networks</h2>
+    <p>Understanding the parameter count of a neural network is fundamental to estimating its memory requirements, computational cost, and modeling capacity. Each layer type has a precise formula for counting trainable parameters, and summing across all layers gives the total model size. This number directly determines how much GPU memory the model consumes, how long training takes, and how much data is needed to train it effectively without overfitting.</p>
+    <p>A <strong>Dense (fully connected) layer</strong> maps an input of dimension I to an output of dimension O. Each input connects to each output through a learned weight, giving I * O weights. Adding O bias terms, the total is I * O + O parameters. A Dense layer from 768 to 3072 (common in BERT) has 768 * 3072 + 3072 = 2,362,368 parameters. Dense layers are parameter-heavy because every input-output pair has a dedicated weight.</p>
+    <p>A <strong>Conv2D layer</strong> with kernel size K, C_in input channels, and C_out output channels has K * K * C_in * C_out + C_out parameters. A 3x3 convolution from 64 to 128 channels has 3 * 3 * 64 * 128 + 128 = 73,856 parameters. Convolutions are parameter-efficient because the same kernel is applied across all spatial positions (weight sharing), but they can be computationally expensive because the kernel must be applied at every position in the feature map.</p>
+    <p>An <strong>LSTM layer</strong> with input dimension I and hidden dimension H has 4 * (I * H + H * H + H) parameters. The factor of 4 comes from the four gates (input, forget, cell, output), each of which has a weight matrix for both input and hidden state plus a bias vector. An LSTM with input 300 and hidden 512 has 4 * (300 * 512 + 512 * 512 + 512) = 1,665,024 parameters.</p>
+    <p><strong>Multi-Head Attention</strong> with model dimension D has approximately 4 * D * D parameters: three projection matrices for queries, keys, and values (each D x D) plus one output projection (D x D). The actual count also includes biases: 4 * (D * D + D). For BERT-base (D = 768), each attention layer has 4 * (768 * 768 + 768) = 2,362,368 parameters. With multiple heads, the computation is split (D/H per head) but the total parameter count is the same.</p>
+    <p><strong>BatchNorm and LayerNorm</strong> each have 2 * features parameters: a learned scale (gamma) and shift (beta) per feature dimension. A BatchNorm layer on 256 channels has 512 parameters. While these layers add minimal parameters, they are critical for training stability and convergence speed.</p>
+
+    <h2>Understanding FLOPS</h2>
+    <p>FLOPS (Floating Point Operations) measures the computational cost of a forward pass through the network. While parameter count tells you how big the model is, FLOPS tells you how expensive it is to run. A model with a large embedding table has many parameters but relatively few FLOPS (embeddings are just lookups). A model with many small convolutions applied to high-resolution feature maps has fewer parameters but many FLOPS.</p>
+    <p>For a Dense layer, FLOPS equal 2 * I * O (one multiply and one add per weight). For Conv2D, FLOPS equal 2 * K * K * C_in * C_out * H_out * W_out, where H_out and W_out are the spatial dimensions of the output feature map. This is why convolutions on large feature maps are computationally expensive. For attention, the dominant cost is the attention matrix computation: 2 * n^2 * d per head, where n is sequence length and d is head dimension. This quadratic scaling is why long sequences are so expensive for Transformers.</p>
+    <p>FLOPS do not directly correspond to wall-clock time because modern GPUs achieve different FLOPS rates for different operations. Matrix multiplications on tensor cores achieve near-peak throughput, while element-wise operations and memory-bound operations are much slower. This is why a model with high FLOPS in well-structured matrix operations (Dense, Conv, Attention) may actually run faster than a model with fewer FLOPS but many element-wise operations.</p>
+
+    <h2>Memory Footprint and Precision</h2>
+    <p>The memory footprint of a model depends on the numerical precision used to store its parameters. In <strong>fp32</strong> (32-bit floating point), each parameter occupies 4 bytes. In <strong>fp16</strong> or <strong>bf16</strong> (16-bit), each parameter occupies 2 bytes. In <strong>int8</strong> (8-bit integer quantization), each parameter occupies 1 byte. Halving the precision roughly halves the memory, enabling larger models or larger batch sizes on the same hardware.</p>
+    <p>For inference, the memory requirement is straightforward: parameters times bytes per parameter, plus activation memory for the current batch. For training, memory is much higher: you need space for parameters, gradients (same size as parameters), optimizer states (2x parameters for Adam in fp32), and activations for the entire batch (needed for backpropagation). A 7B parameter model needs approximately 14 GB for fp16 inference, but 60-100+ GB for fp32 training with Adam.</p>
+    <p>Quantization reduces memory at the cost of precision. int8 quantization halves the memory compared to fp16 with minimal accuracy loss for inference (typically less than 1% degradation). 4-bit quantization (NF4, GPTQ) further halves memory and is increasingly popular for deploying large language models on consumer GPUs. The tradeoff between precision and accuracy depends on the model architecture and task: vision models are generally more robust to quantization than language models.</p>
+
+    <h2>Architecture Comparison</h2>
+    <p>The evolution of neural network architectures shows a clear trend toward higher efficiency: achieving better accuracy with fewer parameters and FLOPS. <strong>VGG-16</strong> (2014) uses 138M parameters, with the vast majority (123M) in its three fully connected layers. <strong>ResNet-50</strong> (2015) achieves better accuracy with only 25.6M parameters by replacing fully connected layers with global average pooling and using residual connections. <strong>EfficientNet-B0</strong> (2019) achieves ResNet-50 level accuracy with just 5.3M parameters through neural architecture search and compound scaling.</p>
+    <p>In NLP, the trend is toward larger models rather than more efficient ones. <strong>BERT-base</strong> (2018) has 110M parameters, <strong>GPT-2</strong> (2019) has 124M to 1.5B, <strong>GPT-3</strong> (2020) has 175B, and the largest models now exceed 1 trillion parameters. However, distillation and pruning techniques can compress these models by 2-10x with minimal accuracy loss. <strong>DistilBERT</strong> retains 97% of BERT's accuracy with 40% fewer parameters. <strong>TinyBERT</strong> achieves similar accuracy with 7.5x fewer parameters through task-specific distillation.</p>
+
+    <h2>Practical Tips for Architecture Selection</h2>
+    <ul>
+      <li><strong>Start small, scale up.</strong> Begin with the smallest model that achieves reasonable performance (EfficientNet-B0, BERT-base). Only scale up if you have evidence that larger models will help and the compute budget to support them.</li>
+      <li><strong>Parameter count does not equal quality.</strong> EfficientNet-B0 (5.3M) outperforms VGG-16 (138M) by a large margin. Architecture design matters more than raw size.</li>
+      <li><strong>Match model size to dataset size.</strong> Models with more parameters than training examples are prone to overfitting. The ratio of parameters to training examples should ideally be less than 1:10 for supervised learning.</li>
+      <li><strong>Consider inference cost.</strong> For deployment, FLOPS and latency matter more than parameter count. A model that fits in memory but takes 100ms per inference may be impractical for real-time applications.</li>
+      <li><strong>Use quantization for deployment.</strong> int8 or 4-bit quantization can reduce inference memory by 4-8x with minimal accuracy loss, enabling deployment on smaller GPUs or edge devices.</li>
+      <li><strong>Profile before optimizing.</strong> Use PyTorch profiler or TensorFlow profiler to identify actual bottlenecks rather than relying on theoretical FLOPS counts.</li>
+      <li><strong>Account for batch normalization and normalization layers.</strong> They add negligible parameters but can significantly affect training speed and memory due to running statistics.</li>
+    </ul>
+  </section>
+
+  <section class="faq-section">
+    <h2>Frequently Asked Questions</h2>
+    <details>
+      <summary>How do I count parameters in a neural network?</summary>
+      <p>Dense layers: I*O + O. Conv2D: K*K*C_in*C_out + C_out. LSTM: 4*(I*H + H*H + H). Multi-Head Attention: 4*(D*D + D). BatchNorm/LayerNorm: 2*features. Sum all layer parameters for the total count.</p>
+    </details>
+    <details>
+      <summary>What is the difference between parameters and FLOPS?</summary>
+      <p>Parameters measure model size (number of trainable weights, determining memory). FLOPS measure computational cost per forward pass (determining speed). A model can have few parameters but high FLOPS or vice versa. Both affect practical deployment constraints.</p>
+    </details>
+    <details>
+      <summary>How much GPU memory does a model need?</summary>
+      <p>For inference: parameters * bytes_per_param (4 for fp32, 2 for fp16, 1 for int8). For training, add gradients (same size), optimizer states (8 bytes/param for Adam), and activations (scales with batch size). A 7B model needs ~14 GB fp16 inference, ~100 GB fp32 training.</p>
+    </details>
+    <details>
+      <summary>How do FLOPS scale with model size?</summary>
+      <p>For Transformers, FLOPS per token are approximately 2 * num_parameters. Attention scales quadratically with sequence length. For CNNs, FLOPS depend on spatial resolution, kernel size, and channels. Larger models require proportionally more compute per sample.</p>
+    </details>
+    <details>
+      <summary>How do popular architectures compare in complexity?</summary>
+      <p>VGG-16: 138M params, 15.5 GFLOPS. ResNet-50: 25.6M params, 4.1 GFLOPS. EfficientNet-B0: 5.3M params, 0.4 GFLOPS. BERT-base: 110M params. GPT-2: 124M-1.5B. Modern architectures achieve much better accuracy/parameter ratios than older ones.</p>
+    </details>
+  </section>
+
+  <section class="explainer-section">
+    <h2>Related Tools</h2>
+    <div class="related-grid">
+      <a href="/answers/batch-size-optimizer.html" class="related-card">
+        <div class="related-title">Batch Size Optimizer</div>
+        <div class="related-desc">Calculate maximum batch size from GPU memory with gradient accumulation estimator.</div>
+      </a>
+      <a href="/tools/learning-rate-finder.html" class="related-card">
+        <div class="related-title">Learning Rate Finder</div>
+        <div class="related-desc">Simulate an LR range test to find the optimal learning rate for your model.</div>
+      </a>
+      <a href="/tools/neural-network-playground.html" class="related-card">
+        <div class="related-title">Neural Network Playground</div>
+        <div class="related-desc">Build, train, and visualize neural networks entirely in your browser.</div>
+      </a>
+    </div>
+  </section>
+
+  <section class="explainer-section">
+    <h2>About the Author</h2>
+    <p><strong>Michael Lip</strong> builds open-source ML tools and developer utilities at <a href="https://zovo.one">zovo.one</a>. ml0x is part of the Zovo Tools network, a collection of free, privacy-first tools for developers and data scientists. No tracking, no accounts required, no data leaves your browser.</p>
+  </section>
+
+  <p class="last-updated">Last updated: May 25, 2026</p>
+</main>
+
+<footer class="site-footer">
+    <div class="footer-inner">
+        <div class="footer-brand">Zovo Tools</div>
+        <div class="footer-tagline">Free developer tools by a solo dev. No tracking.</div>
+        <a href="https://zovo.one/pricing?utm_source=ml0x.com&utm_medium=satellite&utm_campaign=footer-link" class="footer-cta">Zovo Lifetime — $99 once, free forever &rarr;</a>
+        <div class="footer-copy">&copy; 2026 <a href="https://zovo.one">Zovo</a> &middot; 47/500 founding spots</div>
+    </div>
+</footer>
+
+<nav class="zovo-network" aria-label="Zovo Tools Network">
+    <div class="zovo-network-inner">
+        <h3 class="zovo-network-title">Explore More Tools</h3>
+        <div class="zovo-network-links">
+            <a href="https://abwex.com">ABWex — A/B Testing</a>
+            <a href="https://claudflow.com">ClaudFlow — Workflows</a>
+            <a href="https://claudhq.com">ClaudHQ — AI Code Tools &amp; Fixes</a>
+            <a href="https://claudkit.com">ClaudKit — API</a>
+            <a href="https://enhio.com">Enhio — Text Tools</a>
+            <a href="https://epochpilot.com">EpochPilot — Timestamps</a>
+            <a href="https://gen8x.com">Gen8X — Color Tools</a>
+            <a href="https://gpt0x.com">GPT0X — AI Models</a>
+            <a href="https://heytensor.com">HeyTensor — ML Tools</a>
+            <a href="https://invokebot.com">InvokeBot — Webhooks</a>
+            <a href="https://kappafy.com">Kappafy — JSON</a>
+            <a href="https://kappakit.com">KappaKit — Dev Toolkit</a>
+            <a href="https://kickllm.com">KickLLM — LLM Costs</a>
+            <a href="https://krzen.com">Krzen — Image Tools</a>
+            <a href="https://lochbot.com">LochBot — Security</a>
+            <a href="https://lockml.com">LockML — ML Compare</a>
+            <a href="https://ml3x.com">ML3X — Matrix Math</a>
+        </div>
+    </div>
+</nav>
+
+<script>
+(function() {
+  var layers = [];
+  var architectures = [
+    {name:'VGG-16', params:138e6, flops:15.5e9, year:2014, color:'#ef4444'},
+    {name:'ResNet-50', params:25.6e6, flops:4.1e9, year:2015, color:'#f59e0b'},
+    {name:'ResNet-152', params:60.2e6, flops:11.6e9, year:2015, color:'#f97316'},
+    {name:'InceptionV3', params:23.8e6, flops:5.7e9, year:2015, color:'#eab308'},
+    {name:'EfficientNet-B0', params:5.3e6, flops:0.4e9, year:2019, color:'#22c55e'},
+    {name:'EfficientNet-B7', params:66e6, flops:37e9, year:2019, color:'#16a34a'},
+    {name:'ConvNeXt-T', params:28.6e6, flops:4.5e9, year:2022, color:'#06b6d4'},
+    {name:'ViT-B/16', params:86.6e6, flops:17.6e9, year:2020, color:'#3b82f6'},
+    {name:'BERT-base', params:110e6, flops:22e9, year:2018, color:'#8b5cf6'},
+    {name:'BERT-large', params:340e6, flops:78e9, year:2018, color:'#7c3aed'},
+    {name:'GPT-2 (S)', params:124e6, flops:25e9, year:2019, color:'#a78bfa'},
+    {name:'GPT-2 (XL)', params:1500e6, flops:300e9, year:2019, color:'#9333ea'},
+    {name:'GPT-3', params:175000e6, flops:314e12, year:2020, color:'#c026d3'},
+    {name:'LLaMA-7B', params:7000e6, flops:14e12, year:2023, color:'#ec4899'}
+  ];
+
+  function updateLayerParamInputs() {
+    var type = document.getElementById('layerType').value;
+    var container = document.getElementById('layerParams');
+    var html = '';
+    if (type === 'dense') {
+      html = '<div class="control-group"><label>Input Dim</label><input type="number" id="lpIn" value="768" min="1" style="width:100%;padding:8px;background:#1a1a1a;border:1px solid #333;border-radius:6px;color:#e0e0e0;"></div>';
+      html += '<div class="control-group"><label>Output Dim</label><input type="number" id="lpOut" value="3072" min="1" style="width:100%;padding:8px;background:#1a1a1a;border:1px solid #333;border-radius:6px;color:#e0e0e0;"></div>';
+    } else if (type === 'conv2d') {
+      html = '<div class="control-group"><label>In Channels</label><input type="number" id="lpCin" value="64" min="1" style="width:100%;padding:8px;background:#1a1a1a;border:1px solid #333;border-radius:6px;color:#e0e0e0;"></div>';
+      html += '<div class="control-group"><label>Out Channels</label><input type="number" id="lpCout" value="128" min="1" style="width:100%;padding:8px;background:#1a1a1a;border:1px solid #333;border-radius:6px;color:#e0e0e0;"></div>';
+      html += '<div class="control-group"><label>Kernel Size</label><input type="number" id="lpK" value="3" min="1" style="width:100%;padding:8px;background:#1a1a1a;border:1px solid #333;border-radius:6px;color:#e0e0e0;"></div>';
+      html += '<div class="control-group"><label>Feature Map Size</label><input type="number" id="lpFM" value="56" min="1" style="width:100%;padding:8px;background:#1a1a1a;border:1px solid #333;border-radius:6px;color:#e0e0e0;"></div>';
+    } else if (type === 'lstm') {
+      html = '<div class="control-group"><label>Input Dim</label><input type="number" id="lpIn" value="300" min="1" style="width:100%;padding:8px;background:#1a1a1a;border:1px solid #333;border-radius:6px;color:#e0e0e0;"></div>';
+      html += '<div class="control-group"><label>Hidden Dim</label><input type="number" id="lpHid" value="512" min="1" style="width:100%;padding:8px;background:#1a1a1a;border:1px solid #333;border-radius:6px;color:#e0e0e0;"></div>';
+      html += '<div class="control-group"><label>Seq Length</label><input type="number" id="lpSeq" value="128" min="1" style="width:100%;padding:8px;background:#1a1a1a;border:1px solid #333;border-radius:6px;color:#e0e0e0;"></div>';
+    } else if (type === 'attention') {
+      html = '<div class="control-group"><label>Model Dim (d_model)</label><input type="number" id="lpDim" value="768" min="1" style="width:100%;padding:8px;background:#1a1a1a;border:1px solid #333;border-radius:6px;color:#e0e0e0;"></div>';
+      html += '<div class="control-group"><label>Num Heads</label><input type="number" id="lpHeads" value="12" min="1" style="width:100%;padding:8px;background:#1a1a1a;border:1px solid #333;border-radius:6px;color:#e0e0e0;"></div>';
+      html += '<div class="control-group"><label>Seq Length</label><input type="number" id="lpSeq" value="512" min="1" style="width:100%;padding:8px;background:#1a1a1a;border:1px solid #333;border-radius:6px;color:#e0e0e0;"></div>';
+    } else if (type === 'batchnorm' || type === 'layernorm') {
+      html = '<div class="control-group"><label>Features</label><input type="number" id="lpFeat" value="256" min="1" style="width:100%;padding:8px;background:#1a1a1a;border:1px solid #333;border-radius:6px;color:#e0e0e0;"></div>';
+    } else if (type === 'embedding') {
+      html = '<div class="control-group"><label>Vocab Size</label><input type="number" id="lpVocab" value="30522" min="1" style="width:100%;padding:8px;background:#1a1a1a;border:1px solid #333;border-radius:6px;color:#e0e0e0;"></div>';
+      html += '<div class="control-group"><label>Embedding Dim</label><input type="number" id="lpDim" value="768" min="1" style="width:100%;padding:8px;background:#1a1a1a;border:1px solid #333;border-radius:6px;color:#e0e0e0;"></div>';
+    }
+    container.innerHTML = html;
+  }
+
+  document.getElementById('layerType').addEventListener('change', updateLayerParamInputs);
+  updateLayerParamInputs();
+
+  function addLayer() {
+    var type = document.getElementById('layerType').value;
+    var layer = {type: type, params: 0, flops: 0, config: '', output: ''};
+
+    if (type === 'dense') {
+      var inp = parseInt(document.getElementById('lpIn').value) || 768;
+      var out = parseInt(document.getElementById('lpOut').value) || 3072;
+      layer.params = inp * out + out;
+      layer.flops = 2 * inp * out;
+      layer.config = inp + ' -> ' + out;
+      layer.output = out + '';
+    } else if (type === 'conv2d') {
+      var cin = parseInt(document.getElementById('lpCin').value) || 64;
+      var cout = parseInt(document.getElementById('lpCout').value) || 128;
+      var k = parseInt(document.getElementById('lpK').value) || 3;
+      var fm = parseInt(document.getElementById('lpFM').value) || 56;
+      layer.params = k * k * cin * cout + cout;
+      layer.flops = 2 * k * k * cin * cout * fm * fm;
+      layer.config = cin + '->' + cout + ', ' + k + 'x' + k + ', fm=' + fm;
+      layer.output = cout + 'x' + fm + 'x' + fm;
+    } else if (type === 'lstm') {
+      var inp = parseInt(document.getElementById('lpIn').value) || 300;
+      var hid = parseInt(document.getElementById('lpHid').value) || 512;
+      var seq = parseInt(document.getElementById('lpSeq').value) || 128;
+      layer.params = 4 * (inp * hid + hid * hid + hid);
+      layer.flops = seq * (8 * hid * (inp + hid));
+      layer.config = inp + '->' + hid + ', seq=' + seq;
+      layer.output = seq + 'x' + hid;
+    } else if (type === 'attention') {
+      var dim = parseInt(document.getElementById('lpDim').value) || 768;
+      var heads = parseInt(document.getElementById('lpHeads').value) || 12;
+      var seq = parseInt(document.getElementById('lpSeq').value) || 512;
+      layer.params = 4 * (dim * dim + dim);
+      layer.flops = 2 * 4 * dim * dim * seq + 2 * heads * seq * seq * (dim / heads);
+      layer.config = 'd=' + dim + ', h=' + heads + ', seq=' + seq;
+      layer.output = seq + 'x' + dim;
+    } else if (type === 'batchnorm' || type === 'layernorm') {
+      var feat = parseInt(document.getElementById('lpFeat').value) || 256;
+      layer.params = 2 * feat;
+      layer.flops = 5 * feat;
+      layer.config = feat + ' features';
+      layer.output = feat + '';
+    } else if (type === 'embedding') {
+      var vocab = parseInt(document.getElementById('lpVocab').value) || 30522;
+      var dim = parseInt(document.getElementById('lpDim').value) || 768;
+      layer.params = vocab * dim;
+      layer.flops = 0;
+      layer.config = vocab + ' x ' + dim;
+      layer.output = dim + '';
+    }
+
+    layers.push(layer);
+    updateDisplay();
+  }
+
+  function formatNum(n) {
+    if (n >= 1e12) return (n/1e12).toFixed(1) + 'T';
+    if (n >= 1e9) return (n/1e9).toFixed(1) + 'B';
+    if (n >= 1e6) return (n/1e6).toFixed(1) + 'M';
+    if (n >= 1e3) return (n/1e3).toFixed(1) + 'K';
+    return n.toString();
+  }
+
+  function updateDisplay() {
+    var totalP = 0, totalF = 0;
+    for (var i = 0; i < layers.length; i++) {
+      totalP += layers[i].params;
+      totalF += layers[i].flops;
+    }
+
+    document.getElementById('totalParams').textContent = formatNum(totalP);
+    document.getElementById('totalFlops').textContent = formatNum(totalF);
+    document.getElementById('memFP32').textContent = (totalP * 4 / (1024*1024)).toFixed(1) + ' MB';
+    document.getElementById('memFP16').textContent = (totalP * 2 / (1024*1024)).toFixed(1) + ' MB';
+    document.getElementById('memINT8').textContent = (totalP * 1 / (1024*1024)).toFixed(1) + ' MB';
+    document.getElementById('layerCount').textContent = layers.length;
+
+    var tbody = document.getElementById('layerBody');
+    var html = '';
+    for (var i = 0; i < layers.length; i++) {
+      var l = layers[i];
+      var typeLabel = l.type.charAt(0).toUpperCase() + l.type.slice(1);
+      if (l.type === 'conv2d') typeLabel = 'Conv2D';
+      if (l.type === 'lstm') typeLabel = 'LSTM';
+      if (l.type === 'attention') typeLabel = 'Multi-Head Attention';
+      if (l.type === 'batchnorm') typeLabel = 'BatchNorm';
+      if (l.type === 'layernorm') typeLabel = 'LayerNorm';
+      html += '<tr style="border-bottom:1px solid #222;">';
+      html += '<td style="padding:6px;color:#666;">'+(i+1)+'</td>';
+      html += '<td style="padding:6px;color:#3b82f6;font-weight:600;">'+typeLabel+'</td>';
+      html += '<td style="padding:6px;color:#aaa;font-size:12px;">'+l.config+'</td>';
+      html += '<td style="padding:6px;text-align:right;color:#e0e0e0;font-family:IBM Plex Mono,monospace;">'+formatNum(l.params)+'</td>';
+      html += '<td style="padding:6px;text-align:right;color:#e0e0e0;font-family:IBM Plex Mono,monospace;">'+formatNum(l.flops)+'</td>';
+      html += '<td style="padding:6px;text-align:right;color:#aaa;font-size:12px;">'+l.output+'</td>';
+      html += '</tr>';
+    }
+    if (layers.length === 0) {
+      html = '<tr><td colspan="6" style="padding:20px;text-align:center;color:#666;">No layers added yet. Use the form above to add layers.</td></tr>';
+    }
+    tbody.innerHTML = html;
+
+    drawComparisonChart();
+    drawPrecisionChart(totalP);
+  }
+
+  function drawComparisonChart() {
+    var metric = document.getElementById('compareMetric').value;
+    var svg = document.getElementById('compareSvg');
+    var pad = {l:120, r:60, t:20, b:30};
+    var w = 700 - pad.l - pad.r, h = 400 - pad.t - pad.b;
+
+    var items = architectures.slice();
+    var totalP = 0, totalF = 0;
+    for (var i = 0; i < layers.length; i++) { totalP += layers[i].params; totalF += layers[i].flops; }
+    if (totalP > 0) items.push({name:'Your Model', params:totalP, flops:totalF, year:2026, color:'#fff'});
+
+    items.sort(function(a, b) {
+      if (metric === 'params') return b.params - a.params;
+      if (metric === 'flops') return b.flops - a.flops;
+      return b.params * 2 - a.params * 2;
+    });
+
+    var maxVal = 0;
+    for (var i = 0; i < items.length; i++) {
+      var val = metric === 'params' ? items[i].params : metric === 'flops' ? items[i].flops : items[i].params * 2;
+      if (val > maxVal) maxVal = val;
+    }
+
+    var barH = Math.min(22, (h - items.length * 2) / items.length);
+    var gap = 2;
+
+    var html = '<rect width="700" height="400" fill="#141414"/>';
+    for (var i = 0; i < items.length; i++) {
+      var val = metric === 'params' ? items[i].params : metric === 'flops' ? items[i].flops : items[i].params * 2;
+      var barW = maxVal > 0 ? (val / maxVal) * w : 0;
+      if (barW < 1 && val > 0) barW = 1;
+      var y = pad.t + i * (barH + gap);
+
+      html += '<text x="'+(pad.l-6)+'" y="'+(y+barH/2+4)+'" text-anchor="end" fill="#ccc" font-size="10" font-family="IBM Plex Sans,sans-serif">'+items[i].name+'</text>';
+      html += '<rect x="'+pad.l+'" y="'+y+'" width="'+barW+'" height="'+barH+'" fill="'+items[i].color+'" rx="2" opacity="0.7"/>';
+
+      var label = formatNum(val);
+      if (metric === 'memory') label = (val / (1024*1024)).toFixed(0) + ' MB';
+      html += '<text x="'+(pad.l+barW+6)+'" y="'+(y+barH/2+4)+'" fill="#aaa" font-size="9" font-family="IBM Plex Mono,monospace">'+label+'</text>';
+    }
+
+    var title = metric === 'params' ? 'Parameters' : metric === 'flops' ? 'FLOPS (forward pass)' : 'Memory (fp16)';
+    html += '<text x="'+(pad.l+w/2)+'" y="'+(pad.t+items.length*(barH+gap)+20)+'" text-anchor="middle" fill="#aaa" font-size="11" font-family="IBM Plex Sans,sans-serif">'+title+'</text>';
+
+    svg.innerHTML = html;
+  }
+
+  function drawPrecisionChart(totalParams) {
+    var svg = document.getElementById('precisionSvg');
+    var pad = {l:70, r:30, t:30, b:50};
+    var w = 700 - pad.l - pad.r, h = 280 - pad.t - pad.b;
+
+    var precisions = [
+      {name:'fp32', bytes:4, color:'#ef4444'},
+      {name:'fp16 / bf16', bytes:2, color:'#f59e0b'},
+      {name:'int8', bytes:1, color:'#22c55e'},
+      {name:'int4 (NF4)', bytes:0.5, color:'#3b82f6'}
+    ];
+
+    var maxMem = totalParams * 4;
+    if (maxMem === 0) maxMem = 1;
+    var barW = w / precisions.length - 20;
+
+    var html = '<rect width="700" height="280" fill="#141414"/>';
+    html += '<text x="350" y="18" text-anchor="middle" fill="#ccc" font-size="12" font-family="IBM Plex Sans,sans-serif">Memory Footprint at Different Precisions'+(totalParams > 0 ? ' ('+formatNum(totalParams)+' params)' : '')+'</text>';
+    html += '<line x1="'+pad.l+'" y1="'+(pad.t+h)+'" x2="'+(pad.l+w)+'" y2="'+(pad.t+h)+'" stroke="#333" stroke-width="1"/>';
+
+    for (var i = 0; i < precisions.length; i++) {
+      var mem = totalParams * precisions[i].bytes;
+      var barH = maxMem > 0 ? (mem / maxMem) * h : 0;
+      var x = pad.l + i * (barW + 20) + 10;
+      var y = pad.t + h - barH;
+      html += '<rect x="'+x+'" y="'+y+'" width="'+barW+'" height="'+barH+'" fill="'+precisions[i].color+'" rx="4" opacity="0.7"/>';
+      html += '<text x="'+(x+barW/2)+'" y="'+(y-6)+'" text-anchor="middle" fill="#e0e0e0" font-size="11" font-weight="600" font-family="IBM Plex Mono,monospace">'+(mem/(1024*1024)).toFixed(1)+' MB</text>';
+      html += '<text x="'+(x+barW/2)+'" y="'+(pad.t+h+18)+'" text-anchor="middle" fill="#ccc" font-size="11" font-family="IBM Plex Sans,sans-serif">'+precisions[i].name+'</text>';
+      html += '<text x="'+(x+barW/2)+'" y="'+(pad.t+h+34)+'" text-anchor="middle" fill="#888" font-size="10" font-family="IBM Plex Mono,monospace">'+precisions[i].bytes+' B/param</text>';
+    }
+
+    svg.innerHTML = html;
+  }
+
+  document.getElementById('addLayerBtn').addEventListener('click', addLayer);
+  document.getElementById('clearAllBtn').addEventListener('click', function() {
+    layers = []; updateDisplay();
+  });
+  document.getElementById('undoBtn').addEventListener('click', function() {
+    layers.pop(); updateDisplay();
+  });
+  document.getElementById('compareBtn').addEventListener('click', drawComparisonChart);
+
+  updateDisplay();
+})();
+</script>
+</body>
+</html>

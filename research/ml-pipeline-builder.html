@@ -1,0 +1,862 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ML Pipeline Builder — Visual Designer with sklearn & PyTorch Code Generator | ml0x</title>
+<meta name="description" content="Free visual ML pipeline builder. Drag and drop preprocessing, feature engineering, model, and evaluation steps. Generates production-ready scikit-learn Pipeline and PyTorch code instantly.">
+<meta name="keywords" content="ML pipeline builder, sklearn pipeline, PyTorch pipeline, machine learning workflow, data preprocessing, feature engineering, model training, pipeline visualization, sklearn Pipeline, data science workflow">
+<link rel="canonical" href="https://ml0x.com/research/ml-pipeline-builder.html">
+<link rel="alternate" hreflang="en" href="https://ml0x.com/research/ml-pipeline-builder.html">
+<link rel="alternate" hreflang="x-default" href="https://ml0x.com/research/ml-pipeline-builder.html">
+<meta property="og:type" content="website">
+<meta property="og:title" content="ML Pipeline Builder — Visual Designer with sklearn & PyTorch Code Generator">
+<meta property="og:description" content="Design ML pipelines visually by adding preprocessing, feature engineering, model selection, and evaluation steps. Export production-ready Python code for sklearn and PyTorch.">
+<meta property="og:url" content="https://ml0x.com/research/ml-pipeline-builder.html">
+<meta property="og:site_name" content="Zovo Tools">
+<meta property="og:locale" content="en_US">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="ML Pipeline Builder — Visual Designer with sklearn & PyTorch Code Generator">
+<meta name="twitter:description" content="Design ML pipelines visually and generate production-ready sklearn Pipeline and PyTorch code. Free, runs entirely in your browser.">
+<meta name="author" content="Michael Lip">
+<meta name="robots" content="index, follow">
+<link rel="stylesheet" href="/assets/style.css">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebApplication",
+  "name": "ML Pipeline Builder",
+  "description": "Free visual ML pipeline builder. Drag and drop preprocessing, feature engineering, model, and evaluation steps. Generates production-ready scikit-learn Pipeline and PyTorch code.",
+  "url": "https://ml0x.com/research/ml-pipeline-builder.html",
+  "applicationCategory": "EducationalApplication",
+  "operatingSystem": "Any",
+  "offers": {"@type": "Offer", "price": "0", "priceCurrency": "USD"},
+  "author": {"@type": "Person", "name": "Michael Lip", "url": "https://zovo.one"},
+  "publisher": {"@type": "Organization", "name": "ML0X", "url": "https://ml0x.com"},
+  "datePublished": "2026-05-25",
+  "dateModified": "2026-05-25"
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {"@type": "Question", "name": "What is an ML pipeline and why should I use one?", "acceptedAnswer": {"@type": "Answer", "text": "An ML pipeline is a sequence of data processing and modeling steps chained together into a single reproducible workflow. It ensures that preprocessing (scaling, encoding, imputation) is fit only on training data and applied consistently to new data, preventing data leakage. Pipelines also make your code cleaner, more maintainable, and easier to deploy. In scikit-learn, the Pipeline class chains transformers and estimators so that cross_val_score and GridSearchCV automatically handle train-only fitting."}},
+    {"@type": "Question", "name": "What is the difference between a Transformer and an Estimator in sklearn?", "acceptedAnswer": {"@type": "Answer", "text": "In scikit-learn, a Transformer implements fit() and transform() methods — it learns parameters from training data (fit) and applies a transformation (transform). Examples include StandardScaler, OneHotEncoder, and PCA. An Estimator implements fit() and predict() methods — it learns from data and makes predictions. Examples include RandomForestClassifier and LinearRegression. A Pipeline chains multiple Transformers followed by a final Estimator, automatically calling fit_transform on intermediate steps and fit+predict on the final step."}},
+    {"@type": "Question", "name": "How do I handle mixed feature types (numeric and categorical) in a pipeline?", "acceptedAnswer": {"@type": "Answer", "text": "Use sklearn's ColumnTransformer to apply different preprocessing to different column types. Define a numeric pipeline (SimpleImputer + StandardScaler) and a categorical pipeline (SimpleImputer with most_frequent + OneHotEncoder), then combine them in a ColumnTransformer. Wrap the ColumnTransformer and your model in a Pipeline. This ensures each feature type gets appropriate preprocessing, and the entire workflow is fit-transform safe for cross-validation."}},
+    {"@type": "Question", "name": "What preprocessing steps should every ML pipeline include?", "acceptedAnswer": {"@type": "Answer", "text": "Every ML pipeline should include: (1) Missing value imputation — fill NaN values with mean, median, most frequent, or a learned strategy. (2) Feature scaling — StandardScaler or MinMaxScaler for algorithms sensitive to scale (SVM, KNN, neural nets, logistic regression). Tree-based models do not need scaling. (3) Categorical encoding — OneHotEncoder for nominal features, OrdinalEncoder for ordinal ones. (4) Train/test split or cross-validation. Optional but recommended: feature selection, dimensionality reduction (PCA), and outlier handling."}},
+    {"@type": "Question", "name": "How do I deploy an sklearn Pipeline to production?", "acceptedAnswer": {"@type": "Answer", "text": "Save the fitted pipeline using joblib.dump(pipeline, 'model.joblib'). The pipeline object contains all fitted transformers and the trained model, so a single file captures the entire preprocessing + prediction workflow. In production, load with joblib.load('model.joblib') and call pipeline.predict(new_data). For containerized deployment, use Flask/FastAPI to wrap the pipeline in an API endpoint, or use MLflow, BentoML, or AWS SageMaker for managed deployment with versioning and monitoring."}}
+  ]
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {"@type": "ListItem", "position": 1, "name": "Home", "item": "https://ml0x.com/"},
+    {"@type": "ListItem", "position": 2, "name": "Research", "item": "https://ml0x.com/research/"},
+    {"@type": "ListItem", "position": 3, "name": "ML Pipeline Builder"}
+  ]
+}
+</script>
+</head>
+<body>
+
+<header>
+  <div class="container header-inner">
+    <a href="/" class="logo">ml0x</a>
+    <nav>
+      <a href="/">Home</a>
+      <a href="/research/">Research</a>
+      <a href="/tools/">Tools</a>
+      <a href="/guides/">Guides</a>
+      <a href="/answers/">Answers</a>
+      <div class="nav-right">
+        <a href="https://zovo.one/pricing?utm_source=ml0x.com&utm_medium=satellite&utm_campaign=nav-link" class="nav-pro" target="_blank">Go Pro &#10022;</a>
+        <a href="https://zovo.one/tools" class="nav-zovo">Zovo Tools</a>
+      </div>
+    </nav>
+  </div>
+</header>
+
+<main class="container">
+  <div class="breadcrumb">
+    <a href="/">Home</a> <span>&rsaquo;</span> <a href="/research/">Research</a> <span>&rsaquo;</span> ML Pipeline Builder
+  </div>
+
+  <div class="hero">
+    <h1>ML Pipeline <span>Builder</span></h1>
+    <p>Design complete machine learning pipelines visually. Add preprocessing, feature engineering, model selection, and evaluation steps, then generate production-ready Python code for scikit-learn or PyTorch. The pipeline builder validates step ordering, checks for common mistakes, and produces clean, documented code you can copy directly into your project. All computation runs locally in your browser.</p>
+  </div>
+
+  <div class="tool-card">
+    <h3>Pipeline Configuration</h3>
+    <div class="control-row">
+      <div class="control-group">
+        <label>Task Type</label>
+        <select id="taskType">
+          <option value="classification" selected>Classification</option>
+          <option value="regression">Regression</option>
+        </select>
+      </div>
+      <div class="control-group">
+        <label>Framework</label>
+        <select id="framework">
+          <option value="sklearn" selected>scikit-learn</option>
+          <option value="pytorch">PyTorch</option>
+        </select>
+      </div>
+      <div class="control-group">
+        <label>Template</label>
+        <select id="templateSelect">
+          <option value="custom" selected>Custom (build your own)</option>
+          <option value="basic">Basic (scale + model)</option>
+          <option value="standard">Standard (impute + scale + model)</option>
+          <option value="full">Full (impute + encode + scale + select + model)</option>
+          <option value="deep">Deep Learning (scale + neural net)</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <div class="tool-card">
+    <h3>Add Pipeline Steps</h3>
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:8px;">
+      <button class="btn btn-secondary step-add" data-step="imputer" style="font-size:12px;">+ Missing Values</button>
+      <button class="btn btn-secondary step-add" data-step="scaler" style="font-size:12px;">+ Feature Scaling</button>
+      <button class="btn btn-secondary step-add" data-step="encoder" style="font-size:12px;">+ Categorical Encoding</button>
+      <button class="btn btn-secondary step-add" data-step="pca" style="font-size:12px;">+ PCA</button>
+      <button class="btn btn-secondary step-add" data-step="selector" style="font-size:12px;">+ Feature Selection</button>
+      <button class="btn btn-secondary step-add" data-step="poly" style="font-size:12px;">+ Polynomial Features</button>
+      <button class="btn btn-secondary step-add" data-step="model" style="font-size:12px;">+ Model</button>
+      <button class="btn btn-secondary step-add" data-step="eval" style="font-size:12px;">+ Evaluation</button>
+    </div>
+  </div>
+
+  <div class="tool-card">
+    <h3>Pipeline Steps <span id="stepCount" style="color:#3b82f6;font-size:14px;">(0 steps)</span></h3>
+    <div id="pipelineSteps" style="min-height:60px;border:1px dashed #333;border-radius:8px;padding:12px;">
+      <p id="emptyMsg" style="color:#666;text-align:center;font-size:13px;">Click buttons above to add steps, or select a template.</p>
+    </div>
+    <div class="control-row" style="margin-top:12px;">
+      <button class="btn" id="generateBtn">Generate Code</button>
+      <button class="btn btn-secondary" id="validateBtn">Validate Pipeline</button>
+      <button class="btn btn-secondary" id="clearBtn">Clear All</button>
+    </div>
+  </div>
+
+  <div id="validationSection" style="display:none;">
+    <div class="tool-card" id="validationCard">
+      <h3 id="validationTitle">Pipeline Validation</h3>
+      <ul id="validationList" style="color:#ddd;line-height:1.8;list-style:none;padding:0;"></ul>
+    </div>
+  </div>
+
+  <div id="resultsSection" style="display:none;">
+    <div class="stat-grid">
+      <div class="stat-card"><div class="value" id="metSteps">--</div><div class="label">Total Steps</div></div>
+      <div class="stat-card"><div class="value" id="metPreprocess">--</div><div class="label">Preprocessing</div></div>
+      <div class="stat-card"><div class="value" id="metModel">--</div><div class="label">Model Type</div></div>
+      <div class="stat-card"><div class="value" id="metFramework">--</div><div class="label">Framework</div></div>
+      <div class="stat-card"><div class="value" id="metLines">--</div><div class="label">Code Lines</div></div>
+      <div class="stat-card"><div class="value" id="metStatus">--</div><div class="label">Status</div></div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:16px;">
+      <div class="tool-card">
+        <h3>Pipeline Visualization</h3>
+        <div class="viz-container"><svg id="pipelineSvg" width="400" height="400" viewBox="0 0 400 400"></svg></div>
+      </div>
+      <div class="tool-card">
+        <h3>Data Flow Diagram</h3>
+        <div class="viz-container"><svg id="flowSvg" width="400" height="400" viewBox="0 0 400 400"></svg></div>
+      </div>
+    </div>
+
+    <div class="tool-card">
+      <h3>Generated Code</h3>
+      <div style="display:flex;gap:8px;margin-bottom:12px;">
+        <button class="btn btn-secondary codeTabBtn active" data-tab="pipeline">Pipeline</button>
+        <button class="btn btn-secondary codeTabBtn" data-tab="train">Train & Evaluate</button>
+        <button class="btn btn-secondary codeTabBtn" data-tab="deploy">Deploy</button>
+      </div>
+      <pre id="codeOutput" style="background:#0d0d0d;border:1px solid #333;border-radius:8px;padding:16px;color:#e0e0e0;font-size:13px;font-family:'IBM Plex Mono',monospace;overflow-x:auto;white-space:pre;line-height:1.5;max-height:500px;overflow-y:auto;"></pre>
+      <button class="btn btn-secondary" id="copyCodeBtn" style="margin-top:8px;">Copy Code</button>
+    </div>
+  </div>
+
+  <section class="explainer-section">
+    <h2>What Is an ML Pipeline?</h2>
+    <p>A machine learning pipeline is a sequence of data processing and modeling steps organized into a single, reproducible workflow. Instead of writing separate scripts for data cleaning, feature engineering, model training, and evaluation, a pipeline chains these steps together so that data flows through each transformation automatically. This is not just a convenience but a necessity for correct machine learning practice, because pipelines prevent data leakage, ensure reproducibility, and simplify deployment.</p>
+    <p>In scikit-learn, the <code>Pipeline</code> class is the standard implementation. A Pipeline takes a list of (name, step) tuples, where each step except the last must be a transformer (implementing <code>fit</code> and <code>transform</code>), and the last step can be either a transformer or an estimator (implementing <code>fit</code> and <code>predict</code>). When you call <code>pipeline.fit(X_train, y_train)</code>, each transformer is fit and then transforms the data before passing it to the next step. When you call <code>pipeline.predict(X_new)</code>, transformers apply their learned transformations (without refitting) and the final estimator makes predictions.</p>
+    <p>This architecture is powerful because it guarantees that preprocessing learned from training data is applied identically to test data and new data in production. Without a pipeline, it is alarmingly easy to introduce subtle bugs: fitting a scaler on the full dataset before splitting (data leakage), forgetting to apply the same encoding to production data, or using different imputation strategies in training and inference. A pipeline eliminates these risks by encapsulating the entire workflow in a single object.</p>
+
+    <h2>Anatomy of a Production Pipeline</h2>
+    <p>A typical production ML pipeline has four phases: <strong>data preprocessing</strong>, <strong>feature engineering</strong>, <strong>model training</strong>, and <strong>evaluation</strong>. Each phase contains one or more steps that must execute in the correct order.</p>
+    <p><strong>Data preprocessing</strong> handles raw data quality issues. Missing value imputation fills NaN entries with mean, median, most frequent value, or a learned constant. Feature scaling normalizes numeric features to a common range: <code>StandardScaler</code> (zero mean, unit variance) for algorithms sensitive to feature magnitude (SVM, KNN, neural networks, logistic regression), or <code>MinMaxScaler</code> (0-1 range) when you need bounded values. Categorical encoding converts text labels to numbers: <code>OneHotEncoder</code> for nominal features (color, country) and <code>OrdinalEncoder</code> for ordered features (low/medium/high). Outlier detection and removal can also be part of preprocessing.</p>
+    <p><strong>Feature engineering</strong> creates new features from existing ones to help the model learn better representations. <code>PolynomialFeatures</code> generates interaction terms and polynomial terms (x1*x2, x1^2). Dimensionality reduction via <code>PCA</code> or <code>TruncatedSVD</code> reduces the number of features while preserving variance, which helps with the curse of dimensionality and speeds up training. Feature selection using <code>SelectKBest</code>, <code>SelectFromModel</code>, or recursive feature elimination removes irrelevant or redundant features, reducing overfitting and improving interpretability.</p>
+    <p><strong>Model training</strong> fits the chosen algorithm to the preprocessed and engineered features. For classification: logistic regression, random forest, gradient boosting (XGBoost, LightGBM), SVM, or neural networks. For regression: linear regression, ridge, lasso, random forest regressor, gradient boosting regressor, or neural networks. The choice of model depends on dataset size, feature types, interpretability requirements, and performance needs.</p>
+    <p><strong>Evaluation</strong> measures model performance on held-out data. For classification: accuracy, precision, recall, F1 score, AUC-ROC, and confusion matrix. For regression: MSE, RMSE, MAE, R-squared, and residual analysis. Cross-validation provides more robust estimates than a single train/test split. Always evaluate on data that was not used for any training or tuning decisions.</p>
+
+    <h2>Handling Mixed Feature Types</h2>
+    <p>Real-world datasets almost always contain a mix of numeric and categorical features. Applying StandardScaler to a categorical column or OneHotEncoder to a numeric column produces nonsensical results. Scikit-learn's <code>ColumnTransformer</code> solves this by applying different transformations to different column subsets, then concatenating the results.</p>
+    <p>A typical pattern defines a numeric pipeline (SimpleImputer with mean strategy followed by StandardScaler) and a categorical pipeline (SimpleImputer with most_frequent strategy followed by OneHotEncoder with handle_unknown='ignore'). The ColumnTransformer applies each sub-pipeline to its respective columns. The entire ColumnTransformer is then wrapped in an outer Pipeline with the model as the final step. This nested structure ensures that all preprocessing, including the column-specific transformations, is handled correctly during cross-validation and deployment.</p>
+    <p>Identifying which columns are numeric vs categorical can be done manually by specifying column names, or dynamically using <code>make_column_selector(dtype_include=np.number)</code> and <code>make_column_selector(dtype_include=object)</code>. Dynamic selection is more robust because it adapts to different datasets without code changes, which is important when the pipeline processes data from multiple sources or when schema changes over time.</p>
+
+    <h2>Pipeline Best Practices</h2>
+    <ul>
+      <li><strong>Always use Pipeline for preprocessing + model:</strong> Never fit a scaler outside the pipeline. This is the number one source of data leakage in machine learning projects.</li>
+      <li><strong>Name your steps meaningfully:</strong> Use descriptive names like 'imputer', 'scaler', 'classifier' instead of generic names. This makes it easier to access individual steps and tune hyperparameters with double-underscore syntax (e.g., <code>classifier__max_depth</code>).</li>
+      <li><strong>Use ColumnTransformer for mixed types:</strong> Do not apply numeric transformations to categorical columns or vice versa. ColumnTransformer handles this cleanly.</li>
+      <li><strong>Set handle_unknown='ignore' on encoders:</strong> Production data may contain category values not seen during training. OneHotEncoder with handle_unknown='ignore' gracefully handles this by creating zero vectors for unknown categories.</li>
+      <li><strong>Use memory caching for expensive transformations:</strong> <code>Pipeline(steps, memory='cache_dir')</code> caches fitted transformers to disk, avoiding redundant computation during hyperparameter search.</li>
+      <li><strong>Serialize the entire pipeline:</strong> Save the fitted pipeline with <code>joblib.dump(pipeline, 'model.joblib')</code>. This captures all preprocessing steps and the trained model in a single file, making deployment trivial.</li>
+      <li><strong>Version your pipelines:</strong> Use MLflow, DVC, or Weights & Biases to track pipeline configurations, datasets, and performance metrics across experiments.</li>
+    </ul>
+
+    <h2>Common Pipeline Patterns</h2>
+    <p><strong>The Basic Pipeline</strong> handles the simplest case: numeric features only, no missing values. It chains StandardScaler and a model. This is appropriate for clean, well-preprocessed datasets where you only need scaling.</p>
+    <p><strong>The Standard Pipeline</strong> adds missing value imputation before scaling. SimpleImputer with mean strategy handles NaN values, then StandardScaler normalizes, then the model trains. This covers most numeric-only datasets.</p>
+    <p><strong>The Full Pipeline</strong> handles real-world messy data with mixed types. A ColumnTransformer routes numeric features through imputation + scaling and categorical features through imputation + encoding. Feature selection or PCA optionally reduces dimensionality. The model trains on the processed features. This is the pattern you should use for production systems.</p>
+    <p><strong>The Deep Learning Pipeline</strong> preprocesses data using sklearn transformers, then feeds the processed features to a PyTorch or TensorFlow model. For tabular data, sklearn preprocessing is often superior to learned embeddings for features that are naturally numeric. For images, text, or sequences, the preprocessing is framework-specific (torchvision transforms, tokenizers). The pipeline builder generates appropriate code for each framework.</p>
+
+    <h2>Scikit-learn vs PyTorch Pipelines</h2>
+    <p>Scikit-learn pipelines are ideal for tabular data, traditional ML algorithms, and when you need integration with cross-validation and hyperparameter search. The Pipeline API is mature, well-documented, and handles train/test splitting correctly out of the box. For most tabular ML tasks (classification and regression on structured data), scikit-learn pipelines are the right choice.</p>
+    <p>PyTorch pipelines are necessary when your model requires gradient-based optimization: deep neural networks, custom architectures, GPU acceleration, or when working with non-tabular data (images, text, audio, graphs). PyTorch does not have a built-in Pipeline class equivalent, so pipelines are typically implemented as a sequence of transforms in a DataLoader, with the model defined as an nn.Module. For preprocessing tabular features before feeding to a neural network, it is common to use sklearn preprocessing, convert to tensors, then use a PyTorch DataLoader.</p>
+    <p>The pipeline builder generates appropriate code for both frameworks. For sklearn, it produces a Pipeline or Pipeline + ColumnTransformer that can be used directly with cross_val_score, GridSearchCV, and joblib serialization. For PyTorch, it produces a custom Dataset class, DataLoader configuration, nn.Module definition, training loop, and evaluation code.</p>
+
+    <h2>Deploying ML Pipelines</h2>
+    <p>Deployment is where pipelines truly shine. A fitted sklearn Pipeline is a single Python object that encapsulates the entire prediction workflow: receive raw input, preprocess it exactly as during training, and return predictions. This eliminates the training-serving skew problem where production preprocessing differs from training preprocessing.</p>
+    <p>The simplest deployment approach is <code>joblib.dump(pipeline, 'model.joblib')</code> to serialize the pipeline, then <code>joblib.load('model.joblib')</code> in a Flask or FastAPI endpoint. The endpoint receives JSON input, converts it to a DataFrame, calls <code>pipeline.predict(df)</code>, and returns the result. This approach works for low-to-medium traffic (hundreds of requests per second).</p>
+    <p>For higher scale, use specialized serving frameworks. MLflow provides model packaging, versioning, and serving with a REST API. BentoML offers optimized serving with batching and autoscaling. AWS SageMaker, Google Vertex AI, and Azure ML provide managed endpoints with monitoring, A/B testing, and auto-scaling. For edge deployment, ONNX conversion (<code>skl2onnx</code>) compiles sklearn pipelines to optimized runtime format with 10-100x speedup.</p>
+    <p>Regardless of deployment method, always include monitoring: track prediction latency, input data distributions (detect drift), prediction distributions (detect model degradation), and error rates. A pipeline that worked in development can silently degrade in production if the input data distribution shifts.</p>
+
+    <h2>Testing ML Pipelines</h2>
+    <p>ML pipelines should be tested like any software component. Unit tests verify individual steps: does the imputer handle all-NaN columns? Does the encoder handle unknown categories? Integration tests verify the full pipeline: can it fit, transform, and predict without errors? Performance tests verify model quality: does the pipeline achieve acceptable metrics on a validation set?</p>
+    <p>A practical test suite for an ML pipeline includes: (1) smoke test with a tiny dataset (10 rows) to verify the pipeline runs end-to-end, (2) schema test to verify input/output shapes match expectations, (3) determinism test to verify the same random seed produces identical results, (4) edge case tests with missing values, empty strings, extreme outliers, and unseen categories, and (5) performance regression test to verify metrics do not degrade below a threshold when retraining on updated data.</p>
+  </section>
+
+  <section class="faq-section">
+    <h2>Frequently Asked Questions</h2>
+    <details>
+      <summary>What is an ML pipeline and why should I use one?</summary>
+      <p>An ML pipeline chains preprocessing, feature engineering, and modeling into a single reproducible workflow. It prevents data leakage by ensuring preprocessing is fit only on training data, makes code cleaner and easier to deploy, and works seamlessly with cross-validation and hyperparameter search.</p>
+    </details>
+    <details>
+      <summary>What is the difference between a Transformer and an Estimator in sklearn?</summary>
+      <p>A Transformer implements fit() and transform() (e.g., StandardScaler, OneHotEncoder). An Estimator implements fit() and predict() (e.g., RandomForestClassifier). A Pipeline chains Transformers followed by a final Estimator.</p>
+    </details>
+    <details>
+      <summary>How do I handle mixed feature types in a pipeline?</summary>
+      <p>Use ColumnTransformer to apply different preprocessing to different column types. Define separate sub-pipelines for numeric features (imputer + scaler) and categorical features (imputer + encoder), then combine them.</p>
+    </details>
+    <details>
+      <summary>What preprocessing steps should every ML pipeline include?</summary>
+      <p>At minimum: missing value imputation, feature scaling (for scale-sensitive algorithms), and categorical encoding. Optional but recommended: feature selection, dimensionality reduction, and outlier handling.</p>
+    </details>
+    <details>
+      <summary>How do I deploy an sklearn Pipeline to production?</summary>
+      <p>Save with joblib.dump(pipeline, 'model.joblib'). In production, load with joblib.load and call pipeline.predict(new_data). For containerized deployment, use Flask/FastAPI, or managed platforms like MLflow, BentoML, or AWS SageMaker.</p>
+    </details>
+  </section>
+
+  <section class="explainer-section">
+    <h2>Related Tools</h2>
+    <div class="related-grid">
+      <a href="/tools/confusion-matrix-calculator.html" class="related-card">
+        <div class="related-title">Confusion Matrix Calculator</div>
+        <div class="related-desc">Compute precision, recall, F1, accuracy, and MCC with visual heatmap and ROC plotting.</div>
+      </a>
+      <a href="/tools/dataset-splitter.html" class="related-card">
+        <div class="related-title">Dataset Splitter Calculator</div>
+        <div class="related-desc">Configure train/val/test splits with stratification preview and code generation.</div>
+      </a>
+      <a href="/answers/hyperparameter-tuning-guide.html" class="related-card">
+        <div class="related-title">Hyperparameter Tuning Guide</div>
+        <div class="related-desc">Compare grid search, random search, and Bayesian optimization interactively.</div>
+      </a>
+    </div>
+  </section>
+
+  <section class="explainer-section">
+    <h2>About the Author</h2>
+    <p><strong>Michael Lip</strong> builds open-source ML tools and developer utilities at <a href="https://zovo.one">zovo.one</a>. ml0x is part of the Zovo Tools network, a collection of free, privacy-first tools for developers and data scientists. No tracking, no accounts required, no data leaves your browser.</p>
+  </section>
+
+  <p class="last-updated">Last updated: May 25, 2026</p>
+</main>
+
+<footer class="site-footer">
+    <div class="footer-inner">
+        <div class="footer-brand">Zovo Tools</div>
+        <div class="footer-tagline">Free developer tools by a solo dev. No tracking.</div>
+        <a href="https://zovo.one/pricing?utm_source=ml0x.com&utm_medium=satellite&utm_campaign=footer-link" class="footer-cta">Zovo Lifetime — $99 once, free forever &rarr;</a>
+        <div class="footer-copy">&copy; 2026 <a href="https://zovo.one">Zovo</a> &middot; 47/500 founding spots</div>
+    </div>
+</footer>
+
+<nav class="zovo-network" aria-label="Zovo Tools Network">
+    <div class="zovo-network-inner">
+        <h3 class="zovo-network-title">Explore More Tools</h3>
+        <div class="zovo-network-links">
+            <a href="https://abwex.com">ABWex — A/B Testing</a>
+            <a href="https://claudflow.com">ClaudFlow — Workflows</a>
+            <a href="https://claudhq.com">ClaudHQ — AI Code Tools &amp; Fixes</a>
+            <a href="https://claudkit.com">ClaudKit — API</a>
+            <a href="https://enhio.com">Enhio — Text Tools</a>
+            <a href="https://epochpilot.com">EpochPilot — Timestamps</a>
+            <a href="https://gen8x.com">Gen8X — Color Tools</a>
+            <a href="https://gpt0x.com">GPT0X — AI Models</a>
+            <a href="https://heytensor.com">HeyTensor — ML Tools</a>
+            <a href="https://invokebot.com">InvokeBot — Webhooks</a>
+            <a href="https://kappafy.com">Kappafy — JSON</a>
+            <a href="https://kappakit.com">KappaKit — Dev Toolkit</a>
+            <a href="https://kickllm.com">KickLLM — LLM Costs</a>
+            <a href="https://krzen.com">Krzen — Image Tools</a>
+            <a href="https://lochbot.com">LochBot — Security</a>
+            <a href="https://lockml.com">LockML — ML Compare</a>
+            <a href="https://ml3x.com">ML3X — Matrix Math</a>
+        </div>
+    </div>
+</nav>
+
+<script>
+(function() {
+  var steps = [];
+  var codeTab = 'pipeline';
+
+  var STEP_DEFS = {
+    imputer: {
+      name: 'Missing Values', category: 'preprocessing', color: '#f59e0b', icon: 'IMP',
+      options: [
+        {id:'strategy', label:'Strategy', type:'select', values:['mean','median','most_frequent','constant'], default:'mean'}
+      ],
+      sklearn: function(opts) { return "SimpleImputer(strategy='" + opts.strategy + "')"; },
+      skImport: 'from sklearn.impute import SimpleImputer'
+    },
+    scaler: {
+      name: 'Feature Scaling', category: 'preprocessing', color: '#3b82f6', icon: 'SCL',
+      options: [
+        {id:'type', label:'Scaler', type:'select', values:['StandardScaler','MinMaxScaler','RobustScaler','MaxAbsScaler'], default:'StandardScaler'}
+      ],
+      sklearn: function(opts) { return opts.type + '()'; },
+      skImport: 'from sklearn.preprocessing import StandardScaler, MinMaxScaler, RobustScaler, MaxAbsScaler'
+    },
+    encoder: {
+      name: 'Categorical Encoding', category: 'preprocessing', color: '#a78bfa', icon: 'ENC',
+      options: [
+        {id:'type', label:'Encoder', type:'select', values:['OneHotEncoder','OrdinalEncoder','LabelEncoder'], default:'OneHotEncoder'}
+      ],
+      sklearn: function(opts) { return opts.type === 'OneHotEncoder' ? "OneHotEncoder(handle_unknown='ignore', sparse_output=False)" : opts.type + '()'; },
+      skImport: 'from sklearn.preprocessing import OneHotEncoder, OrdinalEncoder'
+    },
+    pca: {
+      name: 'PCA', category: 'feature_eng', color: '#06b6d4', icon: 'PCA',
+      options: [
+        {id:'n_components', label:'Components', type:'select', values:['0.95','0.99','10','20','50'], default:'0.95'}
+      ],
+      sklearn: function(opts) { var v = opts.n_components; return 'PCA(n_components=' + (v.indexOf('.')>=0 ? v : parseInt(v)) + ')'; },
+      skImport: 'from sklearn.decomposition import PCA'
+    },
+    selector: {
+      name: 'Feature Selection', category: 'feature_eng', color: '#22c55e', icon: 'SEL',
+      options: [
+        {id:'method', label:'Method', type:'select', values:['SelectKBest','SelectPercentile','VarianceThreshold'], default:'SelectKBest'},
+        {id:'k', label:'K / Percentile', type:'select', values:['10','20','50','auto'], default:'10'}
+      ],
+      sklearn: function(opts) {
+        if (opts.method === 'VarianceThreshold') return 'VarianceThreshold()';
+        var k = opts.k === 'auto' ? "'all'" : parseInt(opts.k);
+        return opts.method + '(k=' + k + ')';
+      },
+      skImport: 'from sklearn.feature_selection import SelectKBest, SelectPercentile, VarianceThreshold, f_classif, f_regression'
+    },
+    poly: {
+      name: 'Polynomial Features', category: 'feature_eng', color: '#e879f9', icon: 'PLY',
+      options: [
+        {id:'degree', label:'Degree', type:'select', values:['2','3','4'], default:'2'},
+        {id:'interaction', label:'Interaction Only', type:'select', values:['false','true'], default:'false'}
+      ],
+      sklearn: function(opts) { return 'PolynomialFeatures(degree=' + opts.degree + ', interaction_only=' + (opts.interaction === 'true' ? 'True' : 'False') + ')'; },
+      skImport: 'from sklearn.preprocessing import PolynomialFeatures'
+    },
+    model: {
+      name: 'Model', category: 'model', color: '#ef4444', icon: 'MDL',
+      options: [
+        {id:'algorithm', label:'Algorithm', type:'select', values:['RandomForest','GradientBoosting','LogisticRegression','SVM','KNN','MLP','LinearRegression','Ridge','Lasso','DecisionTree'], default:'RandomForest'}
+      ],
+      sklearn: function(opts) {
+        var m = opts.algorithm;
+        var task = document.getElementById('taskType').value;
+        if (task === 'regression') {
+          if (m === 'RandomForest') return 'RandomForestRegressor(n_estimators=100, random_state=42)';
+          if (m === 'GradientBoosting') return 'GradientBoostingRegressor(n_estimators=100, random_state=42)';
+          if (m === 'LinearRegression') return 'LinearRegression()';
+          if (m === 'Ridge') return 'Ridge(alpha=1.0)';
+          if (m === 'Lasso') return 'Lasso(alpha=1.0)';
+          if (m === 'SVM') return 'SVR(kernel="rbf")';
+          if (m === 'KNN') return 'KNeighborsRegressor(n_neighbors=5)';
+          if (m === 'MLP') return 'MLPRegressor(hidden_layer_sizes=(100, 50), max_iter=500, random_state=42)';
+          if (m === 'DecisionTree') return 'DecisionTreeRegressor(random_state=42)';
+        }
+        if (m === 'RandomForest') return 'RandomForestClassifier(n_estimators=100, random_state=42)';
+        if (m === 'GradientBoosting') return 'GradientBoostingClassifier(n_estimators=100, random_state=42)';
+        if (m === 'LogisticRegression') return "LogisticRegression(max_iter=1000, random_state=42)";
+        if (m === 'SVM') return 'SVC(kernel="rbf", probability=True, random_state=42)';
+        if (m === 'KNN') return 'KNeighborsClassifier(n_neighbors=5)';
+        if (m === 'MLP') return 'MLPClassifier(hidden_layer_sizes=(100, 50), max_iter=500, random_state=42)';
+        if (m === 'DecisionTree') return 'DecisionTreeClassifier(random_state=42)';
+        return m + '()';
+      },
+      skImport: ''
+    },
+    eval: {
+      name: 'Evaluation', category: 'eval', color: '#fbbf24', icon: 'EVL',
+      options: [
+        {id:'method', label:'Method', type:'select', values:['cross_val','holdout','both'], default:'cross_val'},
+        {id:'cv', label:'CV Folds', type:'select', values:['3','5','10'], default:'5'}
+      ],
+      sklearn: function(opts) { return ''; },
+      skImport: ''
+    }
+  };
+
+  function addStep(stepType) {
+    var def = STEP_DEFS[stepType];
+    var step = {type: stepType, id: 'step_' + Date.now() + '_' + Math.random().toString(36).substr(2,4), opts: {}};
+    for (var i = 0; i < def.options.length; i++) {
+      step.opts[def.options[i].id] = def.options[i].default;
+    }
+    steps.push(step);
+    renderSteps();
+  }
+
+  function removeStep(stepId) {
+    steps = steps.filter(function(s) { return s.id !== stepId; });
+    renderSteps();
+  }
+
+  function moveStep(stepId, dir) {
+    var idx = steps.findIndex(function(s) { return s.id === stepId; });
+    if (idx < 0) return;
+    var newIdx = idx + dir;
+    if (newIdx < 0 || newIdx >= steps.length) return;
+    var tmp = steps[idx];
+    steps[idx] = steps[newIdx];
+    steps[newIdx] = tmp;
+    renderSteps();
+  }
+
+  function renderSteps() {
+    var container = document.getElementById('pipelineSteps');
+    var empty = document.getElementById('emptyMsg');
+    document.getElementById('stepCount').textContent = '(' + steps.length + ' step' + (steps.length !== 1 ? 's' : '') + ')';
+    if (steps.length === 0) {
+      container.innerHTML = '<p id="emptyMsg" style="color:#666;text-align:center;font-size:13px;">Click buttons above to add steps, or select a template.</p>';
+      return;
+    }
+    var html = '';
+    for (var i = 0; i < steps.length; i++) {
+      var s = steps[i];
+      var def = STEP_DEFS[s.type];
+      html += '<div style="display:flex;align-items:center;gap:10px;padding:10px;margin-bottom:8px;background:#1a1a1a;border:1px solid ' + def.color + '33;border-left:3px solid ' + def.color + ';border-radius:6px;">';
+      html += '<div style="font-size:11px;font-weight:700;color:' + def.color + ';width:32px;text-align:center;">' + def.icon + '</div>';
+      html += '<div style="flex:1;">';
+      html += '<div style="font-weight:600;color:#e0e0e0;font-size:13px;margin-bottom:4px;">' + (i+1) + '. ' + def.name + '</div>';
+      html += '<div style="display:flex;gap:8px;flex-wrap:wrap;">';
+      for (var j = 0; j < def.options.length; j++) {
+        var opt = def.options[j];
+        html += '<select data-step="' + s.id + '" data-opt="' + opt.id + '" style="padding:4px 8px;background:#111;border:1px solid #333;border-radius:4px;color:#ccc;font-size:11px;">';
+        for (var k = 0; k < opt.values.length; k++) {
+          html += '<option value="' + opt.values[k] + '"' + (s.opts[opt.id] === opt.values[k] ? ' selected' : '') + '>' + opt.values[k] + '</option>';
+        }
+        html += '</select>';
+      }
+      html += '</div></div>';
+      html += '<div style="display:flex;gap:4px;">';
+      html += '<button class="move-btn" data-id="' + s.id + '" data-dir="-1" style="padding:2px 8px;background:#222;border:1px solid #444;border-radius:3px;color:#aaa;cursor:pointer;font-size:12px;">&#9650;</button>';
+      html += '<button class="move-btn" data-id="' + s.id + '" data-dir="1" style="padding:2px 8px;background:#222;border:1px solid #444;border-radius:3px;color:#aaa;cursor:pointer;font-size:12px;">&#9660;</button>';
+      html += '<button class="remove-btn" data-id="' + s.id + '" style="padding:2px 8px;background:#331111;border:1px solid #553333;border-radius:3px;color:#ef4444;cursor:pointer;font-size:12px;">&#10005;</button>';
+      html += '</div></div>';
+    }
+    container.innerHTML = html;
+
+    container.querySelectorAll('select[data-step]').forEach(function(sel) {
+      sel.addEventListener('change', function() {
+        var sId = this.getAttribute('data-step');
+        var oId = this.getAttribute('data-opt');
+        var step = steps.find(function(s) { return s.id === sId; });
+        if (step) step.opts[oId] = this.value;
+      });
+    });
+    container.querySelectorAll('.remove-btn').forEach(function(btn) {
+      btn.addEventListener('click', function() { removeStep(this.getAttribute('data-id')); });
+    });
+    container.querySelectorAll('.move-btn').forEach(function(btn) {
+      btn.addEventListener('click', function() { moveStep(this.getAttribute('data-id'), parseInt(this.getAttribute('data-dir'))); });
+    });
+  }
+
+  function validate() {
+    var issues = [];
+    var hasModel = steps.some(function(s) { return s.type === 'model'; });
+    var hasEval = steps.some(function(s) { return s.type === 'eval'; });
+    var modelIdx = steps.findIndex(function(s) { return s.type === 'model'; });
+    var evalIdx = steps.findIndex(function(s) { return s.type === 'eval'; });
+
+    if (!hasModel) issues.push({type:'error', msg:'No model step. Add a model to complete the pipeline.'});
+    if (hasEval && !hasModel) issues.push({type:'error', msg:'Evaluation step requires a model.'});
+    if (hasModel && hasEval && evalIdx < modelIdx) issues.push({type:'warning', msg:'Evaluation step should come after the model step.'});
+
+    var scalerIdx = steps.findIndex(function(s) { return s.type === 'scaler'; });
+    var pcaIdx = steps.findIndex(function(s) { return s.type === 'pca'; });
+    if (pcaIdx >= 0 && scalerIdx >= 0 && scalerIdx > pcaIdx) issues.push({type:'warning', msg:'Feature scaling should come before PCA for better results.'});
+
+    var impIdx = steps.findIndex(function(s) { return s.type === 'imputer'; });
+    if (scalerIdx >= 0 && impIdx >= 0 && impIdx > scalerIdx) issues.push({type:'warning', msg:'Missing value imputation should come before scaling.'});
+
+    var polyIdx = steps.findIndex(function(s) { return s.type === 'poly'; });
+    if (polyIdx >= 0 && hasModel && polyIdx > modelIdx) issues.push({type:'warning', msg:'Polynomial features should come before the model.'});
+
+    if (steps.length === 0) issues.push({type:'info', msg:'Pipeline is empty. Add steps to build your workflow.'});
+    if (issues.length === 0) issues.push({type:'success', msg:'Pipeline is valid and ready to generate code.'});
+
+    document.getElementById('validationSection').style.display = 'block';
+    var list = document.getElementById('validationList');
+    list.innerHTML = '';
+    var icons = {error: '&#10060;', warning: '&#9888;', info: '&#8505;', success: '&#9989;'};
+    var colors = {error: '#ef4444', warning: '#f59e0b', info: '#3b82f6', success: '#22c55e'};
+    for (var i = 0; i < issues.length; i++) {
+      list.innerHTML += '<li style="padding:6px 0;color:' + colors[issues[i].type] + ';">' + icons[issues[i].type] + ' ' + issues[i].msg + '</li>';
+    }
+    return !issues.some(function(iss) { return iss.type === 'error'; });
+  }
+
+  function getModelImports(step) {
+    var task = document.getElementById('taskType').value;
+    var m = step.opts.algorithm;
+    var imports = [];
+    if (m === 'RandomForest') imports.push('from sklearn.ensemble import ' + (task==='regression'?'RandomForestRegressor':'RandomForestClassifier'));
+    if (m === 'GradientBoosting') imports.push('from sklearn.ensemble import ' + (task==='regression'?'GradientBoostingRegressor':'GradientBoostingClassifier'));
+    if (m === 'LogisticRegression') imports.push('from sklearn.linear_model import LogisticRegression');
+    if (m === 'SVM') imports.push('from sklearn.svm import ' + (task==='regression'?'SVR':'SVC'));
+    if (m === 'KNN') imports.push('from sklearn.neighbors import ' + (task==='regression'?'KNeighborsRegressor':'KNeighborsClassifier'));
+    if (m === 'MLP') imports.push('from sklearn.neural_network import ' + (task==='regression'?'MLPRegressor':'MLPClassifier'));
+    if (m === 'LinearRegression') imports.push('from sklearn.linear_model import LinearRegression');
+    if (m === 'Ridge') imports.push('from sklearn.linear_model import Ridge');
+    if (m === 'Lasso') imports.push('from sklearn.linear_model import Lasso');
+    if (m === 'DecisionTree') imports.push('from sklearn.tree import ' + (task==='regression'?'DecisionTreeRegressor':'DecisionTreeClassifier'));
+    return imports;
+  }
+
+  function generateSklearnCode() {
+    var task = document.getElementById('taskType').value;
+    var imports = new Set();
+    imports.add('import numpy as np');
+    imports.add('import pandas as pd');
+    imports.add('from sklearn.pipeline import Pipeline');
+
+    var pipeSteps = [];
+    var evalStep = null;
+    for (var i = 0; i < steps.length; i++) {
+      var s = steps[i];
+      var def = STEP_DEFS[s.type];
+      if (s.type === 'eval') { evalStep = s; continue; }
+      if (def.skImport) imports.add(def.skImport);
+      if (s.type === 'model') {
+        getModelImports(s).forEach(function(imp) { imports.add(imp); });
+      }
+      var code = def.sklearn(s.opts);
+      if (code) pipeSteps.push({name: s.type + '_' + (i+1), code: code});
+    }
+
+    if (evalStep) {
+      imports.add('from sklearn.model_selection import cross_val_score, train_test_split');
+      if (task === 'classification') {
+        imports.add('from sklearn.metrics import classification_report, accuracy_score');
+      } else {
+        imports.add('from sklearn.metrics import mean_squared_error, r2_score');
+      }
+    }
+
+    var code = Array.from(imports).join('\n') + '\n\n';
+    code += '# Load your data\n';
+    code += '# X, y = load_your_data()\n\n';
+    code += '# Build pipeline\n';
+    code += 'pipeline = Pipeline([\n';
+    for (var i = 0; i < pipeSteps.length; i++) {
+      code += "    ('" + pipeSteps[i].name + "', " + pipeSteps[i].code + ')';
+      code += i < pipeSteps.length - 1 ? ',\n' : '\n';
+    }
+    code += '])\n';
+    return code;
+  }
+
+  function generateTrainCode() {
+    var task = document.getElementById('taskType').value;
+    var evalStep = steps.find(function(s) { return s.type === 'eval'; });
+    var code = '# Split data\n';
+    code += 'X_train, X_test, y_train, y_test = train_test_split(\n';
+    code += '    X, y, test_size=0.2, random_state=42';
+    if (task === 'classification') code += ', stratify=y';
+    code += '\n)\n\n';
+    code += '# Fit pipeline\npipeline.fit(X_train, y_train)\n\n';
+    code += '# Predict\ny_pred = pipeline.predict(X_test)\n\n';
+    if (task === 'classification') {
+      code += '# Evaluate\nprint(f"Accuracy: {accuracy_score(y_test, y_pred):.4f}")\nprint(classification_report(y_test, y_pred))\n';
+    } else {
+      code += '# Evaluate\nrmse = mean_squared_error(y_test, y_pred, squared=False)\nprint(f"RMSE: {rmse:.4f}")\nprint(f"R2: {r2_score(y_test, y_pred):.4f}")\n';
+    }
+    if (evalStep && (evalStep.opts.method === 'cross_val' || evalStep.opts.method === 'both')) {
+      var metric = task === 'classification' ? 'accuracy' : 'neg_root_mean_squared_error';
+      code += '\n# Cross-validation\ncv_scores = cross_val_score(\n    pipeline, X, y,\n    cv=' + evalStep.opts.cv + ', scoring="' + metric + '"\n)\n';
+      code += 'print(f"CV ' + (task==='classification'?'Accuracy':'RMSE') + ': {cv_scores.mean():.4f} (+/- {cv_scores.std()*2:.4f})")\n';
+    }
+    return code;
+  }
+
+  function generateDeployCode() {
+    var code = 'import joblib\n\n';
+    code += '# Save fitted pipeline\njoblib.dump(pipeline, "model_pipeline.joblib")\n';
+    code += 'print("Pipeline saved to model_pipeline.joblib")\n\n';
+    code += '# --- Production Inference ---\n';
+    code += 'import joblib\nimport pandas as pd\n';
+    code += 'from fastapi import FastAPI\nfrom pydantic import BaseModel\n\n';
+    code += 'app = FastAPI()\npipeline = joblib.load("model_pipeline.joblib")\n\n';
+    code += 'class PredictionRequest(BaseModel):\n    features: list  # List of feature values\n\n';
+    code += '@app.post("/predict")\ndef predict(req: PredictionRequest):\n';
+    code += '    import numpy as np\n';
+    code += '    X = np.array(req.features).reshape(1, -1)\n';
+    code += '    prediction = pipeline.predict(X)\n';
+    code += '    return {"prediction": prediction.tolist()}\n\n';
+    code += '# Run: uvicorn deploy:app --host 0.0.0.0 --port 8000\n';
+    code += '# Test: curl -X POST http://localhost:8000/predict \\\n';
+    code += '#   -H "Content-Type: application/json" \\\n';
+    code += '#   -d \'{"features": [1.0, 2.0, 3.0]}\'';
+    return code;
+  }
+
+  function generatePyTorchCode() {
+    var task = document.getElementById('taskType').value;
+    var code = 'import torch\nimport torch.nn as nn\nimport torch.optim as optim\nfrom torch.utils.data import DataLoader, TensorDataset\n';
+    code += 'import numpy as np\nfrom sklearn.preprocessing import StandardScaler\nfrom sklearn.model_selection import train_test_split\n\n';
+    code += '# Load and preprocess data\n# X, y = load_your_data()\n';
+    code += 'X_train, X_test, y_train, y_test = train_test_split(\n    X, y, test_size=0.2, random_state=42\n)\n\n';
+    code += 'scaler = StandardScaler()\nX_train = scaler.fit_transform(X_train)\nX_test = scaler.transform(X_test)\n\n';
+    code += 'X_train_t = torch.FloatTensor(X_train)\nX_test_t = torch.FloatTensor(X_test)\n';
+    if (task === 'classification') {
+      code += 'y_train_t = torch.LongTensor(y_train)\ny_test_t = torch.LongTensor(y_test)\n\n';
+    } else {
+      code += 'y_train_t = torch.FloatTensor(y_train).unsqueeze(1)\ny_test_t = torch.FloatTensor(y_test).unsqueeze(1)\n\n';
+    }
+    code += 'train_ds = TensorDataset(X_train_t, y_train_t)\ntrain_loader = DataLoader(train_ds, batch_size=32, shuffle=True)\n\n';
+    code += '# Model\nclass MLPModel(nn.Module):\n    def __init__(self, input_dim, hidden_dim=64, output_dim=' + (task==='classification'?'num_classes':'1') + '):\n';
+    code += '        super().__init__()\n        self.net = nn.Sequential(\n';
+    code += '            nn.Linear(input_dim, hidden_dim),\n            nn.ReLU(),\n            nn.Dropout(0.2),\n';
+    code += '            nn.Linear(hidden_dim, hidden_dim // 2),\n            nn.ReLU(),\n            nn.Dropout(0.2),\n';
+    code += '            nn.Linear(hidden_dim // 2, output_dim)\n        )\n\n';
+    code += '    def forward(self, x):\n        return self.net(x)\n\n';
+    code += 'input_dim = X_train.shape[1]\nmodel = MLPModel(input_dim)\n';
+    if (task === 'classification') {
+      code += 'criterion = nn.CrossEntropyLoss()\n';
+    } else {
+      code += 'criterion = nn.MSELoss()\n';
+    }
+    code += 'optimizer = optim.Adam(model.parameters(), lr=0.001)\n\n';
+    code += '# Training loop\nfor epoch in range(100):\n    model.train()\n    total_loss = 0\n';
+    code += '    for X_batch, y_batch in train_loader:\n        optimizer.zero_grad()\n        output = model(X_batch)\n';
+    code += '        loss = criterion(output, y_batch)\n        loss.backward()\n        optimizer.step()\n        total_loss += loss.item()\n';
+    code += '    if (epoch + 1) % 10 == 0:\n        print(f"Epoch {epoch+1}, Loss: {total_loss/len(train_loader):.4f}")\n\n';
+    code += '# Evaluation\nmodel.eval()\nwith torch.no_grad():\n    outputs = model(X_test_t)\n';
+    if (task === 'classification') {
+      code += '    _, predicted = torch.max(outputs, 1)\n    accuracy = (predicted == y_test_t).float().mean()\n    print(f"Test Accuracy: {accuracy:.4f}")\n';
+    } else {
+      code += '    mse = criterion(outputs, y_test_t).item()\n    print(f"Test RMSE: {mse**0.5:.4f}")\n';
+    }
+    return code;
+  }
+
+  function generate() {
+    if (!validate()) return;
+    document.getElementById('resultsSection').style.display = 'block';
+    var fw = document.getElementById('framework').value;
+
+    var preprocessCount = steps.filter(function(s) { return STEP_DEFS[s.type].category === 'preprocessing'; }).length;
+    var modelStep = steps.find(function(s) { return s.type === 'model'; });
+    document.getElementById('metSteps').textContent = steps.length;
+    document.getElementById('metPreprocess').textContent = preprocessCount;
+    document.getElementById('metModel').textContent = modelStep ? modelStep.opts.algorithm : 'None';
+    document.getElementById('metFramework').textContent = fw === 'sklearn' ? 'scikit-learn' : 'PyTorch';
+    document.getElementById('metStatus').textContent = 'Valid';
+    document.getElementById('metStatus').style.color = '#22c55e';
+
+    updateCodeDisplay();
+    drawPipelineSvg();
+    drawFlowSvg();
+  }
+
+  function updateCodeDisplay() {
+    var fw = document.getElementById('framework').value;
+    var code = '';
+    if (fw === 'sklearn') {
+      if (codeTab === 'pipeline') code = generateSklearnCode();
+      else if (codeTab === 'train') code = generateSklearnCode() + '\n' + generateTrainCode();
+      else code = generateDeployCode();
+    } else {
+      if (codeTab === 'deploy') code = generateDeployCode();
+      else code = generatePyTorchCode();
+    }
+    document.getElementById('codeOutput').textContent = code;
+    document.getElementById('metLines').textContent = code.split('\n').length;
+  }
+
+  function drawPipelineSvg() {
+    var svg = document.getElementById('pipelineSvg');
+    var html = '<rect width="400" height="400" fill="#141414"/>';
+    if (steps.length === 0) { svg.innerHTML = html; return; }
+
+    var boxW = 140, boxH = 44;
+    var startX = 200 - boxW/2, startY = 30;
+    var gap = 16;
+
+    for (var i = 0; i < steps.length; i++) {
+      var s = steps[i];
+      var def = STEP_DEFS[s.type];
+      var y = startY + i * (boxH + gap);
+      if (y + boxH > 390) break;
+
+      if (i > 0) {
+        var prevY = startY + (i-1) * (boxH + gap) + boxH;
+        html += '<line x1="200" y1="'+prevY+'" x2="200" y2="'+y+'" stroke="#555" stroke-width="1.5"/>';
+        html += '<polygon points="196,'+(y-2)+' 204,'+(y-2)+' 200,'+(y+2)+'" fill="#555"/>';
+      }
+      html += '<rect x="'+startX+'" y="'+y+'" width="'+boxW+'" height="'+boxH+'" fill="#1a1a1a" stroke="'+def.color+'" stroke-width="1.5" rx="6"/>';
+      html += '<rect x="'+startX+'" y="'+y+'" width="4" height="'+boxH+'" fill="'+def.color+'" rx="2"/>';
+      html += '<text x="'+(startX+14)+'" y="'+(y+18)+'" fill="'+def.color+'" font-size="10" font-weight="700" font-family="IBM Plex Mono,monospace">'+def.icon+'</text>';
+      html += '<text x="'+(startX+46)+'" y="'+(y+18)+'" fill="#e0e0e0" font-size="12" font-weight="600" font-family="IBM Plex Sans,sans-serif">'+def.name+'</text>';
+
+      var optText = '';
+      if (s.type === 'model') optText = s.opts.algorithm;
+      else if (s.type === 'scaler') optText = s.opts.type;
+      else if (s.type === 'imputer') optText = s.opts.strategy;
+      else if (s.type === 'encoder') optText = s.opts.type;
+      else if (s.type === 'pca') optText = 'n=' + s.opts.n_components;
+      else if (s.type === 'eval') optText = s.opts.method;
+      if (optText) html += '<text x="'+(startX+46)+'" y="'+(y+34)+'" fill="#888" font-size="10" font-family="IBM Plex Mono,monospace">'+optText+'</text>';
+    }
+    svg.innerHTML = html;
+  }
+
+  function drawFlowSvg() {
+    var svg = document.getElementById('flowSvg');
+    var html = '<rect width="400" height="400" fill="#141414"/>';
+    var phases = {preprocessing: {name:'Preprocessing', color:'#f59e0b', steps:[]}, feature_eng: {name:'Feature Eng.', color:'#06b6d4', steps:[]}, model: {name:'Model', color:'#ef4444', steps:[]}, eval: {name:'Evaluation', color:'#fbbf24', steps:[]}};
+    for (var i = 0; i < steps.length; i++) {
+      var cat = STEP_DEFS[steps[i].type].category;
+      phases[cat].steps.push(steps[i]);
+    }
+
+    var phaseKeys = Object.keys(phases).filter(function(k) { return phases[k].steps.length > 0; });
+    if (phaseKeys.length === 0) { svg.innerHTML = html; return; }
+
+    var boxW = 300, boxH = 60;
+    var startX = 50, startY = 30, gap = 20;
+
+    html += '<text x="200" y="18" text-anchor="middle" fill="#aaa" font-size="11" font-family="IBM Plex Sans,sans-serif">Data Flow: Raw Input → Predictions</text>';
+
+    for (var p = 0; p < phaseKeys.length; p++) {
+      var phase = phases[phaseKeys[p]];
+      var y = startY + p * (boxH + gap);
+      if (y + boxH > 390) break;
+
+      if (p > 0) {
+        var prevY = startY + (p-1) * (boxH + gap) + boxH;
+        html += '<line x1="200" y1="'+prevY+'" x2="200" y2="'+y+'" stroke="'+phase.color+'" stroke-width="2" opacity="0.4"/>';
+        html += '<polygon points="196,'+(y-2)+' 204,'+(y-2)+' 200,'+(y+3)+'" fill="'+phase.color+'" opacity="0.6"/>';
+      }
+
+      html += '<rect x="'+startX+'" y="'+y+'" width="'+boxW+'" height="'+boxH+'" fill="#1a1a1a" stroke="'+phase.color+'" stroke-width="1" rx="8" opacity="0.9"/>';
+      html += '<text x="'+(startX+12)+'" y="'+(y+20)+'" fill="'+phase.color+'" font-size="12" font-weight="700" font-family="IBM Plex Sans,sans-serif">'+phase.name+'</text>';
+
+      var stepNames = phase.steps.map(function(s) {
+        if (s.type === 'model') return s.opts.algorithm;
+        if (s.type === 'scaler') return s.opts.type;
+        if (s.type === 'imputer') return 'Imputer (' + s.opts.strategy + ')';
+        if (s.type === 'encoder') return s.opts.type;
+        return STEP_DEFS[s.type].name;
+      });
+      html += '<text x="'+(startX+12)+'" y="'+(y+40)+'" fill="#bbb" font-size="11" font-family="IBM Plex Mono,monospace">'+stepNames.join(' → ')+'</text>';
+    }
+    svg.innerHTML = html;
+  }
+
+  document.querySelectorAll('.step-add').forEach(function(btn) {
+    btn.addEventListener('click', function() { addStep(this.getAttribute('data-step')); });
+  });
+
+  document.getElementById('templateSelect').addEventListener('change', function() {
+    var tmpl = this.value;
+    if (tmpl === 'custom') return;
+    steps = [];
+    if (tmpl === 'basic') {
+      addStep('scaler');
+      addStep('model');
+    } else if (tmpl === 'standard') {
+      addStep('imputer');
+      addStep('scaler');
+      addStep('model');
+      addStep('eval');
+    } else if (tmpl === 'full') {
+      addStep('imputer');
+      addStep('encoder');
+      addStep('scaler');
+      addStep('selector');
+      addStep('model');
+      addStep('eval');
+    } else if (tmpl === 'deep') {
+      addStep('imputer');
+      addStep('scaler');
+      addStep('model');
+      steps[steps.length-1].opts.algorithm = 'MLP';
+      addStep('eval');
+      document.getElementById('framework').value = 'pytorch';
+    }
+    renderSteps();
+  });
+
+  document.getElementById('generateBtn').addEventListener('click', generate);
+  document.getElementById('validateBtn').addEventListener('click', validate);
+  document.getElementById('clearBtn').addEventListener('click', function() {
+    steps = [];
+    renderSteps();
+    document.getElementById('resultsSection').style.display = 'none';
+    document.getElementById('validationSection').style.display = 'none';
+    document.getElementById('templateSelect').value = 'custom';
+  });
+
+  document.querySelectorAll('.codeTabBtn').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      document.querySelectorAll('.codeTabBtn').forEach(function(b) { b.classList.remove('active'); });
+      this.classList.add('active');
+      codeTab = this.getAttribute('data-tab');
+      if (steps.length > 0) updateCodeDisplay();
+    });
+  });
+
+  document.getElementById('copyCodeBtn').addEventListener('click', function() {
+    var code = document.getElementById('codeOutput').textContent;
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(code).then(function() {
+        document.getElementById('copyCodeBtn').textContent = 'Copied!';
+        setTimeout(function() { document.getElementById('copyCodeBtn').textContent = 'Copy Code'; }, 1500);
+      });
+    }
+  });
+
+  renderSteps();
+})();
+</script>
+</body>
+</html>

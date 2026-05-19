@@ -1,0 +1,600 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Neural Network Playground — Train & Visualize in Your Browser | ml0x</title>
+<meta name="description" content="Browser-based neural network playground. Choose datasets, configure hidden layers, pick activations, and watch decision boundaries form in real time. All training runs locally in your browser.">
+<meta name="keywords" content="neural network playground, neural network visualizer, decision boundary, backpropagation, ReLU, sigmoid, deep learning, hidden layers, activation functions, machine learning visualization">
+<link rel="canonical" href="https://ml0x.com/tools/neural-network-playground.html">
+<link rel="alternate" hreflang="en" href="https://ml0x.com/tools/neural-network-playground.html">
+<link rel="alternate" hreflang="x-default" href="https://ml0x.com/tools/neural-network-playground.html">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Neural Network Playground — Train & Visualize in Your Browser">
+<meta property="og:description" content="Build, train, and visualize neural networks entirely in your browser. Configure layers, activations, and datasets. Watch decision boundaries form in real time.">
+<meta property="og:url" content="https://ml0x.com/tools/neural-network-playground.html">
+<meta property="og:site_name" content="ml0x">
+<meta property="og:locale" content="en_US">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Neural Network Playground — Train & Visualize in Your Browser">
+<meta name="twitter:description" content="Build, train, and visualize neural networks entirely in your browser. Configure layers, activations, and datasets.">
+<meta name="author" content="Michael Lip">
+<meta name="robots" content="index, follow">
+<link rel="stylesheet" href="/assets/style.css">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebApplication",
+  "name": "Neural Network Playground",
+  "description": "Browser-based neural network trainer and visualizer. Choose datasets, configure hidden layers and activations, watch decision boundaries form in real time.",
+  "url": "https://ml0x.com/tools/neural-network-playground.html",
+  "applicationCategory": "EducationalApplication",
+  "operatingSystem": "Any",
+  "offers": {"@type": "Offer", "price": "0", "priceCurrency": "USD"},
+  "author": {"@type": "Person", "name": "Michael Lip", "url": "https://zovo.one"},
+  "datePublished": "2026-05-25",
+  "dateModified": "2026-05-25"
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {"@type": "Question", "name": "What is a neural network?", "acceptedAnswer": {"@type": "Answer", "text": "A neural network is a computational model inspired by biological neurons. It consists of layers of interconnected nodes (neurons) that transform input data through weighted connections and nonlinear activation functions. By adjusting weights during training via backpropagation, neural networks learn to approximate complex functions for classification, regression, and other tasks."}},
+    {"@type": "Question", "name": "What do hidden layers do in a neural network?", "acceptedAnswer": {"@type": "Answer", "text": "Hidden layers enable the network to learn hierarchical, nonlinear representations of the input data. The first hidden layer learns simple features (edges, basic patterns), while deeper layers combine these into increasingly abstract representations. More hidden layers allow the network to model more complex functions, but also increase the risk of overfitting and make training harder."}},
+    {"@type": "Question", "name": "What is the difference between ReLU, sigmoid, and tanh activations?", "acceptedAnswer": {"@type": "Answer", "text": "ReLU (Rectified Linear Unit) outputs max(0, x) and is the most widely used because it trains faster and avoids vanishing gradients for positive values. Sigmoid squashes outputs to (0, 1) and is used for binary output layers but suffers from vanishing gradients. Tanh squashes to (-1, 1) with zero-centered output, which can help convergence but also has vanishing gradient issues for extreme values."}},
+    {"@type": "Question", "name": "What is backpropagation?", "acceptedAnswer": {"@type": "Answer", "text": "Backpropagation is the algorithm used to compute gradients of the loss function with respect to each weight in the network. It works by applying the chain rule of calculus backwards through the network layers. Starting from the output layer, it computes how much each weight contributed to the error, then uses these gradients to update weights via gradient descent."}},
+    {"@type": "Question", "name": "How many hidden layers and neurons should I use?", "acceptedAnswer": {"@type": "Answer", "text": "Start simple: one hidden layer with a number of neurons between the input and output sizes. For most tabular data problems, 1-2 hidden layers with 32-128 neurons each works well. For complex patterns (images, text), deeper architectures are needed. Use validation performance to guide architecture decisions. Too many neurons leads to overfitting; too few leads to underfitting."}}
+  ]
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {"@type": "ListItem", "position": 1, "name": "Home", "item": "https://ml0x.com/"},
+    {"@type": "ListItem", "position": 2, "name": "Tools", "item": "https://ml0x.com/tools/"},
+    {"@type": "ListItem", "position": 3, "name": "Neural Network Playground"}
+  ]
+}
+</script>
+</head>
+<body>
+
+<header>
+  <div class="container header-inner">
+    <a href="/" class="logo">ml0x</a>
+    <nav>
+      <a href="/">Home</a>
+      <a href="/research/">Research</a>
+      <a href="/tools/">Tools</a>
+      <a href="/guides/">Guides</a>
+      <a href="/answers/">Answers</a>
+      <div class="nav-right">
+        <a href="https://zovo.one/pricing?utm_source=ml0x.com&utm_medium=satellite&utm_campaign=nav-link" class="nav-pro" target="_blank">Go Pro &#10022;</a>
+        <a href="https://zovo.one/tools" class="nav-zovo">Zovo Tools</a>
+      </div>
+    </nav>
+  </div>
+</header>
+
+<main class="container">
+  <div class="breadcrumb">
+    <a href="/">Home</a> <span>&rsaquo;</span> <a href="/tools/">Tools</a> <span>&rsaquo;</span> Neural Network Playground
+  </div>
+
+  <div class="hero">
+    <h1>Neural Network <span>Playground</span></h1>
+    <p>Build a neural network from scratch, choose a dataset pattern, configure hidden layers and activations, then train it. Watch the decision boundary form in real time on the canvas. No data leaves your browser.</p>
+  </div>
+
+  <div class="tool-card">
+    <h3>Network Configuration</h3>
+    <div class="control-row">
+      <div class="control-group">
+        <label>Dataset</label>
+        <select id="datasetSelect">
+          <option value="circle">Circle</option>
+          <option value="xor" selected>XOR</option>
+          <option value="spiral">Spiral</option>
+          <option value="linear">Linear</option>
+        </select>
+      </div>
+      <div class="control-group">
+        <label>Activation</label>
+        <select id="activationSelect">
+          <option value="relu" selected>ReLU</option>
+          <option value="sigmoid">Sigmoid</option>
+          <option value="tanh">Tanh</option>
+        </select>
+      </div>
+      <div class="control-group">
+        <label>Hidden Layer 1</label>
+        <select id="layer1"><option>0</option><option>2</option><option selected>4</option><option>6</option><option>8</option></select>
+      </div>
+      <div class="control-group">
+        <label>Hidden Layer 2</label>
+        <select id="layer2"><option selected>0</option><option>2</option><option>4</option><option>6</option><option>8</option></select>
+      </div>
+      <div class="control-group">
+        <label>Hidden Layer 3</label>
+        <select id="layer3"><option selected>0</option><option>2</option><option>4</option><option>6</option><option>8</option></select>
+      </div>
+    </div>
+    <div class="control-row">
+      <div class="control-group slider-group">
+        <label>Learning Rate: <span class="slider-value" id="nnLrDisplay">0.030</span></label>
+        <input type="range" id="nnLrSlider" min="1" max="100" value="30">
+      </div>
+      <button class="btn" id="trainBtn">Train 100 Epochs</button>
+      <button class="btn btn-secondary" id="autoTrainBtn">Auto-Train</button>
+      <button class="btn btn-secondary" id="nnResetBtn">Reset</button>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:16px;">
+      <div class="viz-container"><canvas id="boundaryCanvas" width="350" height="350"></canvas></div>
+      <div class="viz-container"><canvas id="lossCanvas" width="350" height="350"></canvas></div>
+    </div>
+    <div class="stat-grid">
+      <div class="stat-card"><div class="value" id="nnEpoch">0</div><div class="label">Epoch</div></div>
+      <div class="stat-card"><div class="value" id="nnLoss">--</div><div class="label">Loss</div></div>
+      <div class="stat-card"><div class="value" id="nnAcc">--</div><div class="label">Accuracy</div></div>
+      <div class="stat-card"><div class="value" id="nnParams">--</div><div class="label">Parameters</div></div>
+    </div>
+  </div>
+
+  <section class="explainer-section">
+    <h2>How Neural Networks Work</h2>
+    <p>A neural network is a function approximator composed of layers of interconnected neurons. Each neuron computes a weighted sum of its inputs, adds a bias term, and passes the result through a nonlinear activation function. By stacking multiple layers, neural networks can learn to represent extremely complex mappings from inputs to outputs. This property is formalized by the universal approximation theorem, which states that a network with a single sufficiently wide hidden layer can approximate any continuous function to arbitrary precision.</p>
+    <p>In the playground above, the network takes two input features (X1 and X2) representing coordinates on a 2D plane, processes them through one to three hidden layers, and outputs a single value that determines the classification. The decision boundary is the curve in the input space where the network's output transitions from one class to another.</p>
+
+    <h2>Layers and Neurons</h2>
+    <p>A neural network is organized into three types of layers. The <strong>input layer</strong> receives the raw features. In our playground, this is always two neurons (X1 and X2). <strong>Hidden layers</strong> perform the computation that transforms inputs into useful representations. Each hidden layer contains a configurable number of neurons, and each neuron is connected to every neuron in the previous layer (fully connected or dense layer). The <strong>output layer</strong> produces the final prediction, a single neuron with sigmoid activation for binary classification.</p>
+    <p>The number of hidden layers and neurons per layer defines the network's capacity. A network with zero hidden layers is equivalent to logistic regression and can only learn linear decision boundaries. Adding one hidden layer allows the network to learn any convex decision region. Two or more hidden layers enable the network to learn arbitrary, non-convex decision boundaries including disconnected regions. However, more capacity also means more parameters to train and higher risk of overfitting.</p>
+
+    <h2>Activation Functions</h2>
+    <p>Activation functions introduce nonlinearity into the network. Without them, stacking multiple layers would be equivalent to a single linear transformation, regardless of depth. Three common activations are available in this playground:</p>
+    <ul>
+      <li><strong>ReLU (Rectified Linear Unit):</strong> Outputs <code>max(0, x)</code>. It is computationally efficient, does not saturate for positive values, and produces sparse activations. ReLU is the default choice for most hidden layers. Its main drawback is the "dying ReLU" problem where neurons can permanently output zero if they enter a regime where the input is always negative.</li>
+      <li><strong>Sigmoid:</strong> Outputs <code>1 / (1 + exp(-x))</code>, squashing values to the range (0, 1). Useful for output layers in binary classification, but problematic in hidden layers because gradients vanish for very large or very small inputs (saturation). Training deep sigmoid networks is slow.</li>
+      <li><strong>Tanh:</strong> Outputs <code>(exp(x) - exp(-x)) / (exp(x) + exp(-x))</code>, squashing to (-1, 1). Zero-centered output can improve convergence compared to sigmoid, but it still suffers from vanishing gradients at saturation. A reasonable choice when you need bounded activations in hidden layers.</li>
+    </ul>
+
+    <h2>Backpropagation</h2>
+    <p>Backpropagation is the algorithm that makes neural network training possible. It efficiently computes the gradient of the loss function with respect to every weight in the network by applying the chain rule of calculus backwards through the computation graph. The process has two phases:</p>
+    <ol>
+      <li><strong>Forward pass:</strong> Input data flows through the network layer by layer, producing activations at each layer and a final prediction at the output.</li>
+      <li><strong>Backward pass:</strong> The error at the output is computed (using a loss function like binary cross-entropy). This error signal is then propagated backwards, computing the gradient contribution of each weight. Weights are updated proportionally to their contribution to the error, scaled by the learning rate.</li>
+    </ol>
+    <p>Backpropagation has computational complexity linear in the number of parameters, making it practical even for networks with millions of weights. It requires storing the activations from the forward pass, which creates a memory-computation tradeoff.</p>
+
+    <h2>Overfitting vs. Underfitting in Neural Networks</h2>
+    <p>Overfitting occurs when the network memorizes the training data instead of learning the underlying pattern. Signs include: training loss continues to drop while validation loss increases, near-perfect training accuracy but poor test accuracy, and highly irregular decision boundaries that trace around individual data points. Causes include too many parameters relative to the amount of training data, training for too many epochs, and insufficient regularization.</p>
+    <p>Underfitting occurs when the network lacks the capacity to capture the underlying pattern. Signs include: both training and validation loss remain high, the decision boundary is too simple to separate the classes, and increasing training epochs does not improve performance. Causes include too few neurons or layers, excessive regularization, and learning rate too low.</p>
+    <p>Common strategies to prevent overfitting include: dropout (randomly zeroing neurons during training), weight decay (L2 regularization), early stopping (halt training when validation loss increases), data augmentation (generating synthetic training examples), and reducing network size. Try these approaches in the playground above: compare a network with 8-8-8 neurons to one with 4-0-0 on the circle dataset. The larger network may achieve slightly better training accuracy but shows more irregular decision boundaries.</p>
+
+    <h2>Dataset Patterns Explained</h2>
+    <p>The four datasets available in this playground illustrate different classification challenges:</p>
+    <ul>
+      <li><strong>Circle:</strong> Points inside a circle are one class, points outside are another. Requires at least one hidden layer to learn the radial decision boundary. A good starting test for neural networks.</li>
+      <li><strong>XOR:</strong> The classic non-linearly-separable problem. Points in opposite quadrants share a class. A single perceptron cannot solve XOR, but one hidden layer with two or more neurons can. This is historically significant as it demonstrated the need for multi-layer networks.</li>
+      <li><strong>Spiral:</strong> Two interleaved spirals, one per class. This is the hardest pattern, requiring multiple hidden layers or many neurons to learn the complex, winding decision boundary. A good stress test for network capacity.</li>
+      <li><strong>Linear:</strong> A linearly separable dataset. Even a network with zero hidden layers (logistic regression) can solve this. Useful as a sanity check and baseline comparison.</li>
+    </ul>
+
+    <h2>Practical Tips for Neural Networks</h2>
+    <ul>
+      <li>Always start with a simple architecture and increase complexity only if needed.</li>
+      <li>Use ReLU for hidden layers and sigmoid/softmax for output layers.</li>
+      <li>Initialize weights with He initialization (for ReLU) or Xavier initialization (for tanh/sigmoid).</li>
+      <li>Monitor both training and validation loss. The gap between them indicates overfitting.</li>
+      <li>Use batch normalization to stabilize training in deeper networks.</li>
+      <li>Learning rate is the most important hyperparameter. Use a scheduler or finder to tune it.</li>
+      <li>When stuck, try changing the architecture before extensively tuning hyperparameters.</li>
+    </ul>
+  </section>
+
+  <section class="faq-section">
+    <h2>Frequently Asked Questions</h2>
+    <details>
+      <summary>What is a neural network?</summary>
+      <p>A neural network is a computational model inspired by biological neurons. It consists of layers of interconnected nodes that transform input data through weighted connections and nonlinear activation functions. By adjusting weights during training via backpropagation, neural networks learn to approximate complex functions for classification, regression, and other tasks.</p>
+    </details>
+    <details>
+      <summary>What do hidden layers do in a neural network?</summary>
+      <p>Hidden layers enable the network to learn hierarchical, nonlinear representations of the input data. The first hidden layer learns simple features while deeper layers combine these into increasingly abstract representations. More hidden layers allow the network to model more complex functions, but also increase the risk of overfitting.</p>
+    </details>
+    <details>
+      <summary>What is the difference between ReLU, sigmoid, and tanh activations?</summary>
+      <p>ReLU outputs max(0, x) and is the most widely used because it trains faster and avoids vanishing gradients for positive values. Sigmoid squashes outputs to (0, 1) and is used for binary output layers. Tanh squashes to (-1, 1) with zero-centered output. Sigmoid and tanh both suffer from vanishing gradients for extreme values.</p>
+    </details>
+    <details>
+      <summary>What is backpropagation?</summary>
+      <p>Backpropagation is the algorithm used to compute gradients of the loss function with respect to each weight in the network. It applies the chain rule of calculus backwards through the network layers, computing how much each weight contributed to the error. These gradients are then used to update weights via gradient descent.</p>
+    </details>
+    <details>
+      <summary>How many hidden layers and neurons should I use?</summary>
+      <p>Start simple: one hidden layer with a number of neurons between the input and output sizes. For most tabular data, 1-2 hidden layers with 32-128 neurons works well. Use validation performance to guide decisions. Too many neurons leads to overfitting; too few leads to underfitting.</p>
+    </details>
+  </section>
+
+  <section class="explainer-section">
+    <h2>Related Tools</h2>
+    <div class="related-grid">
+      <a href="/guides/gradient-descent-explained.html" class="related-card">
+        <div class="related-title">Gradient Descent Explained</div>
+        <div class="related-desc">Interactive visualizer for gradient descent, SGD, momentum, and Adam optimizer.</div>
+      </a>
+      <a href="/guides/overfitting-underfitting-guide.html" class="related-card">
+        <div class="related-title">Overfitting & Underfitting Guide</div>
+        <div class="related-desc">Interactive bias-variance tradeoff demo with polynomial curve fitting.</div>
+      </a>
+      <a href="/answers/ml-algorithm-comparison.html" class="related-card">
+        <div class="related-title">ML Algorithm Comparison</div>
+        <div class="related-desc">Interactive wizard to choose the right ML algorithm for your problem.</div>
+      </a>
+    </div>
+  </section>
+
+  <section class="explainer-section">
+    <h2>About the Author</h2>
+    <p><strong>Michael Lip</strong> builds open-source ML tools and developer utilities at <a href="https://zovo.one">zovo.one</a>. ml0x is part of the Zovo Tools network, a collection of free, privacy-first tools for developers and data scientists. No tracking, no accounts required, no data leaves your browser.</p>
+  </section>
+
+  <p class="last-updated">Last updated: May 25, 2026</p>
+</main>
+
+<footer class="site-footer">
+    <div class="footer-inner">
+        <div class="footer-brand">Zovo Tools</div>
+        <div class="footer-tagline">Free developer tools by a solo dev. No tracking.</div>
+        <a href="https://zovo.one/pricing?utm_source=ml0x.com&utm_medium=satellite&utm_campaign=footer-link" class="footer-cta">Zovo Lifetime — $99 once, free forever &rarr;</a>
+        <div class="footer-copy">&copy; 2026 <a href="https://zovo.one">Zovo</a> &middot; 47/500 founding spots</div>
+    </div>
+</footer>
+
+<nav class="zovo-network" aria-label="Zovo Tools Network">
+    <div class="zovo-network-inner">
+        <h3 class="zovo-network-title">Explore More Tools</h3>
+        <div class="zovo-network-links">
+            <a href="https://abwex.com">ABWex — A/B Testing</a>
+            <a href="https://claudflow.com">ClaudFlow — Workflows</a>
+            <a href="https://claudhq.com">ClaudHQ — AI Code Tools &amp; Fixes</a>
+            <a href="https://claudkit.com">ClaudKit — API</a>
+            <a href="https://enhio.com">Enhio — Text Tools</a>
+            <a href="https://epochpilot.com">EpochPilot — Timestamps</a>
+            <a href="https://gen8x.com">Gen8X — Color Tools</a>
+            <a href="https://gpt0x.com">GPT0X — AI Models</a>
+            <a href="https://heytensor.com">HeyTensor — ML Tools</a>
+            <a href="https://invokebot.com">InvokeBot — Webhooks</a>
+            <a href="https://kappafy.com">Kappafy — JSON</a>
+            <a href="https://kappakit.com">KappaKit — Dev Toolkit</a>
+            <a href="https://kickllm.com">KickLLM — LLM Costs</a>
+            <a href="https://krzen.com">Krzen — Image Tools</a>
+            <a href="https://lochbot.com">LochBot — Security</a>
+            <a href="https://lockml.com">LockML — ML Compare</a>
+            <a href="https://ml3x.com">ML3X — Matrix Math</a>
+        </div>
+    </div>
+</nav>
+
+<script>
+(function() {
+  const bCanvas = document.getElementById('boundaryCanvas');
+  const lCanvas = document.getElementById('lossCanvas');
+  const bCtx = bCanvas.getContext('2d');
+  const lCtx = lCanvas.getContext('2d');
+  const BW = bCanvas.width, BH = bCanvas.height;
+  const LW = lCanvas.width, LH = lCanvas.height;
+
+  let data = [], network = null, epoch = 0, lossHistory = [], autoInt = null;
+
+  function relu(x) { return x > 0 ? x : 0; }
+  function reluDeriv(x) { return x > 0 ? 1 : 0; }
+  function sigmoid(x) { return 1 / (1 + Math.exp(-Math.max(-500, Math.min(500, x)))); }
+  function sigmoidDeriv(x) { const s = sigmoid(x); return s * (1 - s); }
+  function tanhFn(x) { return Math.tanh(x); }
+  function tanhDeriv(x) { const t = Math.tanh(x); return 1 - t * t; }
+
+  function getAct() {
+    const a = document.getElementById('activationSelect').value;
+    if (a === 'relu') return [relu, reluDeriv];
+    if (a === 'sigmoid') return [sigmoid, sigmoidDeriv];
+    return [tanhFn, tanhDeriv];
+  }
+
+  function generateData() {
+    const ds = document.getElementById('datasetSelect').value;
+    const pts = [];
+    const N = 200;
+    if (ds === 'circle') {
+      for (let i = 0; i < N; i++) {
+        const a = Math.random() * Math.PI * 2;
+        const r = Math.random() * 0.5;
+        pts.push({x: r * Math.cos(a), y: r * Math.sin(a), label: 0});
+      }
+      for (let i = 0; i < N; i++) {
+        const a = Math.random() * Math.PI * 2;
+        const r = 0.6 + Math.random() * 0.4;
+        pts.push({x: r * Math.cos(a), y: r * Math.sin(a), label: 1});
+      }
+    } else if (ds === 'xor') {
+      for (let i = 0; i < N * 2; i++) {
+        const x = Math.random() * 2 - 1;
+        const y = Math.random() * 2 - 1;
+        const label = (x * y > 0) ? 1 : 0;
+        pts.push({x: x + (Math.random() - 0.5) * 0.15, y: y + (Math.random() - 0.5) * 0.15, label});
+      }
+    } else if (ds === 'spiral') {
+      for (let i = 0; i < N; i++) {
+        const t = i / N * 3 * Math.PI;
+        const r = t / (3 * Math.PI);
+        pts.push({x: r * Math.cos(t) + (Math.random() - 0.5) * 0.08, y: r * Math.sin(t) + (Math.random() - 0.5) * 0.08, label: 0});
+        pts.push({x: -r * Math.cos(t) + (Math.random() - 0.5) * 0.08, y: -r * Math.sin(t) + (Math.random() - 0.5) * 0.08, label: 1});
+      }
+    } else {
+      for (let i = 0; i < N * 2; i++) {
+        const x = Math.random() * 2 - 1;
+        const y = Math.random() * 2 - 1;
+        const label = (x + y + (Math.random() - 0.5) * 0.3) > 0 ? 1 : 0;
+        pts.push({x, y, label});
+      }
+    }
+    return pts;
+  }
+
+  function buildNetwork() {
+    const layers = [2];
+    const l1 = parseInt(document.getElementById('layer1').value);
+    const l2 = parseInt(document.getElementById('layer2').value);
+    const l3 = parseInt(document.getElementById('layer3').value);
+    if (l1 > 0) layers.push(l1);
+    if (l2 > 0) layers.push(l2);
+    if (l3 > 0) layers.push(l3);
+    layers.push(1);
+
+    const weights = [], biases = [];
+    let totalParams = 0;
+    for (let i = 0; i < layers.length - 1; i++) {
+      const w = [];
+      const fan_in = layers[i], fan_out = layers[i + 1];
+      const scale = Math.sqrt(2 / fan_in);
+      for (let j = 0; j < fan_out; j++) {
+        const row = [];
+        for (let k = 0; k < fan_in; k++) {
+          row.push((Math.random() * 2 - 1) * scale);
+          totalParams++;
+        }
+        w.push(row);
+      }
+      weights.push(w);
+      const b = [];
+      for (let j = 0; j < fan_out; j++) { b.push(0); totalParams++; }
+      biases.push(b);
+    }
+    document.getElementById('nnParams').textContent = totalParams;
+    return {layers, weights, biases};
+  }
+
+  function forward(net, x1, x2) {
+    const [act] = getAct();
+    let input = [x1, x2];
+    const activations = [input];
+    const zs = [];
+    for (let i = 0; i < net.weights.length; i++) {
+      const z = [];
+      const a = [];
+      for (let j = 0; j < net.weights[i].length; j++) {
+        let sum = net.biases[i][j];
+        for (let k = 0; k < input.length; k++) sum += net.weights[i][j][k] * input[k];
+        z.push(sum);
+        a.push(i === net.weights.length - 1 ? sigmoid(sum) : act(sum));
+      }
+      zs.push(z);
+      activations.push(a);
+      input = a;
+    }
+    return {output: input[0], activations, zs};
+  }
+
+  function train(net, epochs) {
+    const lr = parseInt(document.getElementById('nnLrSlider').value) / 1000;
+    const [act, actDeriv] = getAct();
+
+    for (let e = 0; e < epochs; e++) {
+      let totalLoss = 0;
+      // Shuffle data
+      const shuffled = data.slice().sort(() => Math.random() - 0.5);
+
+      for (const pt of shuffled) {
+        const {output, activations, zs} = forward(net, pt.x, pt.y);
+        const y = pt.label;
+        const clipped = Math.max(1e-7, Math.min(1 - 1e-7, output));
+        totalLoss += -(y * Math.log(clipped) + (1 - y) * Math.log(1 - clipped));
+
+        // Backprop
+        const deltas = [];
+        let delta = [output - y];
+        deltas.unshift(delta);
+
+        for (let i = net.weights.length - 2; i >= 0; i--) {
+          const newDelta = [];
+          for (let j = 0; j < net.weights[i].length; j++) {
+            let err = 0;
+            for (let k = 0; k < net.weights[i + 1].length; k++) {
+              err += net.weights[i + 1][k][j] * delta[k];
+            }
+            const deriv = i === net.weights.length - 2 ? actDeriv(zs[i][j]) : actDeriv(zs[i][j]);
+            newDelta.push(err * deriv);
+          }
+          delta = newDelta;
+          deltas.unshift(delta);
+        }
+
+        // Update weights
+        for (let i = 0; i < net.weights.length; i++) {
+          for (let j = 0; j < net.weights[i].length; j++) {
+            for (let k = 0; k < net.weights[i][j].length; k++) {
+              net.weights[i][j][k] -= lr * deltas[i][j] * activations[i][k];
+            }
+            net.biases[i][j] -= lr * deltas[i][j];
+          }
+        }
+      }
+      epoch++;
+      lossHistory.push(totalLoss / data.length);
+    }
+  }
+
+  function drawBoundary() {
+    const imgData = bCtx.createImageData(BW, BH);
+    const step = 4;
+    for (let py = 0; py < BH; py += step) {
+      for (let px = 0; px < BW; px += step) {
+        const x = (px / BW) * 2.4 - 1.2;
+        const y = (py / BH) * 2.4 - 1.2;
+        const {output} = forward(network, x, y);
+        const r = Math.floor(59 + output * 60);
+        const g = Math.floor(20 + (1 - output) * 100);
+        const b = Math.floor(130 + output * 116);
+        for (let dy = 0; dy < step && py + dy < BH; dy++) {
+          for (let dx = 0; dx < step && px + dx < BW; dx++) {
+            const idx = ((py + dy) * BW + (px + dx)) * 4;
+            imgData.data[idx] = r;
+            imgData.data[idx + 1] = g;
+            imgData.data[idx + 2] = b;
+            imgData.data[idx + 3] = 180;
+          }
+        }
+      }
+    }
+    bCtx.putImageData(imgData, 0, 0);
+
+    // Draw data points
+    for (const pt of data) {
+      const px = (pt.x + 1.2) / 2.4 * BW;
+      const py = (pt.y + 1.2) / 2.4 * BH;
+      bCtx.beginPath();
+      bCtx.arc(px, py, 3, 0, Math.PI * 2);
+      bCtx.fillStyle = pt.label === 1 ? '#3b82f6' : '#f87171';
+      bCtx.fill();
+      bCtx.strokeStyle = '#fff';
+      bCtx.lineWidth = 0.5;
+      bCtx.stroke();
+    }
+
+    bCtx.font = '11px IBM Plex Sans, sans-serif';
+    bCtx.fillStyle = '#888';
+    bCtx.fillText('Decision Boundary', 8, BH - 8);
+  }
+
+  function drawLoss() {
+    lCtx.clearRect(0, 0, LW, LH);
+    lCtx.fillStyle = '#141414';
+    lCtx.fillRect(0, 0, LW, LH);
+
+    if (lossHistory.length < 2) {
+      lCtx.font = '13px IBM Plex Sans, sans-serif';
+      lCtx.fillStyle = '#888';
+      lCtx.textAlign = 'center';
+      lCtx.fillText('Loss curve will appear after training', LW / 2, LH / 2);
+      lCtx.textAlign = 'left';
+      return;
+    }
+
+    const pad = 40;
+    const maxL = Math.max(...lossHistory) * 1.1;
+    const minL = 0;
+
+    // Axes
+    lCtx.strokeStyle = '#333';
+    lCtx.lineWidth = 1;
+    lCtx.beginPath();
+    lCtx.moveTo(pad, pad);
+    lCtx.lineTo(pad, LH - pad);
+    lCtx.lineTo(LW - pad, LH - pad);
+    lCtx.stroke();
+
+    // Labels
+    lCtx.font = '10px IBM Plex Sans, sans-serif';
+    lCtx.fillStyle = '#888';
+    lCtx.fillText('Loss', pad + 4, pad - 8);
+    lCtx.fillText('Epoch ' + lossHistory.length, LW - pad - 50, LH - pad + 16);
+    lCtx.fillText(maxL.toFixed(2), 2, pad + 4);
+    lCtx.fillText('0', pad - 10, LH - pad + 4);
+
+    // Line
+    lCtx.beginPath();
+    lCtx.strokeStyle = '#3b82f6';
+    lCtx.lineWidth = 2;
+    for (let i = 0; i < lossHistory.length; i++) {
+      const x = pad + (i / (lossHistory.length - 1)) * (LW - 2 * pad);
+      const y = (LH - pad) - ((lossHistory[i] - minL) / (maxL - minL)) * (LH - 2 * pad);
+      if (i === 0) lCtx.moveTo(x, y); else lCtx.lineTo(x, y);
+    }
+    lCtx.stroke();
+
+    lCtx.font = '11px IBM Plex Sans, sans-serif';
+    lCtx.fillStyle = '#888';
+    lCtx.fillText('Loss Curve', 8, LH - 8);
+  }
+
+  function computeAccuracy() {
+    let correct = 0;
+    for (const pt of data) {
+      const {output} = forward(network, pt.x, pt.y);
+      const pred = output >= 0.5 ? 1 : 0;
+      if (pred === pt.label) correct++;
+    }
+    return (correct / data.length * 100).toFixed(1);
+  }
+
+  function updateDisplay() {
+    drawBoundary();
+    drawLoss();
+    document.getElementById('nnEpoch').textContent = epoch;
+    document.getElementById('nnLoss').textContent = lossHistory.length > 0 ? lossHistory[lossHistory.length - 1].toFixed(4) : '--';
+    document.getElementById('nnAcc').textContent = computeAccuracy() + '%';
+  }
+
+  function reset() {
+    if (autoInt) { clearInterval(autoInt); autoInt = null; document.getElementById('autoTrainBtn').textContent = 'Auto-Train'; }
+    data = generateData();
+    network = buildNetwork();
+    epoch = 0;
+    lossHistory = [];
+    updateDisplay();
+  }
+
+  document.getElementById('trainBtn').addEventListener('click', function() {
+    train(network, 100);
+    updateDisplay();
+  });
+
+  document.getElementById('autoTrainBtn').addEventListener('click', function() {
+    if (autoInt) {
+      clearInterval(autoInt);
+      autoInt = null;
+      this.textContent = 'Auto-Train';
+    } else {
+      autoInt = setInterval(function() {
+        train(network, 20);
+        updateDisplay();
+        if (epoch > 5000) { clearInterval(autoInt); autoInt = null; document.getElementById('autoTrainBtn').textContent = 'Auto-Train'; }
+      }, 80);
+      this.textContent = 'Pause';
+    }
+  });
+
+  document.getElementById('nnResetBtn').addEventListener('click', reset);
+  document.getElementById('datasetSelect').addEventListener('change', reset);
+  document.getElementById('nnLrSlider').addEventListener('input', function() {
+    document.getElementById('nnLrDisplay').textContent = (this.value / 1000).toFixed(3);
+  });
+
+  reset();
+})();
+</script>
+</body>
+</html>

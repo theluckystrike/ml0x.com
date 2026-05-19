@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ML Algorithm Comparison — Interactive Decision Wizard | ml0x</title>
+<meta name="description" content="Interactive ML algorithm selector. Answer questions about your data type, task, dataset size, and interpretability needs to get personalized algorithm recommendations with pros, cons, and comparison tables.">
+<meta name="keywords" content="machine learning algorithm comparison, which ml algorithm, random forest vs xgboost, algorithm selection, classification algorithms, regression algorithms, clustering algorithms, scikit-learn, algorithm decision tree">
+<link rel="canonical" href="https://ml0x.com/answers/ml-algorithm-comparison.html">
+<link rel="alternate" hreflang="en" href="https://ml0x.com/answers/ml-algorithm-comparison.html">
+<link rel="alternate" hreflang="x-default" href="https://ml0x.com/answers/ml-algorithm-comparison.html">
+<meta property="og:type" content="article">
+<meta property="og:title" content="ML Algorithm Comparison — Interactive Decision Wizard">
+<meta property="og:description" content="Interactive wizard to choose the right ML algorithm. Answer 4 questions, get personalized recommendations with pros and cons.">
+<meta property="og:url" content="https://ml0x.com/answers/ml-algorithm-comparison.html">
+<meta property="og:site_name" content="ml0x">
+<meta property="og:locale" content="en_US">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="ML Algorithm Comparison — Interactive Decision Wizard">
+<meta name="twitter:description" content="Interactive wizard to choose the right ML algorithm. Answer 4 questions, get personalized recommendations with pros and cons.">
+<meta name="author" content="Michael Lip">
+<meta name="robots" content="index, follow">
+<link rel="stylesheet" href="/assets/style.css">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Article",
+  "headline": "ML Algorithm Comparison — Interactive Decision Wizard",
+  "description": "Interactive ML algorithm selector wizard. Answer questions about data type, task, dataset size, and interpretability to get personalized recommendations.",
+  "author": {"@type": "Person", "name": "Michael Lip", "url": "https://zovo.one"},
+  "publisher": {"@type": "Organization", "name": "ml0x", "url": "https://ml0x.com"},
+  "datePublished": "2026-05-25",
+  "dateModified": "2026-05-25",
+  "mainEntityOfPage": {"@type": "WebPage", "@id": "https://ml0x.com/answers/ml-algorithm-comparison.html"},
+  "url": "https://ml0x.com/answers/ml-algorithm-comparison.html"
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {"@type": "Question", "name": "Which machine learning algorithm should I use for my problem?", "acceptedAnswer": {"@type": "Answer", "text": "It depends on your data type and task. For tabular classification: start with gradient boosting (XGBoost/LightGBM), then try random forest. For tabular regression: linear regression for baselines, then gradient boosting. For images: CNNs or vision transformers. For text: transformer models (BERT/GPT). For clustering: K-Means for spherical clusters, DBSCAN for arbitrary shapes. For small datasets: simpler models like logistic regression or SVM."}},
+    {"@type": "Question", "name": "What is the difference between Random Forest and XGBoost?", "acceptedAnswer": {"@type": "Answer", "text": "Random Forest trains many decision trees independently in parallel on random subsets of data and features, then averages their predictions (bagging). XGBoost trains trees sequentially, where each new tree corrects the errors of the previous ones (boosting). XGBoost typically achieves higher accuracy but requires more careful hyperparameter tuning and is more prone to overfitting. Random Forest is more robust out-of-the-box and trains faster."}},
+    {"@type": "Question", "name": "When should I use deep learning vs traditional ML?", "acceptedAnswer": {"@type": "Answer", "text": "Use deep learning for unstructured data (images, audio, text) where feature engineering is difficult, and when you have large datasets (100K+ samples). Use traditional ML (gradient boosting, random forest, SVM) for structured/tabular data, small to medium datasets, when interpretability matters, or when training time is limited. Gradient boosting often outperforms neural networks on tabular data."}},
+    {"@type": "Question", "name": "How do I compare ML algorithm performance fairly?", "acceptedAnswer": {"@type": "Answer", "text": "Use the same cross-validation strategy for all algorithms with identical data splits. Choose metrics appropriate for your task (accuracy, F1, AUC for classification; RMSE, MAE, R-squared for regression). Account for hyperparameter tuning effort by using the same budget for each algorithm. Consider training time, inference speed, and memory requirements alongside accuracy metrics."}},
+    {"@type": "Question", "name": "What are the most important hyperparameters for common ML algorithms?", "acceptedAnswer": {"@type": "Answer", "text": "For Random Forest: n_estimators (100-1000), max_depth (5-20), min_samples_split. For XGBoost: learning_rate (0.01-0.3), n_estimators, max_depth (3-10), subsample, colsample_bytree. For SVM: kernel type, C (regularization), gamma. For Neural Networks: learning rate, batch size, number of layers and neurons, dropout rate. For K-Means: number of clusters K. Start with defaults and tune systematically."}}
+  ]
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {"@type": "ListItem", "position": 1, "name": "Home", "item": "https://ml0x.com/"},
+    {"@type": "ListItem", "position": 2, "name": "Answers", "item": "https://ml0x.com/answers/"},
+    {"@type": "ListItem", "position": 3, "name": "ML Algorithm Comparison"}
+  ]
+}
+</script>
+</head>
+<body>
+
+<header>
+  <div class="container header-inner">
+    <a href="/" class="logo">ml0x</a>
+    <nav>
+      <a href="/">Home</a>
+      <a href="/research/">Research</a>
+      <a href="/tools/">Tools</a>
+      <a href="/guides/">Guides</a>
+      <a href="/answers/">Answers</a>
+      <div class="nav-right">
+        <a href="https://zovo.one/pricing?utm_source=ml0x.com&utm_medium=satellite&utm_campaign=nav-link" class="nav-pro" target="_blank">Go Pro &#10022;</a>
+        <a href="https://zovo.one/tools" class="nav-zovo">Zovo Tools</a>
+      </div>
+    </nav>
+  </div>
+</header>
+
+<main class="container">
+  <div class="breadcrumb">
+    <a href="/">Home</a> <span>&rsaquo;</span> <a href="/answers/">Answers</a> <span>&rsaquo;</span> ML Algorithm Comparison
+  </div>
+
+  <div class="hero">
+    <h1>ML Algorithm <span>Comparison</span></h1>
+    <p>Interactive wizard to help you choose the right machine learning algorithm. Answer four questions about your problem, and get tailored recommendations with pros, cons, and a comparison table. No data leaves your browser.</p>
+  </div>
+
+  <div class="tool-card">
+    <h3>Algorithm Selection Wizard</h3>
+    <div id="wizardSteps">
+      <div class="wizard-step" id="step1">
+        <p style="color:#e8e8e8;font-weight:600;margin-bottom:12px;">Step 1: What type of data do you have?</p>
+        <div class="wizard-options" id="dataTypeOptions"></div>
+      </div>
+      <div class="wizard-step" id="step2" style="display:none;">
+        <p style="color:#e8e8e8;font-weight:600;margin-bottom:12px;">Step 2: What is your task?</p>
+        <div class="wizard-options" id="taskOptions"></div>
+      </div>
+      <div class="wizard-step" id="step3" style="display:none;">
+        <p style="color:#e8e8e8;font-weight:600;margin-bottom:12px;">Step 3: How large is your dataset?</p>
+        <div class="wizard-options" id="sizeOptions"></div>
+      </div>
+      <div class="wizard-step" id="step4" style="display:none;">
+        <p style="color:#e8e8e8;font-weight:600;margin-bottom:12px;">Step 4: Do you need interpretability?</p>
+        <div class="wizard-options" id="interpOptions"></div>
+      </div>
+    </div>
+    <div id="wizardBreadcrumb" style="margin-top:16px;font-size:0.85rem;color:#888;"></div>
+    <div id="wizardResults" style="display:none;margin-top:20px;">
+      <h3 style="color:#3b82f6;margin-bottom:16px;">Recommended Algorithms</h3>
+      <div id="algoCards"></div>
+      <h3 style="color:#3b82f6;margin:24px 0 12px;">Comparison Table</h3>
+      <div style="overflow-x:auto;">
+        <table class="data-table" id="comparisonTable">
+          <thead><tr><th>Algorithm</th><th>Accuracy</th><th>Speed</th><th>Interpretability</th><th>Tuning Effort</th><th>Best For</th></tr></thead>
+          <tbody id="comparisonBody"></tbody>
+        </table>
+      </div>
+      <button class="btn btn-secondary" id="wizardResetBtn" style="margin-top:16px;">Start Over</button>
+    </div>
+  </div>
+
+  <section class="explainer-section">
+    <h2>Overview of Major ML Algorithms</h2>
+    <p>Machine learning algorithms span a broad spectrum from simple linear models to complex deep neural networks. The right choice depends on your data characteristics, task requirements, computational budget, and deployment constraints. This guide covers the most widely used algorithms and helps you match them to your specific problem.</p>
+
+    <h3>Linear Regression</h3>
+    <p>Linear regression models the relationship between input features and a continuous output as a linear function: <code>y = w1*x1 + w2*x2 + ... + b</code>. It is fast, interpretable, and serves as an essential baseline. Regularized variants (Ridge, Lasso, Elastic Net) handle multicollinearity and feature selection. Use linear regression when the relationship between features and target is approximately linear, when you need interpretable coefficients, or as a baseline before trying complex models.</p>
+
+    <h3>Logistic Regression</h3>
+    <p>Despite its name, logistic regression is a classification algorithm. It applies a sigmoid function to a linear combination of features to output class probabilities. It is highly interpretable (coefficients indicate feature importance and direction), computationally efficient, and works well for linearly separable problems. Logistic regression is the go-to baseline for binary classification and remains competitive on many real-world problems. Multi-class extension uses softmax (multinomial logistic regression).</p>
+
+    <h3>Decision Trees</h3>
+    <p>Decision trees split data recursively based on feature thresholds to create a tree of if-then rules. They are intuitive, require no feature scaling, handle both numerical and categorical data, and are naturally interpretable. However, single trees are prone to overfitting and have high variance. They serve as building blocks for ensemble methods (Random Forest, Gradient Boosting) which are far more powerful. A single decision tree is best used when maximum interpretability is required, as the rules can be directly inspected.</p>
+
+    <h3>Random Forest</h3>
+    <p>Random Forest trains many decision trees independently on random subsets of data (bagging) and random subsets of features. The final prediction averages (regression) or majority-votes (classification) the individual trees. This reduces variance dramatically compared to a single tree while maintaining low bias. Random Forest is robust to hyperparameter choices, handles missing data gracefully, provides feature importance rankings, and rarely overfits with enough trees. It is the first algorithm to try on tabular data. Key hyperparameters: n_estimators (100-500), max_depth (None or 10-20), min_samples_split.</p>
+
+    <h3>Gradient Boosting (XGBoost, LightGBM, CatBoost)</h3>
+    <p>Gradient boosting trains trees sequentially, where each new tree learns to correct the errors of the ensemble so far. This produces models with lower bias than Random Forest, often achieving state-of-the-art accuracy on tabular data. XGBoost introduced regularization and column subsampling. LightGBM uses histogram-based splitting for faster training on large datasets. CatBoost handles categorical features natively. Gradient boosting dominates ML competitions on structured data. Key hyperparameters: learning_rate (0.01-0.1), n_estimators (100-2000), max_depth (3-8), subsample, colsample_bytree.</p>
+
+    <h3>Support Vector Machines (SVM)</h3>
+    <p>SVMs find the hyperplane that maximally separates classes in feature space. The kernel trick maps data to higher dimensions where nonlinear boundaries become linear. SVMs work well on small to medium datasets, high-dimensional data (like text), and problems with clear margins. They are less effective on very large datasets (training is O(n^2) to O(n^3)) and require careful feature scaling and kernel/parameter selection. Kernel options include linear, RBF (Gaussian), and polynomial.</p>
+
+    <h3>K-Nearest Neighbors (KNN)</h3>
+    <p>KNN classifies new points based on the majority class of the k closest training examples. It is simple, non-parametric (makes no assumptions about data distribution), and naturally handles multi-class problems. However, it is slow at prediction time (must compute distances to all training points), sensitive to feature scaling, and struggles with high-dimensional data (curse of dimensionality). Best for small datasets with clear local structure.</p>
+
+    <h3>K-Means Clustering</h3>
+    <p>K-Means partitions data into K clusters by iteratively assigning points to the nearest centroid and updating centroids. It is fast, simple, and works well for spherical clusters of similar size. Limitations include: requires specifying K in advance, sensitive to initialization (use K-Means++), assumes spherical clusters, and affected by outliers. Use the elbow method or silhouette score to select K. For non-spherical clusters, consider DBSCAN or Gaussian Mixture Models.</p>
+
+    <h3>Neural Networks / Deep Learning</h3>
+    <p>Neural networks learn hierarchical representations through layers of neurons with nonlinear activations. CNNs dominate image tasks, RNNs/LSTMs handle sequential data, and Transformers have revolutionized NLP and increasingly other domains. Deep learning excels on large, unstructured datasets (images, text, audio) where manual feature engineering is impractical. Downsides: requires large amounts of data and compute, difficult to interpret, and hyperparameter-sensitive. For tabular data, gradient boosting often outperforms neural networks.</p>
+
+    <h2>When to Use Each Algorithm</h2>
+    <p>The algorithm selection flowchart above encodes the following heuristics, validated across thousands of ML projects:</p>
+    <ul>
+      <li><strong>Tabular + Classification + Any Size:</strong> Start with gradient boosting (XGBoost/LightGBM). If interpretability matters, use logistic regression or a single decision tree. For small datasets (&lt;1K), Random Forest or SVM may generalize better.</li>
+      <li><strong>Tabular + Regression + Any Size:</strong> Start with gradient boosting. Use linear regression as a baseline. For small datasets, Ridge regression or Random Forest.</li>
+      <li><strong>Image data:</strong> CNNs (ResNet, EfficientNet) for medium to large datasets. Transfer learning with pre-trained models for small datasets. Vision Transformers (ViT) for very large datasets.</li>
+      <li><strong>Text data:</strong> Transformer models (BERT, RoBERTa) for most tasks. TF-IDF + Logistic Regression as a fast baseline. Fine-tuning pre-trained language models is now standard.</li>
+      <li><strong>Time series:</strong> ARIMA/Prophet for univariate forecasting. LSTMs or Temporal Convolutional Networks for complex patterns. XGBoost with lag features for tabular time-series.</li>
+      <li><strong>Clustering:</strong> K-Means for spherical clusters. DBSCAN for arbitrary shapes and automatic K selection. Gaussian Mixture Models for soft clustering with uncertainty.</li>
+      <li><strong>Dimensionality reduction:</strong> PCA for linear reduction. t-SNE or UMAP for visualization. Autoencoders for nonlinear compression.</li>
+    </ul>
+
+    <h2>Complexity Comparison</h2>
+    <p>Training and inference complexity matter for production deployment:</p>
+    <ul>
+      <li><strong>Linear/Logistic Regression:</strong> Train O(nd), predict O(d). Fastest to train and deploy.</li>
+      <li><strong>Decision Tree:</strong> Train O(nd log n), predict O(log n). Very fast inference.</li>
+      <li><strong>Random Forest:</strong> Train O(T * nd log n), predict O(T * log n). Parallelizable.</li>
+      <li><strong>Gradient Boosting:</strong> Train O(T * nd), predict O(T * depth). Sequential training, fast inference.</li>
+      <li><strong>SVM:</strong> Train O(n^2 d) to O(n^3), predict O(n_sv * d). Slow on large datasets.</li>
+      <li><strong>KNN:</strong> Train O(1), predict O(nd). Slow inference on large datasets.</li>
+      <li><strong>Neural Networks:</strong> Train and predict depend on architecture. GPU-accelerated. Can be very expensive.</li>
+    </ul>
+    <p>Where n = samples, d = features, T = number of trees, n_sv = support vectors.</p>
+
+    <h2>Implementation Tips</h2>
+    <ul>
+      <li>Always establish a baseline with a simple model before trying complex algorithms.</li>
+      <li>Use cross-validation, not a single train-test split, for model selection.</li>
+      <li>Scale features for algorithms that use distance (SVM, KNN, neural networks). Tree-based methods do not need scaling.</li>
+      <li>Handle class imbalance with SMOTE, class weights, or stratified sampling before comparing algorithms.</li>
+      <li>Use learning curves to diagnose whether you need more data, more complexity, or regularization.</li>
+      <li>For production, consider inference latency and model size alongside accuracy.</li>
+      <li>Ensemble different algorithms (stacking) often outperforms any single algorithm.</li>
+    </ul>
+  </section>
+
+  <section class="faq-section">
+    <h2>Frequently Asked Questions</h2>
+    <details>
+      <summary>Which machine learning algorithm should I use for my problem?</summary>
+      <p>It depends on your data type and task. For tabular classification, start with gradient boosting (XGBoost/LightGBM). For tabular regression, use linear regression as a baseline then gradient boosting. For images, use CNNs or vision transformers. For text, use transformer models (BERT/GPT). For clustering, K-Means for spherical clusters, DBSCAN for arbitrary shapes.</p>
+    </details>
+    <details>
+      <summary>What is the difference between Random Forest and XGBoost?</summary>
+      <p>Random Forest trains many trees independently in parallel (bagging) and averages predictions. XGBoost trains trees sequentially, each correcting the previous errors (boosting). XGBoost typically achieves higher accuracy but requires more tuning and is more prone to overfitting. Random Forest is more robust out-of-the-box.</p>
+    </details>
+    <details>
+      <summary>When should I use deep learning vs traditional ML?</summary>
+      <p>Use deep learning for unstructured data (images, audio, text) with large datasets (100K+ samples). Use traditional ML (gradient boosting, random forest) for structured/tabular data, small to medium datasets, when interpretability matters, or when training time is limited.</p>
+    </details>
+    <details>
+      <summary>How do I compare ML algorithm performance fairly?</summary>
+      <p>Use the same cross-validation strategy with identical data splits. Choose metrics appropriate for your task. Account for hyperparameter tuning effort. Consider training time, inference speed, and memory requirements alongside accuracy metrics.</p>
+    </details>
+    <details>
+      <summary>What are the most important hyperparameters for common ML algorithms?</summary>
+      <p>Random Forest: n_estimators, max_depth, min_samples_split. XGBoost: learning_rate, n_estimators, max_depth, subsample. SVM: kernel, C, gamma. Neural Networks: learning rate, batch size, layers, dropout. K-Means: number of clusters K. Start with defaults and tune systematically.</p>
+    </details>
+  </section>
+
+  <section class="explainer-section">
+    <h2>Related Tools</h2>
+    <div class="related-grid">
+      <a href="/tools/neural-network-playground.html" class="related-card">
+        <div class="related-title">Neural Network Playground</div>
+        <div class="related-desc">Build and train neural networks in your browser. Visualize decision boundaries.</div>
+      </a>
+      <a href="/guides/overfitting-underfitting-guide.html" class="related-card">
+        <div class="related-title">Overfitting & Underfitting Guide</div>
+        <div class="related-desc">Interactive bias-variance tradeoff demo with polynomial curve fitting.</div>
+      </a>
+      <a href="/research/feature-engineering-checklist.html" class="related-card">
+        <div class="related-title">Feature Engineering Checklist</div>
+        <div class="related-desc">Interactive checklist for feature engineering best practices across all data types.</div>
+      </a>
+    </div>
+  </section>
+
+  <section class="explainer-section">
+    <h2>About the Author</h2>
+    <p><strong>Michael Lip</strong> builds open-source ML tools and developer utilities at <a href="https://zovo.one">zovo.one</a>. ml0x is part of the Zovo Tools network, a collection of free, privacy-first tools for developers and data scientists. No tracking, no accounts required, no data leaves your browser.</p>
+  </section>
+
+  <p class="last-updated">Last updated: May 25, 2026</p>
+</main>
+
+<footer class="site-footer">
+    <div class="footer-inner">
+        <div class="footer-brand">Zovo Tools</div>
+        <div class="footer-tagline">Free developer tools by a solo dev. No tracking.</div>
+        <a href="https://zovo.one/pricing?utm_source=ml0x.com&utm_medium=satellite&utm_campaign=footer-link" class="footer-cta">Zovo Lifetime — $99 once, free forever &rarr;</a>
+        <div class="footer-copy">&copy; 2026 <a href="https://zovo.one">Zovo</a> &middot; 47/500 founding spots</div>
+    </div>
+</footer>
+
+<nav class="zovo-network" aria-label="Zovo Tools Network">
+    <div class="zovo-network-inner">
+        <h3 class="zovo-network-title">Explore More Tools</h3>
+        <div class="zovo-network-links">
+            <a href="https://abwex.com">ABWex — A/B Testing</a>
+            <a href="https://claudflow.com">ClaudFlow — Workflows</a>
+            <a href="https://claudhq.com">ClaudHQ — AI Code Tools &amp; Fixes</a>
+            <a href="https://claudkit.com">ClaudKit — API</a>
+            <a href="https://enhio.com">Enhio — Text Tools</a>
+            <a href="https://epochpilot.com">EpochPilot — Timestamps</a>
+            <a href="https://gen8x.com">Gen8X — Color Tools</a>
+            <a href="https://gpt0x.com">GPT0X — AI Models</a>
+            <a href="https://heytensor.com">HeyTensor — ML Tools</a>
+            <a href="https://invokebot.com">InvokeBot — Webhooks</a>
+            <a href="https://kappafy.com">Kappafy — JSON</a>
+            <a href="https://kappakit.com">KappaKit — Dev Toolkit</a>
+            <a href="https://kickllm.com">KickLLM — LLM Costs</a>
+            <a href="https://krzen.com">Krzen — Image Tools</a>
+            <a href="https://lochbot.com">LochBot — Security</a>
+            <a href="https://lockml.com">LockML — ML Compare</a>
+            <a href="https://ml3x.com">ML3X — Matrix Math</a>
+        </div>
+    </div>
+</nav>
+
+<style>
+.wizard-options { display: flex; gap: 12px; flex-wrap: wrap; }
+.wizard-opt {
+  padding: 12px 20px; background: var(--bg-card); border: 1px solid var(--border);
+  border-radius: var(--radius); cursor: pointer; color: var(--text-muted);
+  font-size: 0.9rem; font-weight: 500; transition: all 0.15s;
+}
+.wizard-opt:hover { border-color: var(--accent); color: var(--text); }
+.wizard-opt.selected { border-color: var(--accent); background: rgba(59,130,246,0.1); color: var(--accent); }
+.algo-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; margin-bottom: 12px; }
+.algo-card h4 { color: var(--accent); margin-bottom: 8px; font-size: 1rem; }
+.algo-card .algo-badge { display: inline-block; padding: 2px 8px; border-radius: 3px; font-size: 0.75rem; font-weight: 600; margin-right: 6px; }
+.algo-card p { color: var(--text-muted); font-size: 0.88rem; margin: 6px 0; }
+.algo-pros { color: #22c55e !important; }
+.algo-cons { color: #f87171 !important; }
+</style>
+
+<script>
+(function() {
+  const DB = {
+    tabular: {
+      classification: {
+        small: {
+          yes: [
+            {name: 'Logistic Regression', accuracy: 'Medium', speed: 'Fast', interp: 'High', tuning: 'Low', best: 'Linear boundaries', pros: 'Interpretable coefficients, fast training, probabilistic output', cons: 'Cannot capture nonlinear patterns without feature engineering'},
+            {name: 'Decision Tree', accuracy: 'Medium', speed: 'Fast', interp: 'High', tuning: 'Low', best: 'Rule-based decisions', pros: 'Human-readable rules, handles mixed data types, no scaling needed', cons: 'High variance, prone to overfitting, unstable'},
+            {name: 'K-Nearest Neighbors', accuracy: 'Medium', speed: 'Moderate', interp: 'Medium', tuning: 'Low', best: 'Local patterns', pros: 'Simple, no training phase, adapts to any shape', cons: 'Slow predictions, sensitive to feature scaling and dimensionality'}
+          ],
+          no: [
+            {name: 'Random Forest', accuracy: 'High', speed: 'Moderate', interp: 'Low', tuning: 'Low', best: 'General purpose', pros: 'Robust, handles missing data, feature importance', cons: 'Black box, larger model size'},
+            {name: 'SVM (RBF Kernel)', accuracy: 'High', speed: 'Moderate', interp: 'Low', tuning: 'Medium', best: 'Clear margins', pros: 'Effective in high dimensions, works well with small datasets', cons: 'Slow on large data, requires feature scaling, kernel selection'},
+            {name: 'Gradient Boosting', accuracy: 'Very High', speed: 'Moderate', interp: 'Low', tuning: 'Medium', best: 'Maximum accuracy', pros: 'Best accuracy on tabular data, handles mixed types', cons: 'Requires tuning, sequential training, can overfit'}
+          ]
+        },
+        medium: {
+          yes: [
+            {name: 'Logistic Regression', accuracy: 'Medium', speed: 'Fast', interp: 'High', tuning: 'Low', best: 'Linear boundaries', pros: 'Coefficients show feature impact, fast, regularizable', cons: 'Linear decision boundary only'},
+            {name: 'Decision Tree (Pruned)', accuracy: 'Medium', speed: 'Fast', interp: 'High', tuning: 'Low', best: 'Business rules', pros: 'Directly interpretable rules, no preprocessing', cons: 'Limited accuracy, unstable splits'},
+            {name: 'Random Forest', accuracy: 'High', speed: 'Moderate', interp: 'Medium', tuning: 'Low', best: 'Balanced choice', pros: 'Feature importance, robust, parallelizable', cons: 'Less interpretable than single tree'}
+          ],
+          no: [
+            {name: 'XGBoost', accuracy: 'Very High', speed: 'Moderate', interp: 'Low', tuning: 'Medium', best: 'Competitions', pros: 'State-of-the-art on tabular, built-in regularization', cons: 'Requires tuning, sequential training'},
+            {name: 'LightGBM', accuracy: 'Very High', speed: 'Fast', interp: 'Low', tuning: 'Medium', best: 'Large tabular data', pros: 'Faster than XGBoost, handles large features, GPU support', cons: 'Sensitive to overfitting on small data'},
+            {name: 'Random Forest', accuracy: 'High', speed: 'Moderate', interp: 'Low', tuning: 'Low', best: 'Robust baseline', pros: 'Works out of box, parallelizable, handles missing data', cons: 'Slightly lower accuracy than boosting'}
+          ]
+        },
+        large: {
+          yes: [
+            {name: 'Logistic Regression', accuracy: 'Medium', speed: 'Very Fast', interp: 'High', tuning: 'Low', best: 'Scalable baseline', pros: 'Scales to millions of rows, online learning capable', cons: 'Linear only, may need feature engineering'},
+            {name: 'Linear SVM', accuracy: 'Medium', speed: 'Fast', interp: 'Medium', tuning: 'Low', best: 'High-dim data', pros: 'Scales well linearly, sparse solution', cons: 'Linear boundary, less flexible'},
+            {name: 'LightGBM', accuracy: 'Very High', speed: 'Fast', interp: 'Medium', tuning: 'Medium', best: 'Best tradeoff', pros: 'SHAP values for interpretability, fast on large data', cons: 'Not as interpretable as linear models'}
+          ],
+          no: [
+            {name: 'LightGBM', accuracy: 'Very High', speed: 'Fast', interp: 'Low', tuning: 'Medium', best: 'Speed + accuracy', pros: 'Fastest boosting, handles large data, categorical support', cons: 'Requires tuning for optimal results'},
+            {name: 'XGBoost', accuracy: 'Very High', speed: 'Moderate', interp: 'Low', tuning: 'Medium', best: 'Maximum accuracy', pros: 'Battle-tested, extensive ecosystem', cons: 'Slower than LightGBM on large data'},
+            {name: 'Neural Network', accuracy: 'High', speed: 'Slow', interp: 'Low', tuning: 'High', best: 'Complex patterns', pros: 'Can capture any pattern, benefits from more data', cons: 'Needs GPU, hard to tune, often beaten by boosting on tabular'}
+          ]
+        }
+      },
+      regression: {
+        small: {
+          yes: [
+            {name: 'Linear Regression', accuracy: 'Medium', speed: 'Very Fast', interp: 'High', tuning: 'None', best: 'Linear relationships', pros: 'Fully interpretable, coefficient significance testing', cons: 'Assumes linearity, sensitive to outliers'},
+            {name: 'Ridge Regression', accuracy: 'Medium', speed: 'Very Fast', interp: 'High', tuning: 'Low', best: 'Multicollinear features', pros: 'Handles correlated features, interpretable, regularized', cons: 'Still assumes linearity'},
+            {name: 'Lasso Regression', accuracy: 'Medium', speed: 'Very Fast', interp: 'High', tuning: 'Low', best: 'Feature selection', pros: 'Automatic feature selection via L1, sparse models', cons: 'Linear only, may drop useful features'}
+          ],
+          no: [
+            {name: 'Random Forest', accuracy: 'High', speed: 'Moderate', interp: 'Low', tuning: 'Low', best: 'Nonlinear patterns', pros: 'Handles nonlinearity, robust to outliers', cons: 'Cannot extrapolate beyond training range'},
+            {name: 'SVR (RBF)', accuracy: 'High', speed: 'Moderate', interp: 'Low', tuning: 'Medium', best: 'Small complex data', pros: 'Effective on small datasets, captures nonlinearity', cons: 'Requires scaling, slow on larger data'},
+            {name: 'Gradient Boosting', accuracy: 'Very High', speed: 'Moderate', interp: 'Low', tuning: 'Medium', best: 'Best accuracy', pros: 'State-of-the-art regression, handles mixed features', cons: 'Can overfit small datasets'}
+          ]
+        },
+        medium: {
+          yes: [
+            {name: 'Ridge Regression', accuracy: 'Medium', speed: 'Very Fast', interp: 'High', tuning: 'Low', best: 'Interpretable baseline', pros: 'Fast, interpretable, handles multicollinearity', cons: 'Linear assumption'},
+            {name: 'Elastic Net', accuracy: 'Medium', speed: 'Very Fast', interp: 'High', tuning: 'Low', best: 'Feature selection + stability', pros: 'Combines L1 + L2, handles correlated features', cons: 'Still fundamentally linear'},
+            {name: 'Random Forest', accuracy: 'High', speed: 'Moderate', interp: 'Medium', tuning: 'Low', best: 'Nonlinear + importance', pros: 'Feature importance, partial dependence plots', cons: 'Cannot extrapolate'}
+          ],
+          no: [
+            {name: 'XGBoost', accuracy: 'Very High', speed: 'Moderate', interp: 'Low', tuning: 'Medium', best: 'Maximum accuracy', pros: 'Handles nonlinearity, missing values, mixed features', cons: 'Requires tuning, cannot extrapolate'},
+            {name: 'LightGBM', accuracy: 'Very High', speed: 'Fast', interp: 'Low', tuning: 'Medium', best: 'Speed + accuracy', pros: 'Fast training, good accuracy, GPU support', cons: 'Requires tuning'},
+            {name: 'Random Forest', accuracy: 'High', speed: 'Moderate', interp: 'Low', tuning: 'Low', best: 'Robust default', pros: 'Works well out of box, parallelizable', cons: 'Slightly lower accuracy than boosting'}
+          ]
+        },
+        large: {
+          yes: [
+            {name: 'Linear Regression', accuracy: 'Medium', speed: 'Very Fast', interp: 'High', tuning: 'None', best: 'Scalable baseline', pros: 'Scales to any size, fully interpretable', cons: 'Linear only'},
+            {name: 'LightGBM', accuracy: 'Very High', speed: 'Fast', interp: 'Medium', tuning: 'Medium', best: 'Best tradeoff', pros: 'SHAP values, handles large data efficiently', cons: 'Not as interpretable as linear models'},
+            {name: 'Ridge Regression', accuracy: 'Medium', speed: 'Very Fast', interp: 'High', tuning: 'Low', best: 'Regularized linear', pros: 'Stable, fast, regularized', cons: 'Linear assumption'}
+          ],
+          no: [
+            {name: 'LightGBM', accuracy: 'Very High', speed: 'Fast', interp: 'Low', tuning: 'Medium', best: 'Large-scale regression', pros: 'Fastest boosting, handles large data', cons: 'Cannot extrapolate, needs tuning'},
+            {name: 'XGBoost', accuracy: 'Very High', speed: 'Moderate', interp: 'Low', tuning: 'Medium', best: 'Maximum accuracy', pros: 'Battle-tested, extensive tooling', cons: 'Slower than LightGBM'},
+            {name: 'Neural Network', accuracy: 'High', speed: 'Slow', interp: 'Low', tuning: 'High', best: 'Complex interactions', pros: 'Can capture any function, scales with data', cons: 'Needs GPU, hard to tune'}
+          ]
+        }
+      },
+      clustering: {
+        small: {yes: [{name:'K-Means',accuracy:'Medium',speed:'Fast',interp:'High',tuning:'Low',best:'Spherical clusters',pros:'Simple, fast, interpretable centroids',cons:'Must specify K, assumes spherical clusters'},{name:'Hierarchical Clustering',accuracy:'Medium',speed:'Moderate',interp:'High',tuning:'Low',best:'Dendrogram analysis',pros:'No K needed, dendrogram visualization',cons:'O(n^2) memory, slow on large data'},{name:'DBSCAN',accuracy:'High',speed:'Moderate',interp:'Medium',tuning:'Medium',best:'Arbitrary shapes',pros:'Finds arbitrary shapes, detects outliers, no K needed',cons:'Sensitive to eps and min_samples parameters'}],no:[{name:'DBSCAN',accuracy:'High',speed:'Moderate',interp:'Low',tuning:'Medium',best:'Arbitrary clusters',pros:'No K, finds outliers, arbitrary shapes',cons:'Sensitive to parameters, struggles with varying density'},{name:'Gaussian Mixture',accuracy:'High',speed:'Moderate',interp:'Low',tuning:'Medium',best:'Soft clustering',pros:'Probabilistic assignments, flexible cluster shapes',cons:'Assumes Gaussian, needs K specified'},{name:'K-Means',accuracy:'Medium',speed:'Fast',interp:'High',tuning:'Low',best:'Quick segmentation',pros:'Fast, scales well, simple',cons:'Spherical assumption, sensitive to init'}]},
+        medium: {yes: [{name:'K-Means',accuracy:'Medium',speed:'Fast',interp:'High',tuning:'Low',best:'Spherical clusters',pros:'Scales well, interpretable centroids',cons:'Must specify K, spherical assumption'},{name:'DBSCAN',accuracy:'High',speed:'Moderate',interp:'Medium',tuning:'Medium',best:'Arbitrary shapes',pros:'Finds any shape, noise detection',cons:'Density parameter selection'},{name:'Mini-Batch K-Means',accuracy:'Medium',speed:'Very Fast',interp:'High',tuning:'Low',best:'Speed priority',pros:'Much faster than K-Means, similar results',cons:'Slightly worse than full K-Means'}],no:[{name:'DBSCAN',accuracy:'High',speed:'Moderate',interp:'Low',tuning:'Medium',best:'Complex clusters',pros:'Arbitrary shapes, outlier detection',cons:'Parameter tuning needed'},{name:'Gaussian Mixture',accuracy:'High',speed:'Moderate',interp:'Low',tuning:'Medium',best:'Soft assignments',pros:'Probabilistic, flexible shapes',cons:'Computational cost grows with K'},{name:'HDBSCAN',accuracy:'High',speed:'Moderate',interp:'Low',tuning:'Low',best:'Varying density',pros:'Handles varying density, fewer parameters than DBSCAN',cons:'Slower, less interpretable'}]},
+        large: {yes: [{name:'Mini-Batch K-Means',accuracy:'Medium',speed:'Very Fast',interp:'High',tuning:'Low',best:'Large-scale segmentation',pros:'Scales to millions, interpretable',cons:'Spherical assumption, approximate'},{name:'K-Means',accuracy:'Medium',speed:'Fast',interp:'High',tuning:'Low',best:'Standard clustering',pros:'Well-understood, parallelizable',cons:'Must specify K'},{name:'Birch',accuracy:'Medium',speed:'Fast',interp:'Medium',tuning:'Low',best:'Online clustering',pros:'Single pass, memory efficient',cons:'Assumes spherical clusters'}],no:[{name:'Mini-Batch K-Means',accuracy:'Medium',speed:'Very Fast',interp:'High',tuning:'Low',best:'Scalable',pros:'Fastest clustering, good enough',cons:'Approximate, spherical'},{name:'HDBSCAN',accuracy:'High',speed:'Moderate',interp:'Low',tuning:'Low',best:'Quality clusters',pros:'Automatic K, varying density',cons:'Memory intensive'},{name:'Spectral Clustering',accuracy:'High',speed:'Slow',interp:'Low',tuning:'Medium',best:'Complex manifolds',pros:'Finds non-convex clusters',cons:'O(n^3), not scalable'}]}
+      },
+      dimensionality_reduction: {
+        small: {yes:[{name:'PCA',accuracy:'N/A',speed:'Fast',interp:'High',tuning:'Low',best:'Linear reduction',pros:'Interpretable components, variance explained',cons:'Linear only, loses nonlinear structure'},{name:'Feature Selection (L1)',accuracy:'N/A',speed:'Fast',interp:'High',tuning:'Low',best:'Removing features',pros:'Keeps original features, sparse models',cons:'Greedy, may miss interactions'},{name:'t-SNE',accuracy:'N/A',speed:'Moderate',interp:'Medium',tuning:'Medium',best:'2D visualization',pros:'Preserves local structure, great visualizations',cons:'Non-deterministic, no inverse transform'}],no:[{name:'PCA',accuracy:'N/A',speed:'Fast',interp:'High',tuning:'Low',best:'Variance preservation',pros:'Fast, well-understood, composable',cons:'Linear only'},{name:'UMAP',accuracy:'N/A',speed:'Moderate',interp:'Low',tuning:'Medium',best:'Nonlinear embedding',pros:'Preserves global + local structure, faster than t-SNE',cons:'Hyperparameter sensitive'},{name:'Autoencoder',accuracy:'N/A',speed:'Slow',interp:'Low',tuning:'High',best:'Nonlinear compression',pros:'Learns complex representations',cons:'Needs training, not deterministic'}]},
+        medium: {yes:[{name:'PCA',accuracy:'N/A',speed:'Fast',interp:'High',tuning:'Low',best:'Linear baseline',pros:'Fast, variance explained ratio',cons:'Linear assumption'},{name:'Truncated SVD',accuracy:'N/A',speed:'Fast',interp:'High',tuning:'Low',best:'Sparse data',pros:'Works with sparse matrices, fast',cons:'Linear'},{name:'UMAP',accuracy:'N/A',speed:'Moderate',interp:'Medium',tuning:'Medium',best:'Visualization',pros:'Good global + local structure',cons:'Non-deterministic'}],no:[{name:'UMAP',accuracy:'N/A',speed:'Moderate',interp:'Low',tuning:'Medium',best:'Nonlinear embedding',pros:'Fast, good structure preservation',cons:'Parameter tuning'},{name:'PCA',accuracy:'N/A',speed:'Fast',interp:'High',tuning:'Low',best:'Quick reduction',pros:'Deterministic, fast, composable',cons:'Linear only'},{name:'t-SNE',accuracy:'N/A',speed:'Slow',interp:'Low',tuning:'Medium',best:'2D/3D visualization',pros:'Beautiful visualizations of clusters',cons:'Slow, perplexity tuning, no new points'}]},
+        large: {yes:[{name:'PCA (Randomized)',accuracy:'N/A',speed:'Very Fast',interp:'High',tuning:'Low',best:'Scalable reduction',pros:'Scales to large data, approximate but fast',cons:'Linear, approximate'},{name:'Truncated SVD',accuracy:'N/A',speed:'Fast',interp:'High',tuning:'Low',best:'Sparse large data',pros:'Memory efficient for sparse data',cons:'Linear'},{name:'UMAP',accuracy:'N/A',speed:'Moderate',interp:'Medium',tuning:'Medium',best:'Large-scale embedding',pros:'Scales better than t-SNE',cons:'Still slower than PCA'}],no:[{name:'UMAP',accuracy:'N/A',speed:'Moderate',interp:'Low',tuning:'Medium',best:'Nonlinear',pros:'Best scalable nonlinear reduction',cons:'Parameter sensitive'},{name:'PCA (Randomized)',accuracy:'N/A',speed:'Very Fast',interp:'High',tuning:'Low',best:'Quick baseline',pros:'Very fast on large data',cons:'Linear only'},{name:'Autoencoder',accuracy:'N/A',speed:'Slow',interp:'Low',tuning:'High',best:'Deep compression',pros:'Learns complex representations',cons:'Expensive to train'}]}
+      }
+    },
+    text: {
+      classification: {
+        small: {yes:[{name:'TF-IDF + Logistic Regression',accuracy:'Medium',speed:'Fast',interp:'High',tuning:'Low',best:'Text baseline',pros:'Interpretable features, fast training',cons:'Bag of words, no semantics'},{name:'Naive Bayes',accuracy:'Medium',speed:'Very Fast',interp:'High',tuning:'None',best:'Probabilistic text',pros:'Very fast, works with few examples, probabilistic',cons:'Independence assumption'},{name:'TF-IDF + SVM',accuracy:'High',speed:'Moderate',interp:'Medium',tuning:'Low',best:'Small text classification',pros:'Good accuracy on small text data',cons:'Requires vectorization tuning'}],no:[{name:'Fine-tuned BERT',accuracy:'Very High',speed:'Slow',interp:'Low',tuning:'Medium',best:'Understanding semantics',pros:'State-of-the-art NLU, pretrained knowledge',cons:'Needs GPU, slow inference'},{name:'TF-IDF + Logistic Regression',accuracy:'Medium',speed:'Fast',interp:'High',tuning:'Low',best:'Fast baseline',pros:'Quick to implement, reasonable accuracy',cons:'No semantic understanding'},{name:'Sentence Transformers',accuracy:'High',speed:'Moderate',interp:'Low',tuning:'Low',best:'Semantic similarity',pros:'Good embeddings, transfer learning',cons:'Needs pretrained model'}]},
+        medium: {yes:[{name:'TF-IDF + Logistic Regression',accuracy:'Medium',speed:'Fast',interp:'High',tuning:'Low',best:'Interpretable NLP',pros:'Feature coefficients show word importance',cons:'No word order or semantics'},{name:'TF-IDF + Random Forest',accuracy:'High',speed:'Moderate',interp:'Medium',tuning:'Low',best:'Nonlinear text patterns',pros:'Feature importance, handles nonlinearity',cons:'Large feature space'},{name:'Naive Bayes',accuracy:'Medium',speed:'Very Fast',interp:'High',tuning:'None',best:'Spam/sentiment',pros:'Fastest text classifier, interpretable',cons:'Naive independence assumption'}],no:[{name:'Fine-tuned BERT',accuracy:'Very High',speed:'Slow',interp:'Low',tuning:'Medium',best:'NLU tasks',pros:'Best accuracy, understands context',cons:'GPU required, slow'},{name:'DistilBERT',accuracy:'High',speed:'Moderate',interp:'Low',tuning:'Medium',best:'Faster BERT',pros:'40% smaller, 60% faster, 97% accuracy of BERT',cons:'Still needs GPU for training'},{name:'TF-IDF + XGBoost',accuracy:'High',speed:'Moderate',interp:'Low',tuning:'Medium',best:'Tabular-like text',pros:'Strong with engineered text features',cons:'No semantic understanding'}]},
+        large: {yes:[{name:'TF-IDF + Logistic Regression',accuracy:'Medium',speed:'Very Fast',interp:'High',tuning:'Low',best:'Scalable baseline',pros:'Scales to millions, fully interpretable',cons:'Linear, no semantics'},{name:'FastText',accuracy:'High',speed:'Fast',interp:'Medium',tuning:'Low',best:'Subword features',pros:'Handles rare words, fast training',cons:'Limited context understanding'},{name:'DistilBERT',accuracy:'High',speed:'Moderate',interp:'Medium',tuning:'Medium',best:'Quality + speed',pros:'Good accuracy with attention visualization',cons:'Still needs GPU'}],no:[{name:'Fine-tuned BERT/RoBERTa',accuracy:'Very High',speed:'Slow',interp:'Low',tuning:'Medium',best:'Maximum quality',pros:'State-of-the-art, pretrained knowledge',cons:'GPU required, expensive to fine-tune'},{name:'DistilBERT',accuracy:'High',speed:'Moderate',interp:'Low',tuning:'Medium',best:'Production NLP',pros:'Good speed/accuracy tradeoff',cons:'Still needs GPU'},{name:'FastText',accuracy:'High',speed:'Fast',interp:'Low',tuning:'Low',best:'Large-scale text',pros:'Trains on billions of words, fast',cons:'Limited context understanding'}]}
+      },
+      regression: {small:{yes:[{name:'TF-IDF + Ridge Regression',accuracy:'Medium',speed:'Fast',interp:'High',tuning:'Low',best:'Text regression baseline',pros:'Interpretable, fast',cons:'Linear, bag of words'}],no:[{name:'Fine-tuned BERT + Regression Head',accuracy:'Very High',speed:'Slow',interp:'Low',tuning:'Medium',best:'Semantic regression',pros:'Understands context',cons:'GPU required'}]},medium:{yes:[{name:'TF-IDF + Ridge',accuracy:'Medium',speed:'Fast',interp:'High',tuning:'Low',best:'Interpretable',pros:'Fast, interpretable',cons:'Linear'}],no:[{name:'BERT + Regression',accuracy:'Very High',speed:'Slow',interp:'Low',tuning:'Medium',best:'Best accuracy',pros:'State-of-the-art',cons:'GPU, slow'}]},large:{yes:[{name:'TF-IDF + Ridge',accuracy:'Medium',speed:'Fast',interp:'High',tuning:'Low',best:'Scale',pros:'Scales well',cons:'Linear'}],no:[{name:'BERT + Regression',accuracy:'Very High',speed:'Slow',interp:'Low',tuning:'Medium',best:'Quality',pros:'Best quality',cons:'Expensive'}]}},
+      clustering: {small:{yes:[{name:'TF-IDF + K-Means',accuracy:'Medium',speed:'Fast',interp:'High',tuning:'Low',best:'Document clustering',pros:'Interpretable centroids',cons:'Spherical assumption'}],no:[{name:'Sentence Transformers + HDBSCAN',accuracy:'High',speed:'Moderate',interp:'Low',tuning:'Low',best:'Semantic clustering',pros:'Semantic similarity',cons:'Needs pretrained model'}]},medium:{yes:[{name:'TF-IDF + K-Means',accuracy:'Medium',speed:'Fast',interp:'High',tuning:'Low',best:'Topic discovery',pros:'Fast, interpretable',cons:'Bag of words'}],no:[{name:'BERTopic',accuracy:'High',speed:'Moderate',interp:'Medium',tuning:'Low',best:'Topic modeling',pros:'Semantic topics, interpretable',cons:'Needs pretrained embeddings'}]},large:{yes:[{name:'TF-IDF + Mini-Batch K-Means',accuracy:'Medium',speed:'Very Fast',interp:'High',tuning:'Low',best:'Large-scale topics',pros:'Scales to millions',cons:'Approximate'}],no:[{name:'BERTopic',accuracy:'High',speed:'Moderate',interp:'Medium',tuning:'Low',best:'Quality topics',pros:'Best topic quality',cons:'Memory intensive'}]}},
+      dimensionality_reduction: {small:{yes:[{name:'TF-IDF + PCA',accuracy:'N/A',speed:'Fast',interp:'High',tuning:'Low',best:'Text reduction',pros:'Fast, interpretable',cons:'Linear'}],no:[{name:'Sentence Transformers',accuracy:'N/A',speed:'Moderate',interp:'Low',tuning:'Low',best:'Semantic embeddings',pros:'Rich semantic vectors',cons:'Pretrained model needed'}]},medium:{yes:[{name:'Truncated SVD (LSA)',accuracy:'N/A',speed:'Fast',interp:'High',tuning:'Low',best:'Latent topics',pros:'Interpretable topics, sparse-friendly',cons:'Linear'}],no:[{name:'Sentence Transformers + UMAP',accuracy:'N/A',speed:'Moderate',interp:'Low',tuning:'Medium',best:'Semantic visualization',pros:'Beautiful semantic maps',cons:'Non-deterministic'}]},large:{yes:[{name:'Truncated SVD',accuracy:'N/A',speed:'Fast',interp:'High',tuning:'Low',best:'Scalable',pros:'Scales well',cons:'Linear'}],no:[{name:'Sentence Transformers',accuracy:'N/A',speed:'Moderate',interp:'Low',tuning:'Low',best:'Dense embeddings',pros:'Rich representations',cons:'Memory'}]}}
+    },
+    image: {
+      classification: {
+        small: {yes:[{name:'HOG + Logistic Regression',accuracy:'Medium',speed:'Fast',interp:'Medium',tuning:'Low',best:'Simple images',pros:'Hand-crafted features, interpretable',cons:'Poor on complex images'},{name:'Transfer Learning (ResNet)',accuracy:'High',speed:'Moderate',interp:'Low',tuning:'Medium',best:'Few-shot learning',pros:'Leverages pretrained knowledge',cons:'Needs fine-tuning'}],no:[{name:'Transfer Learning (ResNet/EfficientNet)',accuracy:'Very High',speed:'Moderate',interp:'Low',tuning:'Medium',best:'Image classification',pros:'State-of-the-art, pretrained on ImageNet',cons:'GPU required'},{name:'Fine-tuned ViT',accuracy:'Very High',speed:'Slow',interp:'Low',tuning:'High',best:'Complex images',pros:'Attention-based, global context',cons:'Needs more data than CNNs'}]},
+        medium: {yes:[{name:'ResNet + GradCAM',accuracy:'High',speed:'Moderate',interp:'Medium',tuning:'Medium',best:'Visual explanations',pros:'GradCAM shows what model sees',cons:'Explanations are approximate'},{name:'Transfer Learning (EfficientNet)',accuracy:'Very High',speed:'Moderate',interp:'Low',tuning:'Medium',best:'Efficient classification',pros:'Best accuracy/FLOP ratio',cons:'Still a black box'}],no:[{name:'EfficientNet',accuracy:'Very High',speed:'Moderate',interp:'Low',tuning:'Medium',best:'Best efficiency',pros:'Optimal scaling, top accuracy',cons:'Architecture is complex'},{name:'ResNet',accuracy:'Very High',speed:'Moderate',interp:'Low',tuning:'Medium',best:'Standard CNN',pros:'Well-understood, skip connections',cons:'Larger than EfficientNet'}]},
+        large: {yes:[{name:'EfficientNet + SHAP',accuracy:'Very High',speed:'Moderate',interp:'Medium',tuning:'Medium',best:'Explainable vision',pros:'Good accuracy with visual explanations',cons:'SHAP is slow for images'},{name:'ResNet + GradCAM',accuracy:'Very High',speed:'Moderate',interp:'Medium',tuning:'Medium',best:'Visual attention',pros:'Shows decision regions',cons:'Approximate explanations'}],no:[{name:'Vision Transformer (ViT)',accuracy:'Very High',speed:'Slow',interp:'Low',tuning:'High',best:'Large-scale vision',pros:'SOTA on large image datasets',cons:'Needs large data, expensive'},{name:'EfficientNetV2',accuracy:'Very High',speed:'Fast',interp:'Low',tuning:'Medium',best:'Production vision',pros:'Fast training, progressive resizing',cons:'Complex architecture'}]}
+      },
+      regression: {small:{yes:[{name:'Transfer Learning + Linear Head',accuracy:'High',speed:'Moderate',interp:'Medium',tuning:'Medium',best:'Image regression',pros:'Pretrained features + interpretable head',cons:'Limited by pretrained model'}],no:[{name:'ResNet + Regression Head',accuracy:'Very High',speed:'Moderate',interp:'Low',tuning:'Medium',best:'Image to number',pros:'Powerful feature extraction',cons:'GPU needed'}]},medium:{yes:[{name:'EfficientNet + Linear',accuracy:'High',speed:'Moderate',interp:'Medium',tuning:'Medium',best:'Efficient regression',pros:'Good accuracy/speed',cons:'Approximate interpretability'}],no:[{name:'EfficientNet + MLP Head',accuracy:'Very High',speed:'Moderate',interp:'Low',tuning:'Medium',best:'Best accuracy',pros:'State-of-the-art features',cons:'Black box'}]},large:{yes:[{name:'ResNet + Interpretable Head',accuracy:'High',speed:'Moderate',interp:'Medium',tuning:'Medium',best:'Scalable',pros:'Scales well',cons:'Approximate'}],no:[{name:'ViT + Regression',accuracy:'Very High',speed:'Slow',interp:'Low',tuning:'High',best:'Maximum quality',pros:'SOTA features',cons:'Very expensive'}]}},
+      clustering: {small:{yes:[{name:'CNN Features + K-Means',accuracy:'Medium',speed:'Moderate',interp:'Medium',tuning:'Low',best:'Image grouping',pros:'Pretrained features, interpretable clusters',cons:'Dependent on feature extractor'}],no:[{name:'CNN Features + HDBSCAN',accuracy:'High',speed:'Moderate',interp:'Low',tuning:'Low',best:'Auto clustering',pros:'No K needed',cons:'Parameter sensitive'}]},medium:{yes:[{name:'CNN Features + K-Means',accuracy:'Medium',speed:'Fast',interp:'Medium',tuning:'Low',best:'Scalable grouping',pros:'Fast, interpretable',cons:'Spherical assumption'}],no:[{name:'DINO Features + HDBSCAN',accuracy:'High',speed:'Moderate',interp:'Low',tuning:'Low',best:'Semantic clustering',pros:'Self-supervised features',cons:'GPU needed'}]},large:{yes:[{name:'CNN Features + Mini-Batch K-Means',accuracy:'Medium',speed:'Fast',interp:'Medium',tuning:'Low',best:'Large-scale',pros:'Scales well',cons:'Approximate'}],no:[{name:'DINO + UMAP + HDBSCAN',accuracy:'High',speed:'Slow',interp:'Low',tuning:'Medium',best:'Quality clusters',pros:'Best clustering quality',cons:'Expensive'}]}},
+      dimensionality_reduction: {small:{yes:[{name:'PCA on CNN Features',accuracy:'N/A',speed:'Fast',interp:'High',tuning:'Low',best:'Feature reduction',pros:'Fast, interpretable variance',cons:'Linear'}],no:[{name:'UMAP on CNN Features',accuracy:'N/A',speed:'Moderate',interp:'Low',tuning:'Medium',best:'Visualization',pros:'Great visualizations',cons:'Non-deterministic'}]},medium:{yes:[{name:'PCA on CNN Features',accuracy:'N/A',speed:'Fast',interp:'High',tuning:'Low',best:'Scalable',pros:'Fast',cons:'Linear'}],no:[{name:'t-SNE / UMAP',accuracy:'N/A',speed:'Moderate',interp:'Low',tuning:'Medium',best:'2D maps',pros:'Beautiful cluster maps',cons:'Slow, parameter sensitive'}]},large:{yes:[{name:'Randomized PCA',accuracy:'N/A',speed:'Very Fast',interp:'High',tuning:'Low',best:'Fast reduction',pros:'Scales to large data',cons:'Linear, approximate'}],no:[{name:'UMAP',accuracy:'N/A',speed:'Moderate',interp:'Low',tuning:'Medium',best:'Nonlinear',pros:'Scales better than t-SNE',cons:'Parameter tuning'}]}}
+    },
+    timeseries: {
+      classification: {small:{yes:[{name:'Time Series Features + Logistic Regression',accuracy:'Medium',speed:'Fast',interp:'High',tuning:'Low',best:'Interpretable TS',pros:'Engineered features are interpretable',cons:'Manual feature engineering'},{name:'DTW + KNN',accuracy:'High',speed:'Moderate',interp:'Medium',tuning:'Low',best:'Shape matching',pros:'Shape-aware, no training',cons:'Slow on large data'}],no:[{name:'InceptionTime',accuracy:'Very High',speed:'Moderate',interp:'Low',tuning:'Medium',best:'TS classification',pros:'SOTA on many TS benchmarks',cons:'GPU needed, complex'},{name:'Rocket + Ridge',accuracy:'Very High',speed:'Fast',interp:'Low',tuning:'Low',best:'Fast + accurate',pros:'Near SOTA, very fast',cons:'Random kernels, less interpretable'}]},medium:{yes:[{name:'TS Features + XGBoost',accuracy:'High',speed:'Fast',interp:'Medium',tuning:'Medium',best:'Feature-based',pros:'Feature importance, fast',cons:'Manual feature engineering'},{name:'Rocket + Ridge',accuracy:'Very High',speed:'Fast',interp:'Medium',tuning:'Low',best:'Speed + quality',pros:'Near SOTA, very fast training',cons:'Less interpretable'}],no:[{name:'InceptionTime',accuracy:'Very High',speed:'Moderate',interp:'Low',tuning:'Medium',best:'Deep TS',pros:'State-of-the-art accuracy',cons:'GPU required'},{name:'Rocket',accuracy:'Very High',speed:'Fast',interp:'Low',tuning:'Low',best:'Fast SOTA',pros:'Fastest near-SOTA method',cons:'Random features'}]},large:{yes:[{name:'TS Features + LightGBM',accuracy:'High',speed:'Fast',interp:'Medium',tuning:'Medium',best:'Scalable',pros:'Fast on large data, SHAP values',cons:'Feature engineering needed'}],no:[{name:'InceptionTime',accuracy:'Very High',speed:'Slow',interp:'Low',tuning:'Medium',best:'Maximum accuracy',pros:'Best deep learning for TS',cons:'Very slow to train'}]}},
+      regression: {small:{yes:[{name:'ARIMA',accuracy:'Medium',speed:'Fast',interp:'High',tuning:'Medium',best:'Univariate forecast',pros:'Well-understood, confidence intervals',cons:'Stationary assumption, univariate'},{name:'Prophet',accuracy:'Medium',speed:'Fast',interp:'High',tuning:'Low',best:'Seasonal data',pros:'Handles holidays, changepoints, interpretable',cons:'Univariate, may overfit'}],no:[{name:'LSTM',accuracy:'High',speed:'Moderate',interp:'Low',tuning:'High',best:'Complex sequences',pros:'Captures long dependencies',cons:'Hard to tune, slow'},{name:'XGBoost with Lag Features',accuracy:'High',speed:'Fast',interp:'Low',tuning:'Medium',best:'Tabular approach',pros:'Strong on engineered features',cons:'Manual feature engineering'}]},medium:{yes:[{name:'Prophet',accuracy:'Medium',speed:'Fast',interp:'High',tuning:'Low',best:'Business forecasting',pros:'Interpretable components, easy to use',cons:'Univariate'},{name:'ARIMA/SARIMAX',accuracy:'Medium',speed:'Fast',interp:'High',tuning:'Medium',best:'Statistical forecast',pros:'Well-understood theory',cons:'Stationary assumption'}],no:[{name:'LightGBM with Lag Features',accuracy:'High',speed:'Fast',interp:'Low',tuning:'Medium',best:'Multivariate TS',pros:'Handles many features, fast',cons:'Feature engineering'},{name:'Temporal Fusion Transformer',accuracy:'Very High',speed:'Slow',interp:'Medium',tuning:'High',best:'Interpretable deep TS',pros:'Attention-based interpretability',cons:'Complex, GPU needed'}]},large:{yes:[{name:'Prophet',accuracy:'Medium',speed:'Fast',interp:'High',tuning:'Low',best:'Scalable forecast',pros:'Fast, interpretable',cons:'Univariate'}],no:[{name:'Temporal Fusion Transformer',accuracy:'Very High',speed:'Slow',interp:'Medium',tuning:'High',best:'SOTA forecast',pros:'Best accuracy on many benchmarks',cons:'Expensive to train'}]}},
+      clustering: {small:{yes:[{name:'DTW + K-Medoids',accuracy:'Medium',speed:'Moderate',interp:'High',tuning:'Medium',best:'Shape-based clusters',pros:'Shape-aware distance, interpretable medoids',cons:'Slow DTW computation'}],no:[{name:'DTW + DBSCAN',accuracy:'High',speed:'Moderate',interp:'Low',tuning:'Medium',best:'Arbitrary TS clusters',pros:'No K needed, shape-aware',cons:'Slow, parameter sensitive'}]},medium:{yes:[{name:'TS Features + K-Means',accuracy:'Medium',speed:'Fast',interp:'High',tuning:'Low',best:'Feature-based clustering',pros:'Fast, interpretable features',cons:'Feature engineering needed'}],no:[{name:'Deep Temporal Clustering',accuracy:'High',speed:'Slow',interp:'Low',tuning:'High',best:'Complex patterns',pros:'Learns representations',cons:'GPU needed'}]},large:{yes:[{name:'TS Features + Mini-Batch K-Means',accuracy:'Medium',speed:'Fast',interp:'High',tuning:'Low',best:'Scalable',pros:'Fast on large TS datasets',cons:'Feature engineering, approximate'}],no:[{name:'TS Features + HDBSCAN',accuracy:'High',speed:'Moderate',interp:'Low',tuning:'Low',best:'Auto clustering',pros:'No K, handles noise',cons:'Memory intensive'}]}},
+      dimensionality_reduction: {small:{yes:[{name:'PCA on TS Features',accuracy:'N/A',speed:'Fast',interp:'High',tuning:'Low',best:'Feature reduction',pros:'Fast, variance explained',cons:'Linear, needs features'}],no:[{name:'UMAP on TS Features',accuracy:'N/A',speed:'Moderate',interp:'Low',tuning:'Medium',best:'Visualization',pros:'Good visualizations',cons:'Non-deterministic'}]},medium:{yes:[{name:'PCA',accuracy:'N/A',speed:'Fast',interp:'High',tuning:'Low',best:'Scalable',pros:'Fast',cons:'Linear'}],no:[{name:'UMAP',accuracy:'N/A',speed:'Moderate',interp:'Low',tuning:'Medium',best:'Nonlinear',pros:'Good structure preservation',cons:'Slower'}]},large:{yes:[{name:'Randomized PCA',accuracy:'N/A',speed:'Very Fast',interp:'High',tuning:'Low',best:'Large-scale',pros:'Scales well',cons:'Approximate'}],no:[{name:'UMAP',accuracy:'N/A',speed:'Moderate',interp:'Low',tuning:'Medium',best:'Quality embedding',pros:'Best nonlinear method for large data',cons:'Memory'}]}}
+    }
+  };
+
+  let selections = {};
+  const dataTypes = [{id:'tabular',label:'Tabular / Structured'},{id:'text',label:'Text / NLP'},{id:'image',label:'Image / Vision'},{id:'timeseries',label:'Time Series'}];
+  const tasks = [{id:'classification',label:'Classification'},{id:'regression',label:'Regression'},{id:'clustering',label:'Clustering'},{id:'dimensionality_reduction',label:'Dimensionality Reduction'}];
+  const sizes = [{id:'small',label:'Small (<1K samples)'},{id:'medium',label:'Medium (1K-100K)'},{id:'large',label:'Large (>100K)'}];
+  const interps = [{id:'yes',label:'Yes, interpretability needed'},{id:'no',label:'No, accuracy is priority'}];
+
+  function renderOptions(containerId, options, key, nextStep) {
+    const container = document.getElementById(containerId);
+    container.innerHTML = '';
+    options.forEach(opt => {
+      const btn = document.createElement('button');
+      btn.className = 'wizard-opt';
+      btn.textContent = opt.label;
+      btn.addEventListener('click', function() {
+        container.querySelectorAll('.wizard-opt').forEach(b => b.classList.remove('selected'));
+        btn.classList.add('selected');
+        selections[key] = opt.id;
+        updateBreadcrumb();
+        if (nextStep) {
+          setTimeout(() => { document.getElementById(nextStep).style.display = 'block'; }, 200);
+        } else {
+          setTimeout(showResults, 200);
+        }
+      });
+      container.appendChild(btn);
+    });
+  }
+
+  function updateBreadcrumb() {
+    const parts = [];
+    if (selections.dataType) parts.push('Data: ' + dataTypes.find(d => d.id === selections.dataType).label);
+    if (selections.task) parts.push('Task: ' + tasks.find(t => t.id === selections.task).label);
+    if (selections.size) parts.push('Size: ' + sizes.find(s => s.id === selections.size).label);
+    if (selections.interp) parts.push('Interpretability: ' + (selections.interp === 'yes' ? 'Yes' : 'No'));
+    document.getElementById('wizardBreadcrumb').textContent = parts.join(' > ');
+  }
+
+  function showResults() {
+    const algos = DB[selections.dataType]?.[selections.task]?.[selections.size]?.[selections.interp];
+    if (!algos) {
+      document.getElementById('algoCards').innerHTML = '<p style="color:#888;">No recommendations found for this combination. Try different options.</p>';
+      document.getElementById('wizardResults').style.display = 'block';
+      return;
+    }
+
+    let cardsHTML = '';
+    algos.forEach((a, i) => {
+      const badge = i === 0 ? '<span class="algo-badge badge-green">Top Pick</span>' : i === 1 ? '<span class="algo-badge badge-blue">Runner-up</span>' : '<span class="algo-badge badge-orange">Alternative</span>';
+      cardsHTML += '<div class="algo-card"><h4>' + badge + ' ' + a.name + '</h4>';
+      cardsHTML += '<p class="algo-pros">Pros: ' + a.pros + '</p>';
+      cardsHTML += '<p class="algo-cons">Cons: ' + a.cons + '</p></div>';
+    });
+    document.getElementById('algoCards').innerHTML = cardsHTML;
+
+    let tbody = '';
+    algos.forEach(a => {
+      tbody += '<tr><td style="font-weight:600;color:#e8e8e8;">' + a.name + '</td><td>' + a.accuracy + '</td><td>' + a.speed + '</td><td>' + a.interp + '</td><td>' + a.tuning + '</td><td>' + a.best + '</td></tr>';
+    });
+    document.getElementById('comparisonBody').innerHTML = tbody;
+    document.getElementById('wizardResults').style.display = 'block';
+  }
+
+  function resetWizard() {
+    selections = {};
+    document.getElementById('step2').style.display = 'none';
+    document.getElementById('step3').style.display = 'none';
+    document.getElementById('step4').style.display = 'none';
+    document.getElementById('wizardResults').style.display = 'none';
+    document.getElementById('wizardBreadcrumb').textContent = '';
+    document.querySelectorAll('.wizard-opt').forEach(b => b.classList.remove('selected'));
+  }
+
+  renderOptions('dataTypeOptions', dataTypes, 'dataType', 'step2');
+  renderOptions('taskOptions', tasks, 'task', 'step3');
+  renderOptions('sizeOptions', sizes, 'size', 'step4');
+  renderOptions('interpOptions', interps, 'interp', null);
+  document.getElementById('wizardResetBtn').addEventListener('click', resetWizard);
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Supervised vs Unsupervised Learning — Interactive Classification Guide | ml0x</title>
+<meta name="description" content="Understand the difference between supervised and unsupervised learning with an interactive drag-and-drop classifier. Sort algorithms, compare approaches, and use our decision flowchart to pick the right paradigm.">
+<meta name="keywords" content="supervised learning, unsupervised learning, classification, regression, clustering, machine learning paradigms, labeled data, decision tree, random forest, k-means, PCA">
+<link rel="canonical" href="https://ml0x.com/answers/supervised-vs-unsupervised.html">
+<link rel="alternate" hreflang="en" href="https://ml0x.com/answers/supervised-vs-unsupervised.html">
+<link rel="alternate" hreflang="x-default" href="https://ml0x.com/answers/supervised-vs-unsupervised.html">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Supervised vs Unsupervised Learning — Interactive Classification Guide">
+<meta property="og:description" content="Drag-and-drop algorithms into supervised or unsupervised bins, compare approaches with an interactive table, and use a decision flowchart to pick the right ML paradigm.">
+<meta property="og:url" content="https://ml0x.com/answers/supervised-vs-unsupervised.html">
+<meta property="og:site_name" content="Zovo Tools">
+<meta property="og:locale" content="en_US">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Supervised vs Unsupervised Learning — Interactive Classification Guide">
+<meta name="twitter:description" content="Drag-and-drop algorithms into supervised or unsupervised bins, compare approaches, and use a decision flowchart to pick the right ML paradigm.">
+<meta name="author" content="Michael Lip">
+<meta name="robots" content="index, follow">
+<link rel="stylesheet" href="/assets/style.css">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Article",
+  "headline": "Supervised vs Unsupervised Learning — Interactive Classification Guide",
+  "description": "Understand the difference between supervised and unsupervised learning with an interactive drag-and-drop classifier, comparison table, and decision flowchart.",
+  "url": "https://ml0x.com/answers/supervised-vs-unsupervised.html",
+  "author": {"@type": "Person", "name": "Michael Lip", "url": "https://zovo.one"},
+  "publisher": {"@type": "Organization", "name": "ML0X", "url": "https://ml0x.com"},
+  "datePublished": "2026-05-25",
+  "dateModified": "2026-05-25"
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {"@type": "Question", "name": "What is the main difference between supervised and unsupervised learning?", "acceptedAnswer": {"@type": "Answer", "text": "Supervised learning trains on labeled data where each input has a known correct output, enabling the model to learn the mapping from inputs to outputs. Unsupervised learning works with unlabeled data and discovers hidden patterns, structures, or groupings without predefined answers. The key distinction is the presence or absence of labeled training examples."}},
+    {"@type": "Question", "name": "When should I use supervised vs unsupervised learning?", "acceptedAnswer": {"@type": "Answer", "text": "Use supervised learning when you have labeled data and a clear prediction target, such as classifying emails as spam or predicting house prices. Use unsupervised learning when you want to discover structure in data without labels, such as customer segmentation, anomaly detection, or dimensionality reduction. If you have some labeled data but mostly unlabeled, consider semi-supervised learning."}},
+    {"@type": "Question", "name": "What are common supervised learning algorithms?", "acceptedAnswer": {"@type": "Answer", "text": "Common supervised learning algorithms include Linear Regression and Polynomial Regression for continuous targets, Logistic Regression for binary classification, Decision Trees and Random Forests for both classification and regression, Support Vector Machines (SVMs) for classification with margin maximization, k-Nearest Neighbors (kNN) for instance-based learning, and Neural Networks for complex pattern recognition across all task types."}},
+    {"@type": "Question", "name": "What are common unsupervised learning algorithms?", "acceptedAnswer": {"@type": "Answer", "text": "Common unsupervised learning algorithms include K-Means and DBSCAN for clustering, Principal Component Analysis (PCA) and t-SNE for dimensionality reduction, Autoencoders for representation learning, Gaussian Mixture Models for probabilistic clustering, Hierarchical Clustering for nested group structures, and Isolation Forest for anomaly detection."}},
+    {"@type": "Question", "name": "Can a problem use both supervised and unsupervised learning?", "acceptedAnswer": {"@type": "Answer", "text": "Yes. Semi-supervised learning combines both by using a small amount of labeled data with a large amount of unlabeled data. Common in practice because labeling data is expensive. Additionally, unsupervised techniques like PCA or autoencoders are often used as preprocessing steps to reduce dimensions or learn features before applying supervised models. Transfer learning and self-supervised learning also blend these paradigms."}}
+  ]
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {"@type": "ListItem", "position": 1, "name": "Home", "item": "https://ml0x.com/"},
+    {"@type": "ListItem", "position": 2, "name": "Answers", "item": "https://ml0x.com/answers/"},
+    {"@type": "ListItem", "position": 3, "name": "Supervised vs Unsupervised Learning"}
+  ]
+}
+</script>
+</head>
+<body>
+
+<header>
+  <div class="container header-inner">
+    <a href="/" class="logo">ml0x</a>
+    <nav>
+      <a href="/">Home</a>
+      <a href="/research/">Research</a>
+      <a href="/tools/">Tools</a>
+      <a href="/guides/">Guides</a>
+      <a href="/answers/">Answers</a>
+      <div class="nav-right">
+        <a href="https://zovo.one/pricing?utm_source=ml0x.com&utm_medium=satellite&utm_campaign=nav-link" class="nav-pro" target="_blank">Go Pro &#10022;</a>
+        <a href="https://zovo.one/tools" class="nav-zovo">Zovo Tools</a>
+      </div>
+    </nav>
+  </div>
+</header>
+
+<main class="container">
+  <div class="breadcrumb">
+    <a href="/">Home</a> <span>&rsaquo;</span> <a href="/answers/">Answers</a> <span>&rsaquo;</span> Supervised vs Unsupervised Learning
+  </div>
+
+  <div class="hero">
+    <h1>Supervised vs Unsupervised <span>Learning</span></h1>
+    <p>Machine learning algorithms fall into two fundamental paradigms: supervised learning, where models train on labeled data, and unsupervised learning, where models discover hidden structure without labels. Drag algorithm cards into the correct bins below to test your understanding, then explore the comparison table and decision flowchart.</p>
+  </div>
+
+  <div class="tool-card">
+    <h3>Algorithm Sorting Challenge</h3>
+    <p style="color:#aaa;margin-bottom:12px;">Drag each algorithm card into the correct bin. Get instant feedback on each placement.</p>
+    <div id="sortGame" style="margin-bottom:16px;">
+      <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px;min-height:48px;padding:12px;border:1px dashed #333;border-radius:8px;" id="cardPool"></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+        <div>
+          <div style="text-align:center;font-weight:600;color:#3b82f6;margin-bottom:8px;">Supervised</div>
+          <div id="binSupervised" style="min-height:120px;padding:12px;border:2px dashed #3b82f6;border-radius:8px;display:flex;flex-wrap:wrap;gap:8px;align-content:flex-start;transition:background 0.2s;"></div>
+        </div>
+        <div>
+          <div style="text-align:center;font-weight:600;color:#a78bfa;margin-bottom:8px;">Unsupervised</div>
+          <div id="binUnsupervised" style="min-height:120px;padding:12px;border:2px dashed #a78bfa;border-radius:8px;display:flex;flex-wrap:wrap;gap:8px;align-content:flex-start;transition:background 0.2s;"></div>
+        </div>
+      </div>
+    </div>
+    <div class="stat-grid">
+      <div class="stat-card"><div class="value" id="sortScore">0</div><div class="label">Correct</div></div>
+      <div class="stat-card"><div class="value" id="sortTotal">0</div><div class="label">Placed</div></div>
+      <div class="stat-card"><div class="value" id="sortPct">--</div><div class="label">Accuracy</div></div>
+      <div class="stat-card"><div class="value" id="sortRemaining">12</div><div class="label">Remaining</div></div>
+    </div>
+    <button class="btn btn-secondary" id="resetSortBtn" style="margin-top:12px;">Reset Challenge</button>
+  </div>
+
+  <div class="tool-card">
+    <h3>Comparison Table</h3>
+    <div style="overflow-x:auto;">
+      <table style="width:100%;border-collapse:collapse;font-size:14px;">
+        <thead>
+          <tr style="border-bottom:2px solid #333;">
+            <th style="text-align:left;padding:10px;color:#aaa;">Aspect</th>
+            <th style="text-align:left;padding:10px;color:#3b82f6;">Supervised</th>
+            <th style="text-align:left;padding:10px;color:#a78bfa;">Unsupervised</th>
+          </tr>
+        </thead>
+        <tbody id="compTable">
+          <tr style="border-bottom:1px solid #222;">
+            <td style="padding:10px;color:#ccc;font-weight:600;">Training Data</td>
+            <td style="padding:10px;color:#ddd;">Labeled (input-output pairs)</td>
+            <td style="padding:10px;color:#ddd;">Unlabeled (inputs only)</td>
+          </tr>
+          <tr style="border-bottom:1px solid #222;">
+            <td style="padding:10px;color:#ccc;font-weight:600;">Goal</td>
+            <td style="padding:10px;color:#ddd;">Predict outputs for new inputs</td>
+            <td style="padding:10px;color:#ddd;">Discover hidden patterns / structure</td>
+          </tr>
+          <tr style="border-bottom:1px solid #222;">
+            <td style="padding:10px;color:#ccc;font-weight:600;">Tasks</td>
+            <td style="padding:10px;color:#ddd;">Classification, Regression</td>
+            <td style="padding:10px;color:#ddd;">Clustering, Dimensionality Reduction, Anomaly Detection</td>
+          </tr>
+          <tr style="border-bottom:1px solid #222;">
+            <td style="padding:10px;color:#ccc;font-weight:600;">Evaluation</td>
+            <td style="padding:10px;color:#ddd;">Accuracy, F1, MSE, R&sup2;</td>
+            <td style="padding:10px;color:#ddd;">Silhouette Score, Elbow Method, Reconstruction Error</td>
+          </tr>
+          <tr style="border-bottom:1px solid #222;">
+            <td style="padding:10px;color:#ccc;font-weight:600;">Data Cost</td>
+            <td style="padding:10px;color:#ddd;">High (requires labeling)</td>
+            <td style="padding:10px;color:#ddd;">Low (raw data sufficient)</td>
+          </tr>
+          <tr style="border-bottom:1px solid #222;">
+            <td style="padding:10px;color:#ccc;font-weight:600;">Complexity</td>
+            <td style="padding:10px;color:#ddd;">Easier to evaluate and tune</td>
+            <td style="padding:10px;color:#ddd;">Harder to validate results</td>
+          </tr>
+          <tr>
+            <td style="padding:10px;color:#ccc;font-weight:600;">Example</td>
+            <td style="padding:10px;color:#ddd;">Spam detection, price prediction</td>
+            <td style="padding:10px;color:#ddd;">Customer segmentation, topic modeling</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="tool-card">
+    <h3>Decision Flowchart</h3>
+    <p style="color:#aaa;margin-bottom:12px;">Answer a few questions to determine which learning paradigm fits your problem.</p>
+    <div id="flowchart">
+      <div id="flowQuestion" style="font-size:16px;font-weight:600;color:#e0e0e0;margin-bottom:16px;"></div>
+      <div id="flowOptions" style="display:flex;gap:12px;flex-wrap:wrap;"></div>
+      <div id="flowResult" style="display:none;padding:16px;border-radius:8px;margin-top:12px;"></div>
+    </div>
+    <button class="btn btn-secondary" id="resetFlowBtn" style="margin-top:12px;display:none;">Start Over</button>
+  </div>
+
+  <section class="explainer-section">
+    <h2>What Is Supervised Learning?</h2>
+    <p>Supervised learning is the most common machine learning paradigm. In supervised learning, the algorithm trains on a dataset of input-output pairs, where each input (also called a feature vector) is associated with a known correct output (also called a label or target). The model's goal is to learn a mapping function <code>f(x) = y</code> that generalizes well to unseen inputs. The term "supervised" comes from the analogy of a teacher supervising the learning process by providing correct answers during training.</p>
+    <p>There are two main types of supervised learning tasks. <strong>Classification</strong> predicts a discrete category label, such as whether an email is spam or not, whether a tumor is malignant or benign, or which digit (0-9) a handwritten image represents. <strong>Regression</strong> predicts a continuous numerical value, such as a house price, stock price, or temperature. The choice between classification and regression depends on the nature of the target variable, not the algorithm itself. Many algorithms (decision trees, neural networks, SVMs) can handle both tasks with minor modifications.</p>
+    <p>The supervised learning workflow follows a standard pipeline: collect and label training data, split it into training, validation, and test sets, train the model on the training set, tune hyperparameters using the validation set, and finally evaluate generalization on the held-out test set. The key challenge is collecting enough high-quality labeled data. Labeling is expensive and time-consuming, especially for tasks requiring domain expertise (medical imaging, legal document review). This data bottleneck motivates the use of unsupervised and semi-supervised approaches.</p>
+
+    <h2>Common Supervised Algorithms</h2>
+    <p>The supervised learning landscape includes both parametric and non-parametric algorithms, each with distinct strengths and tradeoffs:</p>
+    <ul>
+      <li><strong>Linear Regression:</strong> Fits a straight line (or hyperplane) to minimize the sum of squared errors. Simple, interpretable, fast to train. Works well when the relationship between features and target is approximately linear. Variants include Ridge (L2 regularization) and Lasso (L1 regularization).</li>
+      <li><strong>Logistic Regression:</strong> Despite its name, this is a classification algorithm. It models the probability of class membership using the sigmoid function. Outputs calibrated probabilities, which is valuable when you need confidence estimates rather than just class labels.</li>
+      <li><strong>Decision Trees:</strong> Recursively partition the feature space by finding optimal split points. Highly interpretable (you can trace the decision path), handle mixed feature types, and require minimal preprocessing. However, individual trees overfit easily. The CART (Classification and Regression Trees) algorithm is the most common implementation.</li>
+      <li><strong>Random Forest:</strong> An ensemble of decorrelated decision trees trained on bootstrap samples with random feature subsets. Reduces overfitting dramatically compared to single trees. One of the most robust off-the-shelf algorithms for tabular data. Feature importance scores provide interpretability.</li>
+      <li><strong>Gradient Boosting (XGBoost, LightGBM, CatBoost):</strong> Sequentially builds trees where each new tree corrects errors made by the ensemble so far. State-of-the-art for tabular data competitions. More prone to overfitting than random forests but often achieves higher accuracy with proper tuning.</li>
+      <li><strong>Support Vector Machines (SVM):</strong> Finds the hyperplane that maximizes the margin between classes. With the kernel trick, SVMs can learn nonlinear decision boundaries. Effective in high-dimensional spaces and when the number of features exceeds the number of samples.</li>
+      <li><strong>k-Nearest Neighbors (kNN):</strong> Classifies new points based on the majority vote of the k closest training examples. Non-parametric, no training phase (lazy learning), but prediction is slow on large datasets because it requires computing distances to all training points.</li>
+      <li><strong>Neural Networks:</strong> Layers of interconnected neurons that learn hierarchical representations. Dominate in computer vision (CNNs), natural language processing (Transformers), and speech recognition. Require large datasets and significant computational resources.</li>
+    </ul>
+
+    <h2>What Is Unsupervised Learning?</h2>
+    <p>Unsupervised learning operates on data without labels. The algorithm must discover the inherent structure, patterns, or groupings in the data without any guidance about what the "correct" output should be. This paradigm is essential when labels are unavailable, too expensive to obtain, or when the goal is exploration rather than prediction.</p>
+    <p>There are three main types of unsupervised learning tasks. <strong>Clustering</strong> groups similar data points together, revealing natural categories in the data. Customer segmentation, document topic grouping, and image segmentation are common applications. <strong>Dimensionality reduction</strong> projects high-dimensional data into lower dimensions while preserving important structure. This enables visualization of complex datasets and serves as a preprocessing step to reduce noise and computation. <strong>Anomaly detection</strong> identifies data points that deviate significantly from the normal pattern, used in fraud detection, system monitoring, and quality control.</p>
+    <p>Evaluating unsupervised learning is inherently more difficult than evaluating supervised learning because there are no ground truth labels to compare against. Metrics like silhouette score (for clustering), explained variance ratio (for PCA), and reconstruction error (for autoencoders) provide quantitative measures, but domain expertise is often needed to assess whether the discovered patterns are meaningful and useful.</p>
+
+    <h2>Common Unsupervised Algorithms</h2>
+    <ul>
+      <li><strong>K-Means Clustering:</strong> Partitions data into K clusters by iteratively assigning points to the nearest centroid and updating centroids. Fast and simple, but requires specifying K in advance, assumes spherical clusters of similar size, and is sensitive to initialization (use K-Means++ to mitigate).</li>
+      <li><strong>DBSCAN:</strong> Density-based clustering that groups points in high-density regions and marks low-density points as noise. Does not require specifying the number of clusters. Can find arbitrarily shaped clusters. Two key parameters: epsilon (neighborhood radius) and min_points (minimum cluster density).</li>
+      <li><strong>Hierarchical Clustering:</strong> Builds a tree (dendrogram) of nested clusters. Agglomerative (bottom-up) starts with each point as its own cluster and merges. Divisive (top-down) starts with one cluster and splits. The dendrogram allows choosing the number of clusters after the fact.</li>
+      <li><strong>PCA (Principal Component Analysis):</strong> Finds orthogonal axes (principal components) that maximize variance. Projects data onto the top-k components to reduce dimensions. Linear method, computationally efficient, widely used for preprocessing and visualization.</li>
+      <li><strong>t-SNE and UMAP:</strong> Nonlinear dimensionality reduction techniques designed for visualization. t-SNE preserves local neighborhood structure, making clusters visually apparent. UMAP is faster and better preserves global structure. Both are used to visualize high-dimensional data in 2D or 3D.</li>
+      <li><strong>Autoencoders:</strong> Neural networks trained to reconstruct their input through a bottleneck layer. The bottleneck forces the network to learn compressed representations. Variants include denoising autoencoders, variational autoencoders (VAE), and sparse autoencoders.</li>
+      <li><strong>Gaussian Mixture Models (GMM):</strong> Probabilistic clustering that models data as a mixture of Gaussian distributions. Unlike K-Means, GMMs allow soft cluster assignments (probabilities) and can model elliptical clusters of different sizes and orientations.</li>
+      <li><strong>Isolation Forest:</strong> Anomaly detection algorithm that isolates outliers by randomly partitioning features. Anomalies require fewer splits to isolate, giving them shorter path lengths in the tree. Efficient, scalable, and effective for high-dimensional data.</li>
+    </ul>
+
+    <h2>Semi-Supervised and Self-Supervised Learning</h2>
+    <p>Real-world problems often exist between the fully supervised and fully unsupervised extremes. <strong>Semi-supervised learning</strong> uses a small amount of labeled data combined with a large amount of unlabeled data. The idea is that the unlabeled data helps the model understand the underlying data distribution, which improves predictions on the labeled portion. Techniques include pseudo-labeling (training a model on labeled data, using it to generate labels for unlabeled data, then retraining), consistency regularization (encouraging the model to produce similar outputs for similar inputs), and graph-based methods.</p>
+    <p><strong>Self-supervised learning</strong> creates pseudo-labels from the data itself, turning an unsupervised problem into a supervised one. For example, BERT masks words in text and trains the model to predict them. SimCLR learns visual representations by contrasting augmented views of the same image. Self-supervised learning has become the dominant pretraining strategy for large language models and vision transformers, enabling transfer learning on downstream tasks with minimal labeled data.</p>
+
+    <h2>How to Choose: A Practical Decision Framework</h2>
+    <p>Choosing between supervised and unsupervised learning depends on several factors. First, consider your data: do you have labels? If you have a well-labeled dataset with a clear prediction target, supervised learning is almost always the better starting point because it directly optimizes for your objective. If you have no labels, unsupervised learning is your only option for extracting value from the data.</p>
+    <p>Second, consider your goal. If you need to make predictions (classify new emails, predict prices), you need supervised learning. If you need to understand your data (find customer segments, detect anomalies, visualize clusters), unsupervised methods are appropriate. Third, consider the data volume and labeling cost. If labeling is expensive but you have abundant raw data, semi-supervised approaches can leverage both. Finally, consider the interpretability requirements. Unsupervised results (cluster IDs, reduced dimensions) often require additional analysis to become actionable, while supervised models produce directly interpretable predictions.</p>
+  </section>
+
+  <section class="faq-section">
+    <h2>Frequently Asked Questions</h2>
+    <details>
+      <summary>What is the main difference between supervised and unsupervised learning?</summary>
+      <p>Supervised learning trains on labeled data where each input has a known correct output, enabling the model to learn the mapping from inputs to outputs. Unsupervised learning works with unlabeled data and discovers hidden patterns, structures, or groupings without predefined answers. The key distinction is the presence or absence of labeled training examples.</p>
+    </details>
+    <details>
+      <summary>When should I use supervised vs unsupervised learning?</summary>
+      <p>Use supervised learning when you have labeled data and a clear prediction target, such as classifying emails as spam or predicting house prices. Use unsupervised learning when you want to discover structure in data without labels, such as customer segmentation, anomaly detection, or dimensionality reduction. If you have some labeled data but mostly unlabeled, consider semi-supervised learning.</p>
+    </details>
+    <details>
+      <summary>What are common supervised learning algorithms?</summary>
+      <p>Common supervised learning algorithms include Linear Regression and Polynomial Regression for continuous targets, Logistic Regression for binary classification, Decision Trees and Random Forests for both classification and regression, Support Vector Machines (SVMs) for classification with margin maximization, k-Nearest Neighbors (kNN) for instance-based learning, and Neural Networks for complex pattern recognition.</p>
+    </details>
+    <details>
+      <summary>What are common unsupervised learning algorithms?</summary>
+      <p>Common unsupervised learning algorithms include K-Means and DBSCAN for clustering, Principal Component Analysis (PCA) and t-SNE for dimensionality reduction, Autoencoders for representation learning, Gaussian Mixture Models for probabilistic clustering, Hierarchical Clustering for nested group structures, and Isolation Forest for anomaly detection.</p>
+    </details>
+    <details>
+      <summary>Can a problem use both supervised and unsupervised learning?</summary>
+      <p>Yes. Semi-supervised learning combines both by using a small amount of labeled data with a large amount of unlabeled data. Additionally, unsupervised techniques like PCA or autoencoders are often used as preprocessing steps before applying supervised models. Transfer learning and self-supervised learning also blend these paradigms.</p>
+    </details>
+  </section>
+
+  <section class="explainer-section">
+    <h2>Related Tools</h2>
+    <div class="related-grid">
+      <a href="/answers/ml-algorithm-comparison.html" class="related-card">
+        <div class="related-title">ML Algorithm Comparison</div>
+        <div class="related-desc">Interactive wizard to choose the right ML algorithm for your problem.</div>
+      </a>
+      <a href="/tools/neural-network-playground.html" class="related-card">
+        <div class="related-title">Neural Network Playground</div>
+        <div class="related-desc">Build, train, and visualize neural networks entirely in your browser.</div>
+      </a>
+      <a href="/answers/ml-metrics-explained.html" class="related-card">
+        <div class="related-title">ML Metrics Explained</div>
+        <div class="related-desc">Metric selector wizard for classification, regression, and ranking tasks.</div>
+      </a>
+    </div>
+  </section>
+
+  <section class="explainer-section">
+    <h2>About the Author</h2>
+    <p><strong>Michael Lip</strong> builds open-source ML tools and developer utilities at <a href="https://zovo.one">zovo.one</a>. ml0x is part of the Zovo Tools network, a collection of free, privacy-first tools for developers and data scientists. No tracking, no accounts required, no data leaves your browser.</p>
+  </section>
+
+  <p class="last-updated">Last updated: May 25, 2026</p>
+</main>
+
+<footer class="site-footer">
+    <div class="footer-inner">
+        <div class="footer-brand">Zovo Tools</div>
+        <div class="footer-tagline">Free developer tools by a solo dev. No tracking.</div>
+        <a href="https://zovo.one/pricing?utm_source=ml0x.com&utm_medium=satellite&utm_campaign=footer-link" class="footer-cta">Zovo Lifetime — $99 once, free forever &rarr;</a>
+        <div class="footer-copy">&copy; 2026 <a href="https://zovo.one">Zovo</a> &middot; 47/500 founding spots</div>
+    </div>
+</footer>
+
+<nav class="zovo-network" aria-label="Zovo Tools Network">
+    <div class="zovo-network-inner">
+        <h3 class="zovo-network-title">Explore More Tools</h3>
+        <div class="zovo-network-links">
+            <a href="https://abwex.com">ABWex — A/B Testing</a>
+            <a href="https://claudflow.com">ClaudFlow — Workflows</a>
+            <a href="https://claudhq.com">ClaudHQ — AI Code Tools &amp; Fixes</a>
+            <a href="https://claudkit.com">ClaudKit — API</a>
+            <a href="https://enhio.com">Enhio — Text Tools</a>
+            <a href="https://epochpilot.com">EpochPilot — Timestamps</a>
+            <a href="https://gen8x.com">Gen8X — Color Tools</a>
+            <a href="https://gpt0x.com">GPT0X — AI Models</a>
+            <a href="https://heytensor.com">HeyTensor — ML Tools</a>
+            <a href="https://invokebot.com">InvokeBot — Webhooks</a>
+            <a href="https://kappafy.com">Kappafy — JSON</a>
+            <a href="https://kappakit.com">KappaKit — Dev Toolkit</a>
+            <a href="https://kickllm.com">KickLLM — LLM Costs</a>
+            <a href="https://krzen.com">Krzen — Image Tools</a>
+            <a href="https://lochbot.com">LochBot — Security</a>
+            <a href="https://lockml.com">LockML — ML Compare</a>
+            <a href="https://ml3x.com">ML3X — Matrix Math</a>
+        </div>
+    </div>
+</nav>
+
+<script>
+(function() {
+  var algorithms = [
+    {name:'Linear Regression', type:'supervised', hint:'Predicts continuous values from labeled data'},
+    {name:'Logistic Regression', type:'supervised', hint:'Binary classification with labeled examples'},
+    {name:'Random Forest', type:'supervised', hint:'Ensemble of trees trained on labeled data'},
+    {name:'SVM', type:'supervised', hint:'Finds max-margin hyperplane using labeled classes'},
+    {name:'kNN', type:'supervised', hint:'Classifies by nearest labeled neighbors'},
+    {name:'XGBoost', type:'supervised', hint:'Gradient boosting on labeled training sets'},
+    {name:'K-Means', type:'unsupervised', hint:'Groups data into K clusters without labels'},
+    {name:'DBSCAN', type:'unsupervised', hint:'Density-based clustering, no labels needed'},
+    {name:'PCA', type:'unsupervised', hint:'Reduces dimensions by finding variance axes'},
+    {name:'t-SNE', type:'unsupervised', hint:'Nonlinear dimensionality reduction for visualization'},
+    {name:'Autoencoder', type:'unsupervised', hint:'Neural network learns compressed representations'},
+    {name:'Isolation Forest', type:'unsupervised', hint:'Detects anomalies without labeled outliers'}
+  ];
+
+  var score = 0, total = 0, remaining;
+  var pool = document.getElementById('cardPool');
+  var binSup = document.getElementById('binSupervised');
+  var binUnsup = document.getElementById('binUnsupervised');
+  var draggedEl = null;
+
+  function shuffle(a) {
+    for (var i = a.length - 1; i > 0; i--) {
+      var j = Math.floor(Math.random() * (i + 1));
+      var t = a[i]; a[i] = a[j]; a[j] = t;
+    }
+    return a;
+  }
+
+  function createCard(algo) {
+    var card = document.createElement('div');
+    card.draggable = true;
+    card.setAttribute('data-type', algo.type);
+    card.setAttribute('title', algo.hint);
+    card.textContent = algo.name;
+    card.style.cssText = 'padding:8px 14px;background:#1e1e1e;border:1px solid #333;border-radius:6px;cursor:grab;font-size:13px;color:#e0e0e0;user-select:none;transition:all 0.2s;white-space:nowrap;';
+    card.addEventListener('dragstart', function(e) {
+      draggedEl = card;
+      card.style.opacity = '0.5';
+      e.dataTransfer.effectAllowed = 'move';
+    });
+    card.addEventListener('dragend', function() {
+      card.style.opacity = '1';
+      draggedEl = null;
+    });
+    return card;
+  }
+
+  function setupBin(bin, binType) {
+    bin.addEventListener('dragover', function(e) {
+      e.preventDefault();
+      e.dataTransfer.dropEffect = 'move';
+      bin.style.background = 'rgba(59,130,246,0.08)';
+    });
+    bin.addEventListener('dragleave', function() {
+      bin.style.background = '';
+    });
+    bin.addEventListener('drop', function(e) {
+      e.preventDefault();
+      bin.style.background = '';
+      if (!draggedEl) return;
+      var correct = draggedEl.getAttribute('data-type') === binType;
+      total++;
+      if (correct) {
+        score++;
+        draggedEl.style.borderColor = '#22c55e';
+        draggedEl.style.background = 'rgba(34,197,94,0.1)';
+      } else {
+        draggedEl.style.borderColor = '#ef4444';
+        draggedEl.style.background = 'rgba(239,68,68,0.1)';
+      }
+      draggedEl.draggable = false;
+      draggedEl.style.cursor = 'default';
+      bin.appendChild(draggedEl);
+      remaining--;
+      updateStats();
+    });
+  }
+
+  function updateStats() {
+    document.getElementById('sortScore').textContent = score;
+    document.getElementById('sortTotal').textContent = total;
+    document.getElementById('sortPct').textContent = total > 0 ? Math.round(score / total * 100) + '%' : '--';
+    document.getElementById('sortRemaining').textContent = remaining;
+  }
+
+  function init() {
+    score = 0; total = 0; remaining = algorithms.length;
+    pool.innerHTML = ''; binSup.innerHTML = ''; binUnsup.innerHTML = '';
+    var shuffled = shuffle(algorithms.slice());
+    for (var i = 0; i < shuffled.length; i++) {
+      pool.appendChild(createCard(shuffled[i]));
+    }
+    updateStats();
+  }
+
+  setupBin(binSup, 'supervised');
+  setupBin(binUnsup, 'unsupervised');
+  document.getElementById('resetSortBtn').addEventListener('click', init);
+  init();
+
+  /* Decision Flowchart */
+  var flowSteps = [
+    {q: 'Do you have labeled training data?', opts: [{text:'Yes, I have labels', next:1},{text:'No labels available', next:2}]},
+    {q: 'What type of output do you need to predict?', opts: [{text:'Categories (classes)', next:3},{text:'Continuous numbers', next:4}]},
+    {q: 'What is your primary goal?', opts: [{text:'Group similar items', next:5},{text:'Reduce dimensions / visualize', next:6},{text:'Detect anomalies', next:7}]},
+    {result: true, title:'Supervised Classification', color:'#3b82f6', text:'Use supervised classification algorithms. Start with Logistic Regression as a baseline, then try Random Forest or XGBoost for better accuracy. For complex data (images, text), consider neural networks. Evaluate with accuracy, precision, recall, F1-score, and AUC-ROC.'},
+    {result: true, title:'Supervised Regression', color:'#3b82f6', text:'Use supervised regression algorithms. Start with Linear Regression as a baseline, then try Random Forest Regressor or Gradient Boosting. For nonlinear relationships, consider neural networks. Evaluate with MSE, RMSE, MAE, and R-squared.'},
+    {result: true, title:'Clustering', color:'#a78bfa', text:'Use clustering algorithms. Try K-Means for spherical clusters with known K, DBSCAN for arbitrary shapes with unknown K, or Hierarchical Clustering for nested structures. Evaluate with silhouette score, within-cluster sum of squares, and domain expert review.'},
+    {result: true, title:'Dimensionality Reduction', color:'#a78bfa', text:'Use dimensionality reduction techniques. PCA for linear reduction (preserves global variance), t-SNE or UMAP for nonlinear visualization (preserves local structure), or Autoencoders for learned representations. Evaluate with explained variance ratio or reconstruction error.'},
+    {result: true, title:'Anomaly Detection', color:'#a78bfa', text:'Use unsupervised anomaly detection. Isolation Forest for tabular data, Autoencoders for complex patterns (high reconstruction error = anomaly), or One-Class SVM for well-defined normal regions. Evaluate with precision-at-k if you have some labeled anomalies for validation.'}
+  ];
+
+  var flowEl = document.getElementById('flowQuestion');
+  var optsEl = document.getElementById('flowOptions');
+  var resultEl = document.getElementById('flowResult');
+  var resetFlowBtn = document.getElementById('resetFlowBtn');
+
+  function showStep(idx) {
+    var step = flowSteps[idx];
+    if (step.result) {
+      flowEl.style.display = 'none';
+      optsEl.style.display = 'none';
+      resultEl.style.display = 'block';
+      resultEl.style.background = 'rgba(59,130,246,0.06)';
+      resultEl.style.border = '1px solid ' + step.color;
+      resultEl.innerHTML = '<div style="font-size:18px;font-weight:700;color:' + step.color + ';margin-bottom:8px;">' + step.title + '</div><p style="color:#ccc;margin:0;line-height:1.6;">' + step.text + '</p>';
+      resetFlowBtn.style.display = 'inline-block';
+    } else {
+      flowEl.style.display = 'block';
+      optsEl.style.display = 'flex';
+      resultEl.style.display = 'none';
+      resetFlowBtn.style.display = 'none';
+      flowEl.textContent = step.q;
+      optsEl.innerHTML = '';
+      for (var i = 0; i < step.opts.length; i++) {
+        (function(opt) {
+          var btn = document.createElement('button');
+          btn.className = 'btn';
+          btn.textContent = opt.text;
+          btn.addEventListener('click', function() { showStep(opt.next); });
+          optsEl.appendChild(btn);
+        })(step.opts[i]);
+      }
+    }
+  }
+
+  resetFlowBtn.addEventListener('click', function() { showStep(0); });
+  showStep(0);
+})();
+</script>
+</body>
+</html>

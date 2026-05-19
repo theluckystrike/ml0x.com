@@ -1,0 +1,669 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Hyperparameter Tuning Guide — Grid, Random & Bayesian Search Compared | ml0x</title>
+<meta name="description" content="Complete hyperparameter tuning guide comparing grid search, random search, and Bayesian optimization. Interactive tuner lets you visualize search patterns and convergence across parameter spaces.">
+<meta name="keywords" content="hyperparameter tuning, grid search, random search, Bayesian optimization, hyperparameter optimization, sklearn GridSearchCV, Optuna, learning rate tuning, model selection, cross-validation">
+<link rel="canonical" href="https://ml0x.com/answers/hyperparameter-tuning-guide.html">
+<link rel="alternate" hreflang="en" href="https://ml0x.com/answers/hyperparameter-tuning-guide.html">
+<link rel="alternate" hreflang="x-default" href="https://ml0x.com/answers/hyperparameter-tuning-guide.html">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Hyperparameter Tuning Guide — Grid, Random & Bayesian Search Compared">
+<meta property="og:description" content="Interactive comparison of grid search, random search, and Bayesian optimization for hyperparameter tuning. Visualize search patterns and convergence in real time.">
+<meta property="og:url" content="https://ml0x.com/answers/hyperparameter-tuning-guide.html">
+<meta property="og:site_name" content="Zovo Tools">
+<meta property="og:locale" content="en_US">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Hyperparameter Tuning Guide — Grid, Random & Bayesian Search Compared">
+<meta name="twitter:description" content="Interactive comparison of grid search, random search, and Bayesian optimization. Visualize search efficiency and convergence across parameter spaces.">
+<meta name="author" content="Michael Lip">
+<meta name="robots" content="index, follow">
+<link rel="stylesheet" href="/assets/style.css">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebApplication",
+  "name": "Hyperparameter Tuning Guide",
+  "description": "Complete hyperparameter tuning guide comparing grid search, random search, and Bayesian optimization. Interactive tuner visualizes search patterns and convergence across parameter spaces.",
+  "url": "https://ml0x.com/answers/hyperparameter-tuning-guide.html",
+  "applicationCategory": "EducationalApplication",
+  "operatingSystem": "Any",
+  "offers": {"@type": "Offer", "price": "0", "priceCurrency": "USD"},
+  "author": {"@type": "Person", "name": "Michael Lip", "url": "https://zovo.one"},
+  "publisher": {"@type": "Organization", "name": "ML0X", "url": "https://ml0x.com"},
+  "datePublished": "2026-05-25",
+  "dateModified": "2026-05-25"
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {"@type": "Question", "name": "What is hyperparameter tuning in machine learning?", "acceptedAnswer": {"@type": "Answer", "text": "Hyperparameter tuning is the process of finding the optimal configuration of parameters that are set before training begins, rather than learned from data. These include learning rate, regularization strength, number of hidden layers, batch size, and tree depth. Unlike model parameters (weights and biases), hyperparameters control the learning process itself and must be selected through systematic search or optimization strategies."}},
+    {"@type": "Question", "name": "What is the difference between grid search and random search?", "acceptedAnswer": {"@type": "Answer", "text": "Grid search exhaustively evaluates every combination of specified hyperparameter values, guaranteeing the best result within the grid but scaling exponentially with dimensions. Random search samples parameter combinations randomly from defined distributions, which Bergstra and Bengio (2012) showed is more efficient because it explores more unique values per parameter. For the same compute budget, random search typically finds better configurations, especially when only a few parameters actually matter."}},
+    {"@type": "Question", "name": "How does Bayesian optimization work for hyperparameter tuning?", "acceptedAnswer": {"@type": "Answer", "text": "Bayesian optimization builds a probabilistic surrogate model (typically a Gaussian Process or Tree-structured Parzen Estimator) of the objective function. After each evaluation, it updates the model and uses an acquisition function (like Expected Improvement) to decide which point to evaluate next, balancing exploration of uncertain regions with exploitation of promising areas. This makes it far more sample-efficient than grid or random search, often finding optimal configurations in 10-50 evaluations."}},
+    {"@type": "Question", "name": "When should I use grid search vs Bayesian optimization?", "acceptedAnswer": {"@type": "Answer", "text": "Use grid search when you have few hyperparameters (1-2), small value ranges, and cheap model evaluations. Use random search as a strong baseline when you have 2-5 parameters or when some parameters matter much more than others. Use Bayesian optimization when model training is expensive, you have many hyperparameters, or you need the best performance with a limited compute budget. For deep learning with GPU training, Bayesian optimization (via Optuna or Ray Tune) is almost always the right choice."}},
+    {"@type": "Question", "name": "What are common hyperparameters to tune for different models?", "acceptedAnswer": {"@type": "Answer", "text": "For random forests: n_estimators, max_depth, min_samples_split, max_features. For gradient boosting (XGBoost/LightGBM): learning_rate, n_estimators, max_depth, subsample, colsample_bytree, reg_alpha, reg_lambda. For neural networks: learning_rate, batch_size, number of layers, units per layer, dropout rate, weight decay. For SVMs: C (regularization), kernel type, gamma. For logistic regression: C, penalty type, solver. Always tune learning rate first as it has the largest impact on model performance."}}
+  ]
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {"@type": "ListItem", "position": 1, "name": "Home", "item": "https://ml0x.com/"},
+    {"@type": "ListItem", "position": 2, "name": "Answers", "item": "https://ml0x.com/answers/"},
+    {"@type": "ListItem", "position": 3, "name": "Hyperparameter Tuning Guide"}
+  ]
+}
+</script>
+</head>
+<body>
+
+<header>
+  <div class="container header-inner">
+    <a href="/" class="logo">ml0x</a>
+    <nav>
+      <a href="/">Home</a>
+      <a href="/research/">Research</a>
+      <a href="/tools/">Tools</a>
+      <a href="/guides/">Guides</a>
+      <a href="/answers/">Answers</a>
+      <div class="nav-right">
+        <a href="https://zovo.one/pricing?utm_source=ml0x.com&utm_medium=satellite&utm_campaign=nav-link" class="nav-pro" target="_blank">Go Pro &#10022;</a>
+        <a href="https://zovo.one/tools" class="nav-zovo">Zovo Tools</a>
+      </div>
+    </nav>
+  </div>
+</header>
+
+<main class="container">
+  <div class="breadcrumb">
+    <a href="/">Home</a> <span>&rsaquo;</span> <a href="/answers/">Answers</a> <span>&rsaquo;</span> Hyperparameter Tuning Guide
+  </div>
+
+  <div class="hero">
+    <h1>Hyperparameter Tuning <span>Guide</span></h1>
+    <p>Compare grid search, random search, and Bayesian optimization side by side. Use the interactive tuner below to visualize how each strategy explores a 2D parameter space, watch convergence curves in real time, and understand why random search usually beats grid search. All computation runs locally in your browser.</p>
+  </div>
+
+  <div class="tool-card">
+    <h3>Search Strategy Configuration</h3>
+    <div class="control-row">
+      <div class="control-group">
+        <label>Search Method</label>
+        <select id="methodSelect">
+          <option value="grid" selected>Grid Search</option>
+          <option value="random">Random Search</option>
+          <option value="bayesian">Bayesian Optimization</option>
+          <option value="compare">Compare All Three</option>
+        </select>
+      </div>
+      <div class="control-group">
+        <label>Budget (evaluations)</label>
+        <select id="budgetSelect">
+          <option value="16">16</option>
+          <option value="25" selected>25</option>
+          <option value="36">36</option>
+          <option value="49">49</option>
+          <option value="64">64</option>
+        </select>
+      </div>
+      <div class="control-group">
+        <label>Objective Landscape</label>
+        <select id="landscapeSelect">
+          <option value="unimodal" selected>Unimodal (single peak)</option>
+          <option value="bimodal">Bimodal (two peaks)</option>
+          <option value="ridge">Ridge (narrow optimum)</option>
+          <option value="noisy">Noisy landscape</option>
+        </select>
+      </div>
+    </div>
+    <div class="control-row" style="margin-top:12px;">
+      <div class="control-group">
+        <label>Parameter 1 Range</label>
+        <input type="text" id="param1Name" value="learning_rate" style="width:130px;padding:8px;background:#1a1a1a;border:1px solid #333;border-radius:6px;color:#e0e0e0;font-size:13px;">
+      </div>
+      <div class="control-group">
+        <label>Parameter 2 Range</label>
+        <input type="text" id="param2Name" value="n_estimators" style="width:130px;padding:8px;background:#1a1a1a;border:1px solid #333;border-radius:6px;color:#e0e0e0;font-size:13px;">
+      </div>
+      <button class="btn" id="runBtn">Run Search</button>
+      <button class="btn btn-secondary" id="stepBtn">Step-by-Step</button>
+      <button class="btn btn-secondary" id="resetBtn">Reset</button>
+    </div>
+  </div>
+
+  <div id="resultsSection" style="display:none;">
+    <div class="stat-grid">
+      <div class="stat-card"><div class="value" id="metBestScore">--</div><div class="label">Best Score</div></div>
+      <div class="stat-card"><div class="value" id="metEvals">--</div><div class="label">Evaluations</div></div>
+      <div class="stat-card"><div class="value" id="metBestP1">--</div><div class="label" id="lblP1">Best Param 1</div></div>
+      <div class="stat-card"><div class="value" id="metBestP2">--</div><div class="label" id="lblP2">Best Param 2</div></div>
+      <div class="stat-card"><div class="value" id="metEfficiency">--</div><div class="label">Efficiency Score</div></div>
+      <div class="stat-card"><div class="value" id="metConverge">--</div><div class="label">Convergence Step</div></div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:16px;">
+      <div class="tool-card">
+        <h3>Search Space Exploration</h3>
+        <div class="viz-container"><svg id="searchSvg" width="400" height="400" viewBox="0 0 400 400"></svg></div>
+      </div>
+      <div class="tool-card">
+        <h3>Convergence Curve</h3>
+        <div class="viz-container"><svg id="convergeSvg" width="400" height="300" viewBox="0 0 400 300"></svg></div>
+      </div>
+    </div>
+
+    <div class="tool-card" id="compareSection" style="display:none;">
+      <h3>Method Comparison Summary</h3>
+      <div style="overflow-x:auto;">
+        <table style="width:100%;border-collapse:collapse;font-size:14px;" id="compareTable">
+          <thead>
+            <tr style="border-bottom:2px solid #333;">
+              <th style="text-align:left;padding:8px;color:#aaa;">Method</th>
+              <th style="text-align:right;padding:8px;color:#aaa;">Best Score</th>
+              <th style="text-align:right;padding:8px;color:#aaa;">Avg Score</th>
+              <th style="text-align:right;padding:8px;color:#aaa;">Converge Step</th>
+              <th style="text-align:right;padding:8px;color:#aaa;">Unique P1 Values</th>
+              <th style="text-align:right;padding:8px;color:#aaa;">Unique P2 Values</th>
+            </tr>
+          </thead>
+          <tbody id="compareBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="tool-card">
+      <h3>Generated Code</h3>
+      <div style="display:flex;gap:8px;margin-bottom:12px;">
+        <button class="btn btn-secondary codeTabBtn active" data-tab="sklearn">scikit-learn</button>
+        <button class="btn btn-secondary codeTabBtn" data-tab="optuna">Optuna</button>
+        <button class="btn btn-secondary codeTabBtn" data-tab="raytune">Ray Tune</button>
+      </div>
+      <pre id="codeOutput" style="background:#0d0d0d;border:1px solid #333;border-radius:8px;padding:16px;color:#e0e0e0;font-size:13px;font-family:'IBM Plex Mono',monospace;overflow-x:auto;white-space:pre;line-height:1.5;max-height:350px;overflow-y:auto;"></pre>
+      <button class="btn btn-secondary" id="copyCodeBtn" style="margin-top:8px;">Copy Code</button>
+    </div>
+  </div>
+
+  <section class="explainer-section">
+    <h2>What Are Hyperparameters?</h2>
+    <p>Machine learning models have two types of parameters. <strong>Model parameters</strong> are learned from data during training: weights in a neural network, split points in a decision tree, or coefficients in linear regression. <strong>Hyperparameters</strong> are set before training begins and control how the learning algorithm operates. They cannot be estimated from the training data directly and must be specified by the practitioner or found through systematic search.</p>
+    <p>Common hyperparameters include the learning rate (how fast the model updates its weights), regularization strength (how much the model penalizes complexity), the number of trees in a random forest, the depth of those trees, batch size for stochastic gradient descent, the number of hidden layers and neurons in a neural network, and the kernel type and parameters for support vector machines. The choice of hyperparameters can make the difference between a model that achieves 70% accuracy and one that achieves 95% accuracy on the same dataset.</p>
+    <p>The fundamental challenge of hyperparameter tuning is that the relationship between hyperparameters and model performance is unknown, non-convex, and often noisy. You cannot compute the gradient of validation accuracy with respect to learning rate in any straightforward way. This makes hyperparameter optimization a black-box optimization problem, and different strategies for exploring the search space have dramatically different efficiency.</p>
+
+    <h2>Grid Search: The Exhaustive Approach</h2>
+    <p><strong>Grid search</strong> evaluates every combination of hyperparameter values from a predefined set. If you specify 5 values for learning rate and 5 values for regularization, grid search evaluates all 25 combinations. For three parameters with 5 values each, it evaluates 125 combinations. This exponential growth is called the curse of dimensionality and is the fundamental limitation of grid search.</p>
+    <p>The advantage of grid search is its simplicity and completeness within the specified grid. You are guaranteed to find the best combination among the values you specified. In scikit-learn, <code>GridSearchCV</code> implements grid search with cross-validation in a few lines of code. Grid search is appropriate when you have only 1-2 hyperparameters to tune, each with a small number of candidate values, and model training is fast enough that the total compute cost is acceptable.</p>
+    <p>The critical weakness of grid search beyond scalability is that it wastes evaluations. Bergstra and Bengio demonstrated in their seminal 2012 paper that for most machine learning models, only a small subset of hyperparameters significantly affect performance. Grid search allocates equal resolution to all parameters, including those that do not matter. If learning rate is the only parameter that truly affects your model, a 5x5 grid search only tests 5 unique learning rate values despite using 25 evaluations.</p>
+
+    <h2>Random Search: Surprisingly Effective</h2>
+    <p><strong>Random search</strong> samples hyperparameter combinations randomly from specified distributions rather than from a fixed grid. For continuous parameters, you define a distribution (uniform, log-uniform, or normal); for categorical parameters, you define a set of choices with optional weights. Each evaluation uses an independently drawn combination.</p>
+    <p>Random search is almost always more efficient than grid search for the same compute budget. The key insight from Bergstra and Bengio (2012) is that random search explores more unique values of each parameter. With a 5x5 grid, you test only 5 unique values per parameter. With 25 random samples, you test approximately 25 unique values per parameter (slightly fewer due to random collisions in bounded spaces). When only one or two parameters matter, random search effectively concentrates its exploration where it counts.</p>
+    <p>In practice, random search with 60 evaluations has been shown to find configurations within the top 5% of the search space with 95% probability, assuming the important parameters occupy at least 5% of their range. This means you can often get excellent results with far fewer evaluations than a complete grid would require. Random search is also trivially parallelizable: all evaluations are independent and can run on separate machines or GPUs simultaneously.</p>
+
+    <h2>Bayesian Optimization: The Intelligent Search</h2>
+    <p><strong>Bayesian optimization</strong> is a sequential model-based optimization strategy that uses the results of past evaluations to guide future ones. Instead of searching blindly (grid) or randomly, Bayesian optimization builds a probabilistic model of the objective function and uses it to make informed decisions about where to evaluate next.</p>
+    <p>The process works in three steps repeated iteratively. First, a <strong>surrogate model</strong> approximates the objective function based on all evaluations so far. Common surrogate models include Gaussian Processes (used in scikit-optimize and GPyOpt), Tree-structured Parzen Estimators (TPE, used in Optuna and Hyperopt), and Random Forests (used in SMAC). Second, an <strong>acquisition function</strong> determines the most promising point to evaluate next by balancing exploration (sampling uncertain regions) and exploitation (sampling near the current best). Popular acquisition functions include Expected Improvement (EI), Upper Confidence Bound (UCB), and Probability of Improvement (PI). Third, the suggested point is evaluated (the model is trained and validated), and the result is added to the observation history.</p>
+    <p>Bayesian optimization is dramatically more sample-efficient than grid or random search. It typically finds near-optimal configurations in 10-50 evaluations, compared to hundreds or thousands for grid or random search. This makes it the preferred approach when each evaluation is expensive, such as training a deep neural network for hours on a GPU cluster. Tools like <strong>Optuna</strong>, <strong>Ray Tune</strong>, <strong>Hyperopt</strong>, and <strong>Weights & Biases Sweeps</strong> make Bayesian optimization accessible with minimal code changes.</p>
+
+    <h2>Choosing the Right Strategy</h2>
+    <p>The choice of hyperparameter tuning strategy depends on four factors: the number of hyperparameters, the cost of each evaluation, the available compute budget, and whether evaluations can be parallelized.</p>
+    <ul>
+      <li><strong>1-2 parameters, cheap evaluations:</strong> Grid search. Simple, complete, and fast enough. Use <code>GridSearchCV</code> in scikit-learn.</li>
+      <li><strong>2-5 parameters, moderate cost:</strong> Random search. Better coverage per evaluation, trivially parallel. Use <code>RandomizedSearchCV</code> in scikit-learn.</li>
+      <li><strong>3+ parameters, expensive evaluations:</strong> Bayesian optimization. Maximum sample efficiency. Use Optuna or Ray Tune.</li>
+      <li><strong>Neural architecture search, massive budget:</strong> Population-based methods (PBT) or evolutionary strategies. Use Ray Tune's PBT scheduler.</li>
+    </ul>
+    <p>A common practical workflow is to start with random search to identify promising regions of the search space, then switch to Bayesian optimization to fine-tune within those regions. Many practitioners also use successive halving (Hyperband) to quickly discard poor configurations by training them for only a few epochs before allocating more resources to promising candidates.</p>
+
+    <h2>Advanced Techniques</h2>
+    <p><strong>Successive Halving and Hyperband</strong> address the problem that most hyperparameter configurations are obviously bad, and you do not need to fully train a model to know it will not perform well. Successive halving starts by training many configurations for a small number of epochs, then promotes the top half and doubles their training budget, repeating until one configuration remains. Hyperband runs multiple rounds of successive halving with different initial budgets to balance early stopping aggressiveness with thorough evaluation.</p>
+    <p><strong>Multi-fidelity optimization</strong> combines Bayesian optimization with early stopping. BOHB (Bayesian Optimization and Hyperband) uses TPE as the surrogate model within a Hyperband framework, achieving state-of-the-art efficiency on many benchmarks. This approach is available in Ray Tune's BOHB scheduler and can reduce hyperparameter search costs by 10-100x compared to standard grid or random search.</p>
+    <p><strong>Transfer learning for hyperparameters</strong> leverages knowledge from previous tuning runs on related tasks. If you tuned a ResNet on CIFAR-10, the optimal learning rate and weight decay are likely in a similar range for CIFAR-100. Tools like Optuna support warm-starting from previous studies, and research on meta-learning for hyperparameters aims to predict good initial configurations from dataset characteristics alone.</p>
+
+    <h2>Common Pitfalls</h2>
+    <ul>
+      <li><strong>Overfitting the validation set:</strong> Extensive hyperparameter search on a fixed validation set can overfit to that specific split. Use nested cross-validation: outer loop for performance estimation, inner loop for hyperparameter selection.</li>
+      <li><strong>Wrong parameter scales:</strong> Learning rate and regularization strength should be searched on a log scale (e.g., 1e-5 to 1e-1), not linear. Searching linearly wastes evaluations in regions that produce nearly identical results.</li>
+      <li><strong>Too narrow a range:</strong> If the best value is at the boundary of your search range, expand it. The optimal configuration should be in the interior of your search space.</li>
+      <li><strong>Ignoring interactions:</strong> Some hyperparameters interact strongly. Learning rate and batch size are coupled: larger batches often require larger learning rates. Search them jointly, not independently.</li>
+      <li><strong>Not using early stopping:</strong> For iterative models (neural networks, gradient boosting), always use early stopping during tuning. It reduces per-evaluation cost and acts as implicit regularization.</li>
+      <li><strong>Tuning too many parameters at once:</strong> Start with the most impactful parameters (learning rate, model size) and fix the rest at reasonable defaults. Add more parameters to the search only after the primary ones are in a good range.</li>
+    </ul>
+
+    <h2>Practical Recipes</h2>
+    <p>For <strong>XGBoost / LightGBM</strong>: First tune learning_rate (log-uniform 0.01-0.3) and n_estimators (100-2000) with early stopping. Then tune max_depth (3-10), min_child_weight (1-10), and subsample (0.5-1.0). Finally, tune regularization: reg_alpha (1e-5 to 10, log) and reg_lambda (1e-5 to 10, log). This staged approach reduces the effective dimensionality at each step.</p>
+    <p>For <strong>neural networks</strong>: Learning rate is the single most important hyperparameter. Use a learning rate finder (start very small, increase exponentially, plot loss) to identify the right order of magnitude. Then tune batch size (often a power of 2 from 16 to 512), architecture (layers, units), dropout (0.0-0.5), and weight decay (1e-6 to 1e-2, log). Use cosine annealing or one-cycle learning rate schedules, which reduce sensitivity to the initial learning rate.</p>
+    <p>For <strong>random forests</strong>: The most important parameter is max_features (try sqrt, log2, 0.3, 0.5, 0.7, 1.0). Then n_estimators (more is generally better until diminishing returns; 100-1000). max_depth and min_samples_split control overfitting. Random forests are relatively robust to hyperparameters compared to gradient boosting or neural networks.</p>
+  </section>
+
+  <section class="faq-section">
+    <h2>Frequently Asked Questions</h2>
+    <details>
+      <summary>What is hyperparameter tuning in machine learning?</summary>
+      <p>Hyperparameter tuning is the process of finding the optimal configuration of parameters that are set before training begins, rather than learned from data. These include learning rate, regularization strength, number of hidden layers, batch size, and tree depth. Unlike model parameters, hyperparameters control the learning process itself and must be selected through systematic search or optimization strategies.</p>
+    </details>
+    <details>
+      <summary>What is the difference between grid search and random search?</summary>
+      <p>Grid search exhaustively evaluates every combination of specified hyperparameter values, guaranteeing the best result within the grid but scaling exponentially with dimensions. Random search samples parameter combinations randomly from defined distributions, which is more efficient because it explores more unique values per parameter. For the same compute budget, random search typically finds better configurations.</p>
+    </details>
+    <details>
+      <summary>How does Bayesian optimization work for hyperparameter tuning?</summary>
+      <p>Bayesian optimization builds a probabilistic surrogate model of the objective function. After each evaluation, it updates the model and uses an acquisition function (like Expected Improvement) to decide which point to evaluate next, balancing exploration of uncertain regions with exploitation of promising areas. This makes it far more sample-efficient than grid or random search.</p>
+    </details>
+    <details>
+      <summary>When should I use grid search vs Bayesian optimization?</summary>
+      <p>Use grid search when you have few hyperparameters (1-2) and cheap evaluations. Use random search as a baseline with 2-5 parameters. Use Bayesian optimization when training is expensive, you have many hyperparameters, or you need the best performance with limited compute. For deep learning with GPU training, Bayesian optimization is almost always the right choice.</p>
+    </details>
+    <details>
+      <summary>What are common hyperparameters to tune for different models?</summary>
+      <p>For random forests: n_estimators, max_depth, min_samples_split, max_features. For gradient boosting: learning_rate, n_estimators, max_depth, subsample, reg_alpha, reg_lambda. For neural networks: learning_rate, batch_size, layers, dropout, weight decay. For SVMs: C, kernel, gamma. Always tune learning rate first as it has the largest impact.</p>
+    </details>
+  </section>
+
+  <section class="explainer-section">
+    <h2>Related Tools</h2>
+    <div class="related-grid">
+      <a href="/tools/confusion-matrix-calculator.html" class="related-card">
+        <div class="related-title">Confusion Matrix Calculator</div>
+        <div class="related-desc">Compute precision, recall, F1, accuracy, and MCC with visual heatmap and ROC plotting.</div>
+      </a>
+      <a href="/tools/neural-network-playground.html" class="related-card">
+        <div class="related-title">Neural Network Playground</div>
+        <div class="related-desc">Build, train, and visualize neural networks entirely in your browser.</div>
+      </a>
+      <a href="/answers/ml-metrics-explained.html" class="related-card">
+        <div class="related-title">ML Metrics Explained</div>
+        <div class="related-desc">Metric selector wizard for classification, regression, and ranking tasks.</div>
+      </a>
+    </div>
+  </section>
+
+  <section class="explainer-section">
+    <h2>About the Author</h2>
+    <p><strong>Michael Lip</strong> builds open-source ML tools and developer utilities at <a href="https://zovo.one">zovo.one</a>. ml0x is part of the Zovo Tools network, a collection of free, privacy-first tools for developers and data scientists. No tracking, no accounts required, no data leaves your browser.</p>
+  </section>
+
+  <p class="last-updated">Last updated: May 25, 2026</p>
+</main>
+
+<footer class="site-footer">
+    <div class="footer-inner">
+        <div class="footer-brand">Zovo Tools</div>
+        <div class="footer-tagline">Free developer tools by a solo dev. No tracking.</div>
+        <a href="https://zovo.one/pricing?utm_source=ml0x.com&utm_medium=satellite&utm_campaign=footer-link" class="footer-cta">Zovo Lifetime — $99 once, free forever &rarr;</a>
+        <div class="footer-copy">&copy; 2026 <a href="https://zovo.one">Zovo</a> &middot; 47/500 founding spots</div>
+    </div>
+</footer>
+
+<nav class="zovo-network" aria-label="Zovo Tools Network">
+    <div class="zovo-network-inner">
+        <h3 class="zovo-network-title">Explore More Tools</h3>
+        <div class="zovo-network-links">
+            <a href="https://abwex.com">ABWex — A/B Testing</a>
+            <a href="https://claudflow.com">ClaudFlow — Workflows</a>
+            <a href="https://claudhq.com">ClaudHQ — AI Code Tools &amp; Fixes</a>
+            <a href="https://claudkit.com">ClaudKit — API</a>
+            <a href="https://enhio.com">Enhio — Text Tools</a>
+            <a href="https://epochpilot.com">EpochPilot — Timestamps</a>
+            <a href="https://gen8x.com">Gen8X — Color Tools</a>
+            <a href="https://gpt0x.com">GPT0X — AI Models</a>
+            <a href="https://heytensor.com">HeyTensor — ML Tools</a>
+            <a href="https://invokebot.com">InvokeBot — Webhooks</a>
+            <a href="https://kappafy.com">Kappafy — JSON</a>
+            <a href="https://kappakit.com">KappaKit — Dev Toolkit</a>
+            <a href="https://kickllm.com">KickLLM — LLM Costs</a>
+            <a href="https://krzen.com">Krzen — Image Tools</a>
+            <a href="https://lochbot.com">LochBot — Security</a>
+            <a href="https://lockml.com">LockML — ML Compare</a>
+            <a href="https://ml3x.com">ML3X — Matrix Math</a>
+        </div>
+    </div>
+</nav>
+
+<script>
+(function() {
+  var method = 'grid';
+  var budget = 25;
+  var landscape = 'unimodal';
+  var results = {};
+  var stepping = false;
+  var stepIdx = 0;
+  var stepPoints = [];
+  var codeTab = 'sklearn';
+
+  function objectiveFn(x, y) {
+    x = Math.max(0, Math.min(1, x));
+    y = Math.max(0, Math.min(1, y));
+    if (landscape === 'unimodal') {
+      return Math.exp(-((x-0.3)*(x-0.3)+(y-0.7)*(y-0.7))*8);
+    } else if (landscape === 'bimodal') {
+      var p1 = Math.exp(-((x-0.25)*(x-0.25)+(y-0.75)*(y-0.75))*10);
+      var p2 = 0.9*Math.exp(-((x-0.7)*(x-0.7)+(y-0.3)*(y-0.3))*12);
+      return Math.max(p1, p2);
+    } else if (landscape === 'ridge') {
+      var d = Math.abs(y - (0.8 - 0.6*x));
+      return Math.exp(-d*d*50) * (0.7 + 0.3*x);
+    } else {
+      var base = Math.exp(-((x-0.4)*(x-0.4)+(y-0.6)*(y-0.6))*6);
+      return Math.max(0, Math.min(1, base + (Math.sin(x*37)*Math.cos(y*41))*0.15));
+    }
+  }
+
+  function generateGridPoints(n) {
+    var side = Math.round(Math.sqrt(n));
+    var pts = [];
+    for (var i = 0; i < side; i++) {
+      for (var j = 0; j < side; j++) {
+        pts.push({x: i/(side-1), y: j/(side-1)});
+      }
+    }
+    return pts.slice(0, n);
+  }
+
+  function generateRandomPoints(n) {
+    var pts = [];
+    for (var i = 0; i < n; i++) {
+      pts.push({x: Math.random(), y: Math.random()});
+    }
+    return pts;
+  }
+
+  function generateBayesianPoints(n) {
+    var pts = [];
+    var observed = [];
+    var initCount = Math.min(5, Math.floor(n*0.2));
+    for (var i = 0; i < initCount; i++) {
+      var p = {x: Math.random(), y: Math.random()};
+      p.score = objectiveFn(p.x, p.y);
+      pts.push(p);
+      observed.push(p);
+    }
+    for (var step = initCount; step < n; step++) {
+      var bestCand = null;
+      var bestEI = -Infinity;
+      for (var t = 0; t < 100; t++) {
+        var cx = Math.random(), cy = Math.random();
+        var pred = 0, uncert = 1;
+        var totalW = 0;
+        for (var k = 0; k < observed.length; k++) {
+          var dx = cx - observed[k].x;
+          var dy = cy - observed[k].y;
+          var dist = Math.sqrt(dx*dx + dy*dy);
+          var w = Math.exp(-dist*dist*20);
+          pred += w * observed[k].score;
+          totalW += w;
+          uncert -= w * 0.3;
+        }
+        if (totalW > 0) pred /= totalW;
+        uncert = Math.max(0.05, uncert);
+        var bestSoFar = 0;
+        for (var k = 0; k < observed.length; k++) {
+          if (observed[k].score > bestSoFar) bestSoFar = observed[k].score;
+        }
+        var ei = (pred - bestSoFar) * 0.7 + uncert * 0.3;
+        if (ei > bestEI) {
+          bestEI = ei;
+          bestCand = {x: cx, y: cy};
+        }
+      }
+      bestCand.score = objectiveFn(bestCand.x, bestCand.y);
+      pts.push(bestCand);
+      observed.push(bestCand);
+    }
+    return pts;
+  }
+
+  function runSearch(methodName) {
+    var pts;
+    if (methodName === 'grid') {
+      pts = generateGridPoints(budget);
+    } else if (methodName === 'random') {
+      pts = generateRandomPoints(budget);
+    } else {
+      pts = generateBayesianPoints(budget);
+    }
+    for (var i = 0; i < pts.length; i++) {
+      if (pts[i].score === undefined) pts[i].score = objectiveFn(pts[i].x, pts[i].y);
+    }
+    var best = pts[0], bestIdx = 0;
+    var bestSoFar = [];
+    var runBest = -1;
+    for (var i = 0; i < pts.length; i++) {
+      if (pts[i].score > runBest) { runBest = pts[i].score; best = pts[i]; bestIdx = i; }
+      bestSoFar.push(runBest);
+    }
+    var convergeStep = pts.length;
+    for (var i = 0; i < bestSoFar.length; i++) {
+      if (bestSoFar[i] >= runBest * 0.99) { convergeStep = i + 1; break; }
+    }
+    var avgScore = 0;
+    for (var i = 0; i < pts.length; i++) avgScore += pts[i].score;
+    avgScore /= pts.length;
+    var uniqueX = {}, uniqueY = {};
+    for (var i = 0; i < pts.length; i++) {
+      uniqueX[pts[i].x.toFixed(4)] = true;
+      uniqueY[pts[i].y.toFixed(4)] = true;
+    }
+    return {
+      points: pts, best: best, bestIdx: bestIdx, bestSoFar: bestSoFar,
+      convergeStep: convergeStep, avgScore: avgScore,
+      uniqueX: Object.keys(uniqueX).length, uniqueY: Object.keys(uniqueY).length,
+      method: methodName
+    };
+  }
+
+  function drawSearch(res, svgId) {
+    var svg = document.getElementById(svgId || 'searchSvg');
+    var pad = 50, w = 350, h = 350;
+    var html = '<rect width="400" height="400" fill="#141414"/>';
+    for (var gi = 0; gi <= 20; gi++) {
+      for (var gj = 0; gj <= 20; gj++) {
+        var gx = gi/20, gy = gj/20;
+        var val = objectiveFn(gx, gy);
+        var r = Math.round(59 * (1-val) + 34 * val);
+        var g = Math.round(130 * (1-val) + 197 * val);
+        var b = Math.round(246 * (1-val) + 94 * val);
+        var px = pad + gx * (w - pad);
+        var py = pad + (1-gy) * (h - pad);
+        html += '<rect x="'+(px-8)+'" y="'+(py-8)+'" width="17" height="17" fill="rgb('+r+','+g+','+b+')" opacity="0.25"/>';
+      }
+    }
+    html += '<line x1="'+pad+'" y1="'+h+'" x2="'+w+'" y2="'+h+'" stroke="#555" stroke-width="1"/>';
+    html += '<line x1="'+pad+'" y1="'+pad+'" x2="'+pad+'" y2="'+h+'" stroke="#555" stroke-width="1"/>';
+    html += '<text x="'+(pad+(w-pad)/2)+'" y="390" text-anchor="middle" fill="#aaa" font-size="12" font-family="IBM Plex Sans,sans-serif">' + document.getElementById('param1Name').value + '</text>';
+    html += '<text x="15" y="'+(pad+(h-pad)/2)+'" text-anchor="middle" fill="#aaa" font-size="12" font-family="IBM Plex Sans,sans-serif" transform="rotate(-90,15,'+(pad+(h-pad)/2)+')">' + document.getElementById('param2Name').value + '</text>';
+    var colors = {'grid':'#3b82f6','random':'#22c55e','bayesian':'#f59e0b'};
+    var color = colors[res.method] || '#3b82f6';
+    var count = stepping ? stepIdx : res.points.length;
+    for (var i = 0; i < count && i < res.points.length; i++) {
+      var px = pad + res.points[i].x * (w - pad);
+      var py = pad + (1 - res.points[i].y) * (h - pad);
+      var isB = (i === res.bestIdx && i < count);
+      html += '<circle cx="'+px+'" cy="'+py+'" r="'+(isB?7:4)+'" fill="'+color+'" opacity="'+(isB?1:0.6)+'"/>';
+      if (isB) {
+        html += '<circle cx="'+px+'" cy="'+py+'" r="10" fill="none" stroke="#fff" stroke-width="2"/>';
+        html += '<text x="'+(px+14)+'" y="'+(py-8)+'" fill="#fff" font-size="11" font-family="IBM Plex Sans,sans-serif">Best: '+res.best.score.toFixed(4)+'</text>';
+      }
+    }
+    if (res.method === 'bayesian' && count > 1) {
+      for (var i = 1; i < count && i < res.points.length; i++) {
+        var x1 = pad + res.points[i-1].x * (w - pad);
+        var y1 = pad + (1 - res.points[i-1].y) * (h - pad);
+        var x2 = pad + res.points[i].x * (w - pad);
+        var y2 = pad + (1 - res.points[i].y) * (h - pad);
+        html += '<line x1="'+x1+'" y1="'+y1+'" x2="'+x2+'" y2="'+y2+'" stroke="'+color+'" stroke-width="0.5" opacity="0.3"/>';
+      }
+    }
+    svg.innerHTML = html;
+  }
+
+  function drawConvergence(resList) {
+    var svg = document.getElementById('convergeSvg');
+    var pad = 50, w = 350, h = 250;
+    var html = '<rect width="400" height="300" fill="#141414"/>';
+    html += '<line x1="'+pad+'" y1="'+h+'" x2="'+w+'" y2="'+h+'" stroke="#555" stroke-width="1"/>';
+    html += '<line x1="'+pad+'" y1="30" x2="'+pad+'" y2="'+h+'" stroke="#555" stroke-width="1"/>';
+    html += '<text x="'+(pad+(w-pad)/2)+'" y="285" text-anchor="middle" fill="#aaa" font-size="12" font-family="IBM Plex Sans,sans-serif">Evaluation #</text>';
+    html += '<text x="15" y="'+(30+(h-30)/2)+'" text-anchor="middle" fill="#aaa" font-size="12" font-family="IBM Plex Sans,sans-serif" transform="rotate(-90,15,'+(30+(h-30)/2)+')">Best Score</text>';
+    for (var i = 0; i <= 4; i++) {
+      var gy = h - i * (h-30)/4;
+      html += '<line x1="'+pad+'" y1="'+gy+'" x2="'+w+'" y2="'+gy+'" stroke="#333" stroke-width="0.5"/>';
+      html += '<text x="'+(pad-6)+'" y="'+(gy+4)+'" text-anchor="end" fill="#666" font-size="10" font-family="IBM Plex Mono,monospace">'+(i*0.25).toFixed(2)+'</text>';
+    }
+    var colors = {'grid':'#3b82f6','random':'#22c55e','bayesian':'#f59e0b'};
+    if (!Array.isArray(resList)) resList = [resList];
+    for (var r = 0; r < resList.length; r++) {
+      var res = resList[r];
+      var color = colors[res.method];
+      var n = stepping ? stepIdx : res.bestSoFar.length;
+      if (n < 2) continue;
+      var path = 'M';
+      for (var i = 0; i < n && i < res.bestSoFar.length; i++) {
+        var px = pad + (i / (res.bestSoFar.length - 1)) * (w - pad);
+        var py = h - res.bestSoFar[i] * (h - 30);
+        path += (i === 0 ? '' : ' L') + px.toFixed(1) + ' ' + py.toFixed(1);
+      }
+      html += '<path d="'+path+'" fill="none" stroke="'+color+'" stroke-width="2"/>';
+      html += '<text x="'+(w-60)+'" y="'+(45+r*16)+'" fill="'+color+'" font-size="11" font-family="IBM Plex Sans,sans-serif">'+res.method+'</text>';
+    }
+    svg.innerHTML = html;
+  }
+
+  function updateMetrics(res) {
+    document.getElementById('metBestScore').textContent = res.best.score.toFixed(4);
+    document.getElementById('metEvals').textContent = stepping ? stepIdx + '/' + budget : budget;
+    document.getElementById('metBestP1').textContent = res.best.x.toFixed(4);
+    document.getElementById('metBestP2').textContent = res.best.y.toFixed(4);
+    document.getElementById('lblP1').textContent = 'Best ' + document.getElementById('param1Name').value;
+    document.getElementById('lblP2').textContent = 'Best ' + document.getElementById('param2Name').value;
+    document.getElementById('metEfficiency').textContent = (res.best.score / res.avgScore).toFixed(2) + 'x';
+    document.getElementById('metConverge').textContent = res.convergeStep + '/' + res.points.length;
+  }
+
+  function updateCompareTable(allRes) {
+    var tbody = document.getElementById('compareBody');
+    tbody.innerHTML = '';
+    var colors = {'grid':'#3b82f6','random':'#22c55e','bayesian':'#f59e0b'};
+    for (var i = 0; i < allRes.length; i++) {
+      var r = allRes[i];
+      var row = '<tr style="border-bottom:1px solid #222;">';
+      row += '<td style="padding:8px;color:'+colors[r.method]+';font-weight:600;">'+r.method.charAt(0).toUpperCase()+r.method.slice(1)+'</td>';
+      row += '<td style="padding:8px;text-align:right;color:#ddd;">'+r.best.score.toFixed(4)+'</td>';
+      row += '<td style="padding:8px;text-align:right;color:#ddd;">'+r.avgScore.toFixed(4)+'</td>';
+      row += '<td style="padding:8px;text-align:right;color:#ddd;">'+r.convergeStep+'</td>';
+      row += '<td style="padding:8px;text-align:right;color:#aaa;">'+r.uniqueX+'</td>';
+      row += '<td style="padding:8px;text-align:right;color:#aaa;">'+r.uniqueY+'</td>';
+      row += '</tr>';
+      tbody.innerHTML += row;
+    }
+  }
+
+  function generateCode() {
+    var p1 = document.getElementById('param1Name').value;
+    var p2 = document.getElementById('param2Name').value;
+    var code = '';
+    if (codeTab === 'sklearn') {
+      if (method === 'grid' || method === 'compare') {
+        code = 'from sklearn.model_selection import GridSearchCV\nfrom sklearn.ensemble import GradientBoostingClassifier\n\nparam_grid = {\n    "' + p1 + '": [0.01, 0.05, 0.1, 0.2, 0.3],\n    "' + p2 + '": [50, 100, 200, 500, 1000]\n}\n\nmodel = GradientBoostingClassifier()\ngrid_search = GridSearchCV(\n    model, param_grid,\n    cv=5, scoring="f1",\n    n_jobs=-1, verbose=1\n)\ngrid_search.fit(X_train, y_train)\n\nprint(f"Best params: {grid_search.best_params_}")\nprint(f"Best F1: {grid_search.best_score_:.4f}")';
+      } else if (method === 'random') {
+        code = 'from sklearn.model_selection import RandomizedSearchCV\nfrom sklearn.ensemble import GradientBoostingClassifier\nfrom scipy.stats import uniform, randint\n\nparam_dist = {\n    "' + p1 + '": uniform(0.01, 0.29),\n    "' + p2 + '": randint(50, 1000)\n}\n\nmodel = GradientBoostingClassifier()\nrandom_search = RandomizedSearchCV(\n    model, param_dist,\n    n_iter=' + budget + ', cv=5,\n    scoring="f1", n_jobs=-1,\n    random_state=42, verbose=1\n)\nrandom_search.fit(X_train, y_train)\n\nprint(f"Best params: {random_search.best_params_}")\nprint(f"Best F1: {random_search.best_score_:.4f}")';
+      } else {
+        code = '# Bayesian optimization not built into sklearn.\n# Use Optuna or Ray Tune instead.\n# See the Optuna tab for Bayesian optimization code.';
+      }
+    } else if (codeTab === 'optuna') {
+      code = 'import optuna\nfrom sklearn.ensemble import GradientBoostingClassifier\nfrom sklearn.model_selection import cross_val_score\n\ndef objective(trial):\n    ' + p1 + ' = trial.suggest_float(\n        "' + p1 + '", 0.01, 0.3, log=True\n    )\n    ' + p2 + ' = trial.suggest_int(\n        "' + p2 + '", 50, 1000\n    )\n    model = GradientBoostingClassifier(\n        ' + p1 + '=' + p1 + ',\n        ' + p2 + '=' + p2 + '\n    )\n    score = cross_val_score(\n        model, X_train, y_train,\n        cv=5, scoring="f1"\n    ).mean()\n    return score\n\nstudy = optuna.create_study(direction="maximize")\nstudy.optimize(objective, n_trials=' + budget + ')\n\nprint(f"Best params: {study.best_params}")\nprint(f"Best F1: {study.best_value:.4f}")\n\n# Visualization\nfrom optuna.visualization import (\n    plot_optimization_history,\n    plot_param_importances,\n    plot_contour\n)\nplot_optimization_history(study).show()\nplot_param_importances(study).show()\nplot_contour(study).show()';
+    } else {
+      code = 'from ray import tune\nfrom ray.tune.schedulers import ASHAScheduler\nfrom sklearn.ensemble import GradientBoostingClassifier\nfrom sklearn.model_selection import cross_val_score\n\ndef train_model(config):\n    model = GradientBoostingClassifier(\n        ' + p1 + '=config["' + p1 + '"],\n        ' + p2 + '=config["' + p2 + '"]\n    )\n    score = cross_val_score(\n        model, X_train, y_train,\n        cv=5, scoring="f1"\n    ).mean()\n    tune.report(f1=score)\n\nsearch_space = {\n    "' + p1 + '": tune.loguniform(0.01, 0.3),\n    "' + p2 + '": tune.randint(50, 1000)\n}\n\nscheduler = ASHAScheduler(\n    max_t=100,\n    grace_period=10,\n    reduction_factor=2\n)\n\nanalysis = tune.run(\n    train_model,\n    config=search_space,\n    num_samples=' + budget + ',\n    scheduler=scheduler,\n    metric="f1",\n    mode="max"\n)\n\nprint(f"Best config: {analysis.best_config}")\nprint(f"Best F1: {analysis.best_result[\'f1\']:.4f}")';
+    }
+    document.getElementById('codeOutput').textContent = code;
+  }
+
+  function runAll() {
+    stepping = false;
+    stepIdx = 0;
+    budget = parseInt(document.getElementById('budgetSelect').value);
+    method = document.getElementById('methodSelect').value;
+    landscape = document.getElementById('landscapeSelect').value;
+    document.getElementById('resultsSection').style.display = 'block';
+
+    if (method === 'compare') {
+      var gridRes = runSearch('grid');
+      var randRes = runSearch('random');
+      var bayesRes = runSearch('bayesian');
+      results = bayesRes;
+      drawSearch(bayesRes);
+      drawConvergence([gridRes, randRes, bayesRes]);
+      updateMetrics(bayesRes);
+      document.getElementById('compareSection').style.display = 'block';
+      updateCompareTable([gridRes, randRes, bayesRes]);
+    } else {
+      results = runSearch(method);
+      drawSearch(results);
+      drawConvergence(results);
+      updateMetrics(results);
+      document.getElementById('compareSection').style.display = 'none';
+    }
+    generateCode();
+  }
+
+  document.getElementById('runBtn').addEventListener('click', runAll);
+
+  document.getElementById('stepBtn').addEventListener('click', function() {
+    if (!results.points || results.points.length === 0) {
+      budget = parseInt(document.getElementById('budgetSelect').value);
+      method = document.getElementById('methodSelect').value;
+      landscape = document.getElementById('landscapeSelect').value;
+      if (method === 'compare') method = 'bayesian';
+      results = runSearch(method);
+      document.getElementById('resultsSection').style.display = 'block';
+      document.getElementById('compareSection').style.display = 'none';
+      stepping = true;
+      stepIdx = 1;
+    } else {
+      stepping = true;
+      stepIdx = Math.min(stepIdx + 1, results.points.length);
+    }
+    drawSearch(results);
+    drawConvergence(results);
+    updateMetrics(results);
+    generateCode();
+  });
+
+  document.getElementById('resetBtn').addEventListener('click', function() {
+    results = {};
+    stepping = false;
+    stepIdx = 0;
+    document.getElementById('resultsSection').style.display = 'none';
+  });
+
+  var tabBtns = document.querySelectorAll('.codeTabBtn');
+  for (var i = 0; i < tabBtns.length; i++) {
+    tabBtns[i].addEventListener('click', function() {
+      for (var j = 0; j < tabBtns.length; j++) tabBtns[j].classList.remove('active');
+      this.classList.add('active');
+      codeTab = this.getAttribute('data-tab');
+      generateCode();
+    });
+  }
+
+  document.getElementById('copyCodeBtn').addEventListener('click', function() {
+    var code = document.getElementById('codeOutput').textContent;
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(code).then(function() {
+        document.getElementById('copyCodeBtn').textContent = 'Copied!';
+        setTimeout(function() { document.getElementById('copyCodeBtn').textContent = 'Copy Code'; }, 1500);
+      });
+    }
+  });
+
+  runAll();
+})();
+</script>
+</body>
+</html>

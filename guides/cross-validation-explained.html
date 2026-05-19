@@ -1,0 +1,618 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>K-Fold Cross Validation Explained — Interactive Simulator | ml0x</title>
+<meta name="description" content="Interactive K-Fold cross validation simulator. Set K from 2-20, visualize fold assignments with color-coded splits, run simulated CV with synthetic accuracy scores, and compare K values on a chart.">
+<meta name="keywords" content="k-fold cross validation, cross validation explained, stratified k-fold, leave one out, model selection, hyperparameter tuning, overfitting detection, machine learning validation, bias variance tradeoff, CV simulator">
+<link rel="canonical" href="https://ml0x.com/guides/cross-validation-explained.html">
+<link rel="alternate" hreflang="en" href="https://ml0x.com/guides/cross-validation-explained.html">
+<link rel="alternate" hreflang="x-default" href="https://ml0x.com/guides/cross-validation-explained.html">
+<meta property="og:type" content="article">
+<meta property="og:title" content="K-Fold Cross Validation Explained — Interactive Simulator">
+<meta property="og:description" content="Interactive simulator for K-Fold cross validation. Visualize fold splits, run synthetic CV, compare K values, and toggle stratified vs regular mode.">
+<meta property="og:url" content="https://ml0x.com/guides/cross-validation-explained.html">
+<meta property="og:site_name" content="Zovo Tools">
+<meta property="og:locale" content="en_US">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="K-Fold Cross Validation Explained — Interactive Simulator">
+<meta name="twitter:description" content="Interactive K-Fold CV simulator. Visualize folds, run synthetic CV, compare K values, and toggle stratified mode.">
+<meta name="author" content="Michael Lip">
+<meta name="robots" content="index, follow">
+<link rel="stylesheet" href="/assets/style.css">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Article",
+  "headline": "K-Fold Cross Validation Explained — Interactive Simulator with Variance Visualization",
+  "description": "Learn K-Fold cross validation through an interactive simulator. Set K, visualize fold splits, run synthetic CV with accuracy scores, and compare variance across K values.",
+  "url": "https://ml0x.com/guides/cross-validation-explained.html",
+  "author": {"@type": "Person", "name": "Michael Lip", "url": "https://zovo.one"},
+  "publisher": {"@type": "Organization", "name": "ML0X", "url": "https://ml0x.com"},
+  "datePublished": "2026-05-25",
+  "dateModified": "2026-05-25"
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {"@type": "Question", "name": "What is K-Fold cross validation?", "acceptedAnswer": {"@type": "Answer", "text": "K-Fold cross validation is a model evaluation technique that splits the dataset into K equal-sized partitions (folds). The model is trained K times, each time using K-1 folds for training and the remaining fold for validation. The final performance estimate is the average of all K validation scores. This gives a more reliable estimate of model performance than a single train-test split because every data point is used for both training and validation."}},
+    {"@type": "Question", "name": "How do I choose the value of K?", "acceptedAnswer": {"@type": "Answer", "text": "K=5 or K=10 are the most common choices, supported by empirical and theoretical analysis. K=5 provides a good balance between bias and variance with moderate computation. K=10 gives lower bias but slightly higher variance. K=N (Leave-One-Out) has the lowest bias but highest variance and is computationally expensive. For small datasets, use K=10 or LOOCV. For large datasets, K=5 is usually sufficient. The right choice depends on dataset size, computational budget, and whether you prefer lower bias or lower variance."}},
+    {"@type": "Question", "name": "What is the difference between stratified and regular K-Fold?", "acceptedAnswer": {"@type": "Answer", "text": "Regular K-Fold randomly assigns data points to folds without considering class labels. Stratified K-Fold ensures each fold has approximately the same proportion of each class as the full dataset. This is important for imbalanced datasets where random splitting might create folds with very few or no examples of the minority class, leading to unreliable evaluation. Stratified K-Fold is the default choice for classification problems."}},
+    {"@type": "Question", "name": "Why not just use a simple train/test split?", "acceptedAnswer": {"@type": "Answer", "text": "A single train/test split gives only one estimate of model performance, which can be lucky or unlucky depending on which data points end up in which set. Cross validation provides K estimates, giving you a mean and standard deviation. The standard deviation tells you how sensitive your model is to the training data. Additionally, cross validation uses all data for both training and evaluation, which is especially valuable when data is limited."}},
+    {"@type": "Question", "name": "Can I use cross validation for time series data?", "acceptedAnswer": {"@type": "Answer", "text": "Standard K-Fold cross validation should NOT be used for time series data because it violates temporal ordering by using future data to predict the past (data leakage). Instead, use time series specific CV methods: expanding window (train on all data up to time t, test on t+1), sliding window (train on a fixed recent window), or TimeSeriesSplit in scikit-learn. These preserve the temporal order and give realistic performance estimates."}}
+  ]
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {"@type": "ListItem", "position": 1, "name": "Home", "item": "https://ml0x.com/"},
+    {"@type": "ListItem", "position": 2, "name": "Guides", "item": "https://ml0x.com/guides/"},
+    {"@type": "ListItem", "position": 3, "name": "K-Fold Cross Validation Explained"}
+  ]
+}
+</script>
+</head>
+<body>
+
+<header>
+  <div class="container header-inner">
+    <a href="/" class="logo">ml0x</a>
+    <nav>
+      <a href="/">Home</a>
+      <a href="/research/">Research</a>
+      <a href="/tools/">Tools</a>
+      <a href="/guides/">Guides</a>
+      <a href="/answers/">Answers</a>
+      <div class="nav-right">
+        <a href="https://zovo.one/pricing?utm_source=ml0x.com&utm_medium=satellite&utm_campaign=nav-link" class="nav-pro" target="_blank">Go Pro &#10022;</a>
+        <a href="https://zovo.one/tools" class="nav-zovo">Zovo Tools</a>
+      </div>
+    </nav>
+  </div>
+</header>
+
+<main class="container">
+  <div class="breadcrumb">
+    <a href="/">Home</a> <span>&rsaquo;</span> <a href="/guides/">Guides</a> <span>&rsaquo;</span> K-Fold Cross Validation Explained
+  </div>
+
+  <div class="hero">
+    <h1>K-Fold Cross Validation <span>Explained</span></h1>
+    <p>Cross validation is the gold standard for estimating how well a machine learning model generalizes to unseen data. This interactive simulator lets you configure K, dataset size, and stratification, then visualize how data is split across folds and how accuracy varies. Compare different K values to understand the bias-variance tradeoff in model evaluation.</p>
+  </div>
+
+  <div class="tool-card">
+    <h3>CV Simulator Configuration</h3>
+    <div class="control-row">
+      <div class="control-group">
+        <label>K (Folds)</label>
+        <select id="kSelect">
+          <option value="2">2</option>
+          <option value="3">3</option>
+          <option value="5" selected>5</option>
+          <option value="7">7</option>
+          <option value="10">10</option>
+          <option value="15">15</option>
+          <option value="20">20</option>
+        </select>
+      </div>
+      <div class="control-group">
+        <label>Dataset Size</label>
+        <select id="datasetSize">
+          <option value="50">50 samples</option>
+          <option value="100" selected>100 samples</option>
+          <option value="200">200 samples</option>
+          <option value="500">500 samples</option>
+        </select>
+      </div>
+      <div class="control-group">
+        <label>Mode</label>
+        <select id="cvMode">
+          <option value="regular" selected>Regular K-Fold</option>
+          <option value="stratified">Stratified K-Fold</option>
+        </select>
+      </div>
+      <div class="control-group">
+        <label>Class Balance</label>
+        <select id="classBalance">
+          <option value="0.5" selected>50/50 Balanced</option>
+          <option value="0.3">30/70 Imbalanced</option>
+          <option value="0.1">10/90 Highly Imbalanced</option>
+        </select>
+      </div>
+    </div>
+    <div class="control-row">
+      <button class="btn" id="runCVBtn">Run Cross Validation</button>
+      <button class="btn btn-secondary" id="compareBtn">Compare K Values</button>
+      <button class="btn btn-secondary" id="resetCVBtn">Reset</button>
+    </div>
+  </div>
+
+  <div id="foldViz" style="display:none;">
+    <div class="tool-card">
+      <h3>Fold Assignments</h3>
+      <p style="color:#aaa;font-size:13px;margin-bottom:12px;">Each row is one data sample. Colors indicate fold assignment. The highlighted fold is the validation set for that round.</p>
+      <div class="viz-container" style="overflow-x:auto;">
+        <canvas id="foldCanvas" width="700" height="300"></canvas>
+      </div>
+    </div>
+
+    <div class="stat-grid">
+      <div class="stat-card"><div class="value" id="cvMean">--</div><div class="label">Mean Accuracy</div></div>
+      <div class="stat-card"><div class="value" id="cvStd">--</div><div class="label">Std Deviation</div></div>
+      <div class="stat-card"><div class="value" id="cvMin">--</div><div class="label">Min Fold Score</div></div>
+      <div class="stat-card"><div class="value" id="cvMax">--</div><div class="label">Max Fold Score</div></div>
+    </div>
+
+    <div class="tool-card">
+      <h3>Per-Fold Accuracy Scores</h3>
+      <div class="viz-container">
+        <canvas id="scoreCanvas" width="700" height="250"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <div id="compareViz" style="display:none;">
+    <div class="tool-card">
+      <h3>K Value Comparison</h3>
+      <p style="color:#aaa;font-size:13px;margin-bottom:12px;">Mean accuracy &plusmn; std for K = 2, 3, 5, 7, 10, 15, 20. Higher K reduces bias but increases variance and computation cost.</p>
+      <div class="viz-container">
+        <canvas id="compareCanvas" width="700" height="300"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <section class="explainer-section">
+    <h2>What Is Cross Validation?</h2>
+    <p>Cross validation is a resampling procedure used to evaluate machine learning models on a limited data sample. The basic idea is simple: instead of relying on a single train/test split (which may give a lucky or unlucky estimate), split the data multiple ways, train and evaluate the model on each split, and aggregate the results. This produces a more robust and reliable estimate of model performance on unseen data.</p>
+    <p>The most common form is <strong>K-Fold cross validation</strong>. The dataset is randomly partitioned into K equal-sized subsets called folds. The model is trained and evaluated K times. In each iteration, one fold serves as the validation set while the remaining K-1 folds form the training set. The final performance metric is the average of all K evaluation scores. This ensures every data point appears in exactly one validation fold and K-1 training folds, maximizing the use of available data.</p>
+    <p>Cross validation serves two primary purposes. First, it provides a reliable estimate of how well a model will perform on unseen data, which is essential for model selection (choosing between different algorithms or architectures). Second, it provides a measure of variance in that estimate (the standard deviation across folds), which tells you how sensitive the model is to the particular training data it receives. A high standard deviation suggests the model is unstable and may benefit from regularization or more data.</p>
+
+    <h2>How K-Fold Cross Validation Works</h2>
+    <p>The K-Fold CV procedure follows these steps precisely:</p>
+    <ol>
+      <li><strong>Shuffle the dataset</strong> randomly (optional but recommended to break any ordering effects).</li>
+      <li><strong>Split into K folds</strong> of approximately equal size. If N is not evenly divisible by K, some folds will have one extra sample.</li>
+      <li><strong>For each fold i from 1 to K:</strong> Set fold i aside as the validation set. Train the model on all other K-1 folds combined. Evaluate the model on fold i and record the score.</li>
+      <li><strong>Compute the average and standard deviation</strong> of the K scores. Report as: mean &plusmn; std.</li>
+    </ol>
+    <p>The computational cost is K times that of a single train/evaluate cycle. For K=5, you train 5 models; for K=10, you train 10 models. Each model sees slightly different training data (one fold is withheld), so the K scores provide a sample from the distribution of possible model performances. The mean estimates expected performance; the standard deviation estimates the uncertainty in that expectation.</p>
+
+    <h2>Choosing the Right K</h2>
+    <p>The choice of K involves a fundamental tradeoff. There are two sources of error in the CV estimate: bias (how far the estimate is from the true generalization performance) and variance (how much the estimate fluctuates across different data splits).</p>
+    <p><strong>Low K (e.g., K=2):</strong> Each training set contains only 50% of the data, so the model is trained on significantly less data than the full dataset. This introduces pessimistic bias because the model underperforms relative to one trained on the full dataset. However, the two validation sets are large and independent, giving lower variance. K=2 is rarely used in practice because the bias is too large.</p>
+    <p><strong>High K (e.g., K=N, Leave-One-Out):</strong> Each training set contains N-1 samples, nearly the full dataset, so the bias is minimal. However, the K training sets overlap almost completely (they differ by only one sample), making the K models highly correlated. This correlation inflates the variance of the mean estimate. LOOCV also has the highest computational cost (N training runs).</p>
+    <p><strong>K=5 or K=10:</strong> Empirical studies by Ron Kohavi (1995) and others have shown that K=5 and K=10 provide the best tradeoff between bias and variance. K=10 has slightly lower bias than K=5, but the difference is usually small. K=5 is preferred when computation is a concern. These values are widely used as defaults in machine learning practice and libraries like scikit-learn.</p>
+
+    <h2>Stratified K-Fold Cross Validation</h2>
+    <p>Standard K-Fold assigns data points to folds randomly, without considering class labels. In balanced datasets (roughly equal number of samples per class), this works fine because each fold will naturally contain a representative mix of classes. However, with imbalanced datasets, random splitting can create folds where some classes are underrepresented or absent entirely.</p>
+    <p><strong>Stratified K-Fold</strong> solves this by ensuring each fold has approximately the same class distribution as the full dataset. If the dataset has 90% negative and 10% positive samples, each fold will also have approximately 90/10 distribution. This produces more stable and reliable CV estimates, especially for minority class metrics like recall and F1.</p>
+    <p>Stratified K-Fold should be the default for classification problems. For regression problems where there are no discrete classes, you can use stratification based on binned target values (dividing the continuous target into quantiles and treating each quantile as a "class"). Scikit-learn's StratifiedKFold implements this for classification, and libraries like scikit-learn provide StratifiedShuffleSplit for repeated stratified splitting.</p>
+
+    <h2>Other Cross Validation Variants</h2>
+    <ul>
+      <li><strong>Repeated K-Fold:</strong> Runs K-Fold multiple times with different random shuffles, then averages all scores. Reduces variance further at the cost of more computation. Common choices: 5x2 CV (5 repeats of 2-fold) or 10x10 CV (10 repeats of 10-fold).</li>
+      <li><strong>Leave-One-Out (LOOCV):</strong> K equals N (the dataset size). Each iteration trains on N-1 samples and validates on 1. Minimizes bias but maximizes variance and computation. Useful only for very small datasets (N &lt; 50).</li>
+      <li><strong>Leave-P-Out:</strong> Generalizes LOOCV by withholding P samples in each iteration. Combinatorially explosive: C(N, P) iterations. Rarely used in practice.</li>
+      <li><strong>Group K-Fold:</strong> Ensures that data from the same group (e.g., same patient, same user) never appears in both training and validation. Essential when data points within a group are correlated.</li>
+      <li><strong>Time Series Split:</strong> For temporal data. Uses expanding or sliding windows to ensure the model always trains on past data and validates on future data. Prevents temporal leakage.</li>
+      <li><strong>Nested Cross Validation:</strong> Uses an inner CV loop for hyperparameter tuning and an outer CV loop for performance estimation. Prevents information leakage from hyperparameter selection into the performance estimate. Essential for rigorous model comparison.</li>
+    </ul>
+
+    <h2>Common Mistakes and Best Practices</h2>
+    <p>The most dangerous mistake in cross validation is <strong>data leakage</strong>, where information from the validation set leaks into the training process. This happens when preprocessing steps (feature scaling, feature selection, imputation) are performed on the entire dataset before splitting. The correct approach is to fit all preprocessing on the training fold only, then apply (transform) to the validation fold. In scikit-learn, use Pipeline objects to ensure this happens automatically.</p>
+    <p>Another common mistake is <strong>using CV scores for final model selection AND performance reporting</strong>. If you try many model configurations and report the best CV score, you are optimistically biased because you selected the score that happened to be highest. Use nested CV: inner loop for model selection, outer loop for unbiased performance estimation.</p>
+    <ul>
+      <li>Always use stratified K-Fold for classification tasks.</li>
+      <li>Use K=5 as a default, K=10 for smaller datasets.</li>
+      <li>Put all preprocessing inside the CV loop (use Pipelines).</li>
+      <li>Report mean &plusmn; std, not just the mean.</li>
+      <li>For time series data, use TimeSeriesSplit, never random K-Fold.</li>
+      <li>For grouped data (multiple samples per subject), use GroupKFold.</li>
+      <li>Use nested CV when simultaneously selecting hyperparameters and estimating performance.</li>
+      <li>Set a random seed for reproducibility.</li>
+    </ul>
+  </section>
+
+  <section class="faq-section">
+    <h2>Frequently Asked Questions</h2>
+    <details>
+      <summary>What is K-Fold cross validation?</summary>
+      <p>K-Fold cross validation splits the dataset into K equal-sized folds. The model is trained K times, each time using K-1 folds for training and the remaining fold for validation. The final performance estimate is the average of all K scores, giving a more reliable estimate than a single train-test split.</p>
+    </details>
+    <details>
+      <summary>How do I choose the value of K?</summary>
+      <p>K=5 or K=10 are the most common choices. K=5 provides a good balance between bias and variance. K=10 gives lower bias but slightly higher variance. For small datasets, use K=10 or LOOCV. For large datasets, K=5 is usually sufficient.</p>
+    </details>
+    <details>
+      <summary>What is the difference between stratified and regular K-Fold?</summary>
+      <p>Regular K-Fold randomly assigns data points to folds without considering class labels. Stratified K-Fold ensures each fold has approximately the same proportion of each class as the full dataset. Stratified K-Fold is the default choice for classification problems, especially with imbalanced data.</p>
+    </details>
+    <details>
+      <summary>Why not just use a simple train/test split?</summary>
+      <p>A single split gives only one estimate which can be lucky or unlucky. Cross validation provides K estimates, giving you a mean and standard deviation. The standard deviation reveals how sensitive your model is to the training data. Cross validation also uses all data for both training and evaluation.</p>
+    </details>
+    <details>
+      <summary>Can I use cross validation for time series data?</summary>
+      <p>Standard K-Fold should NOT be used for time series data because it violates temporal ordering. Instead, use time series specific methods like expanding window, sliding window, or TimeSeriesSplit in scikit-learn, which preserve temporal order and prevent data leakage.</p>
+    </details>
+  </section>
+
+  <section class="explainer-section">
+    <h2>Related Tools</h2>
+    <div class="related-grid">
+      <a href="/guides/overfitting-underfitting-guide.html" class="related-card">
+        <div class="related-title">Overfitting & Underfitting Guide</div>
+        <div class="related-desc">Interactive bias-variance tradeoff demo with polynomial curve fitting.</div>
+      </a>
+      <a href="/tools/confusion-matrix-calculator.html" class="related-card">
+        <div class="related-title">Confusion Matrix Calculator</div>
+        <div class="related-desc">Compute precision, recall, F1, and MCC with SVG heatmap visualization.</div>
+      </a>
+      <a href="/research/regularization-techniques.html" class="related-card">
+        <div class="related-title">Regularization Techniques</div>
+        <div class="related-desc">Interactive L1/L2/dropout comparison with coefficient path visualization.</div>
+      </a>
+    </div>
+  </section>
+
+  <section class="explainer-section">
+    <h2>About the Author</h2>
+    <p><strong>Michael Lip</strong> builds open-source ML tools and developer utilities at <a href="https://zovo.one">zovo.one</a>. ml0x is part of the Zovo Tools network, a collection of free, privacy-first tools for developers and data scientists. No tracking, no accounts required, no data leaves your browser.</p>
+  </section>
+
+  <p class="last-updated">Last updated: May 25, 2026</p>
+</main>
+
+<footer class="site-footer">
+    <div class="footer-inner">
+        <div class="footer-brand">Zovo Tools</div>
+        <div class="footer-tagline">Free developer tools by a solo dev. No tracking.</div>
+        <a href="https://zovo.one/pricing?utm_source=ml0x.com&utm_medium=satellite&utm_campaign=footer-link" class="footer-cta">Zovo Lifetime — $99 once, free forever &rarr;</a>
+        <div class="footer-copy">&copy; 2026 <a href="https://zovo.one">Zovo</a> &middot; 47/500 founding spots</div>
+    </div>
+</footer>
+
+<nav class="zovo-network" aria-label="Zovo Tools Network">
+    <div class="zovo-network-inner">
+        <h3 class="zovo-network-title">Explore More Tools</h3>
+        <div class="zovo-network-links">
+            <a href="https://abwex.com">ABWex — A/B Testing</a>
+            <a href="https://claudflow.com">ClaudFlow — Workflows</a>
+            <a href="https://claudhq.com">ClaudHQ — AI Code Tools &amp; Fixes</a>
+            <a href="https://claudkit.com">ClaudKit — API</a>
+            <a href="https://enhio.com">Enhio — Text Tools</a>
+            <a href="https://epochpilot.com">EpochPilot — Timestamps</a>
+            <a href="https://gen8x.com">Gen8X — Color Tools</a>
+            <a href="https://gpt0x.com">GPT0X — AI Models</a>
+            <a href="https://heytensor.com">HeyTensor — ML Tools</a>
+            <a href="https://invokebot.com">InvokeBot — Webhooks</a>
+            <a href="https://kappafy.com">Kappafy — JSON</a>
+            <a href="https://kappakit.com">KappaKit — Dev Toolkit</a>
+            <a href="https://kickllm.com">KickLLM — LLM Costs</a>
+            <a href="https://krzen.com">Krzen — Image Tools</a>
+            <a href="https://lochbot.com">LochBot — Security</a>
+            <a href="https://lockml.com">LockML — ML Compare</a>
+            <a href="https://ml3x.com">ML3X — Matrix Math</a>
+        </div>
+    </div>
+</nav>
+
+<script>
+(function() {
+  var foldColors = ['#3b82f6','#22c55e','#f59e0b','#ef4444','#a78bfa','#ec4899','#14b8a6','#f97316','#6366f1','#84cc16','#06b6d4','#e879f9','#facc15','#fb7185','#34d399','#818cf8','#fbbf24','#38bdf8','#c084fc','#4ade80'];
+
+  function simulateCV(K, N, balance, stratified) {
+    var data = [];
+    var posCount = Math.round(N * balance);
+    for (var i = 0; i < N; i++) data.push({idx: i, cls: i < posCount ? 1 : 0});
+
+    // Shuffle
+    for (var i = data.length - 1; i > 0; i--) {
+      var j = Math.floor(Math.random() * (i + 1));
+      var t = data[i]; data[i] = data[j]; data[j] = t;
+    }
+
+    var folds = new Array(N);
+    if (stratified) {
+      var cls0 = data.filter(function(d){return d.cls===0;});
+      var cls1 = data.filter(function(d){return d.cls===1;});
+      var idx = 0;
+      for (var i = 0; i < cls0.length; i++) { folds[data.indexOf(cls0[i])] = i % K; }
+      for (var i = 0; i < cls1.length; i++) { folds[data.indexOf(cls1[i])] = i % K; }
+    } else {
+      for (var i = 0; i < N; i++) folds[i] = i % K;
+    }
+
+    // Simulate accuracy for each fold (synthetic model)
+    var baseAcc = 0.72 + Math.random() * 0.12;
+    var scores = [];
+    for (var f = 0; f < K; f++) {
+      var trainSize = 0, valSize = 0;
+      for (var i = 0; i < N; i++) {
+        if (folds[i] === f) valSize++; else trainSize++;
+      }
+      var foldNoise = (Math.random() - 0.5) * (0.15 / Math.sqrt(valSize));
+      var sizeBonus = Math.min(trainSize / N, 0.95) * 0.05;
+      var acc = Math.min(0.99, Math.max(0.4, baseAcc + sizeBonus + foldNoise));
+      scores.push(acc);
+    }
+
+    return {data: data, folds: folds, scores: scores, K: K, N: N};
+  }
+
+  function drawFolds(result) {
+    var canvas = document.getElementById('foldCanvas');
+    var ctx = canvas.getContext('2d');
+    var W = canvas.width, H = canvas.height;
+    ctx.clearRect(0, 0, W, H);
+    ctx.fillStyle = '#141414';
+    ctx.fillRect(0, 0, W, H);
+
+    var N = result.N, K = result.K;
+    var barH = Math.min(12, Math.floor((H - 60) / K));
+    var barW = Math.max(2, Math.floor((W - 120) / N));
+    var ox = 80, oy = 30;
+
+    ctx.font = '11px IBM Plex Sans, sans-serif';
+    ctx.fillStyle = '#aaa';
+    ctx.fillText('Samples \u2192', ox + (N * barW) / 2 - 30, 18);
+
+    for (var f = 0; f < K; f++) {
+      ctx.fillStyle = '#888';
+      ctx.textAlign = 'right';
+      ctx.fillText('Fold ' + (f + 1), ox - 8, oy + f * (barH + 4) + barH / 2 + 4);
+
+      for (var i = 0; i < N; i++) {
+        var isVal = result.folds[i] === f;
+        var color = foldColors[result.folds[i] % foldColors.length];
+        ctx.fillStyle = isVal ? color : '#2a2a2a';
+        ctx.globalAlpha = isVal ? 1 : 0.3;
+        ctx.fillRect(ox + i * barW, oy + f * (barH + 4), Math.max(1, barW - 1), barH);
+      }
+      ctx.globalAlpha = 1;
+
+      // Score
+      ctx.fillStyle = '#e0e0e0';
+      ctx.textAlign = 'left';
+      ctx.fillText((result.scores[f] * 100).toFixed(1) + '%', ox + N * barW + 8, oy + f * (barH + 4) + barH / 2 + 4);
+    }
+    ctx.textAlign = 'left';
+
+    // Legend
+    var lx = ox;
+    var ly = oy + K * (barH + 4) + 16;
+    ctx.fillStyle = '#3b82f6';
+    ctx.fillRect(lx, ly, 12, 12);
+    ctx.fillStyle = '#aaa';
+    ctx.fillText('= Validation fold', lx + 16, ly + 10);
+    ctx.fillStyle = '#2a2a2a';
+    ctx.fillRect(lx + 140, ly, 12, 12);
+    ctx.fillStyle = '#aaa';
+    ctx.fillText('= Training fold', lx + 156, ly + 10);
+  }
+
+  function drawScores(result) {
+    var canvas = document.getElementById('scoreCanvas');
+    var ctx = canvas.getContext('2d');
+    var W = canvas.width, H = canvas.height;
+    ctx.clearRect(0, 0, W, H);
+    ctx.fillStyle = '#141414';
+    ctx.fillRect(0, 0, W, H);
+
+    var scores = result.scores, K = result.K;
+    var mean = scores.reduce(function(a,b){return a+b;},0) / K;
+    var std = Math.sqrt(scores.reduce(function(a,b){return a+(b-mean)*(b-mean);},0) / K);
+
+    var pad = 50, bw = Math.min(40, Math.floor((W - pad * 2 - K * 4) / K));
+    var maxS = Math.max.apply(null, scores);
+    var minS = Math.min.apply(null, scores);
+    var range = Math.max(0.01, maxS - minS + 0.1);
+    var base = Math.max(0, minS - 0.05);
+
+    // Axes
+    ctx.strokeStyle = '#333';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(pad, 20);
+    ctx.lineTo(pad, H - pad);
+    ctx.lineTo(W - 20, H - pad);
+    ctx.stroke();
+
+    // Mean line
+    var meanY = H - pad - ((mean - base) / range) * (H - pad - 20);
+    ctx.strokeStyle = '#3b82f6';
+    ctx.lineWidth = 1;
+    ctx.setLineDash([4, 4]);
+    ctx.beginPath();
+    ctx.moveTo(pad, meanY);
+    ctx.lineTo(W - 20, meanY);
+    ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.fillStyle = '#3b82f6';
+    ctx.font = '10px IBM Plex Sans, sans-serif';
+    ctx.fillText('Mean: ' + (mean * 100).toFixed(1) + '%', W - 120, meanY - 4);
+
+    // Std band
+    var stdTop = H - pad - ((mean + std - base) / range) * (H - pad - 20);
+    var stdBot = H - pad - ((mean - std - base) / range) * (H - pad - 20);
+    ctx.fillStyle = 'rgba(59,130,246,0.08)';
+    ctx.fillRect(pad, stdTop, W - pad - 20, stdBot - stdTop);
+
+    // Bars
+    var totalBarWidth = K * (bw + 4);
+    var startX = pad + (W - pad - 20 - totalBarWidth) / 2;
+    for (var i = 0; i < K; i++) {
+      var barH2 = ((scores[i] - base) / range) * (H - pad - 20);
+      var x = startX + i * (bw + 4);
+      var y = H - pad - barH2;
+      ctx.fillStyle = foldColors[i % foldColors.length];
+      ctx.globalAlpha = 0.8;
+      ctx.fillRect(x, y, bw, barH2);
+      ctx.globalAlpha = 1;
+
+      ctx.fillStyle = '#e0e0e0';
+      ctx.font = '10px IBM Plex Mono, monospace';
+      ctx.textAlign = 'center';
+      ctx.fillText((scores[i] * 100).toFixed(1), x + bw / 2, y - 4);
+      ctx.fillStyle = '#888';
+      ctx.font = '10px IBM Plex Sans, sans-serif';
+      ctx.fillText('F' + (i + 1), x + bw / 2, H - pad + 14);
+    }
+    ctx.textAlign = 'left';
+
+    // Y-axis labels
+    ctx.fillStyle = '#666';
+    ctx.font = '10px IBM Plex Mono, monospace';
+    ctx.fillText((base * 100).toFixed(0) + '%', 4, H - pad + 4);
+    ctx.fillText(((base + range) * 100).toFixed(0) + '%', 4, 28);
+  }
+
+  function drawCompare(results) {
+    var canvas = document.getElementById('compareCanvas');
+    var ctx = canvas.getContext('2d');
+    var W = canvas.width, H = canvas.height;
+    ctx.clearRect(0, 0, W, H);
+    ctx.fillStyle = '#141414';
+    ctx.fillRect(0, 0, W, H);
+
+    var pad = 60;
+    var means = [], stds = [], ks = [];
+    for (var i = 0; i < results.length; i++) {
+      var s = results[i].scores;
+      var m = s.reduce(function(a,b){return a+b;},0) / s.length;
+      var sd = Math.sqrt(s.reduce(function(a,b){return a+(b-m)*(b-m);},0) / s.length);
+      means.push(m);
+      stds.push(sd);
+      ks.push(results[i].K);
+    }
+
+    var allMin = 1, allMax = 0;
+    for (var i = 0; i < means.length; i++) {
+      allMin = Math.min(allMin, means[i] - stds[i] - 0.02);
+      allMax = Math.max(allMax, means[i] + stds[i] + 0.02);
+    }
+    var range = allMax - allMin;
+
+    // Axes
+    ctx.strokeStyle = '#333';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(pad, 20);
+    ctx.lineTo(pad, H - pad);
+    ctx.lineTo(W - 20, H - pad);
+    ctx.stroke();
+
+    ctx.font = '11px IBM Plex Sans, sans-serif';
+    ctx.fillStyle = '#aaa';
+    ctx.textAlign = 'center';
+    ctx.fillText('K Value', (W + pad) / 2, H - 10);
+    ctx.save();
+    ctx.translate(14, (H - pad) / 2 + 20);
+    ctx.rotate(-Math.PI / 2);
+    ctx.fillText('Accuracy', 0, 0);
+    ctx.restore();
+
+    var spacing = (W - pad - 40) / (means.length - 1 || 1);
+
+    // Error bars and points
+    for (var i = 0; i < means.length; i++) {
+      var x = pad + i * spacing;
+      var y = H - pad - ((means[i] - allMin) / range) * (H - pad - 20);
+      var yTop = H - pad - ((means[i] + stds[i] - allMin) / range) * (H - pad - 20);
+      var yBot = H - pad - ((means[i] - stds[i] - allMin) / range) * (H - pad - 20);
+
+      // Error bar
+      ctx.strokeStyle = '#555';
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(x, yTop);
+      ctx.lineTo(x, yBot);
+      ctx.moveTo(x - 6, yTop);
+      ctx.lineTo(x + 6, yTop);
+      ctx.moveTo(x - 6, yBot);
+      ctx.lineTo(x + 6, yBot);
+      ctx.stroke();
+
+      // Point
+      ctx.beginPath();
+      ctx.arc(x, y, 5, 0, Math.PI * 2);
+      ctx.fillStyle = '#3b82f6';
+      ctx.fill();
+
+      // Label
+      ctx.fillStyle = '#e0e0e0';
+      ctx.font = '10px IBM Plex Mono, monospace';
+      ctx.textAlign = 'center';
+      ctx.fillText((means[i] * 100).toFixed(1) + '%', x, y - 12);
+      ctx.fillStyle = '#aaa';
+      ctx.font = '11px IBM Plex Sans, sans-serif';
+      ctx.fillText('K=' + ks[i], x, H - pad + 16);
+    }
+
+    // Connect with line
+    ctx.beginPath();
+    ctx.strokeStyle = '#3b82f6';
+    ctx.lineWidth = 2;
+    for (var i = 0; i < means.length; i++) {
+      var x = pad + i * spacing;
+      var y = H - pad - ((means[i] - allMin) / range) * (H - pad - 20);
+      if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+    }
+    ctx.stroke();
+    ctx.textAlign = 'left';
+  }
+
+  function updateStats(result) {
+    var scores = result.scores;
+    var mean = scores.reduce(function(a,b){return a+b;},0) / scores.length;
+    var std = Math.sqrt(scores.reduce(function(a,b){return a+(b-mean)*(b-mean);},0) / scores.length);
+    document.getElementById('cvMean').textContent = (mean * 100).toFixed(2) + '%';
+    document.getElementById('cvStd').textContent = '\u00B1' + (std * 100).toFixed(2) + '%';
+    document.getElementById('cvMin').textContent = (Math.min.apply(null, scores) * 100).toFixed(2) + '%';
+    document.getElementById('cvMax').textContent = (Math.max.apply(null, scores) * 100).toFixed(2) + '%';
+  }
+
+  document.getElementById('runCVBtn').addEventListener('click', function() {
+    var K = parseInt(document.getElementById('kSelect').value);
+    var N = parseInt(document.getElementById('datasetSize').value);
+    var balance = parseFloat(document.getElementById('classBalance').value);
+    var stratified = document.getElementById('cvMode').value === 'stratified';
+
+    var result = simulateCV(K, N, balance, stratified);
+    document.getElementById('foldViz').style.display = 'block';
+    document.getElementById('compareViz').style.display = 'none';
+    drawFolds(result);
+    drawScores(result);
+    updateStats(result);
+  });
+
+  document.getElementById('compareBtn').addEventListener('click', function() {
+    var N = parseInt(document.getElementById('datasetSize').value);
+    var balance = parseFloat(document.getElementById('classBalance').value);
+    var stratified = document.getElementById('cvMode').value === 'stratified';
+    var kValues = [2, 3, 5, 7, 10, 15, 20];
+    var results = [];
+    for (var i = 0; i < kValues.length; i++) {
+      results.push(simulateCV(kValues[i], N, balance, stratified));
+    }
+    document.getElementById('foldViz').style.display = 'none';
+    document.getElementById('compareViz').style.display = 'block';
+    drawCompare(results);
+  });
+
+  document.getElementById('resetCVBtn').addEventListener('click', function() {
+    document.getElementById('foldViz').style.display = 'none';
+    document.getElementById('compareViz').style.display = 'none';
+  });
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Data Augmentation Gallery — Interactive Image Augmentation Preview &amp; Code Generator | ml0x</title>
+<meta name="description" content="Free interactive data augmentation gallery. Apply rotation, flip, crop, brightness, contrast, blur, noise, and color jitter to images with live preview. Generate PyTorch and TensorFlow augmentation code. Chain multiple transforms.">
+<meta name="keywords" content="data augmentation, image augmentation, PyTorch transforms, TensorFlow augmentation, rotation, flip, crop, brightness, contrast, blur, noise, color jitter, deep learning, computer vision">
+<link rel="canonical" href="https://ml0x.com/guides/data-augmentation-gallery.html">
+<link rel="alternate" hreflang="en" href="https://ml0x.com/guides/data-augmentation-gallery.html">
+<link rel="alternate" hreflang="x-default" href="https://ml0x.com/guides/data-augmentation-gallery.html">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Data Augmentation Gallery — Interactive Image Augmentation Preview & Code Generator">
+<meta property="og:description" content="Apply augmentations to images with live preview. Rotation, flip, crop, brightness, contrast, blur, noise, and color jitter. Generate PyTorch and TensorFlow code.">
+<meta property="og:url" content="https://ml0x.com/guides/data-augmentation-gallery.html">
+<meta property="og:site_name" content="Zovo Tools">
+<meta property="og:locale" content="en_US">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Data Augmentation Gallery — Interactive Image Augmentation Preview & Code Generator">
+<meta name="twitter:description" content="Apply image augmentations with live preview. Generate PyTorch and TensorFlow augmentation code instantly.">
+<meta name="author" content="Michael Lip">
+<meta name="robots" content="index, follow">
+<link rel="stylesheet" href="/assets/style.css">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Article",
+  "headline": "Data Augmentation Gallery — Interactive Image Augmentation Preview & Code Generator",
+  "description": "Free interactive data augmentation gallery with live preview, parameter sliders, and code generation for PyTorch and TensorFlow.",
+  "url": "https://ml0x.com/guides/data-augmentation-gallery.html",
+  "author": {"@type": "Person", "name": "Michael Lip", "url": "https://zovo.one"},
+  "publisher": {"@type": "Organization", "name": "ML0X", "url": "https://ml0x.com"},
+  "datePublished": "2026-05-25",
+  "dateModified": "2026-05-25"
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {"@type": "Question", "name": "What is data augmentation in machine learning?", "acceptedAnswer": {"@type": "Answer", "text": "Data augmentation is a technique that artificially expands the training dataset by applying random transformations to existing samples. For images, this includes geometric transforms (rotation, flip, crop, scale) and photometric transforms (brightness, contrast, blur, noise, color jitter). Augmentation reduces overfitting by exposing the model to more varied examples, improves generalization to unseen data, and is essential when training data is limited. It effectively teaches the model invariance to transformations that should not change the label."}},
+    {"@type": "Question", "name": "Which augmentations should I use for my computer vision task?", "acceptedAnswer": {"@type": "Answer", "text": "The best augmentations depend on your task and domain. For general image classification, horizontal flip, random crop, and color jitter are near-universal defaults. For medical imaging, rotation and elastic deformation are common but vertical flip may be invalid. For satellite imagery, all rotations (0/90/180/270) are valid. For OCR or document images, only slight rotation and noise are appropriate. Start with mild augmentations and increase intensity gradually. AutoAugment and RandAugment can automatically search for optimal policies."}},
+    {"@type": "Question", "name": "What is the difference between offline and online augmentation?", "acceptedAnswer": {"@type": "Answer", "text": "Offline augmentation generates and saves augmented images to disk before training, physically increasing dataset size. Online augmentation applies random transforms on-the-fly during training, so each epoch sees different variations of the same image. Online augmentation is preferred in modern deep learning because it requires no extra storage, provides virtually infinite variation, and is integrated into the data loading pipeline. PyTorch transforms and TensorFlow tf.image functions both perform online augmentation by default."}},
+    {"@type": "Question", "name": "How much augmentation is too much?", "acceptedAnswer": {"@type": "Answer", "text": "Too much augmentation can hurt performance by creating unrealistic examples that confuse the model, effectively adding noise rather than useful variation. Signs of over-augmentation include training loss that stays high, validation accuracy that decreases with more augmentation, and generated images that look nothing like real test data. A good practice is to visualize augmented batches and verify they still look like plausible real-world images. Keep augmentation strength proportional to your dataset size: smaller datasets benefit from more augmentation, larger datasets need less."}},
+    {"@type": "Question", "name": "Can I chain multiple augmentations together?", "acceptedAnswer": {"@type": "Answer", "text": "Yes, chaining multiple augmentations is standard practice and often more effective than any single transform. In PyTorch, you use transforms.Compose() to chain transforms sequentially. In TensorFlow, you apply tf.image functions in sequence. The order can matter: for example, applying crop before rotation gives different results than rotation before crop. Random application (where each augmentation has a probability of being applied) adds further diversity. Modern libraries like Albumentations, imgaug, and torchvision provide convenient APIs for building complex augmentation pipelines."}}
+  ]
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {"@type": "ListItem", "position": 1, "name": "Home", "item": "https://ml0x.com/"},
+    {"@type": "ListItem", "position": 2, "name": "Guides", "item": "https://ml0x.com/guides/"},
+    {"@type": "ListItem", "position": 3, "name": "Data Augmentation Gallery"}
+  ]
+}
+</script>
+</head>
+<body>
+
+<header>
+  <div class="container header-inner">
+    <a href="/" class="logo">ml0x</a>
+    <nav>
+      <a href="/">Home</a>
+      <a href="/research/">Research</a>
+      <a href="/tools/">Tools</a>
+      <a href="/guides/">Guides</a>
+      <a href="/answers/">Answers</a>
+      <div class="nav-right">
+        <a href="https://zovo.one/pricing?utm_source=ml0x.com&utm_medium=satellite&utm_campaign=nav-link" class="nav-pro" target="_blank">Go Pro &#10022;</a>
+        <a href="https://zovo.one/tools" class="nav-zovo">Zovo Tools</a>
+      </div>
+    </nav>
+  </div>
+</header>
+
+<main class="container">
+  <div class="breadcrumb">
+    <a href="/">Home</a> <span>&rsaquo;</span> <a href="/guides/">Guides</a> <span>&rsaquo;</span> Data Augmentation Gallery
+  </div>
+
+  <div class="hero">
+    <h1>Data Augmentation <span>Gallery</span></h1>
+    <p>Upload your own image or use the built-in sample to explore common image augmentation techniques. Adjust parameters with sliders, see before and after previews in real time, chain multiple augmentations together, and generate ready-to-use PyTorch or TensorFlow code. All processing happens locally on your device using the Canvas API.</p>
+  </div>
+
+  <div class="tool-card">
+    <h3>Image Source</h3>
+    <div class="control-row">
+      <button class="btn" id="sampleBtn">Use Sample Image</button>
+      <label class="btn btn-secondary" style="cursor:pointer;">Upload Image <input type="file" id="uploadInput" accept="image/*" style="display:none;"></label>
+      <button class="btn btn-secondary" id="resetAugBtn">Reset All</button>
+    </div>
+  </div>
+
+  <div class="tool-card">
+    <h3>Augmentation Controls</h3>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+      <div>
+        <label style="color:#3b82f6;font-weight:600;font-size:13px;">Rotation (<span id="rotVal">0</span>&deg;)</label>
+        <input type="range" id="rotation" min="-180" max="180" value="0" style="width:100%;">
+        <label style="margin-top:8px;display:block;"><input type="checkbox" id="chkRotation"> Include in chain</label>
+      </div>
+      <div>
+        <label style="color:#3b82f6;font-weight:600;font-size:13px;">Brightness (<span id="briVal">100</span>%)</label>
+        <input type="range" id="brightness" min="20" max="200" value="100" style="width:100%;">
+        <label style="margin-top:8px;display:block;"><input type="checkbox" id="chkBrightness"> Include in chain</label>
+      </div>
+      <div>
+        <label style="color:#3b82f6;font-weight:600;font-size:13px;">Contrast (<span id="conVal">100</span>%)</label>
+        <input type="range" id="contrast" min="20" max="300" value="100" style="width:100%;">
+        <label style="margin-top:8px;display:block;"><input type="checkbox" id="chkContrast"> Include in chain</label>
+      </div>
+      <div>
+        <label style="color:#3b82f6;font-weight:600;font-size:13px;">Blur (<span id="blurVal">0</span>px)</label>
+        <input type="range" id="blur" min="0" max="10" value="0" step="0.5" style="width:100%;">
+        <label style="margin-top:8px;display:block;"><input type="checkbox" id="chkBlur"> Include in chain</label>
+      </div>
+      <div>
+        <label style="color:#3b82f6;font-weight:600;font-size:13px;">Noise (<span id="noiseVal">0</span>%)</label>
+        <input type="range" id="noise" min="0" max="100" value="0" style="width:100%;">
+        <label style="margin-top:8px;display:block;"><input type="checkbox" id="chkNoise"> Include in chain</label>
+      </div>
+      <div>
+        <label style="color:#3b82f6;font-weight:600;font-size:13px;">Hue Shift (<span id="hueVal">0</span>&deg;)</label>
+        <input type="range" id="hueShift" min="-180" max="180" value="0" style="width:100%;">
+        <label style="margin-top:8px;display:block;"><input type="checkbox" id="chkHue"> Include in chain</label>
+      </div>
+      <div>
+        <label style="color:#3b82f6;font-weight:600;font-size:13px;">Saturation (<span id="satVal">100</span>%)</label>
+        <input type="range" id="saturation" min="0" max="300" value="100" style="width:100%;">
+        <label style="margin-top:8px;display:block;"><input type="checkbox" id="chkSaturation"> Include in chain</label>
+      </div>
+      <div>
+        <label style="color:#3b82f6;font-weight:600;font-size:13px;">Crop (<span id="cropVal">100</span>%)</label>
+        <input type="range" id="crop" min="50" max="100" value="100" style="width:100%;">
+        <label style="margin-top:8px;display:block;"><input type="checkbox" id="chkCrop"> Include in chain</label>
+      </div>
+    </div>
+    <div class="control-row" style="margin-top:16px;">
+      <label><input type="checkbox" id="flipH"> Horizontal Flip</label>
+      <label><input type="checkbox" id="flipV"> Vertical Flip</label>
+      <label><input type="checkbox" id="chkFlipH"> Include H-Flip in chain</label>
+      <label><input type="checkbox" id="chkFlipV"> Include V-Flip in chain</label>
+    </div>
+  </div>
+
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:16px;">
+    <div class="tool-card">
+      <h3>Original</h3>
+      <div class="viz-container"><canvas id="originalCanvas" width="320" height="320" style="max-width:100%;border-radius:6px;background:#1a1a1a;"></canvas></div>
+    </div>
+    <div class="tool-card">
+      <h3>Augmented</h3>
+      <div class="viz-container"><canvas id="augCanvas" width="320" height="320" style="max-width:100%;border-radius:6px;background:#1a1a1a;"></canvas></div>
+    </div>
+  </div>
+
+  <div class="tool-card" style="margin-top:16px;">
+    <h3>Generated Code</h3>
+    <div class="control-row" style="margin-bottom:12px;">
+      <button class="btn" id="genPytorch">PyTorch Code</button>
+      <button class="btn btn-secondary" id="genTF">TensorFlow Code</button>
+      <button class="btn btn-secondary" id="copyCode">Copy to Clipboard</button>
+    </div>
+    <pre id="codeOutput" style="background:#0d0d0d;border:1px solid #333;border-radius:6px;padding:16px;color:#e0e0e0;font-size:13px;font-family:'IBM Plex Mono',monospace;overflow-x:auto;white-space:pre-wrap;min-height:100px;">Click "PyTorch Code" or "TensorFlow Code" to generate augmentation pipeline code.</pre>
+  </div>
+
+  <section class="explainer-section">
+    <h2>Understanding Data Augmentation</h2>
+    <p>Data augmentation is one of the most effective techniques for improving the generalization of deep learning models, particularly in computer vision. By applying random transformations to training images, you artificially expand the effective size of your dataset without collecting new data. This teaches the model to be invariant to transformations that should not change the class label: a cat rotated 15 degrees is still a cat, and a chest X-ray with slightly adjusted brightness still shows the same pathology.</p>
+    <p>The fundamental insight behind augmentation is that deep learning models learn from the distribution of training data. If your training set only contains upright, perfectly lit images, the model may fail on tilted or poorly lit test images. Augmentation expands the training distribution to better cover the test distribution, closing the domain gap that causes many real-world deployment failures.</p>
+
+    <h2>Geometric Augmentations</h2>
+    <p><strong>Rotation</strong> applies a rotation of a random angle to the image. Common ranges are -30 to +30 degrees for mild augmentation, or -180 to +180 for tasks where orientation is arbitrary (like satellite imagery or cell microscopy). The empty corners created by rotation are typically filled with zero padding or reflection padding. Rotation is one of the most universally useful augmentations, as real-world images are rarely perfectly aligned.</p>
+    <p><strong>Horizontal and vertical flips</strong> are the simplest geometric augmentations. Horizontal flip is nearly universal for natural images because most scenes look equally plausible when mirrored. Vertical flip is appropriate for aerial/satellite imagery and microscopy but not for natural scenes (an upside-down landscape is not realistic). For tasks involving text or directional cues (like reading signs or detecting traffic flow), flips may be inappropriate.</p>
+    <p><strong>Random cropping</strong> simulates different framings and compositions. You crop a random subregion of the image and resize it to the original dimensions. This is one of the most impactful augmentations for image classification, as it forces the model to recognize objects regardless of their position in the frame. The common "RandomResizedCrop" in PyTorch combines random cropping with random scaling, providing both translation and scale invariance.</p>
+
+    <h2>Photometric Augmentations</h2>
+    <p><strong>Brightness adjustment</strong> multiplies all pixel values by a random factor, simulating different lighting conditions. A factor of 0.5 produces a dim image; a factor of 1.5 produces a bright image. This is critical for models that will encounter varying lighting conditions at inference time, such as autonomous driving (day vs night) or medical imaging (different scanner calibrations).</p>
+    <p><strong>Contrast adjustment</strong> modifies the difference between light and dark pixels. Low contrast produces a washed-out image; high contrast produces a harsh, high-dynamic-range look. Contrast variation is common in real-world photography due to different camera settings, atmospheric conditions, and post-processing. Training with contrast jitter makes models more robust to these variations.</p>
+    <p><strong>Gaussian blur</strong> simulates out-of-focus images by convolving with a Gaussian kernel. This is particularly useful for making models robust to different camera focus distances and motion blur. SimCLR and other self-supervised methods use strong Gaussian blur as a key augmentation for learning visual representations. The kernel size (sigma) controls the intensity of the blur effect.</p>
+    <p><strong>Gaussian noise</strong> adds random pixel-level noise to simulate sensor noise from low-light conditions or high ISO settings. This augmentation improves model robustness to noisy inputs and can serve as a form of regularization. The noise standard deviation controls the intensity. For typical augmentation, noise levels of 5-20% of the pixel range work well.</p>
+    <p><strong>Color jitter</strong> (hue shift and saturation) modifies the color properties of the image. Hue shift rotates colors around the color wheel, turning blues into greens or reds into oranges. Saturation adjustment makes colors more or less vivid. Together, these simulate different white balance settings, color temperatures, and camera sensor characteristics. Color jitter is essential for models deployed across different cameras or lighting conditions.</p>
+
+    <h2>Augmentation Pipelines and Chaining</h2>
+    <p>In practice, augmentations are always chained together into a pipeline. A typical ImageNet training pipeline might include: RandomResizedCrop(224), RandomHorizontalFlip(), ColorJitter(brightness=0.4, contrast=0.4, saturation=0.4, hue=0.1), and Normalize(mean, std). Each augmentation is applied with a certain probability (often 50-100%), and the random parameters are sampled independently for each image in each epoch.</p>
+    <p>The order of augmentations in the pipeline can affect results. Geometric transforms should generally come before photometric transforms, because geometric transforms can introduce interpolation artifacts that interact with subsequent color adjustments. Normalization should always be the last step. Within geometric transforms, the order typically does not matter much because the random sampling already introduces sufficient variation.</p>
+
+    <h2>Modern Augmentation Strategies</h2>
+    <p><strong>AutoAugment</strong> (Cubuk et al., 2019) uses reinforcement learning to search for the optimal augmentation policy on a validation set. It discovers non-obvious augmentation combinations that outperform hand-tuned policies. <strong>RandAugment</strong> (Cubuk et al., 2020) simplifies this to just two hyperparameters: the number of augmentations to apply (N) and the magnitude of each (M). RandAugment achieves comparable results with far less computational cost and is the recommended starting point for most projects.</p>
+    <p><strong>CutOut</strong> (DeVries & Taylor, 2017) randomly masks out square regions of the input image, forcing the model to attend to multiple parts of the image rather than relying on a single discriminative feature. <strong>MixUp</strong> (Zhang et al., 2018) creates convex combinations of pairs of training images and their labels, producing smoother decision boundaries. <strong>CutMix</strong> (Yun et al., 2019) combines these ideas by replacing a random patch of one image with a patch from another, with labels mixed proportionally to the area. These techniques go beyond traditional augmentation by operating on pairs of images.</p>
+    <p><strong>Albumentations</strong> is the de facto standard library for image augmentation in Python. It provides a comprehensive set of transforms with a clean, composable API, supports multiple image formats including masks for segmentation, and is significantly faster than torchvision transforms due to optimized implementations. For production pipelines, Albumentations with the Compose API is recommended.</p>
+
+    <h2>Domain-Specific Augmentation Guidelines</h2>
+    <ul>
+      <li><strong>Medical imaging:</strong> Use rotation, elastic deformation, brightness, and contrast. Avoid flips unless anatomically valid. Preserve spatial relationships between structures.</li>
+      <li><strong>Satellite/aerial imagery:</strong> All rotations (0/90/180/270) and both flips are valid. Use color jitter for atmospheric variation. Random crop for multi-scale features.</li>
+      <li><strong>Document/OCR:</strong> Mild rotation only (under 5 degrees). Perspective transform for camera capture simulation. Blur and noise for scan quality variation.</li>
+      <li><strong>Autonomous driving:</strong> Horizontal flip only (mirrors left/right but not up/down). Strong brightness and contrast jitter for day/night variation. No hue shift (traffic light colors must remain stable).</li>
+      <li><strong>Face recognition:</strong> Mild rotation, brightness, contrast. Horizontal flip is valid (faces are approximately symmetric). Avoid excessive geometric distortion.</li>
+      <li><strong>Object detection:</strong> All augmentations must also transform bounding boxes. CutOut can improve robustness to occlusion. MixUp and CutMix need special handling for box labels.</li>
+    </ul>
+  </section>
+
+  <section class="faq-section">
+    <h2>Frequently Asked Questions</h2>
+    <details>
+      <summary>What is data augmentation in machine learning?</summary>
+      <p>Data augmentation artificially expands the training dataset by applying random transformations to existing samples. For images, this includes rotation, flip, crop, brightness, contrast, blur, noise, and color jitter. It reduces overfitting, improves generalization, and is essential when training data is limited.</p>
+    </details>
+    <details>
+      <summary>Which augmentations should I use for my computer vision task?</summary>
+      <p>For general image classification, horizontal flip, random crop, and color jitter are near-universal defaults. For medical imaging, rotation and elastic deformation are common. For satellite imagery, all rotations are valid. Start mild and increase gradually. RandAugment can automatically search for optimal policies.</p>
+    </details>
+    <details>
+      <summary>What is the difference between offline and online augmentation?</summary>
+      <p>Offline augmentation saves augmented images to disk before training. Online augmentation applies random transforms on-the-fly during training, so each epoch sees different variations. Online augmentation is preferred because it requires no extra storage and provides virtually infinite variation.</p>
+    </details>
+    <details>
+      <summary>How much augmentation is too much?</summary>
+      <p>Too much augmentation creates unrealistic examples that confuse the model. Signs include persistently high training loss and decreasing validation accuracy. Visualize augmented batches to verify they look like plausible real-world images. Keep augmentation proportional to dataset size.</p>
+    </details>
+    <details>
+      <summary>Can I chain multiple augmentations together?</summary>
+      <p>Yes, chaining is standard practice. In PyTorch, use transforms.Compose(). In TensorFlow, apply tf.image functions in sequence. The order can matter: geometric transforms should generally come before photometric transforms. Random application probability adds further diversity.</p>
+    </details>
+  </section>
+
+  <section class="explainer-section">
+    <h2>Related Tools</h2>
+    <div class="related-grid">
+      <a href="/tools/confusion-matrix-calculator.html" class="related-card">
+        <div class="related-title">Confusion Matrix Calculator</div>
+        <div class="related-desc">Compute precision, recall, F1, accuracy, and MCC with SVG heatmap visualization.</div>
+      </a>
+      <a href="/guides/cross-validation-explained.html" class="related-card">
+        <div class="related-title">K-Fold Cross Validation</div>
+        <div class="related-desc">Interactive simulator showing fold splits, variance, and stratification.</div>
+      </a>
+      <a href="/research/feature-engineering-checklist.html" class="related-card">
+        <div class="related-title">Feature Engineering Checklist</div>
+        <div class="related-desc">Systematic guide to feature creation, selection, and transformation.</div>
+      </a>
+    </div>
+  </section>
+
+  <section class="explainer-section">
+    <h2>About the Author</h2>
+    <p><strong>Michael Lip</strong> builds open-source ML tools and developer utilities at <a href="https://zovo.one">zovo.one</a>. ml0x is part of the Zovo Tools network, a collection of free, privacy-first tools for developers and data scientists. No tracking, no accounts required, no data leaves your browser.</p>
+  </section>
+
+  <p class="last-updated">Last updated: May 25, 2026</p>
+</main>
+
+<footer class="site-footer">
+    <div class="footer-inner">
+        <div class="footer-brand">Zovo Tools</div>
+        <div class="footer-tagline">Free developer tools by a solo dev. No tracking.</div>
+        <a href="https://zovo.one/pricing?utm_source=ml0x.com&utm_medium=satellite&utm_campaign=footer-link" class="footer-cta">Zovo Lifetime — $99 once, free forever &rarr;</a>
+        <div class="footer-copy">&copy; 2026 <a href="https://zovo.one">Zovo</a> &middot; 47/500 founding spots</div>
+    </div>
+</footer>
+
+<nav class="zovo-network" aria-label="Zovo Tools Network">
+    <div class="zovo-network-inner">
+        <h3 class="zovo-network-title">Explore More Tools</h3>
+        <div class="zovo-network-links">
+            <a href="https://abwex.com">ABWex — A/B Testing</a>
+            <a href="https://claudflow.com">ClaudFlow — Workflows</a>
+            <a href="https://claudhq.com">ClaudHQ — AI Code Tools &amp; Fixes</a>
+            <a href="https://claudkit.com">ClaudKit — API</a>
+            <a href="https://enhio.com">Enhio — Text Tools</a>
+            <a href="https://epochpilot.com">EpochPilot — Timestamps</a>
+            <a href="https://gen8x.com">Gen8X — Color Tools</a>
+            <a href="https://gpt0x.com">GPT0X — AI Models</a>
+            <a href="https://heytensor.com">HeyTensor — ML Tools</a>
+            <a href="https://invokebot.com">InvokeBot — Webhooks</a>
+            <a href="https://kappafy.com">Kappafy — JSON</a>
+            <a href="https://kappakit.com">KappaKit — Dev Toolkit</a>
+            <a href="https://kickllm.com">KickLLM — LLM Costs</a>
+            <a href="https://krzen.com">Krzen — Image Tools</a>
+            <a href="https://lochbot.com">LochBot — Security</a>
+            <a href="https://lockml.com">LockML — ML Compare</a>
+            <a href="https://ml3x.com">ML3X — Matrix Math</a>
+        </div>
+    </div>
+</nav>
+
+<script>
+(function() {
+  var origCanvas = document.getElementById('originalCanvas');
+  var augCanvas = document.getElementById('augCanvas');
+  var origCtx = origCanvas.getContext('2d');
+  var augCtx = augCanvas.getContext('2d');
+  var sourceImg = null;
+  var codeMode = 'pytorch';
+
+  function generateSampleImage() {
+    var c = document.createElement('canvas');
+    c.width = 320; c.height = 320;
+    var ctx = c.getContext('2d');
+    var grad = ctx.createLinearGradient(0, 0, 320, 320);
+    grad.addColorStop(0, '#1e3a5f'); grad.addColorStop(0.5, '#2d6a4f'); grad.addColorStop(1, '#5f1e3a');
+    ctx.fillStyle = grad; ctx.fillRect(0, 0, 320, 320);
+    ctx.fillStyle = '#e74c3c'; ctx.beginPath(); ctx.arc(110, 130, 50, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = '#3498db'; ctx.fillRect(180, 90, 80, 80);
+    ctx.fillStyle = '#f1c40f'; ctx.beginPath(); ctx.moveTo(160, 230); ctx.lineTo(200, 290); ctx.lineTo(120, 290); ctx.closePath(); ctx.fill();
+    ctx.fillStyle = '#2ecc71'; ctx.beginPath(); ctx.arc(250, 240, 35, 0, Math.PI * 2); ctx.fill();
+    for (var i = 0; i < 20; i++) {
+      ctx.fillStyle = 'rgba(255,255,255,' + (0.3 + Math.random() * 0.5) + ')';
+      ctx.beginPath(); ctx.arc(Math.random()*320, Math.random()*320, 1+Math.random()*3, 0, Math.PI*2); ctx.fill();
+    }
+    ctx.strokeStyle = '#fff'; ctx.lineWidth = 2;
+    ctx.strokeRect(40, 40, 240, 240);
+    ctx.font = '16px IBM Plex Sans, sans-serif'; ctx.fillStyle = '#fff'; ctx.textAlign = 'center';
+    ctx.fillText('Sample Image', 160, 30);
+    return c;
+  }
+
+  function loadSource(canvas) {
+    sourceImg = canvas;
+    origCtx.clearRect(0, 0, 320, 320);
+    origCtx.drawImage(canvas, 0, 0, 320, 320);
+    applyAugmentations();
+  }
+
+  document.getElementById('sampleBtn').addEventListener('click', function() {
+    loadSource(generateSampleImage());
+  });
+
+  document.getElementById('uploadInput').addEventListener('change', function(e) {
+    var file = e.target.files[0];
+    if (!file) return;
+    var img = new Image();
+    img.onload = function() {
+      var c = document.createElement('canvas');
+      c.width = 320; c.height = 320;
+      var ctx = c.getContext('2d');
+      var scale = Math.max(320 / img.width, 320 / img.height);
+      var sw = img.width * scale, sh = img.height * scale;
+      ctx.drawImage(img, (320 - sw) / 2, (320 - sh) / 2, sw, sh);
+      loadSource(c);
+    };
+    img.src = URL.createObjectURL(file);
+  });
+
+  function applyAugmentations() {
+    if (!sourceImg) return;
+    var w = 320, h = 320;
+    augCtx.clearRect(0, 0, w, h);
+    augCtx.save();
+
+    var rot = parseInt(document.getElementById('rotation').value);
+    var bri = parseInt(document.getElementById('brightness').value) / 100;
+    var con = parseInt(document.getElementById('contrast').value) / 100;
+    var blurVal = parseFloat(document.getElementById('blur').value);
+    var noiseVal = parseInt(document.getElementById('noise').value);
+    var hue = parseInt(document.getElementById('hueShift').value);
+    var sat = parseInt(document.getElementById('saturation').value) / 100;
+    var cropPct = parseInt(document.getElementById('crop').value) / 100;
+    var fH = document.getElementById('flipH').checked;
+    var fV = document.getElementById('flipV').checked;
+
+    augCtx.filter = 'brightness('+bri+') contrast('+con+') saturate('+sat+') hue-rotate('+hue+'deg)' + (blurVal > 0 ? ' blur('+blurVal+'px)' : '');
+
+    augCtx.translate(w/2, h/2);
+    if (fH) augCtx.scale(-1, 1);
+    if (fV) augCtx.scale(1, -1);
+    augCtx.rotate(rot * Math.PI / 180);
+
+    var cropSize = w * cropPct;
+    var offset = (w - cropSize) / 2;
+    augCtx.drawImage(sourceImg, -w/2, -h/2, w, h);
+    augCtx.restore();
+
+    if (cropPct < 1) {
+      var tempC = document.createElement('canvas');
+      tempC.width = w; tempC.height = h;
+      var tempCtx = tempC.getContext('2d');
+      var cs = Math.floor(w * cropPct);
+      var cx = Math.floor((w - cs) / 2), cy = Math.floor((h - cs) / 2);
+      tempCtx.drawImage(augCanvas, cx, cy, cs, cs, 0, 0, w, h);
+      augCtx.clearRect(0, 0, w, h);
+      augCtx.drawImage(tempC, 0, 0);
+    }
+
+    if (noiseVal > 0) {
+      var imageData = augCtx.getImageData(0, 0, w, h);
+      var data = imageData.data;
+      var strength = noiseVal * 2.55;
+      for (var i = 0; i < data.length; i += 4) {
+        var n = (Math.random() - 0.5) * strength;
+        data[i] = Math.max(0, Math.min(255, data[i] + n));
+        data[i+1] = Math.max(0, Math.min(255, data[i+1] + n));
+        data[i+2] = Math.max(0, Math.min(255, data[i+2] + n));
+      }
+      augCtx.putImageData(imageData, 0, 0);
+    }
+  }
+
+  var sliders = ['rotation','brightness','contrast','blur','noise','hueShift','saturation','crop'];
+  var valSpans = ['rotVal','briVal','conVal','blurVal','noiseVal','hueVal','satVal','cropVal'];
+  for (var i = 0; i < sliders.length; i++) {
+    (function(idx) {
+      document.getElementById(sliders[idx]).addEventListener('input', function() {
+        document.getElementById(valSpans[idx]).textContent = this.value;
+        applyAugmentations();
+      });
+    })(i);
+  }
+
+  document.getElementById('flipH').addEventListener('change', applyAugmentations);
+  document.getElementById('flipV').addEventListener('change', applyAugmentations);
+
+  document.getElementById('resetAugBtn').addEventListener('click', function() {
+    document.getElementById('rotation').value = 0; document.getElementById('rotVal').textContent = '0';
+    document.getElementById('brightness').value = 100; document.getElementById('briVal').textContent = '100';
+    document.getElementById('contrast').value = 100; document.getElementById('conVal').textContent = '100';
+    document.getElementById('blur').value = 0; document.getElementById('blurVal').textContent = '0';
+    document.getElementById('noise').value = 0; document.getElementById('noiseVal').textContent = '0';
+    document.getElementById('hueShift').value = 0; document.getElementById('hueVal').textContent = '0';
+    document.getElementById('saturation').value = 100; document.getElementById('satVal').textContent = '100';
+    document.getElementById('crop').value = 100; document.getElementById('cropVal').textContent = '100';
+    document.getElementById('flipH').checked = false;
+    document.getElementById('flipV').checked = false;
+    var checks = document.querySelectorAll('[id^="chk"]');
+    for (var i = 0; i < checks.length; i++) checks[i].checked = false;
+    applyAugmentations();
+  });
+
+  function generateCode(framework) {
+    codeMode = framework;
+    var transforms = [];
+    var rot = parseInt(document.getElementById('rotation').value);
+    var bri = parseInt(document.getElementById('brightness').value);
+    var con = parseInt(document.getElementById('contrast').value);
+    var blurV = parseFloat(document.getElementById('blur').value);
+    var noiseV = parseInt(document.getElementById('noise').value);
+    var hue = parseInt(document.getElementById('hueShift').value);
+    var sat = parseInt(document.getElementById('saturation').value);
+    var cropV = parseInt(document.getElementById('crop').value);
+
+    if (framework === 'pytorch') {
+      var code = 'import torchvision.transforms as T\n\ntransform = T.Compose([\n';
+      if (document.getElementById('chkCrop').checked && cropV < 100) code += '    T.RandomResizedCrop(224, scale=('+( cropV/100).toFixed(2)+', 1.0)),\n';
+      if (document.getElementById('chkFlipH').checked) code += '    T.RandomHorizontalFlip(p=0.5),\n';
+      if (document.getElementById('chkFlipV').checked) code += '    T.RandomVerticalFlip(p=0.5),\n';
+      if (document.getElementById('chkRotation').checked && rot !== 0) code += '    T.RandomRotation(degrees='+Math.abs(rot)+'),\n';
+      var cjArgs = [];
+      if (document.getElementById('chkBrightness').checked && bri !== 100) cjArgs.push('brightness='+(Math.abs(bri-100)/100).toFixed(2));
+      if (document.getElementById('chkContrast').checked && con !== 100) cjArgs.push('contrast='+(Math.abs(con-100)/100).toFixed(2));
+      if (document.getElementById('chkSaturation').checked && sat !== 100) cjArgs.push('saturation='+(Math.abs(sat-100)/100).toFixed(2));
+      if (document.getElementById('chkHue').checked && hue !== 0) cjArgs.push('hue='+(Math.abs(hue)/360).toFixed(2));
+      if (cjArgs.length > 0) code += '    T.ColorJitter('+cjArgs.join(', ')+'),\n';
+      if (document.getElementById('chkBlur').checked && blurV > 0) code += '    T.GaussianBlur(kernel_size='+((Math.round(blurV)*2+1))+', sigma='+blurV.toFixed(1)+'),\n';
+      code += '    T.ToTensor(),\n';
+      code += '    T.Normalize(mean=[0.485, 0.456, 0.406],\n                 std=[0.229, 0.224, 0.225]),\n';
+      if (document.getElementById('chkNoise').checked && noiseV > 0) code += '    # Add Gaussian noise: use a custom transform\n    # AddGaussianNoise(mean=0, std='+(noiseV/100*0.1).toFixed(3)+'),\n';
+      code += '])\n';
+      return code;
+    } else {
+      var code = 'import tensorflow as tf\n\ndef augment(image, label):\n    image = tf.cast(image, tf.float32) / 255.0\n';
+      if (document.getElementById('chkFlipH').checked) code += '    image = tf.image.random_flip_left_right(image)\n';
+      if (document.getElementById('chkFlipV').checked) code += '    image = tf.image.random_flip_up_down(image)\n';
+      if (document.getElementById('chkBrightness').checked && bri !== 100) code += '    image = tf.image.random_brightness(image, max_delta='+(Math.abs(bri-100)/100*0.3).toFixed(2)+')\n';
+      if (document.getElementById('chkContrast').checked && con !== 100) code += '    image = tf.image.random_contrast(image, lower='+Math.max(0.5, 1-(con-100)/200).toFixed(2)+', upper='+Math.min(1.5, 1+(con-100)/200).toFixed(2)+')\n';
+      if (document.getElementById('chkSaturation').checked && sat !== 100) code += '    image = tf.image.random_saturation(image, lower=0.8, upper=1.2)\n';
+      if (document.getElementById('chkHue').checked && hue !== 0) code += '    image = tf.image.random_hue(image, max_delta='+(Math.abs(hue)/360*0.1).toFixed(2)+')\n';
+      if (document.getElementById('chkCrop').checked && cropV < 100) code += '    image = tf.image.random_crop(image, size=['+Math.round(224*cropV/100)+', '+Math.round(224*cropV/100)+', 3])\n    image = tf.image.resize(image, [224, 224])\n';
+      if (document.getElementById('chkRotation').checked && rot !== 0) code += '    # Rotation: use tf.image.rot90 or tfa.image.rotate\n    # image = tfa.image.rotate(image, angles=tf.random.uniform([], -'+((Math.abs(rot)*Math.PI/180).toFixed(3))+', '+((Math.abs(rot)*Math.PI/180).toFixed(3))+'))\n';
+      if (document.getElementById('chkNoise').checked && noiseV > 0) code += '    noise = tf.random.normal(shape=tf.shape(image), stddev='+(noiseV/100*0.05).toFixed(3)+')\n    image = tf.clip_by_value(image + noise, 0.0, 1.0)\n';
+      code += '    image = tf.clip_by_value(image, 0.0, 1.0)\n    return image, label\n\n';
+      code += '# dataset = dataset.map(augment, num_parallel_calls=tf.data.AUTOTUNE)\n';
+      return code;
+    }
+  }
+
+  document.getElementById('genPytorch').addEventListener('click', function() {
+    document.getElementById('codeOutput').textContent = generateCode('pytorch');
+  });
+  document.getElementById('genTF').addEventListener('click', function() {
+    document.getElementById('codeOutput').textContent = generateCode('tensorflow');
+  });
+  document.getElementById('copyCode').addEventListener('click', function() {
+    var text = document.getElementById('codeOutput').textContent;
+    navigator.clipboard.writeText(text).then(function() {
+      var btn = document.getElementById('copyCode');
+      btn.textContent = 'Copied!';
+      setTimeout(function() { btn.textContent = 'Copy to Clipboard'; }, 2000);
+    });
+  });
+
+  loadSource(generateSampleImage());
+})();
+</script>
+</body>
+</html>

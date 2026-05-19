@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Regularization Techniques Comparison — L1, L2, Dropout Interactive Guide | ml0x</title>
+<meta name="description" content="Interactive comparison of regularization techniques: L1 (Lasso), L2 (Ridge), Elastic Net, and Dropout. Visualize coefficient shrinkage paths, neuron deactivation, and the effect of lambda on model complexity.">
+<meta name="keywords" content="regularization, L1 regularization, L2 regularization, lasso, ridge, dropout, elastic net, coefficient shrinkage, overfitting prevention, weight decay, lambda, regularization path">
+<link rel="canonical" href="https://ml0x.com/research/regularization-techniques.html">
+<link rel="alternate" hreflang="en" href="https://ml0x.com/research/regularization-techniques.html">
+<link rel="alternate" hreflang="x-default" href="https://ml0x.com/research/regularization-techniques.html">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Regularization Techniques Comparison — L1, L2, Dropout Interactive Guide">
+<meta property="og:description" content="Visualize L1/L2 coefficient shrinkage paths, dropout neuron deactivation, and lambda effects with interactive sliders and SVG visualizations.">
+<meta property="og:url" content="https://ml0x.com/research/regularization-techniques.html">
+<meta property="og:site_name" content="Zovo Tools">
+<meta property="og:locale" content="en_US">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Regularization Techniques Comparison — L1, L2, Dropout Interactive Guide">
+<meta name="twitter:description" content="Interactive L1/L2/dropout comparison with coefficient path visualization and neuron deactivation demo.">
+<meta name="author" content="Michael Lip">
+<meta name="robots" content="index, follow">
+<link rel="stylesheet" href="/assets/style.css">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Article",
+  "headline": "Regularization Techniques Comparison — L1, L2, Dropout Interactive Guide",
+  "description": "Interactive comparison of regularization techniques including L1 (Lasso), L2 (Ridge), Elastic Net, and Dropout with coefficient shrinkage path visualization.",
+  "url": "https://ml0x.com/research/regularization-techniques.html",
+  "author": {"@type": "Person", "name": "Michael Lip", "url": "https://zovo.one"},
+  "publisher": {"@type": "Organization", "name": "ML0X", "url": "https://ml0x.com"},
+  "datePublished": "2026-05-25",
+  "dateModified": "2026-05-25"
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {"@type": "Question", "name": "What is regularization in machine learning?", "acceptedAnswer": {"@type": "Answer", "text": "Regularization is a set of techniques that constrain or penalize model complexity to prevent overfitting. Overfitting occurs when a model learns the noise in training data rather than the underlying pattern. Regularization works by adding a penalty term to the loss function (L1, L2) or by modifying the training process (dropout, early stopping). This encourages simpler models that generalize better to unseen data."}},
+    {"@type": "Question", "name": "What is the difference between L1 and L2 regularization?", "acceptedAnswer": {"@type": "Answer", "text": "L1 regularization (Lasso) adds the sum of absolute values of weights to the loss function: loss + lambda * sum(|w|). It tends to drive some weights exactly to zero, performing automatic feature selection. L2 regularization (Ridge) adds the sum of squared weights: loss + lambda * sum(w^2). It shrinks all weights toward zero but rarely makes them exactly zero. L1 produces sparse models; L2 produces models with small but non-zero weights distributed across all features."}},
+    {"@type": "Question", "name": "How does dropout regularization work?", "acceptedAnswer": {"@type": "Answer", "text": "Dropout randomly sets a fraction of neuron activations to zero during each training step. A dropout rate of 0.5 means each neuron has a 50% chance of being deactivated in any forward pass. This prevents neurons from co-adapting (relying too heavily on specific other neurons) and acts like training an ensemble of exponentially many sub-networks. At inference time, all neurons are active but weights are scaled down by the dropout rate to maintain consistent expected values."}},
+    {"@type": "Question", "name": "How do I choose the regularization strength (lambda)?", "acceptedAnswer": {"@type": "Answer", "text": "Use cross-validation to select lambda. Start with a logarithmic range (e.g., 10^-6 to 10^2) and evaluate model performance for each value. Too little regularization allows overfitting; too much causes underfitting. The optimal lambda minimizes validation error. For L1, the regularization path shows how coefficients shrink and disappear as lambda increases. For neural networks with dropout, typical rates are 0.2-0.5 for hidden layers."}},
+    {"@type": "Question", "name": "When should I use Elastic Net instead of pure L1 or L2?", "acceptedAnswer": {"@type": "Answer", "text": "Elastic Net combines L1 and L2 penalties: loss + alpha*lambda*sum(|w|) + (1-alpha)*lambda*sum(w^2). Use it when you have correlated features. Pure L1 tends to randomly select one feature from a correlated group, while Elastic Net includes or excludes correlated features together. It is also more stable when the number of features exceeds the number of samples. Use alpha close to 1 for sparsity emphasis, close to 0 for L2-like behavior."}}
+  ]
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {"@type": "ListItem", "position": 1, "name": "Home", "item": "https://ml0x.com/"},
+    {"@type": "ListItem", "position": 2, "name": "Research", "item": "https://ml0x.com/research/"},
+    {"@type": "ListItem", "position": 3, "name": "Regularization Techniques"}
+  ]
+}
+</script>
+</head>
+<body>
+
+<header>
+  <div class="container header-inner">
+    <a href="/" class="logo">ml0x</a>
+    <nav>
+      <a href="/">Home</a>
+      <a href="/research/">Research</a>
+      <a href="/tools/">Tools</a>
+      <a href="/guides/">Guides</a>
+      <a href="/answers/">Answers</a>
+      <div class="nav-right">
+        <a href="https://zovo.one/pricing?utm_source=ml0x.com&utm_medium=satellite&utm_campaign=nav-link" class="nav-pro" target="_blank">Go Pro &#10022;</a>
+        <a href="https://zovo.one/tools" class="nav-zovo">Zovo Tools</a>
+      </div>
+    </nav>
+  </div>
+</header>
+
+<main class="container">
+  <div class="breadcrumb">
+    <a href="/">Home</a> <span>&rsaquo;</span> <a href="/research/">Research</a> <span>&rsaquo;</span> Regularization Techniques
+  </div>
+
+  <div class="hero">
+    <h1>Regularization Techniques <span>Comparison</span></h1>
+    <p>Regularization prevents overfitting by constraining model complexity. Explore L1 (Lasso), L2 (Ridge), and Dropout through interactive visualizations. Adjust the regularization strength with a slider to see how coefficient shrinkage paths change, and watch dropout deactivate neurons in a live network diagram.</p>
+  </div>
+
+  <div class="tool-card">
+    <h3>Coefficient Shrinkage Paths</h3>
+    <p style="color:#aaa;font-size:13px;margin-bottom:12px;">Move the lambda slider to see how L1 and L2 regularization shrink feature coefficients. L1 drives coefficients to zero (sparsity). L2 shrinks uniformly but never reaches zero.</p>
+    <div class="control-row">
+      <div class="control-group slider-group" style="flex:1;">
+        <label>Lambda (&lambda;): <span class="slider-value" id="lambdaDisplay">0.50</span></label>
+        <input type="range" id="lambdaSlider" min="0" max="100" value="50">
+      </div>
+      <div class="control-group">
+        <label>Features</label>
+        <select id="featureCount">
+          <option value="5">5 features</option>
+          <option value="8" selected>8 features</option>
+          <option value="12">12 features</option>
+        </select>
+      </div>
+      <button class="btn btn-secondary" id="regenerateBtn">New Coefficients</button>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:16px;">
+      <div>
+        <div style="text-align:center;color:#3b82f6;font-weight:600;font-size:14px;margin-bottom:8px;">L1 (Lasso)</div>
+        <div class="viz-container"><svg id="l1Svg" width="350" height="280" viewBox="0 0 350 280"></svg></div>
+      </div>
+      <div>
+        <div style="text-align:center;color:#22c55e;font-weight:600;font-size:14px;margin-bottom:8px;">L2 (Ridge)</div>
+        <div class="viz-container"><svg id="l2Svg" width="350" height="280" viewBox="0 0 350 280"></svg></div>
+      </div>
+    </div>
+    <div class="stat-grid">
+      <div class="stat-card"><div class="value" id="l1Nonzero">--</div><div class="label">L1 Non-zero Coeffs</div></div>
+      <div class="stat-card"><div class="value" id="l1Norm">--</div><div class="label">L1 Norm</div></div>
+      <div class="stat-card"><div class="value" id="l2Nonzero">--</div><div class="label">L2 Non-zero Coeffs</div></div>
+      <div class="stat-card"><div class="value" id="l2Norm">--</div><div class="label">L2 Norm</div></div>
+    </div>
+  </div>
+
+  <div class="tool-card">
+    <h3>Dropout Visualization</h3>
+    <p style="color:#aaa;font-size:13px;margin-bottom:12px;">Each click of "Drop" randomly deactivates neurons at the specified dropout rate. Active neurons are blue; deactivated neurons are dim. This simulates one forward pass during training.</p>
+    <div class="control-row">
+      <div class="control-group slider-group" style="flex:1;">
+        <label>Dropout Rate: <span class="slider-value" id="dropoutDisplay">0.30</span></label>
+        <input type="range" id="dropoutSlider" min="0" max="80" value="30">
+      </div>
+      <button class="btn" id="dropBtn">Drop</button>
+      <button class="btn btn-secondary" id="resetDropBtn">Reset (All Active)</button>
+    </div>
+    <div class="viz-container" style="margin-top:12px;">
+      <svg id="dropoutSvg" width="700" height="260" viewBox="0 0 700 260"></svg>
+    </div>
+    <div class="stat-grid">
+      <div class="stat-card"><div class="value" id="dropActive">--</div><div class="label">Active Neurons</div></div>
+      <div class="stat-card"><div class="value" id="dropInactive">--</div><div class="label">Dropped Neurons</div></div>
+      <div class="stat-card"><div class="value" id="dropRate">--</div><div class="label">Effective Rate</div></div>
+      <div class="stat-card"><div class="value" id="dropCapacity">--</div><div class="label">Remaining Capacity</div></div>
+    </div>
+  </div>
+
+  <div class="tool-card">
+    <h3>Technique Comparison</h3>
+    <div style="overflow-x:auto;">
+      <table style="width:100%;border-collapse:collapse;font-size:14px;">
+        <thead>
+          <tr style="border-bottom:2px solid #333;">
+            <th style="text-align:left;padding:10px;color:#aaa;">Aspect</th>
+            <th style="text-align:left;padding:10px;color:#3b82f6;">L1 (Lasso)</th>
+            <th style="text-align:left;padding:10px;color:#22c55e;">L2 (Ridge)</th>
+            <th style="text-align:left;padding:10px;color:#f59e0b;">Elastic Net</th>
+            <th style="text-align:left;padding:10px;color:#a78bfa;">Dropout</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr style="border-bottom:1px solid #222;">
+            <td style="padding:10px;color:#ccc;font-weight:600;">Penalty Term</td>
+            <td style="padding:10px;color:#ddd;">&lambda;&Sigma;|w<sub>i</sub>|</td>
+            <td style="padding:10px;color:#ddd;">&lambda;&Sigma;w<sub>i</sub>&sup2;</td>
+            <td style="padding:10px;color:#ddd;">&alpha;&lambda;&Sigma;|w|+(1-&alpha;)&lambda;&Sigma;w&sup2;</td>
+            <td style="padding:10px;color:#ddd;">Random neuron masking</td>
+          </tr>
+          <tr style="border-bottom:1px solid #222;">
+            <td style="padding:10px;color:#ccc;font-weight:600;">Sparsity</td>
+            <td style="padding:10px;color:#ddd;">Yes (exact zeros)</td>
+            <td style="padding:10px;color:#ddd;">No (small but non-zero)</td>
+            <td style="padding:10px;color:#ddd;">Partial sparsity</td>
+            <td style="padding:10px;color:#ddd;">Functional sparsity</td>
+          </tr>
+          <tr style="border-bottom:1px solid #222;">
+            <td style="padding:10px;color:#ccc;font-weight:600;">Feature Selection</td>
+            <td style="padding:10px;color:#ddd;">Automatic</td>
+            <td style="padding:10px;color:#ddd;">No</td>
+            <td style="padding:10px;color:#ddd;">Partial</td>
+            <td style="padding:10px;color:#ddd;">No</td>
+          </tr>
+          <tr style="border-bottom:1px solid #222;">
+            <td style="padding:10px;color:#ccc;font-weight:600;">Correlated Features</td>
+            <td style="padding:10px;color:#ddd;">Picks one randomly</td>
+            <td style="padding:10px;color:#ddd;">Distributes weight</td>
+            <td style="padding:10px;color:#ddd;">Groups correlated</td>
+            <td style="padding:10px;color:#ddd;">N/A</td>
+          </tr>
+          <tr style="border-bottom:1px solid #222;">
+            <td style="padding:10px;color:#ccc;font-weight:600;">Best For</td>
+            <td style="padding:10px;color:#ddd;">High-dim sparse signals</td>
+            <td style="padding:10px;color:#ddd;">Many small effects</td>
+            <td style="padding:10px;color:#ddd;">Correlated features</td>
+            <td style="padding:10px;color:#ddd;">Neural networks</td>
+          </tr>
+          <tr>
+            <td style="padding:10px;color:#ccc;font-weight:600;">Typical Range</td>
+            <td style="padding:10px;color:#ddd;">&lambda;: 10<sup>-4</sup> to 10<sup>1</sup></td>
+            <td style="padding:10px;color:#ddd;">&lambda;: 10<sup>-4</sup> to 10<sup>1</sup></td>
+            <td style="padding:10px;color:#ddd;">&alpha;: 0.1-0.9</td>
+            <td style="padding:10px;color:#ddd;">Rate: 0.1-0.5</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <section class="explainer-section">
+    <h2>Why Regularization Matters</h2>
+    <p>Every machine learning model faces a fundamental tradeoff between fitting the training data well (low training error) and generalizing to new, unseen data (low test error). Without constraints, models with enough capacity will memorize the training data, learning noise and random fluctuations that do not reflect the true underlying pattern. This is overfitting, and it is the central problem in machine learning.</p>
+    <p>Regularization addresses overfitting by imposing a preference for simpler models. The intuition is rooted in Occam's razor: among models that fit the training data equally well, simpler ones are more likely to generalize. Regularization operationalizes this by adding a penalty for model complexity to the objective function. The model must now balance fitting the data against staying simple, controlled by a hyperparameter (often called lambda or alpha) that determines how strongly to penalize complexity.</p>
+    <p>The mathematical framework is straightforward. The regularized loss function becomes: <code>L_reg = L_data + lambda * R(w)</code>, where L_data is the standard data loss (MSE for regression, cross-entropy for classification), R(w) is the regularization penalty (a function of the model weights), and lambda controls the strength of regularization. Larger lambda means more penalty for complex models.</p>
+
+    <h2>L1 Regularization (Lasso)</h2>
+    <p>L1 regularization adds the sum of absolute values of weights to the loss function: <code>R(w) = sum(|w_i|)</code>. This penalty has a remarkable property: it drives some weights exactly to zero. The geometric intuition is that the L1 constraint region (a diamond in 2D, a hypercube in higher dimensions) has corners aligned with the axes. The loss function's contours are more likely to intersect these corners, setting one or more coordinates to zero.</p>
+    <p>This sparsity property makes L1 regularization equivalent to embedded feature selection. As lambda increases, more and more coefficients are driven to zero, effectively removing the corresponding features from the model. The remaining non-zero coefficients identify the most important features. This is particularly valuable in high-dimensional settings where the number of features exceeds the number of samples (p >> n), a common scenario in genomics, text classification, and signal processing.</p>
+    <p>The regularization path, which shows how each coefficient changes as lambda varies from 0 to infinity, is a powerful visualization tool. At lambda = 0, all coefficients take their unrestricted values. As lambda increases, the least important coefficients hit zero first, followed by progressively more important ones. The path reveals the relative importance of features and can guide feature selection decisions.</p>
+    <p>However, L1 has limitations. When features are correlated, L1 tends to select one feature from a correlated group and ignore the others, which can be arbitrary and unstable. The optimization problem is not differentiable at zero (the absolute value function has a kink), requiring special solvers like coordinate descent or subgradient methods. In deep learning, pure L1 regularization is less common because it can make training unstable.</p>
+
+    <h2>L2 Regularization (Ridge / Weight Decay)</h2>
+    <p>L2 regularization adds the sum of squared weights to the loss function: <code>R(w) = sum(w_i^2)</code>. Unlike L1, the L2 penalty is smooth and differentiable everywhere, making optimization straightforward. The gradient of the L2 penalty is simply proportional to each weight itself, which is why L2 regularization in neural networks is commonly called "weight decay" since each weight decays toward zero proportionally to its magnitude during each gradient update.</p>
+    <p>The geometric intuition for L2 is that the constraint region is a circle (sphere in higher dimensions). The loss function's contours always intersect the smooth boundary of this sphere, which almost never lies exactly on an axis. This means L2 regularization shrinks all weights toward zero but rarely sets any exactly to zero. Instead, it distributes the weight budget across all features, proportional to their importance.</p>
+    <p>L2 is the default regularization choice for most problems because of its stability and effectiveness. When features are correlated, L2 distributes weight among them rather than arbitrarily picking one (as L1 does). This leads to more stable models and more interpretable coefficient magnitudes. The closed-form solution for linear regression with L2 regularization is: <code>w = (X^T X + lambda I)^{-1} X^T y</code>, which shows that L2 regularization stabilizes the matrix inversion by adding lambda to the diagonal, preventing issues with singular or near-singular matrices.</p>
+    <p>In deep learning, weight decay (L2 regularization) is applied to all weight matrices but typically not to bias terms. Modern optimizers like AdamW implement decoupled weight decay, which applies the decay step separately from the gradient update for more consistent regularization behavior across different learning rates.</p>
+
+    <h2>Elastic Net</h2>
+    <p>Elastic Net combines L1 and L2 penalties: <code>R(w) = alpha * sum(|w_i|) + (1-alpha) * sum(w_i^2)</code>, where alpha (between 0 and 1) controls the mix. When alpha = 1, it reduces to pure L1; when alpha = 0, it reduces to pure L2. Elastic Net was introduced by Zou and Hastie (2005) to address the limitations of both pure L1 and L2.</p>
+    <p>The key advantage of Elastic Net is its handling of correlated features. Pure L1 randomly selects one feature from a correlated group, which is unstable (different random seeds may select different features). Elastic Net's L2 component encourages the model to include or exclude correlated features as a group, leading to more stable and interpretable models. The L1 component still provides sparsity, so Elastic Net can perform feature selection while maintaining stability.</p>
+    <p>Elastic Net is particularly well-suited for high-dimensional datasets with groups of correlated features, which is common in genomics (correlated gene expressions), finance (correlated asset returns), and natural language processing (correlated word features). In practice, both alpha and lambda are tuned via cross-validation, typically using a grid search over a 2D parameter space.</p>
+
+    <h2>Dropout Regularization</h2>
+    <p>Dropout, introduced by Srivastava et al. (2014), is a regularization technique specific to neural networks. During each training iteration, each neuron (except input and output neurons) is randomly deactivated (set to zero) with probability p (the dropout rate). This means the network architecture changes randomly with every training example, forcing each neuron to learn useful features independently rather than co-adapting with specific other neurons.</p>
+    <p>The theoretical interpretation of dropout is that it approximates training an ensemble of exponentially many different network architectures. With n neurons, there are 2^n possible subnetworks. Each training step samples one of these subnetworks and updates its weights. At inference time, all neurons are active, but their outputs are scaled by (1-p) to account for the fact that more neurons are active than during any individual training step. This is equivalent to averaging the predictions of all possible subnetworks, weighted by how often they were sampled.</p>
+    <p>Common dropout rates are 0.2-0.5 for hidden layers. Higher rates provide stronger regularization but can make training slower and less stable. Dropout is typically not applied to convolutional layers (where batch normalization is preferred) or to the output layer. For recurrent neural networks, specialized variants like variational dropout apply the same mask across time steps to avoid disrupting sequential dependencies.</p>
+
+    <h2>Choosing the Right Regularization</h2>
+    <ul>
+      <li><strong>Linear/logistic regression with many features:</strong> Use L1 (Lasso) if you suspect only a few features are relevant. Use L2 (Ridge) if you expect many small effects. Use Elastic Net if features are correlated.</li>
+      <li><strong>Neural networks:</strong> Use dropout (0.2-0.5) for fully connected layers. Use weight decay (L2) for all architectures. Combine both for strong regularization.</li>
+      <li><strong>Tree-based models:</strong> Use max_depth, min_samples_leaf, and number of trees rather than L1/L2. These are implicit regularizers.</li>
+      <li><strong>Small datasets:</strong> Regularize more aggressively. Use higher lambda or dropout rates. Consider data augmentation as complementary regularization.</li>
+      <li><strong>Large datasets:</strong> Less regularization is needed because the model has more data to learn from. May not need dropout at all.</li>
+      <li><strong>Always tune lambda/dropout via cross-validation.</strong> Do not guess or use default values without validation.</li>
+    </ul>
+  </section>
+
+  <section class="faq-section">
+    <h2>Frequently Asked Questions</h2>
+    <details>
+      <summary>What is regularization in machine learning?</summary>
+      <p>Regularization is a set of techniques that constrain or penalize model complexity to prevent overfitting. It works by adding a penalty term to the loss function (L1, L2) or by modifying the training process (dropout, early stopping). This encourages simpler models that generalize better to unseen data.</p>
+    </details>
+    <details>
+      <summary>What is the difference between L1 and L2 regularization?</summary>
+      <p>L1 adds the sum of absolute values of weights and tends to drive some weights exactly to zero, performing automatic feature selection. L2 adds the sum of squared weights and shrinks all weights toward zero without making them exactly zero. L1 produces sparse models; L2 produces models with small distributed weights.</p>
+    </details>
+    <details>
+      <summary>How does dropout regularization work?</summary>
+      <p>Dropout randomly sets a fraction of neuron activations to zero during each training step. This prevents neurons from co-adapting and acts like training an ensemble of many sub-networks. At inference time, all neurons are active but weights are scaled down by the dropout rate.</p>
+    </details>
+    <details>
+      <summary>How do I choose the regularization strength (lambda)?</summary>
+      <p>Use cross-validation to select lambda. Start with a logarithmic range (e.g., 10^-6 to 10^2) and evaluate model performance for each value. Too little allows overfitting; too much causes underfitting. For dropout, typical rates are 0.2-0.5.</p>
+    </details>
+    <details>
+      <summary>When should I use Elastic Net instead of pure L1 or L2?</summary>
+      <p>Use Elastic Net when you have correlated features. Pure L1 randomly selects one feature from a correlated group, while Elastic Net includes or excludes correlated features together. It is also more stable when the number of features exceeds the number of samples.</p>
+    </details>
+  </section>
+
+  <section class="explainer-section">
+    <h2>Related Tools</h2>
+    <div class="related-grid">
+      <a href="/guides/overfitting-underfitting-guide.html" class="related-card">
+        <div class="related-title">Overfitting & Underfitting Guide</div>
+        <div class="related-desc">Interactive bias-variance tradeoff demo with polynomial curve fitting.</div>
+      </a>
+      <a href="/guides/cross-validation-explained.html" class="related-card">
+        <div class="related-title">K-Fold Cross Validation</div>
+        <div class="related-desc">Interactive simulator showing fold splits, variance, and stratification.</div>
+      </a>
+      <a href="/tools/neural-network-playground.html" class="related-card">
+        <div class="related-title">Neural Network Playground</div>
+        <div class="related-desc">Build, train, and visualize neural networks entirely in your browser.</div>
+      </a>
+    </div>
+  </section>
+
+  <section class="explainer-section">
+    <h2>About the Author</h2>
+    <p><strong>Michael Lip</strong> builds open-source ML tools and developer utilities at <a href="https://zovo.one">zovo.one</a>. ml0x is part of the Zovo Tools network, a collection of free, privacy-first tools for developers and data scientists. No tracking, no accounts required, no data leaves your browser.</p>
+  </section>
+
+  <p class="last-updated">Last updated: May 25, 2026</p>
+</main>
+
+<footer class="site-footer">
+    <div class="footer-inner">
+        <div class="footer-brand">Zovo Tools</div>
+        <div class="footer-tagline">Free developer tools by a solo dev. No tracking.</div>
+        <a href="https://zovo.one/pricing?utm_source=ml0x.com&utm_medium=satellite&utm_campaign=footer-link" class="footer-cta">Zovo Lifetime — $99 once, free forever &rarr;</a>
+        <div class="footer-copy">&copy; 2026 <a href="https://zovo.one">Zovo</a> &middot; 47/500 founding spots</div>
+    </div>
+</footer>
+
+<nav class="zovo-network" aria-label="Zovo Tools Network">
+    <div class="zovo-network-inner">
+        <h3 class="zovo-network-title">Explore More Tools</h3>
+        <div class="zovo-network-links">
+            <a href="https://abwex.com">ABWex — A/B Testing</a>
+            <a href="https://claudflow.com">ClaudFlow — Workflows</a>
+            <a href="https://claudhq.com">ClaudHQ — AI Code Tools &amp; Fixes</a>
+            <a href="https://claudkit.com">ClaudKit — API</a>
+            <a href="https://enhio.com">Enhio — Text Tools</a>
+            <a href="https://epochpilot.com">EpochPilot — Timestamps</a>
+            <a href="https://gen8x.com">Gen8X — Color Tools</a>
+            <a href="https://gpt0x.com">GPT0X — AI Models</a>
+            <a href="https://heytensor.com">HeyTensor — ML Tools</a>
+            <a href="https://invokebot.com">InvokeBot — Webhooks</a>
+            <a href="https://kappafy.com">Kappafy — JSON</a>
+            <a href="https://kappakit.com">KappaKit — Dev Toolkit</a>
+            <a href="https://kickllm.com">KickLLM — LLM Costs</a>
+            <a href="https://krzen.com">Krzen — Image Tools</a>
+            <a href="https://lochbot.com">LochBot — Security</a>
+            <a href="https://lockml.com">LockML — ML Compare</a>
+            <a href="https://ml3x.com">ML3X — Matrix Math</a>
+        </div>
+    </div>
+</nav>
+
+<script>
+(function() {
+  /* Coefficient paths */
+  var coeffs = [];
+  var featureColors = ['#3b82f6','#22c55e','#f59e0b','#ef4444','#a78bfa','#ec4899','#14b8a6','#f97316','#6366f1','#84cc16','#06b6d4','#e879f9'];
+
+  function generateCoeffs() {
+    var n = parseInt(document.getElementById('featureCount').value);
+    coeffs = [];
+    for (var i = 0; i < n; i++) {
+      coeffs.push((Math.random() - 0.5) * 4);
+    }
+    updatePaths();
+  }
+
+  function l1Shrink(w, lambda) {
+    if (w > lambda) return w - lambda;
+    if (w < -lambda) return w + lambda;
+    return 0;
+  }
+
+  function l2Shrink(w, lambda) {
+    return w / (1 + 2 * lambda);
+  }
+
+  function drawPath(svgId, shrinkFn, label) {
+    var svg = document.getElementById(svgId);
+    var lambda = parseInt(document.getElementById('lambdaSlider').value) / 100 * 2;
+    var n = coeffs.length;
+    var W = 350, H = 280, pad = 40;
+
+    var maxAbs = 0;
+    for (var i = 0; i < n; i++) maxAbs = Math.max(maxAbs, Math.abs(coeffs[i]));
+    maxAbs = Math.max(maxAbs, 0.5);
+
+    var html = '<rect width="'+W+'" height="'+H+'" fill="#141414"/>';
+
+    // Zero line
+    var zeroY = pad + (H - 2 * pad) / 2;
+    html += '<line x1="'+pad+'" y1="'+zeroY+'" x2="'+(W-10)+'" y2="'+zeroY+'" stroke="#333" stroke-width="1" stroke-dasharray="3,3"/>';
+
+    // Y axis
+    html += '<line x1="'+pad+'" y1="'+pad+'" x2="'+pad+'" y2="'+(H-pad)+'" stroke="#333" stroke-width="1"/>';
+    html += '<text x="'+(pad-4)+'" y="'+(pad+4)+'" text-anchor="end" fill="#666" font-size="9" font-family="IBM Plex Mono,monospace">+'+maxAbs.toFixed(1)+'</text>';
+    html += '<text x="'+(pad-4)+'" y="'+(H-pad+4)+'" text-anchor="end" fill="#666" font-size="9" font-family="IBM Plex Mono,monospace">-'+maxAbs.toFixed(1)+'</text>';
+
+    // Bars for current lambda
+    var barW = Math.min(28, Math.floor((W - pad - 20) / n) - 4);
+    var shrunk = [];
+    var nonzero = 0, norm = 0;
+
+    for (var i = 0; i < n; i++) {
+      var s = shrinkFn(coeffs[i], lambda);
+      shrunk.push(s);
+      if (Math.abs(s) > 1e-6) nonzero++;
+      norm += Math.abs(s);
+
+      var barH = Math.abs(s) / maxAbs * (H - 2 * pad) / 2;
+      var x = pad + 10 + i * (barW + 4);
+      var y = s >= 0 ? zeroY - barH : zeroY;
+
+      html += '<rect x="'+x+'" y="'+y+'" width="'+barW+'" height="'+Math.max(1, barH)+'" fill="'+featureColors[i % featureColors.length]+'" opacity="'+(Math.abs(s) > 1e-6 ? 0.8 : 0.15)+'" rx="2"/>';
+
+      // Original value indicator
+      var origY = zeroY - (coeffs[i] / maxAbs) * (H - 2 * pad) / 2;
+      html += '<line x1="'+x+'" y1="'+origY+'" x2="'+(x+barW)+'" y2="'+origY+'" stroke="'+featureColors[i % featureColors.length]+'" stroke-width="1" stroke-dasharray="2,2" opacity="0.4"/>';
+
+      // Label
+      html += '<text x="'+(x+barW/2)+'" y="'+(H-pad+14)+'" text-anchor="middle" fill="#888" font-size="9" font-family="IBM Plex Sans,sans-serif">w'+i+'</text>';
+    }
+
+    svg.innerHTML = html;
+    return {nonzero: nonzero, norm: norm};
+  }
+
+  function updatePaths() {
+    var l1Stats = drawPath('l1Svg', l1Shrink, 'L1');
+    var l2Stats = drawPath('l2Svg', l2Shrink, 'L2');
+    document.getElementById('l1Nonzero').textContent = l1Stats.nonzero + '/' + coeffs.length;
+    document.getElementById('l1Norm').textContent = l1Stats.norm.toFixed(3);
+    document.getElementById('l2Nonzero').textContent = l2Stats.nonzero + '/' + coeffs.length;
+    document.getElementById('l2Norm').textContent = l2Stats.norm.toFixed(3);
+  }
+
+  document.getElementById('lambdaSlider').addEventListener('input', function() {
+    document.getElementById('lambdaDisplay').textContent = (this.value / 100 * 2).toFixed(2);
+    updatePaths();
+  });
+
+  document.getElementById('featureCount').addEventListener('change', generateCoeffs);
+  document.getElementById('regenerateBtn').addEventListener('click', generateCoeffs);
+
+  /* Dropout visualization */
+  var layers = [4, 8, 6, 8, 4, 2];
+  var neuronStates = [];
+
+  function initNeurons() {
+    neuronStates = [];
+    for (var i = 0; i < layers.length; i++) {
+      neuronStates[i] = [];
+      for (var j = 0; j < layers[i]; j++) {
+        neuronStates[i][j] = true;
+      }
+    }
+    drawDropout();
+  }
+
+  function drawDropout() {
+    var svg = document.getElementById('dropoutSvg');
+    var W = 700, H = 260;
+    var html = '<rect width="'+W+'" height="'+H+'" fill="#141414"/>';
+    var layerLabels = ['Input','Hidden 1','Hidden 2','Hidden 3','Hidden 4','Output'];
+
+    var lSpacing = (W - 80) / (layers.length - 1);
+    var positions = [];
+    var totalActive = 0, totalHidden = 0;
+
+    for (var i = 0; i < layers.length; i++) {
+      positions[i] = [];
+      var n = layers[i];
+      var nSpacing = Math.min(28, (H - 60) / n);
+      var startY = (H - n * nSpacing) / 2;
+      var x = 40 + i * lSpacing;
+
+      html += '<text x="'+x+'" y="'+(H-6)+'" text-anchor="middle" fill="#666" font-size="10" font-family="IBM Plex Sans,sans-serif">'+layerLabels[i]+'</text>';
+
+      for (var j = 0; j < n; j++) {
+        var y = startY + j * nSpacing + nSpacing / 2;
+        positions[i][j] = {x: x, y: y};
+        var active = neuronStates[i][j];
+        if (i > 0 && i < layers.length - 1) {
+          if (active) totalActive++; else totalHidden++;
+        }
+      }
+    }
+
+    // Draw connections
+    for (var i = 0; i < layers.length - 1; i++) {
+      for (var j = 0; j < layers[i]; j++) {
+        for (var k = 0; k < layers[i + 1]; k++) {
+          var active = neuronStates[i][j] && neuronStates[i + 1][k];
+          html += '<line x1="'+positions[i][j].x+'" y1="'+positions[i][j].y+'" x2="'+positions[i+1][k].x+'" y2="'+positions[i+1][k].y+'" stroke="'+(active ? '#3b82f6' : '#222')+'" stroke-width="'+(active ? '0.5' : '0.3')+'" opacity="'+(active ? '0.3' : '0.1')+'"/>';
+        }
+      }
+    }
+
+    // Draw neurons
+    for (var i = 0; i < layers.length; i++) {
+      for (var j = 0; j < layers[i]; j++) {
+        var p = positions[i][j];
+        var active = neuronStates[i][j];
+        var isIO = (i === 0 || i === layers.length - 1);
+        html += '<circle cx="'+p.x+'" cy="'+p.y+'" r="'+(isIO ? 8 : 10)+'" fill="'+(active ? '#3b82f6' : '#1a1a1a')+'" stroke="'+(active ? '#60a5fa' : '#333')+'" stroke-width="'+(active ? 2 : 1)+'" opacity="'+(active ? 1 : 0.4)+'"/>';
+        if (!active && !isIO) {
+          html += '<line x1="'+(p.x-5)+'" y1="'+(p.y-5)+'" x2="'+(p.x+5)+'" y2="'+(p.y+5)+'" stroke="#ef4444" stroke-width="2" opacity="0.6"/>';
+          html += '<line x1="'+(p.x+5)+'" y1="'+(p.y-5)+'" x2="'+(p.x-5)+'" y2="'+(p.y+5)+'" stroke="#ef4444" stroke-width="2" opacity="0.6"/>';
+        }
+      }
+    }
+
+    svg.innerHTML = html;
+    var totalMiddle = totalActive + totalHidden;
+    document.getElementById('dropActive').textContent = totalActive;
+    document.getElementById('dropInactive').textContent = totalHidden;
+    document.getElementById('dropRate').textContent = totalMiddle > 0 ? (totalHidden / totalMiddle * 100).toFixed(1) + '%' : '0%';
+    document.getElementById('dropCapacity').textContent = totalMiddle > 0 ? (totalActive / totalMiddle * 100).toFixed(1) + '%' : '100%';
+  }
+
+  document.getElementById('dropBtn').addEventListener('click', function() {
+    var rate = parseInt(document.getElementById('dropoutSlider').value) / 100;
+    for (var i = 1; i < layers.length - 1; i++) {
+      for (var j = 0; j < layers[i]; j++) {
+        neuronStates[i][j] = Math.random() > rate;
+      }
+    }
+    drawDropout();
+  });
+
+  document.getElementById('resetDropBtn').addEventListener('click', initNeurons);
+  document.getElementById('dropoutSlider').addEventListener('input', function() {
+    document.getElementById('dropoutDisplay').textContent = (this.value / 100).toFixed(2);
+  });
+
+  generateCoeffs();
+  initNeurons();
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,593 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Learning Rate Finder — LR Range Test Simulator with Loss Curve Visualization | ml0x</title>
+<meta name="description" content="Free learning rate range test simulator. Visualize loss vs learning rate on a log scale, auto-detect the optimal LR at steepest descent, compare warm restarts vs one-cycle scheduling. All computation runs in your browser.">
+<meta name="keywords" content="learning rate finder, LR range test, loss curve visualization, optimal learning rate, warm restarts, one-cycle policy, cyclical learning rates, training simulator, hyperparameter tuning, deep learning">
+<link rel="canonical" href="https://ml0x.com/tools/learning-rate-finder.html">
+<link rel="alternate" hreflang="en" href="https://ml0x.com/tools/learning-rate-finder.html">
+<link rel="alternate" hreflang="x-default" href="https://ml0x.com/tools/learning-rate-finder.html">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Learning Rate Finder — LR Range Test Simulator with Loss Curve Visualization">
+<meta property="og:description" content="Simulate an LR range test, visualize loss curves on log scale, auto-detect optimal learning rate, and compare warm restart vs one-cycle scheduling strategies.">
+<meta property="og:url" content="https://ml0x.com/tools/learning-rate-finder.html">
+<meta property="og:site_name" content="Zovo Tools">
+<meta property="og:locale" content="en_US">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Learning Rate Finder — LR Range Test Simulator with Loss Curve Visualization">
+<meta name="twitter:description" content="Simulate an LR range test, visualize loss curves on log scale, and auto-detect optimal learning rate at the steepest descent point.">
+<meta name="author" content="Michael Lip">
+<meta name="robots" content="index, follow">
+<link rel="stylesheet" href="/assets/style.css">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebApplication",
+  "name": "Learning Rate Finder",
+  "description": "Free learning rate range test simulator with loss curve visualization on log scale. Auto-detect optimal LR, compare warm restarts vs one-cycle policy.",
+  "url": "https://ml0x.com/tools/learning-rate-finder.html",
+  "applicationCategory": "EducationalApplication",
+  "operatingSystem": "Any",
+  "offers": {"@type": "Offer", "price": "0", "priceCurrency": "USD"},
+  "author": {"@type": "Person", "name": "Michael Lip", "url": "https://zovo.one"},
+  "publisher": {"@type": "Organization", "name": "ML0X", "url": "https://ml0x.com"},
+  "datePublished": "2026-05-25",
+  "dateModified": "2026-05-25"
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {"@type": "Question", "name": "What is a learning rate range test?", "acceptedAnswer": {"@type": "Answer", "text": "A learning rate range test (also called the LR finder) is a technique introduced by Leslie Smith in 2015. You start training with a very small learning rate and gradually increase it exponentially over one epoch. You record the loss at each step and plot loss vs learning rate on a log scale. The optimal learning rate is typically one order of magnitude before the loss starts diverging (the steepest descent point on the curve). This gives you a data-driven starting point instead of guessing."}},
+    {"@type": "Question", "name": "How do I pick the optimal learning rate from the curve?", "acceptedAnswer": {"@type": "Answer", "text": "Look for the point on the loss curve where the loss is decreasing most steeply. This is the steepest descent point, typically found by computing the gradient of the smoothed loss curve and selecting the learning rate with the most negative gradient. A common rule of thumb is to pick a learning rate about 10x smaller than the rate where loss is minimized, or directly at the steepest point. Avoid the region where loss starts increasing rapidly, as that indicates divergence."}},
+    {"@type": "Question", "name": "What is the difference between warm restarts and one-cycle policy?", "acceptedAnswer": {"@type": "Answer", "text": "Warm restarts (SGDR / cosine annealing with restarts) periodically reset the learning rate back to a high value and anneal it down again, creating multiple training cycles. This helps escape local minima and explore different regions of the loss landscape. The one-cycle policy, also by Leslie Smith, uses a single cycle: it warms up the LR from a low value to a maximum, then anneals it down to near zero. One-cycle typically trains faster (super-convergence) and often achieves better final performance in fewer epochs."}},
+    {"@type": "Question", "name": "Why should I use a log scale for the learning rate axis?", "acceptedAnswer": {"@type": "Answer", "text": "Learning rates typically span several orders of magnitude (e.g., 1e-7 to 1e-1). On a linear scale, the vast majority of the plot would be compressed into a tiny region near zero, making it impossible to see the important transitions. A log scale spaces these values evenly, so you can clearly see the three phases: too-small LR (flat/noisy loss), optimal LR (steep descent), and too-large LR (divergence). The log scale is essential for interpretability."}},
+    {"@type": "Question", "name": "How many steps should I use for an LR range test?", "acceptedAnswer": {"@type": "Answer", "text": "Typically 100 to 300 steps is sufficient. Too few steps means you might miss the optimal region. Too many steps wastes computation and can cause the model weights to diverge so badly that the early part of the curve is no longer meaningful. For most models, running through 10-25% of one epoch with geometrically increasing learning rate works well. The key is covering enough orders of magnitude (usually 5-6) to see the full loss landscape."}}
+  ]
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {"@type": "ListItem", "position": 1, "name": "Home", "item": "https://ml0x.com/"},
+    {"@type": "ListItem", "position": 2, "name": "Tools", "item": "https://ml0x.com/tools/"},
+    {"@type": "ListItem", "position": 3, "name": "Learning Rate Finder"}
+  ]
+}
+</script>
+</head>
+<body>
+
+<header>
+  <div class="container header-inner">
+    <a href="/" class="logo">ml0x</a>
+    <nav>
+      <a href="/">Home</a>
+      <a href="/research/">Research</a>
+      <a href="/tools/">Tools</a>
+      <a href="/guides/">Guides</a>
+      <a href="/answers/">Answers</a>
+      <div class="nav-right">
+        <a href="https://zovo.one/pricing?utm_source=ml0x.com&utm_medium=satellite&utm_campaign=nav-link" class="nav-pro" target="_blank">Go Pro &#10022;</a>
+        <a href="https://zovo.one/tools" class="nav-zovo">Zovo Tools</a>
+      </div>
+    </nav>
+  </div>
+</header>
+
+<main class="container">
+  <div class="breadcrumb">
+    <a href="/">Home</a> <span>&rsaquo;</span> <a href="/tools/">Tools</a> <span>&rsaquo;</span> Learning Rate Finder
+  </div>
+
+  <div class="hero">
+    <h1>Learning Rate <span>Finder</span></h1>
+    <p>Simulate an LR range test to find the optimal learning rate for your model. Set a minimum and maximum learning rate, choose the number of steps, and watch the loss curve unfold on a logarithmic scale. The tool automatically detects the steepest descent point and suggests the best learning rate. Compare warm restarts versus one-cycle scheduling side by side. All computation runs locally in your browser with zero server calls.</p>
+  </div>
+
+  <div class="tool-card">
+    <h3>LR Range Test Configuration</h3>
+    <div class="control-row">
+      <div class="control-group">
+        <label>Min Learning Rate</label>
+        <select id="minLR">
+          <option value="1e-7">1e-7</option>
+          <option value="1e-6" selected>1e-6</option>
+          <option value="1e-5">1e-5</option>
+          <option value="1e-4">1e-4</option>
+        </select>
+      </div>
+      <div class="control-group">
+        <label>Max Learning Rate</label>
+        <select id="maxLR">
+          <option value="0.1">0.1</option>
+          <option value="1" selected>1.0</option>
+          <option value="10">10.0</option>
+        </select>
+      </div>
+      <div class="control-group">
+        <label>Steps</label>
+        <select id="numSteps">
+          <option value="100">100</option>
+          <option value="200" selected>200</option>
+          <option value="300">300</option>
+          <option value="500">500</option>
+        </select>
+      </div>
+      <div class="control-group">
+        <label>Loss Function</label>
+        <select id="lossFn">
+          <option value="quadratic" selected>Quadratic (MSE-like)</option>
+          <option value="crossentropy">Cross-Entropy-like</option>
+          <option value="noisy">Noisy Landscape</option>
+        </select>
+      </div>
+    </div>
+    <div class="control-row" style="margin-top:12px;">
+      <div class="control-group">
+        <label>Smoothing Factor</label>
+        <input type="range" id="smoothing" min="0" max="0.99" step="0.01" value="0.9" style="width:100%;">
+        <span id="smoothVal" style="color:#aaa;font-size:12px;">0.90</span>
+      </div>
+      <button class="btn" id="runBtn">Run LR Range Test</button>
+      <button class="btn btn-secondary" id="resetBtn">Reset</button>
+    </div>
+  </div>
+
+  <div id="resultsSection" style="display:none;">
+    <div class="stat-grid">
+      <div class="stat-card"><div class="value" id="metOptLR">--</div><div class="label">Optimal LR (Steepest)</div></div>
+      <div class="stat-card"><div class="value" id="metMinLoss">--</div><div class="label">Minimum Loss</div></div>
+      <div class="stat-card"><div class="value" id="metSugLR">--</div><div class="label">Suggested LR (10x before min)</div></div>
+      <div class="stat-card"><div class="value" id="metDivLR">--</div><div class="label">Divergence LR</div></div>
+    </div>
+
+    <div class="tool-card" style="margin-top:16px;">
+      <h3>Loss vs Learning Rate (Log Scale)</h3>
+      <div class="viz-container"><svg id="lossSvg" width="700" height="400" viewBox="0 0 700 400"></svg></div>
+      <div style="display:flex;gap:16px;margin-top:8px;font-size:12px;color:#aaa;">
+        <span><span style="color:#ef4444;">&#9644;</span> Raw Loss</span>
+        <span><span style="color:#3b82f6;">&#9644;</span> Smoothed Loss</span>
+        <span><span style="color:#22c55e;">&#9679;</span> Optimal LR</span>
+        <span><span style="color:#f59e0b;">&#9679;</span> Suggested LR</span>
+      </div>
+    </div>
+
+    <div class="tool-card" style="margin-top:16px;">
+      <h3>Loss Gradient (Steepness)</h3>
+      <div class="viz-container"><svg id="gradSvg" width="700" height="250" viewBox="0 0 700 250"></svg></div>
+    </div>
+
+    <div class="tool-card" style="margin-top:16px;">
+      <h3>Schedule Comparison</h3>
+      <div class="control-row" style="margin-bottom:12px;">
+        <div class="control-group">
+          <label>Total Epochs</label>
+          <select id="schedEpochs">
+            <option value="30">30</option>
+            <option value="50" selected>50</option>
+            <option value="100">100</option>
+          </select>
+        </div>
+        <div class="control-group">
+          <label>Restart Period (Warm Restarts)</label>
+          <select id="schedRestart">
+            <option value="5">5 epochs</option>
+            <option value="10" selected>10 epochs</option>
+            <option value="20">20 epochs</option>
+          </select>
+        </div>
+        <button class="btn btn-secondary" id="schedBtn">Compare Schedules</button>
+      </div>
+      <div class="viz-container"><svg id="schedSvg" width="700" height="300" viewBox="0 0 700 300"></svg></div>
+      <div style="display:flex;gap:16px;margin-top:8px;font-size:12px;color:#aaa;">
+        <span><span style="color:#3b82f6;">&#9644;</span> One-Cycle Policy</span>
+        <span><span style="color:#a78bfa;">&#9644;</span> Cosine Annealing + Warm Restarts</span>
+        <span><span style="color:#f59e0b;">&#9644;</span> Step Decay</span>
+      </div>
+    </div>
+  </div>
+
+  <section class="explainer-section">
+    <h2>What Is a Learning Rate Range Test?</h2>
+    <p>The learning rate range test, introduced by Leslie Smith in his 2015 paper "Cyclical Learning Rates for Training Neural Networks," is a systematic method for finding the optimal learning rate for your model. Instead of guessing or doing a full grid search over many training runs, you perform a single abbreviated training run where the learning rate is increased exponentially from a very small value to a very large value. By recording the training loss at each step, you generate a characteristic curve that reveals three distinct phases of learning rate behavior.</p>
+    <p>In the first phase (learning rate too small), the loss decreases very slowly or remains essentially flat. The model is making progress, but the updates are so tiny that learning is impractically slow. In the second phase (optimal range), the loss drops steeply. This is where the learning rate is large enough to make meaningful progress but small enough to remain stable. In the third phase (learning rate too large), the loss starts increasing sharply or oscillating wildly. The updates have become so large that they overshoot minima and the optimization diverges.</p>
+    <p>The steepest descent point on this curve, where the loss is decreasing most rapidly, corresponds to the learning rate that produces the most efficient learning. The standard recommendation is to select a learning rate slightly below this point (often one-third to one-tenth of the minimum-loss learning rate) to provide a margin of safety while still benefiting from fast convergence.</p>
+
+    <h2>Why the Learning Rate Matters So Much</h2>
+    <p>The learning rate is arguably the single most important hyperparameter in deep learning. It controls the step size of gradient descent updates: too small and training takes forever (or gets stuck in a poor local minimum), too large and training diverges or oscillates without converging. Unlike other hyperparameters that affect model capacity (like width, depth, or regularization strength), the learning rate directly determines whether training succeeds or fails. A model with perfect architecture but a terrible learning rate will produce garbage results.</p>
+    <p>Research has shown that the optimal learning rate depends on many factors: the loss landscape geometry, batch size, model architecture, optimizer choice, and even the current stage of training. What works for a ResNet-50 on ImageNet will not necessarily work for a Transformer on a text corpus. This is why empirical methods like the LR range test are so valuable: they probe the actual loss landscape of your specific model on your specific data, rather than relying on generic rules of thumb.</p>
+    <p>The relationship between learning rate and batch size is particularly important. When you increase the batch size by a factor of k, the gradient estimates become k times less noisy, which means you can often increase the learning rate by a factor of sqrt(k) (the linear scaling rule suggests a factor of k, but sqrt(k) is more conservative and often more reliable). The LR range test naturally accounts for your chosen batch size, making it the most practical approach for any training setup.</p>
+
+    <h2>Understanding Smoothed Loss Curves</h2>
+    <p>Raw training loss is inherently noisy due to mini-batch stochasticity. Each batch produces a slightly different loss value depending on which samples happen to be in that batch. This noise can obscure the underlying trend, making it difficult to identify the optimal learning rate. Exponential moving average (EMA) smoothing addresses this by computing a weighted average where recent values have more influence than older ones.</p>
+    <p>The smoothing factor (beta) controls how much smoothing is applied. A value of 0.0 means no smoothing (raw loss), while 0.99 produces very heavy smoothing. For LR range tests, a smoothing factor between 0.8 and 0.95 typically works well. Too little smoothing leaves the curve too noisy to interpret. Too much smoothing introduces lag, causing the detected optimal point to shift toward higher learning rates than is actually optimal. The bias-corrected EMA (dividing by 1 - beta^t) compensates for the initialization bias in early steps.</p>
+
+    <h2>One-Cycle Policy vs Warm Restarts</h2>
+    <p>Once you have identified the optimal learning rate, you need to choose a scheduling strategy for the full training run. Two of the most effective modern approaches are the one-cycle policy and warm restarts with cosine annealing.</p>
+    <p>The <strong>one-cycle policy</strong> (Smith, 2018) consists of a single cycle with three phases. First, the learning rate warms up linearly from a low value (typically 1/25th of the max LR) to the maximum over the first 30-45% of training. Then it anneals following a cosine schedule back down to near zero over the remaining epochs. Simultaneously, the momentum is cycled inversely: starting high (0.95), decreasing during warmup, then increasing back during annealing. This approach often achieves "super-convergence," reaching equivalent or better accuracy in 5-10x fewer epochs than traditional training.</p>
+    <p>The <strong>warm restart</strong> strategy (SGDR, Loshchilov & Hutter, 2016) uses cosine annealing to decrease the learning rate from the initial value to near zero, then abruptly resets it back to the initial value and repeats. Each restart allows the optimizer to potentially escape local minima and explore new regions of the loss landscape. The restart period can be fixed or increasing (multiplied by a factor T_mult after each cycle). This approach is particularly effective when combined with snapshot ensembling, where you save the model at the end of each cycle and average the predictions.</p>
+    <p>In practice, the one-cycle policy tends to produce better single-model results with faster convergence, while warm restarts with snapshot ensembling produce better ensemble results. For most practitioners training a single model, one-cycle is the recommended default. For competition settings where ensemble performance matters, warm restarts with snapshot ensembling are a powerful technique.</p>
+
+    <h2>Advanced LR Scheduling Strategies</h2>
+    <p>Beyond one-cycle and warm restarts, several other scheduling strategies are worth understanding. <strong>Step decay</strong> reduces the learning rate by a fixed factor (typically 0.1) at predetermined epoch milestones. This was the standard approach for years (e.g., dividing by 10 at epochs 30, 60, and 90 for ImageNet training) and remains competitive for many tasks. <strong>Exponential decay</strong> continuously reduces the learning rate by multiplying by a factor less than 1 at each step or epoch. <strong>Polynomial decay</strong> follows a polynomial schedule, with the power parameter controlling the curvature. <strong>ReduceLROnPlateau</strong> monitors a validation metric and reduces the learning rate when improvement stalls, making it adaptive to the actual training dynamics.</p>
+    <p>Modern optimizers like Adam, AdamW, and LAMB incorporate per-parameter adaptive learning rates, which partially reduces the sensitivity to the global learning rate choice. However, even with adaptive optimizers, the base learning rate still matters significantly, and the LR range test remains valuable. Research by Zhang et al. (2019) showed that AdamW with a properly tuned learning rate schedule matches or outperforms SGD with momentum for most tasks, debunking the earlier belief that adaptive optimizers generalize worse.</p>
+
+    <h2>Practical Tips for LR Range Tests</h2>
+    <ul>
+      <li>Run the range test on your full dataset (or a representative subset) with the exact batch size and optimizer you plan to use for training. These factors affect the optimal LR.</li>
+      <li>Use 100-300 steps covering 5-6 orders of magnitude. Starting at 1e-7 and ending at 1-10 usually covers the useful range for most architectures and optimizers.</li>
+      <li>Apply EMA smoothing with beta=0.9 to see the trend clearly. Adjust if the curve is still too noisy or overly smoothed.</li>
+      <li>The optimal LR is at the steepest descent, not at the minimum loss. The minimum is often already in the instability zone.</li>
+      <li>For transfer learning, the optimal LR for fine-tuning is typically 10-100x smaller than for training from scratch, because the pretrained weights are already near a good minimum.</li>
+      <li>Repeat the test 2-3 times with different random seeds to verify the optimal range is consistent. If results vary widely, use the more conservative (lower) estimate.</li>
+      <li>When using learning rate warmup (recommended for Transformers and large batch training), the LR range test gives you the peak learning rate. The warmup period typically covers 5-10% of total training steps.</li>
+    </ul>
+  </section>
+
+  <section class="faq-section">
+    <h2>Frequently Asked Questions</h2>
+    <details>
+      <summary>What is a learning rate range test?</summary>
+      <p>A learning rate range test is a technique where you gradually increase the learning rate from a very small value to a very large value over one training epoch, recording the loss at each step. Plotting loss vs learning rate on a log scale reveals the optimal learning rate at the steepest descent point. This gives you a data-driven starting point instead of guessing.</p>
+    </details>
+    <details>
+      <summary>How do I pick the optimal learning rate from the curve?</summary>
+      <p>Look for the point where the smoothed loss curve is decreasing most steeply. This is the steepest descent point, found by computing the gradient of the loss curve and selecting the learning rate with the most negative gradient. A common rule of thumb is to pick an LR about 10x smaller than where the minimum loss occurs.</p>
+    </details>
+    <details>
+      <summary>What is the difference between warm restarts and one-cycle policy?</summary>
+      <p>Warm restarts periodically reset the learning rate back to a high value and anneal it down again, creating multiple training cycles. The one-cycle policy uses a single cycle: warm up to a maximum LR, then anneal down to near zero. One-cycle typically achieves super-convergence with fewer epochs, while warm restarts are better for snapshot ensembling.</p>
+    </details>
+    <details>
+      <summary>Why should I use a log scale for the learning rate axis?</summary>
+      <p>Learning rates span several orders of magnitude (e.g., 1e-7 to 1). On a linear scale, almost everything would be compressed near zero. A log scale spaces these values evenly, so you can clearly see the flat region, optimal region, and divergence region of the loss curve.</p>
+    </details>
+    <details>
+      <summary>How many steps should I use for an LR range test?</summary>
+      <p>Typically 100 to 300 steps is sufficient. You need enough steps to cover 5-6 orders of magnitude and see the full loss landscape, but too many steps can cause weights to diverge so badly that the early part of the curve becomes meaningless. Running through 10-25% of one epoch usually works well.</p>
+    </details>
+  </section>
+
+  <section class="explainer-section">
+    <h2>Related Tools</h2>
+    <div class="related-grid">
+      <a href="/tools/neural-network-playground.html" class="related-card">
+        <div class="related-title">Neural Network Playground</div>
+        <div class="related-desc">Build, train, and visualize neural networks entirely in your browser.</div>
+      </a>
+      <a href="/guides/gradient-descent-explained.html" class="related-card">
+        <div class="related-title">Gradient Descent Explained</div>
+        <div class="related-desc">Interactive guide to gradient descent optimization with step-by-step visualization.</div>
+      </a>
+      <a href="/research/regularization-techniques.html" class="related-card">
+        <div class="related-title">Regularization Techniques</div>
+        <div class="related-desc">Comprehensive guide to L1, L2, dropout, early stopping, and more.</div>
+      </a>
+    </div>
+  </section>
+
+  <section class="explainer-section">
+    <h2>About the Author</h2>
+    <p><strong>Michael Lip</strong> builds open-source ML tools and developer utilities at <a href="https://zovo.one">zovo.one</a>. ml0x is part of the Zovo Tools network, a collection of free, privacy-first tools for developers and data scientists. No tracking, no accounts required, no data leaves your browser.</p>
+  </section>
+
+  <p class="last-updated">Last updated: May 25, 2026</p>
+</main>
+
+<footer class="site-footer">
+    <div class="footer-inner">
+        <div class="footer-brand">Zovo Tools</div>
+        <div class="footer-tagline">Free developer tools by a solo dev. No tracking.</div>
+        <a href="https://zovo.one/pricing?utm_source=ml0x.com&utm_medium=satellite&utm_campaign=footer-link" class="footer-cta">Zovo Lifetime — $99 once, free forever &rarr;</a>
+        <div class="footer-copy">&copy; 2026 <a href="https://zovo.one">Zovo</a> &middot; 47/500 founding spots</div>
+    </div>
+</footer>
+
+<nav class="zovo-network" aria-label="Zovo Tools Network">
+    <div class="zovo-network-inner">
+        <h3 class="zovo-network-title">Explore More Tools</h3>
+        <div class="zovo-network-links">
+            <a href="https://abwex.com">ABWex — A/B Testing</a>
+            <a href="https://claudflow.com">ClaudFlow — Workflows</a>
+            <a href="https://claudhq.com">ClaudHQ — AI Code Tools &amp; Fixes</a>
+            <a href="https://claudkit.com">ClaudKit — API</a>
+            <a href="https://enhio.com">Enhio — Text Tools</a>
+            <a href="https://epochpilot.com">EpochPilot — Timestamps</a>
+            <a href="https://gen8x.com">Gen8X — Color Tools</a>
+            <a href="https://gpt0x.com">GPT0X — AI Models</a>
+            <a href="https://heytensor.com">HeyTensor — ML Tools</a>
+            <a href="https://invokebot.com">InvokeBot — Webhooks</a>
+            <a href="https://kappafy.com">Kappafy — JSON</a>
+            <a href="https://kappakit.com">KappaKit — Dev Toolkit</a>
+            <a href="https://kickllm.com">KickLLM — LLM Costs</a>
+            <a href="https://krzen.com">Krzen — Image Tools</a>
+            <a href="https://lochbot.com">LochBot — Security</a>
+            <a href="https://lockml.com">LockML — ML Compare</a>
+            <a href="https://ml3x.com">ML3X — Matrix Math</a>
+        </div>
+    </div>
+</nav>
+
+<script>
+(function() {
+  var rawData = [], smoothData = [], lrData = [], gradData = [];
+
+  function generateLossLandscape(minLR, maxLR, steps, type) {
+    var lrs = [], raw = [], smooth = [], grads = [];
+    var logMin = Math.log10(minLR), logMax = Math.log10(maxLR);
+    var beta = parseFloat(document.getElementById('smoothing').value);
+    var ema = 0, bestLoss = Infinity, bestIdx = 0;
+    var baseLoss, noiseMag;
+
+    if (type === 'quadratic') { baseLoss = 2.5; noiseMag = 0.08; }
+    else if (type === 'crossentropy') { baseLoss = 3.2; noiseMag = 0.12; }
+    else { baseLoss = 2.8; noiseMag = 0.25; }
+
+    for (var i = 0; i < steps; i++) {
+      var t = i / (steps - 1);
+      var logLr = logMin + t * (logMax - logMin);
+      var lr = Math.pow(10, logLr);
+      lrs.push(lr);
+
+      var descent = -1.8 * Math.exp(-0.5 * Math.pow((logLr - (logMin + 0.55 * (logMax - logMin))) / (0.15 * (logMax - logMin)), 2));
+      var diverge = 2.5 * Math.max(0, Math.pow((logLr - (logMin + 0.72 * (logMax - logMin))) / (0.12 * (logMax - logMin)), 3));
+      var noise = noiseMag * (Math.random() - 0.5) * (1 + t * 2);
+      var loss = baseLoss + descent + diverge + noise;
+      if (type === 'noisy') loss += 0.15 * Math.sin(t * 40) * Math.exp(-t);
+      raw.push(loss);
+
+      if (i === 0) ema = loss;
+      else ema = beta * ema + (1 - beta) * loss;
+      var corrected = ema / (1 - Math.pow(beta, i + 1));
+      smooth.push(corrected);
+
+      if (corrected < bestLoss) { bestLoss = corrected; bestIdx = i; }
+    }
+
+    for (var i = 0; i < steps; i++) {
+      if (i === 0 || i === steps - 1) grads.push(0);
+      else grads.push((smooth[i + 1] - smooth[i - 1]) / 2);
+    }
+
+    return { lrs: lrs, raw: raw, smooth: smooth, grads: grads, bestIdx: bestIdx, bestLoss: bestLoss };
+  }
+
+  function findSteepest(data) {
+    var minGrad = 0, minIdx = 0;
+    var start = Math.floor(data.grads.length * 0.05);
+    var end = Math.floor(data.grads.length * 0.85);
+    for (var i = start; i < end; i++) {
+      if (data.grads[i] < minGrad) { minGrad = data.grads[i]; minIdx = i; }
+    }
+    return minIdx;
+  }
+
+  function findDivergence(data) {
+    var threshold = data.bestLoss * 1.5;
+    for (var i = data.bestIdx; i < data.smooth.length; i++) {
+      if (data.smooth[i] > threshold) return i;
+    }
+    return data.smooth.length - 1;
+  }
+
+  function fmtLR(lr) {
+    if (lr < 1e-5) return lr.toExponential(1);
+    if (lr < 0.001) return lr.toExponential(2);
+    if (lr < 1) return lr.toFixed(4);
+    return lr.toFixed(2);
+  }
+
+  function drawLossCurve(data, steepIdx, divIdx) {
+    var svg = document.getElementById('lossSvg');
+    var pad = {l:70, r:30, t:20, b:50};
+    var w = 700 - pad.l - pad.r, h = 400 - pad.t - pad.b;
+    var logLrs = data.lrs.map(function(lr) { return Math.log10(lr); });
+    var xMin = logLrs[0], xMax = logLrs[logLrs.length - 1];
+
+    var allVals = data.raw.concat(data.smooth);
+    var yMin = Infinity, yMax = -Infinity;
+    for (var i = 0; i < allVals.length; i++) {
+      if (allVals[i] < yMin) yMin = allVals[i];
+      if (allVals[i] > yMax) yMax = allVals[i];
+    }
+    var yPad = (yMax - yMin) * 0.1;
+    yMin -= yPad; yMax += yPad;
+
+    function sx(logLr) { return pad.l + (logLr - xMin) / (xMax - xMin) * w; }
+    function sy(loss) { return pad.t + (1 - (loss - yMin) / (yMax - yMin)) * h; }
+
+    var html = '<rect width="700" height="400" fill="#141414"/>';
+    html += '<line x1="'+pad.l+'" y1="'+(pad.t+h)+'" x2="'+(pad.l+w)+'" y2="'+(pad.t+h)+'" stroke="#333" stroke-width="1"/>';
+    html += '<line x1="'+pad.l+'" y1="'+pad.t+'" x2="'+pad.l+'" y2="'+(pad.t+h)+'" stroke="#333" stroke-width="1"/>';
+
+    var xTicks = [];
+    for (var e = Math.ceil(xMin); e <= Math.floor(xMax); e++) xTicks.push(e);
+    for (var i = 0; i < xTicks.length; i++) {
+      var x = sx(xTicks[i]);
+      html += '<line x1="'+x+'" y1="'+(pad.t+h)+'" x2="'+x+'" y2="'+pad.t+'" stroke="#222" stroke-width="0.5"/>';
+      html += '<text x="'+x+'" y="'+(pad.t+h+18)+'" text-anchor="middle" fill="#666" font-size="10" font-family="IBM Plex Mono,monospace">1e'+xTicks[i]+'</text>';
+    }
+
+    var yTicks = 5;
+    for (var i = 0; i <= yTicks; i++) {
+      var val = yMin + i * (yMax - yMin) / yTicks;
+      var y = sy(val);
+      html += '<line x1="'+pad.l+'" y1="'+y+'" x2="'+(pad.l+w)+'" y2="'+y+'" stroke="#222" stroke-width="0.5"/>';
+      html += '<text x="'+(pad.l-8)+'" y="'+(y+4)+'" text-anchor="end" fill="#666" font-size="10" font-family="IBM Plex Mono,monospace">'+val.toFixed(2)+'</text>';
+    }
+
+    html += '<text x="'+(pad.l+w/2)+'" y="'+(pad.t+h+40)+'" text-anchor="middle" fill="#aaa" font-size="11" font-family="IBM Plex Sans,sans-serif">Learning Rate (log scale)</text>';
+    html += '<text x="15" y="'+(pad.t+h/2)+'" text-anchor="middle" fill="#aaa" font-size="11" font-family="IBM Plex Sans,sans-serif" transform="rotate(-90,15,'+(pad.t+h/2)+')">Loss</text>';
+
+    var rawPath = 'M';
+    for (var i = 0; i < data.raw.length; i++) {
+      rawPath += (i>0?' L':'')+sx(logLrs[i]).toFixed(1)+' '+sy(data.raw[i]).toFixed(1);
+    }
+    html += '<path d="'+rawPath+'" fill="none" stroke="#ef4444" stroke-width="1" opacity="0.3"/>';
+
+    var smoothPath = 'M';
+    for (var i = 0; i < data.smooth.length; i++) {
+      smoothPath += (i>0?' L':'')+sx(logLrs[i]).toFixed(1)+' '+sy(data.smooth[i]).toFixed(1);
+    }
+    html += '<path d="'+smoothPath+'" fill="none" stroke="#3b82f6" stroke-width="2"/>';
+
+    var optX = sx(logLrs[steepIdx]), optY = sy(data.smooth[steepIdx]);
+    html += '<circle cx="'+optX+'" cy="'+optY+'" r="8" fill="#22c55e" opacity="0.3"/>';
+    html += '<circle cx="'+optX+'" cy="'+optY+'" r="4" fill="#22c55e"/>';
+    html += '<text x="'+(optX+10)+'" y="'+(optY-10)+'" fill="#22c55e" font-size="10" font-family="IBM Plex Sans,sans-serif">Optimal: '+fmtLR(data.lrs[steepIdx])+'</text>';
+
+    var sugIdx = Math.max(0, steepIdx - Math.floor(data.lrs.length * 0.08));
+    var sugX = sx(logLrs[sugIdx]), sugY = sy(data.smooth[sugIdx]);
+    html += '<circle cx="'+sugX+'" cy="'+sugY+'" r="6" fill="#f59e0b" opacity="0.3"/>';
+    html += '<circle cx="'+sugX+'" cy="'+sugY+'" r="3" fill="#f59e0b"/>';
+    html += '<text x="'+(sugX+10)+'" y="'+(sugY+14)+'" fill="#f59e0b" font-size="10" font-family="IBM Plex Sans,sans-serif">Suggested: '+fmtLR(data.lrs[sugIdx])+'</text>';
+
+    var divX = sx(logLrs[divIdx]);
+    html += '<line x1="'+divX+'" y1="'+pad.t+'" x2="'+divX+'" y2="'+(pad.t+h)+'" stroke="#ef4444" stroke-width="1" stroke-dasharray="4,4" opacity="0.6"/>';
+    html += '<text x="'+(divX+4)+'" y="'+(pad.t+14)+'" fill="#ef4444" font-size="9" font-family="IBM Plex Sans,sans-serif" opacity="0.7">Divergence</text>';
+
+    svg.innerHTML = html;
+    return sugIdx;
+  }
+
+  function drawGradCurve(data, steepIdx) {
+    var svg = document.getElementById('gradSvg');
+    var pad = {l:70, r:30, t:20, b:40};
+    var w = 700 - pad.l - pad.r, h = 250 - pad.t - pad.b;
+    var logLrs = data.lrs.map(function(lr) { return Math.log10(lr); });
+    var xMin = logLrs[0], xMax = logLrs[logLrs.length - 1];
+    var gMin = 0, gMax = 0;
+    for (var i = 0; i < data.grads.length; i++) {
+      if (data.grads[i] < gMin) gMin = data.grads[i];
+      if (data.grads[i] > gMax) gMax = data.grads[i];
+    }
+    var gPad = Math.max(Math.abs(gMin), Math.abs(gMax)) * 0.15;
+    gMin -= gPad; gMax += gPad;
+
+    function sx(logLr) { return pad.l + (logLr - xMin) / (xMax - xMin) * w; }
+    function sy(g) { return pad.t + (1 - (g - gMin) / (gMax - gMin)) * h; }
+
+    var html = '<rect width="700" height="250" fill="#141414"/>';
+    html += '<line x1="'+pad.l+'" y1="'+(pad.t+h)+'" x2="'+(pad.l+w)+'" y2="'+(pad.t+h)+'" stroke="#333" stroke-width="1"/>';
+    html += '<line x1="'+pad.l+'" y1="'+pad.t+'" x2="'+pad.l+'" y2="'+(pad.t+h)+'" stroke="#333" stroke-width="1"/>';
+    html += '<line x1="'+pad.l+'" y1="'+sy(0)+'" x2="'+(pad.l+w)+'" y2="'+sy(0)+'" stroke="#555" stroke-width="0.5" stroke-dasharray="3,3"/>';
+
+    var path = 'M';
+    for (var i = 1; i < data.grads.length - 1; i++) {
+      path += (i>1?' L':'')+sx(logLrs[i]).toFixed(1)+' '+sy(data.grads[i]).toFixed(1);
+    }
+    html += '<path d="'+path+'" fill="none" stroke="#a78bfa" stroke-width="1.5"/>';
+
+    var optX = sx(logLrs[steepIdx]), optY = sy(data.grads[steepIdx]);
+    html += '<circle cx="'+optX+'" cy="'+optY+'" r="6" fill="#22c55e" opacity="0.3"/>';
+    html += '<circle cx="'+optX+'" cy="'+optY+'" r="3" fill="#22c55e"/>';
+    html += '<text x="'+(optX+8)+'" y="'+(optY-6)+'" fill="#22c55e" font-size="10" font-family="IBM Plex Sans,sans-serif">Min gradient</text>';
+
+    html += '<text x="'+(pad.l+w/2)+'" y="'+(pad.t+h+32)+'" text-anchor="middle" fill="#aaa" font-size="11" font-family="IBM Plex Sans,sans-serif">Learning Rate (log scale)</text>';
+    html += '<text x="15" y="'+(pad.t+h/2)+'" text-anchor="middle" fill="#aaa" font-size="11" font-family="IBM Plex Sans,sans-serif" transform="rotate(-90,15,'+(pad.t+h/2)+')">dLoss/dLR</text>';
+
+    svg.innerHTML = html;
+  }
+
+  function drawSchedules(maxLR) {
+    var svg = document.getElementById('schedSvg');
+    var epochs = parseInt(document.getElementById('schedEpochs').value);
+    var restartPeriod = parseInt(document.getElementById('schedRestart').value);
+    var pad = {l:70, r:30, t:20, b:50};
+    var w = 700 - pad.l - pad.r, h = 300 - pad.t - pad.b;
+    var steps = epochs * 10;
+    var minLR = maxLR / 25;
+
+    function sx(step) { return pad.l + step / steps * w; }
+    function sy(lr) { return pad.t + (1 - (lr - 0) / (maxLR * 1.15)) * h; }
+
+    var html = '<rect width="700" height="300" fill="#141414"/>';
+    html += '<line x1="'+pad.l+'" y1="'+(pad.t+h)+'" x2="'+(pad.l+w)+'" y2="'+(pad.t+h)+'" stroke="#333" stroke-width="1"/>';
+    html += '<line x1="'+pad.l+'" y1="'+pad.t+'" x2="'+pad.l+'" y2="'+(pad.t+h)+'" stroke="#333" stroke-width="1"/>';
+
+    for (var e = 0; e <= epochs; e += Math.ceil(epochs / 10)) {
+      var x = sx(e * 10);
+      html += '<text x="'+x+'" y="'+(pad.t+h+16)+'" text-anchor="middle" fill="#666" font-size="10" font-family="IBM Plex Mono,monospace">'+e+'</text>';
+    }
+    html += '<text x="'+(pad.l+w/2)+'" y="'+(pad.t+h+38)+'" text-anchor="middle" fill="#aaa" font-size="11" font-family="IBM Plex Sans,sans-serif">Epoch</text>';
+    html += '<text x="15" y="'+(pad.t+h/2)+'" text-anchor="middle" fill="#aaa" font-size="11" font-family="IBM Plex Sans,sans-serif" transform="rotate(-90,15,'+(pad.t+h/2)+')">Learning Rate</text>';
+
+    var oneCycle = 'M';
+    var warmup = Math.floor(steps * 0.3);
+    for (var i = 0; i < steps; i++) {
+      var lr;
+      if (i < warmup) lr = minLR + (maxLR - minLR) * (i / warmup);
+      else lr = minLR + (maxLR - minLR) * 0.5 * (1 + Math.cos(Math.PI * (i - warmup) / (steps - warmup)));
+      oneCycle += (i>0?' L':'')+sx(i).toFixed(1)+' '+sy(lr).toFixed(1);
+    }
+    html += '<path d="'+oneCycle+'" fill="none" stroke="#3b82f6" stroke-width="2"/>';
+
+    var warmRestart = 'M';
+    var periodSteps = restartPeriod * 10;
+    for (var i = 0; i < steps; i++) {
+      var posInCycle = i % periodSteps;
+      var lr = minLR + (maxLR - minLR) * 0.5 * (1 + Math.cos(Math.PI * posInCycle / periodSteps));
+      warmRestart += (i>0?' L':'')+sx(i).toFixed(1)+' '+sy(lr).toFixed(1);
+    }
+    html += '<path d="'+warmRestart+'" fill="none" stroke="#a78bfa" stroke-width="1.5"/>';
+
+    var stepDecay = 'M';
+    var currentLR = maxLR;
+    var decayEvery = Math.floor(epochs / 3) * 10;
+    for (var i = 0; i < steps; i++) {
+      if (i > 0 && i % decayEvery === 0) currentLR *= 0.1;
+      stepDecay += (i>0?' L':'')+sx(i).toFixed(1)+' '+sy(currentLR).toFixed(1);
+    }
+    html += '<path d="'+stepDecay+'" fill="none" stroke="#f59e0b" stroke-width="1.5" stroke-dasharray="4,2"/>';
+
+    svg.innerHTML = html;
+  }
+
+  var lastData = null, lastSugLR = 0.001;
+
+  document.getElementById('smoothing').addEventListener('input', function() {
+    document.getElementById('smoothVal').textContent = parseFloat(this.value).toFixed(2);
+  });
+
+  document.getElementById('runBtn').addEventListener('click', function() {
+    var minLR = parseFloat(document.getElementById('minLR').value);
+    var maxLR = parseFloat(document.getElementById('maxLR').value);
+    var steps = parseInt(document.getElementById('numSteps').value);
+    var type = document.getElementById('lossFn').value;
+
+    lastData = generateLossLandscape(minLR, maxLR, steps, type);
+    var steepIdx = findSteepest(lastData);
+    var divIdx = findDivergence(lastData);
+    var sugIdx = drawLossCurve(lastData, steepIdx, divIdx);
+    drawGradCurve(lastData, steepIdx);
+
+    lastSugLR = lastData.lrs[sugIdx];
+    document.getElementById('metOptLR').textContent = fmtLR(lastData.lrs[steepIdx]);
+    document.getElementById('metMinLoss').textContent = lastData.bestLoss.toFixed(4);
+    document.getElementById('metSugLR').textContent = fmtLR(lastData.lrs[sugIdx]);
+    document.getElementById('metDivLR').textContent = fmtLR(lastData.lrs[divIdx]);
+
+    document.getElementById('resultsSection').style.display = 'block';
+    drawSchedules(lastSugLR);
+  });
+
+  document.getElementById('schedBtn').addEventListener('click', function() {
+    if (lastSugLR > 0) drawSchedules(lastSugLR);
+  });
+
+  document.getElementById('resetBtn').addEventListener('click', function() {
+    document.getElementById('resultsSection').style.display = 'none';
+  });
+
+  document.getElementById('runBtn').click();
+})();
+</script>
+</body>
+</html>

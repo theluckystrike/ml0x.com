@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Feature Engineering Checklist — Interactive Guide with Data Type Detector | ml0x</title>
+<meta name="description" content="Interactive feature engineering checklist with progress tracking and data type detector. Covers numeric, categorical, text, date/time features, and missing data handling. Paste sample data to get suggestions.">
+<meta name="keywords" content="feature engineering, feature engineering checklist, data preprocessing, one-hot encoding, feature scaling, missing data imputation, text features, datetime features, feature selection, machine learning preprocessing">
+<link rel="canonical" href="https://ml0x.com/research/feature-engineering-checklist.html">
+<link rel="alternate" hreflang="en" href="https://ml0x.com/research/feature-engineering-checklist.html">
+<link rel="alternate" hreflang="x-default" href="https://ml0x.com/research/feature-engineering-checklist.html">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Feature Engineering Checklist — Interactive Guide with Data Type Detector">
+<meta property="og:description" content="Interactive feature engineering checklist with progress tracking and data type detector. Covers all data types. Paste data to get suggestions.">
+<meta property="og:url" content="https://ml0x.com/research/feature-engineering-checklist.html">
+<meta property="og:site_name" content="ml0x">
+<meta property="og:locale" content="en_US">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Feature Engineering Checklist — Interactive Guide with Data Type Detector">
+<meta name="twitter:description" content="Interactive feature engineering checklist with progress tracking. Paste data to get suggestions. No data leaves your browser.">
+<meta name="author" content="Michael Lip">
+<meta name="robots" content="index, follow">
+<link rel="stylesheet" href="/assets/style.css">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Article",
+  "headline": "Feature Engineering Checklist — Interactive Guide with Data Type Detector",
+  "description": "Comprehensive feature engineering checklist covering numeric, categorical, text, date/time features, and missing data handling. Interactive progress tracking and data type detection.",
+  "author": {"@type": "Person", "name": "Michael Lip", "url": "https://zovo.one"},
+  "publisher": {"@type": "Organization", "name": "ml0x", "url": "https://ml0x.com"},
+  "datePublished": "2026-05-25",
+  "dateModified": "2026-05-25",
+  "mainEntityOfPage": {"@type": "WebPage", "@id": "https://ml0x.com/research/feature-engineering-checklist.html"},
+  "url": "https://ml0x.com/research/feature-engineering-checklist.html"
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {"@type": "Question", "name": "What is feature engineering in machine learning?", "acceptedAnswer": {"@type": "Answer", "text": "Feature engineering is the process of creating, transforming, and selecting input features to improve model performance. It includes scaling numeric features, encoding categorical variables, extracting information from text and dates, handling missing data, and creating interaction features. Good feature engineering often matters more than algorithm choice and can dramatically improve model accuracy."}},
+    {"@type": "Question", "name": "Should I normalize or standardize my features?", "acceptedAnswer": {"@type": "Answer", "text": "Standardization (zero mean, unit variance via StandardScaler) is generally preferred because it handles outliers better and is required by many algorithms (SVM, logistic regression, PCA). Normalization (scaling to 0-1 range via MinMaxScaler) is useful when you need bounded values (neural networks, image data) or when the distribution is not Gaussian. Tree-based models (Random Forest, XGBoost) do not require scaling."}},
+    {"@type": "Question", "name": "How should I handle missing data?", "acceptedAnswer": {"@type": "Answer", "text": "The best approach depends on the missing data mechanism. For MCAR (Missing Completely At Random): mean/median imputation works. For MAR (Missing At Random): use model-based imputation (KNN, iterative imputer). For MNAR (Missing Not At Random): the missingness itself is informative - create a binary indicator column. Always add a missing indicator feature regardless of imputation method, as missingness itself can be predictive."}},
+    {"@type": "Question", "name": "How do I encode categorical variables for machine learning?", "acceptedAnswer": {"@type": "Answer", "text": "One-hot encoding creates binary columns for each category and works for low-cardinality features (<20 categories). Label encoding assigns integers and is suitable for ordinal categories. Target encoding replaces categories with the mean target value and handles high cardinality well but risks target leakage (use cross-validation). Frequency encoding replaces with occurrence counts. For tree models, label encoding often suffices. For linear models, one-hot encoding is usually necessary."}},
+    {"@type": "Question", "name": "What are the most impactful feature engineering techniques?", "acceptedAnswer": {"@type": "Answer", "text": "The highest-impact techniques are: target encoding for high-cardinality categoricals, interaction features between related columns, aggregation features (group-by statistics), time-based features (recency, frequency, cyclical encoding), and domain-specific transformations (log for skewed distributions, ratios between related features). Feature selection via mutual information or recursive feature elimination removes noise and improves generalization."}}
+  ]
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {"@type": "ListItem", "position": 1, "name": "Home", "item": "https://ml0x.com/"},
+    {"@type": "ListItem", "position": 2, "name": "Research", "item": "https://ml0x.com/research/"},
+    {"@type": "ListItem", "position": 3, "name": "Feature Engineering Checklist"}
+  ]
+}
+</script>
+</head>
+<body>
+
+<header>
+  <div class="container header-inner">
+    <a href="/" class="logo">ml0x</a>
+    <nav>
+      <a href="/">Home</a>
+      <a href="/research/">Research</a>
+      <a href="/tools/">Tools</a>
+      <a href="/guides/">Guides</a>
+      <a href="/answers/">Answers</a>
+      <div class="nav-right">
+        <a href="https://zovo.one/pricing?utm_source=ml0x.com&utm_medium=satellite&utm_campaign=nav-link" class="nav-pro" target="_blank">Go Pro &#10022;</a>
+        <a href="https://zovo.one/tools" class="nav-zovo">Zovo Tools</a>
+      </div>
+    </nav>
+  </div>
+</header>
+
+<main class="container">
+  <div class="breadcrumb">
+    <a href="/">Home</a> <span>&rsaquo;</span> <a href="/research/">Research</a> <span>&rsaquo;</span> Feature Engineering Checklist
+  </div>
+
+  <div class="hero">
+    <h1>Feature Engineering <span>Checklist</span></h1>
+    <p>Interactive checklist covering every feature engineering technique you need. Track your progress, expand items for details, and paste sample data to auto-detect types and get tailored suggestions. All processing happens locally in your browser.</p>
+  </div>
+
+  <div class="tool-card">
+    <h3>Progress</h3>
+    <div style="background:var(--bg);border-radius:var(--radius);height:24px;overflow:hidden;margin-bottom:8px;">
+      <div id="progressBar" style="height:100%;background:var(--accent);border-radius:var(--radius);transition:width 0.3s;width:0%;display:flex;align-items:center;justify-content:center;font-size:0.75rem;font-weight:600;color:#fff;"></div>
+    </div>
+    <p style="color:var(--text-muted);font-size:0.85rem;"><span id="checkedCount">0</span> / <span id="totalCount">0</span> items completed</p>
+  </div>
+
+  <div id="checklistContainer"></div>
+
+  <div class="tool-card" style="margin-top:24px;">
+    <h3>Data Type Detector</h3>
+    <p style="color:var(--text-muted);font-size:0.88rem;margin-bottom:12px;">Paste a sample of your data (CSV format, first row = headers) and we will detect column types and suggest relevant feature engineering steps. No data leaves your browser.</p>
+    <textarea id="dataInput" style="width:100%;height:120px;background:var(--bg);border:1px solid var(--border);border-radius:var(--radius);color:var(--text);padding:12px;font-family:var(--font-display);font-size:0.85rem;resize:vertical;" placeholder="name,age,salary,signup_date,city,description&#10;Alice,30,75000,2024-01-15,New York,Loves hiking&#10;Bob,25,55000,2024-03-22,Boston,Enjoys cooking"></textarea>
+    <button class="btn" id="detectBtn" style="margin-top:8px;">Detect Types & Get Suggestions</button>
+    <div id="detectionResults" style="margin-top:16px;"></div>
+  </div>
+
+  <section class="explainer-section">
+    <h2>Why Feature Engineering Matters</h2>
+    <p>Feature engineering is often the difference between a mediocre model and a great one. While algorithms like gradient boosting and neural networks are powerful, they can only work with the information provided to them. Transforming raw data into informative features allows models to learn patterns more efficiently, reduces overfitting, and improves generalization to unseen data.</p>
+    <p>Research consistently shows that feature engineering has a larger impact on model performance than algorithm selection or hyperparameter tuning. A well-engineered feature set with logistic regression often outperforms a poorly-prepared dataset with a complex deep learning model. The saying "garbage in, garbage out" applies doubly in machine learning.</p>
+
+    <h2>Numeric Feature Engineering</h2>
+    <p>Numeric features are the most straightforward to work with, but several transformations can significantly improve model performance. <strong>Standardization</strong> (z-score normalization) centers features to zero mean and unit variance, which is critical for distance-based algorithms (SVM, KNN), gradient-based optimization (neural networks), and regularized models (Ridge, Lasso). <strong>Log transformation</strong> compresses right-skewed distributions (income, prices, counts), making them more Gaussian and reducing the influence of outliers.</p>
+    <p><strong>Binning</strong> converts continuous features into discrete intervals. Equal-width bins are simple but can create empty bins with skewed data. Equal-frequency (quantile) bins ensure each bin has the same number of samples. Custom bins based on domain knowledge (e.g., age groups) can capture meaningful thresholds. <strong>Polynomial features</strong> create interaction and power terms (x1*x2, x1^2) that help linear models capture nonlinear relationships, though they increase dimensionality rapidly.</p>
+
+    <h2>Categorical Feature Engineering</h2>
+    <p>Categorical features require encoding into numeric representations. The choice of encoding method significantly affects model performance. <strong>One-hot encoding</strong> creates a binary column per category and is the safest default for low-cardinality features (&lt;20 categories). It does not impose any ordinality but can create very high-dimensional feature spaces for high-cardinality columns.</p>
+    <p><strong>Target encoding</strong> replaces each category with the mean of the target variable for that category. It is extremely effective for high-cardinality features (zip codes, product IDs) but must use cross-validation to prevent target leakage. A regularized variant blends the category mean with the global mean based on sample size.</p>
+    <p><strong>Frequency encoding</strong> replaces each category with its occurrence count or proportion in the training set. It captures the intuition that rare categories behave differently from common ones. <strong>Ordinal encoding</strong> assigns integers based on a natural ordering (low/medium/high, education levels) and preserves rank information that one-hot encoding destroys.</p>
+
+    <h2>Text Feature Engineering</h2>
+    <p>Text data requires the most transformation to become useful features. <strong>Bag of words</strong> (TF-IDF) represents documents as sparse vectors of word frequencies, weighted by inverse document frequency to downweight common words. It is simple, interpretable, and works surprisingly well as a baseline. <strong>Word embeddings</strong> (Word2Vec, GloVe, FastText) represent words as dense vectors that capture semantic relationships. Document embeddings can be created by averaging word vectors.</p>
+    <p>Modern NLP typically uses <strong>transformer embeddings</strong> (BERT, sentence-transformers) that capture contextualized semantics. For feature engineering specifically, useful text-derived features include: text length, word count, character count, average word length, punctuation count, uppercase ratio, named entity counts, sentiment scores, and topic probabilities from LDA.</p>
+
+    <h2>Date/Time Feature Engineering</h2>
+    <p>Temporal features encode rich information that simple timestamps obscure. Extract <strong>cyclical components</strong> (hour of day, day of week, month, quarter) using sine/cosine encoding to preserve the circular nature: <code>sin(2*pi*hour/24)</code> and <code>cos(2*pi*hour/24)</code>. This ensures that hour 23 is close to hour 0, which simple integer encoding misses.</p>
+    <p><strong>Recency features</strong> measure time elapsed since an event (days since last purchase, hours since registration). <strong>Lag features</strong> for time series capture previous values (value_t-1, value_t-7). <strong>Rolling statistics</strong> (rolling mean, std, min, max over a window) capture trends and volatility. <strong>Is-holiday</strong> and <strong>is-weekend</strong> binary flags capture behavioral patterns linked to calendar events.</p>
+
+    <h2>Missing Data Strategies</h2>
+    <p>Missing data is ubiquitous in real-world datasets, and handling it correctly is crucial. First, understand the missing mechanism: <strong>MCAR</strong> (Missing Completely At Random) means missingness is unrelated to any data. <strong>MAR</strong> (Missing At Random) means missingness depends on observed data. <strong>MNAR</strong> (Missing Not At Random) means missingness depends on the missing value itself.</p>
+    <p>For MCAR, simple imputation (mean, median, mode) works. For MAR, model-based imputation (KNN imputer, iterative imputer/MICE) uses other features to predict missing values. For MNAR, the missingness itself is informative, so always create a <strong>missing indicator</strong> binary column alongside any imputation. Tree-based models can often learn to split on missingness directly. Never drop rows or columns without understanding the impact on your dataset.</p>
+
+    <h2>Feature Selection Methods</h2>
+    <p>After engineering features, selecting the most relevant ones reduces noise, prevents overfitting, and speeds up training. Three approaches exist:</p>
+    <ul>
+      <li><strong>Filter methods:</strong> Rank features by statistical measures (correlation, mutual information, chi-squared, ANOVA F-statistic). Fast and model-agnostic, but ignore feature interactions.</li>
+      <li><strong>Wrapper methods:</strong> Evaluate feature subsets using the model itself (recursive feature elimination, forward/backward selection). More accurate but computationally expensive. RFE with cross-validation is the gold standard.</li>
+      <li><strong>Embedded methods:</strong> Feature selection happens during model training. L1 regularization drives irrelevant weights to zero. Tree-based feature importance ranks features by their split contribution. SHAP values provide the most reliable importance estimates.</li>
+    </ul>
+    <p>A practical workflow: remove zero-variance features first, then use correlation analysis to handle multicollinearity, then apply mutual information for initial ranking, and finally use RFE or SHAP for final selection.</p>
+  </section>
+
+  <section class="faq-section">
+    <h2>Frequently Asked Questions</h2>
+    <details>
+      <summary>What is feature engineering in machine learning?</summary>
+      <p>Feature engineering is the process of creating, transforming, and selecting input features to improve model performance. It includes scaling numeric features, encoding categorical variables, extracting information from text and dates, handling missing data, and creating interaction features. Good feature engineering often matters more than algorithm choice.</p>
+    </details>
+    <details>
+      <summary>Should I normalize or standardize my features?</summary>
+      <p>Standardization (zero mean, unit variance) is generally preferred because it handles outliers better and is required by many algorithms (SVM, logistic regression, PCA). Normalization (0-1 range) is useful for bounded value needs (neural networks, image data). Tree-based models do not require scaling.</p>
+    </details>
+    <details>
+      <summary>How should I handle missing data?</summary>
+      <p>It depends on the missing mechanism. For MCAR: mean/median imputation works. For MAR: model-based imputation (KNN, iterative imputer). For MNAR: the missingness is informative, so create a binary indicator. Always add a missing indicator feature alongside imputation.</p>
+    </details>
+    <details>
+      <summary>How do I encode categorical variables?</summary>
+      <p>One-hot encoding for low-cardinality features (&lt;20 categories). Target encoding for high-cardinality with cross-validation to prevent leakage. Label/ordinal encoding for ordinal categories. Frequency encoding as a simple alternative. Tree models work with label encoding; linear models need one-hot.</p>
+    </details>
+    <details>
+      <summary>What are the most impactful feature engineering techniques?</summary>
+      <p>Target encoding for high-cardinality categoricals, interaction features between related columns, aggregation features (group-by statistics), time-based features (recency, frequency, cyclical encoding), and domain-specific transformations (log for skewed data, ratios between related features).</p>
+    </details>
+  </section>
+
+  <section class="explainer-section">
+    <h2>Related Tools</h2>
+    <div class="related-grid">
+      <a href="/answers/ml-algorithm-comparison.html" class="related-card">
+        <div class="related-title">ML Algorithm Comparison</div>
+        <div class="related-desc">Interactive wizard to choose the right ML algorithm for your problem.</div>
+      </a>
+      <a href="/guides/overfitting-underfitting-guide.html" class="related-card">
+        <div class="related-title">Overfitting & Underfitting Guide</div>
+        <div class="related-desc">Interactive bias-variance tradeoff demo with polynomial curve fitting.</div>
+      </a>
+      <a href="/research/ml-cheatsheet.html" class="related-card">
+        <div class="related-title">ML Cheatsheet 2026</div>
+        <div class="related-desc">Complete reference for algorithms, metrics, code snippets, and hyperparameters.</div>
+      </a>
+    </div>
+  </section>
+
+  <section class="explainer-section">
+    <h2>About the Author</h2>
+    <p><strong>Michael Lip</strong> builds open-source ML tools and developer utilities at <a href="https://zovo.one">zovo.one</a>. ml0x is part of the Zovo Tools network, a collection of free, privacy-first tools for developers and data scientists. No tracking, no accounts required, no data leaves your browser.</p>
+  </section>
+
+  <p class="last-updated">Last updated: May 25, 2026</p>
+</main>
+
+<footer class="site-footer">
+    <div class="footer-inner">
+        <div class="footer-brand">Zovo Tools</div>
+        <div class="footer-tagline">Free developer tools by a solo dev. No tracking.</div>
+        <a href="https://zovo.one/pricing?utm_source=ml0x.com&utm_medium=satellite&utm_campaign=footer-link" class="footer-cta">Zovo Lifetime — $99 once, free forever &rarr;</a>
+        <div class="footer-copy">&copy; 2026 <a href="https://zovo.one">Zovo</a> &middot; 47/500 founding spots</div>
+    </div>
+</footer>
+
+<nav class="zovo-network" aria-label="Zovo Tools Network">
+    <div class="zovo-network-inner">
+        <h3 class="zovo-network-title">Explore More Tools</h3>
+        <div class="zovo-network-links">
+            <a href="https://abwex.com">ABWex — A/B Testing</a>
+            <a href="https://claudflow.com">ClaudFlow — Workflows</a>
+            <a href="https://claudhq.com">ClaudHQ — AI Code Tools &amp; Fixes</a>
+            <a href="https://claudkit.com">ClaudKit — API</a>
+            <a href="https://enhio.com">Enhio — Text Tools</a>
+            <a href="https://epochpilot.com">EpochPilot — Timestamps</a>
+            <a href="https://gen8x.com">Gen8X — Color Tools</a>
+            <a href="https://gpt0x.com">GPT0X — AI Models</a>
+            <a href="https://heytensor.com">HeyTensor — ML Tools</a>
+            <a href="https://invokebot.com">InvokeBot — Webhooks</a>
+            <a href="https://kappafy.com">Kappafy — JSON</a>
+            <a href="https://kappakit.com">KappaKit — Dev Toolkit</a>
+            <a href="https://kickllm.com">KickLLM — LLM Costs</a>
+            <a href="https://krzen.com">Krzen — Image Tools</a>
+            <a href="https://lochbot.com">LochBot — Security</a>
+            <a href="https://lockml.com">LockML — ML Compare</a>
+            <a href="https://ml3x.com">ML3X — Matrix Math</a>
+        </div>
+    </div>
+</nav>
+
+<style>
+.fe-category { margin-bottom:24px; }
+.fe-category-header {
+  display:flex; align-items:center; justify-content:space-between;
+  padding:12px 16px; background:var(--bg-card); border:1px solid var(--border);
+  border-radius:var(--radius) var(--radius) 0 0; cursor:pointer;
+}
+.fe-category-header h4 { color:var(--accent); font-size:0.95rem; margin:0; }
+.fe-category-header .cat-progress { font-size:0.8rem; color:var(--text-muted); }
+.fe-items { border:1px solid var(--border); border-top:none; border-radius:0 0 var(--radius) var(--radius); }
+.fe-item {
+  display:flex; gap:12px; padding:12px 16px; border-bottom:1px solid var(--border);
+  cursor:pointer; transition:background 0.15s; align-items:flex-start;
+}
+.fe-item:last-child { border-bottom:none; }
+.fe-item:hover { background:var(--bg-hover); }
+.fe-item.checked { opacity:0.5; }
+.fe-check { flex-shrink:0; width:20px; height:20px; border:2px solid var(--border); border-radius:4px; display:flex; align-items:center; justify-content:center; font-size:14px; margin-top:2px; }
+.fe-item.checked .fe-check { border-color:var(--accent); color:var(--accent); background:rgba(59,130,246,0.1); }
+.fe-item-content { flex:1; }
+.fe-item-title { font-weight:600; font-size:0.9rem; color:var(--text); }
+.fe-item-desc { font-size:0.82rem; color:var(--text-muted); margin-top:4px; display:none; line-height:1.5; }
+.fe-item.expanded .fe-item-desc { display:block; }
+.detection-col { background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius); padding:12px 16px; margin-bottom:8px; }
+.detection-col .col-name { font-weight:600; color:var(--text); }
+.detection-col .col-type { display:inline-block; padding:2px 8px; border-radius:3px; font-size:0.75rem; font-weight:600; margin-left:8px; }
+.detection-col .suggestions { font-size:0.82rem; color:var(--text-muted); margin-top:6px; }
+</style>
+
+<script>
+(function() {
+  const categories = [
+    {
+      name: 'Numeric Features',
+      items: [
+        {title: 'Check distribution shape (skewness)', desc: 'Use histograms or skewness test. If skewness > 1, apply log, sqrt, or Box-Cox transformation to normalize the distribution. This helps linear models and reduces outlier influence.'},
+        {title: 'Standardize features (z-score normalization)', desc: 'Apply StandardScaler (mean=0, std=1) for distance-based algorithms (SVM, KNN), regularized models (Ridge, Lasso), and neural networks. Fit on training data only, transform both train and test.'},
+        {title: 'Normalize to 0-1 range if needed', desc: 'Use MinMaxScaler when features need bounded values (neural networks with sigmoid output, image pixel values). Sensitive to outliers; consider RobustScaler for data with outliers.'},
+        {title: 'Apply log transform to skewed features', desc: 'Use np.log1p(x) for right-skewed features like income, prices, or counts. The +1 handles zero values. Inverse with np.expm1() for predictions. Check if skewness improves after transformation.'},
+        {title: 'Create polynomial and interaction features', desc: 'Use PolynomialFeatures to create x^2, x^3, and x1*x2 terms. Helps linear models capture nonlinear relationships. Be careful with degree > 2 as feature count grows exponentially.'},
+        {title: 'Bin continuous variables into categories', desc: 'Use pd.cut (equal-width) or pd.qcut (equal-frequency) to discretize continuous variables. Domain-specific bins (age groups, income brackets) often perform best. Creates interpretable features.'},
+        {title: 'Handle outliers (clip, winsorize, or remove)', desc: 'Clip values beyond 1st/99th percentile, apply Winsorization, or use IQR-based removal. The approach depends on whether outliers are errors (remove) or valid extreme values (clip). Document your choice.'},
+        {title: 'Create ratio features between related columns', desc: 'Ratios like revenue/employees, price/sqft, or conversion_rate = purchases/visits capture relationships that raw values miss. Ensure denominators are not zero (add small epsilon).'}
+      ]
+    },
+    {
+      name: 'Categorical Features',
+      items: [
+        {title: 'One-hot encode low-cardinality features (<20 categories)', desc: 'Use pd.get_dummies() or OneHotEncoder with drop="first" to avoid multicollinearity. Creates binary columns per category. Best for linear models and small category counts.'},
+        {title: 'Target encode high-cardinality features', desc: 'Replace each category with the mean target value. MUST use cross-validation (fit on K-1 folds, transform the held-out fold) to prevent target leakage. Add smoothing/regularization for rare categories.'},
+        {title: 'Apply frequency/count encoding', desc: 'Replace each category with its occurrence count or proportion. Captures the intuition that rare categories behave differently. Simple, no target leakage risk. Works well as a secondary encoding.'},
+        {title: 'Use ordinal encoding for ordered categories', desc: 'Map ordered categories (low/medium/high, education levels) to integers preserving the natural order. Label encoding without order for tree models (they learn arbitrary splits). Never use for linear models without ordering.'},
+        {title: 'Group rare categories into "Other"', desc: 'Categories appearing fewer than N times (e.g., 10) are noisy. Group them into a single "Other" or "Rare" category. Reduces dimensionality and prevents overfitting to rare categories.'},
+        {title: 'Create binary flags for important categories', desc: 'Extract is_premium, is_weekend, is_mobile as binary features from categorical columns. These interpretable features often capture key business signals that get lost in one-hot encoding.'}
+      ]
+    },
+    {
+      name: 'Text Features',
+      items: [
+        {title: 'Clean text (lowercase, remove punctuation, stopwords)', desc: 'Apply lowercase, strip punctuation/special characters, remove stopwords (the, is, at). Use regex for URLs and emails. Lemmatize or stem for word normalization. Order matters: lowercase first.'},
+        {title: 'Generate TF-IDF features', desc: 'Use TfidfVectorizer with max_features (1000-10000), ngram_range (1,2) for unigrams+bigrams. TF-IDF downweights common words, making it much better than raw counts. Essential baseline for text classification.'},
+        {title: 'Extract text statistics (length, word count, etc.)', desc: 'Create features: character count, word count, average word length, sentence count, punctuation count, uppercase ratio, digit ratio. These simple features are often highly predictive (e.g., spam detection).'},
+        {title: 'Generate word/sentence embeddings', desc: 'Use sentence-transformers (all-MiniLM-L6-v2) for dense 384-dim embeddings. Average Word2Vec/GloVe vectors as a simpler alternative. Embeddings capture semantic meaning that TF-IDF misses.'},
+        {title: 'Extract named entities and sentiment', desc: 'Use spaCy for NER (person, org, location counts). Use VADER or TextBlob for sentiment polarity/subjectivity scores. These structured extractions from unstructured text add powerful signal.'},
+        {title: 'Create n-gram features for short text', desc: 'Character-level n-grams (3-5 chars) capture morphological patterns and handle typos/OOV words. Word n-grams (bigrams, trigrams) capture common phrases. Useful for spam detection and language identification.'}
+      ]
+    },
+    {
+      name: 'Date/Time Features',
+      items: [
+        {title: 'Extract components (hour, day, month, quarter, year)', desc: 'Use pd.DatetimeIndex to extract .hour, .dayofweek, .month, .quarter, .year. Each captures different periodicity. Day of week captures weekly patterns, month captures seasonal trends.'},
+        {title: 'Apply cyclical encoding (sin/cos)', desc: 'Transform periodic features with sin(2*pi*x/period) and cos(2*pi*x/period). Ensures that hour 23 is close to hour 0, Monday is close to Sunday. Essential for models that use distance metrics.'},
+        {title: 'Create recency features (days since event)', desc: 'Calculate days_since_last_purchase, hours_since_signup, seconds_since_last_login. Recency is one of the most powerful features in RFM analysis and user behavior modeling.'},
+        {title: 'Add binary flags (is_weekend, is_holiday, is_business_hours)', desc: 'Create boolean columns for weekends, public holidays (use the holidays library), business hours, peak hours. These capture behavioral regime changes that raw datetime values obscure.'},
+        {title: 'Generate lag and rolling window features', desc: 'For time series: create value_lag_1, value_lag_7, rolling_mean_7d, rolling_std_30d. Lag features capture autoregression, rolling features capture trends and volatility. Prevent future data leakage.'},
+        {title: 'Calculate time between events', desc: 'Compute inter-event intervals: time_between_purchases, session_duration, days_between_logins. These velocity features capture behavioral patterns (accelerating/decelerating engagement).'}
+      ]
+    },
+    {
+      name: 'Missing Data Handling',
+      items: [
+        {title: 'Profile missing data patterns (MCAR/MAR/MNAR)', desc: 'Use msno.matrix() for visualization, Little MCAR test for statistical testing. Understanding WHY data is missing determines the correct imputation strategy. Document findings.'},
+        {title: 'Add missing indicator columns', desc: 'For each column with missing values, create is_colname_missing binary feature. Missingness itself is often predictive (e.g., missing income may indicate unemployment). Always do this alongside imputation.'},
+        {title: 'Impute numeric with median (robust to outliers)', desc: 'Median imputation is more robust than mean for skewed distributions and data with outliers. Use SimpleImputer(strategy="median"). Always fit on training data only to prevent data leakage.'},
+        {title: 'Impute categorical with mode or "Missing" category', desc: 'Replace missing categorical values with the mode (most frequent category) or create an explicit "Missing" category. The "Missing" category approach preserves the information that the value was absent.'},
+        {title: 'Use model-based imputation (KNN, IterativeImputer)', desc: 'KNNImputer uses K nearest complete rows to predict missing values. IterativeImputer (MICE) models each feature as a function of others iteratively. More accurate but slower. Use for MAR data.'},
+        {title: 'Validate imputation does not introduce bias', desc: 'Compare distributions before and after imputation. Check if imputed values are realistic. Verify model performance with and without imputation. If imputation degrades performance, the missingness mechanism may be MNAR.'},
+        {title: 'Document missing data decisions', desc: 'Record: which columns have missing data, the percentage missing, the hypothesized mechanism, the chosen strategy, and validation results. This documentation is essential for reproducibility and debugging.'}
+      ]
+    }
+  ];
+
+  const container = document.getElementById('checklistContainer');
+  let allItems = [];
+
+  categories.forEach((cat, ci) => {
+    const catDiv = document.createElement('div');
+    catDiv.className = 'fe-category';
+
+    const header = document.createElement('div');
+    header.className = 'fe-category-header';
+    header.innerHTML = '<h4>' + cat.name + '</h4><span class="cat-progress" id="cat-prog-' + ci + '">0/' + cat.items.length + '</span>';
+    catDiv.appendChild(header);
+
+    const itemsDiv = document.createElement('div');
+    itemsDiv.className = 'fe-items';
+
+    cat.items.forEach((item, ii) => {
+      const itemDiv = document.createElement('div');
+      itemDiv.className = 'fe-item';
+      itemDiv.innerHTML = '<div class="fe-check"></div><div class="fe-item-content"><div class="fe-item-title">' + item.title + '</div><div class="fe-item-desc">' + item.desc + '</div></div>';
+
+      const itemData = {el: itemDiv, checked: false, catIndex: ci};
+      allItems.push(itemData);
+
+      itemDiv.addEventListener('click', function(e) {
+        if (e.target.closest('.fe-item-desc')) return;
+        itemData.checked = !itemData.checked;
+        itemDiv.classList.toggle('checked', itemData.checked);
+        itemDiv.querySelector('.fe-check').textContent = itemData.checked ? '\u2713' : '';
+        itemDiv.classList.toggle('expanded', !itemData.checked);
+        updateProgress();
+      });
+
+      itemDiv.addEventListener('dblclick', function() {
+        itemDiv.classList.toggle('expanded');
+      });
+
+      itemsDiv.appendChild(itemDiv);
+    });
+
+    catDiv.appendChild(itemsDiv);
+    container.appendChild(catDiv);
+  });
+
+  document.getElementById('totalCount').textContent = allItems.length;
+
+  function updateProgress() {
+    const checked = allItems.filter(i => i.checked).length;
+    const total = allItems.length;
+    const pct = Math.round(checked / total * 100);
+    document.getElementById('checkedCount').textContent = checked;
+    document.getElementById('progressBar').style.width = pct + '%';
+    document.getElementById('progressBar').textContent = pct + '%';
+
+    // Per-category progress
+    categories.forEach((cat, ci) => {
+      const catItems = allItems.filter(i => i.catIndex === ci);
+      const catChecked = catItems.filter(i => i.checked).length;
+      document.getElementById('cat-prog-' + ci).textContent = catChecked + '/' + catItems.length;
+    });
+  }
+
+  // Data Type Detector
+  document.getElementById('detectBtn').addEventListener('click', function() {
+    const raw = document.getElementById('dataInput').value.trim();
+    if (!raw) { document.getElementById('detectionResults').innerHTML = '<p style="color:#f87171;">Please paste some CSV data first.</p>'; return; }
+
+    const lines = raw.split('\n').map(l => l.trim()).filter(l => l);
+    if (lines.length < 2) { document.getElementById('detectionResults').innerHTML = '<p style="color:#f87171;">Need at least a header row and one data row.</p>'; return; }
+
+    const headers = lines[0].split(',').map(h => h.trim());
+    const rows = lines.slice(1).map(l => l.split(',').map(c => c.trim()));
+
+    let html = '<h4 style="color:var(--accent);margin-bottom:12px;">Detected Columns</h4>';
+
+    headers.forEach((header, i) => {
+      const values = rows.map(r => r[i] || '').filter(v => v);
+      const type = detectType(header, values);
+      const suggestions = getSuggestions(type);
+      const typeColor = type === 'numeric' ? '#22c55e' : type === 'categorical' ? '#3b82f6' : type === 'datetime' ? '#eab308' : type === 'text' ? '#a855f7' : '#888';
+
+      html += '<div class="detection-col">';
+      html += '<span class="col-name">' + header + '</span>';
+      html += '<span class="col-type" style="background:' + typeColor + '22;color:' + typeColor + ';">' + type + '</span>';
+      html += '<div class="suggestions"><strong>Suggested steps:</strong> ' + suggestions.join(' | ') + '</div>';
+      html += '</div>';
+    });
+
+    document.getElementById('detectionResults').innerHTML = html;
+  });
+
+  function detectType(name, values) {
+    const n = name.toLowerCase();
+    if (n.includes('date') || n.includes('time') || n.includes('created') || n.includes('updated') || n.includes('timestamp') || n.includes('signup') || n.includes('birth')) return 'datetime';
+    if (n.includes('description') || n.includes('comment') || n.includes('text') || n.includes('note') || n.includes('review') || n.includes('bio') || n.includes('message')) return 'text';
+
+    const numCount = values.filter(v => !isNaN(v) && v !== '').length;
+    if (numCount / values.length > 0.8) {
+      const uniq = new Set(values).size;
+      if (uniq <= 10 && uniq < values.length * 0.3) return 'categorical';
+      return 'numeric';
+    }
+
+    const datePatterns = [/\d{4}-\d{2}-\d{2}/, /\d{2}\/\d{2}\/\d{4}/, /\d{2}-\d{2}-\d{4}/];
+    const dateCount = values.filter(v => datePatterns.some(p => p.test(v))).length;
+    if (dateCount / values.length > 0.5) return 'datetime';
+
+    const avgLen = values.reduce((s, v) => s + v.length, 0) / values.length;
+    if (avgLen > 30) return 'text';
+
+    const uniq = new Set(values).size;
+    if (uniq <= 20 || uniq < values.length * 0.5) return 'categorical';
+
+    return 'text';
+  }
+
+  function getSuggestions(type) {
+    if (type === 'numeric') return ['Check distribution skewness', 'Standardize or normalize', 'Log transform if skewed', 'Create bins if nonlinear', 'Check for outliers'];
+    if (type === 'categorical') return ['One-hot encode if <20 categories', 'Target encode if high cardinality', 'Group rare categories', 'Create binary flags'];
+    if (type === 'datetime') return ['Extract hour/day/month/year', 'Apply cyclical sin/cos encoding', 'Create recency features', 'Add is_weekend/is_holiday flags'];
+    if (type === 'text') return ['Clean text (lowercase, stopwords)', 'Generate TF-IDF vectors', 'Extract text statistics', 'Create embeddings if needed'];
+    return ['Inspect values manually'];
+  }
+
+  updateProgress();
+})();
+</script>
+</body>
+</html>

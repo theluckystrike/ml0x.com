@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Overfitting vs Underfitting — Interactive Bias-Variance Tradeoff Demo | ml0x</title>
+<meta name="description" content="Interactive bias-variance tradeoff visualizer. Adjust polynomial degree to see underfitting, good fit, and overfitting in real time. Learn regularization, cross-validation, and early stopping techniques.">
+<meta name="keywords" content="overfitting, underfitting, bias variance tradeoff, regularization, cross validation, early stopping, polynomial regression, model complexity, machine learning, generalization">
+<link rel="canonical" href="https://ml0x.com/guides/overfitting-underfitting-guide.html">
+<link rel="alternate" hreflang="en" href="https://ml0x.com/guides/overfitting-underfitting-guide.html">
+<link rel="alternate" hreflang="x-default" href="https://ml0x.com/guides/overfitting-underfitting-guide.html">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Overfitting vs Underfitting — Interactive Bias-Variance Tradeoff Demo">
+<meta property="og:description" content="Adjust polynomial degree to see underfitting, good fit, and overfitting in real time. Learn regularization, cross-validation, and early stopping.">
+<meta property="og:url" content="https://ml0x.com/guides/overfitting-underfitting-guide.html">
+<meta property="og:site_name" content="ml0x">
+<meta property="og:locale" content="en_US">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Overfitting vs Underfitting — Interactive Bias-Variance Tradeoff Demo">
+<meta name="twitter:description" content="Adjust polynomial degree to see underfitting, good fit, and overfitting in real time. Learn regularization, cross-validation, and early stopping.">
+<meta name="author" content="Michael Lip">
+<meta name="robots" content="index, follow">
+<link rel="stylesheet" href="/assets/style.css">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Article",
+  "headline": "Overfitting vs Underfitting — Interactive Bias-Variance Tradeoff Demo",
+  "description": "Interactive bias-variance tradeoff visualizer. Adjust polynomial degree to see underfitting, good fit, and overfitting in real time.",
+  "author": {"@type": "Person", "name": "Michael Lip", "url": "https://zovo.one"},
+  "publisher": {"@type": "Organization", "name": "ml0x", "url": "https://ml0x.com"},
+  "datePublished": "2026-05-25",
+  "dateModified": "2026-05-25",
+  "mainEntityOfPage": {"@type": "WebPage", "@id": "https://ml0x.com/guides/overfitting-underfitting-guide.html"},
+  "url": "https://ml0x.com/guides/overfitting-underfitting-guide.html"
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {"@type": "Question", "name": "What is the difference between overfitting and underfitting?", "acceptedAnswer": {"@type": "Answer", "text": "Overfitting occurs when a model learns the noise in the training data rather than the underlying pattern, resulting in excellent training performance but poor generalization to new data. Underfitting occurs when a model is too simple to capture the underlying pattern, resulting in poor performance on both training and test data. The goal is to find the sweet spot between the two."}},
+    {"@type": "Question", "name": "What is the bias-variance tradeoff?", "acceptedAnswer": {"@type": "Answer", "text": "The bias-variance tradeoff is the fundamental tension in machine learning. Bias is error from overly simplistic assumptions (underfitting). Variance is error from sensitivity to small fluctuations in training data (overfitting). Total error equals bias squared plus variance plus irreducible noise. Reducing bias typically increases variance and vice versa. The optimal model minimizes total error."}},
+    {"@type": "Question", "name": "How do I detect overfitting?", "acceptedAnswer": {"@type": "Answer", "text": "Compare training and validation performance. If training loss is much lower than validation loss, or if training accuracy is much higher than validation accuracy, the model is overfitting. Learning curves (loss vs. epoch) that diverge between training and validation sets are a clear signal. Cross-validation provides a more robust detection method."}},
+    {"@type": "Question", "name": "What regularization techniques prevent overfitting?", "acceptedAnswer": {"@type": "Answer", "text": "Common regularization techniques include: L1 (Lasso) which drives some weights to zero for feature selection, L2 (Ridge) which penalizes large weights, dropout which randomly deactivates neurons during training, early stopping which halts training when validation loss increases, data augmentation which creates synthetic training examples, and reducing model complexity by using fewer parameters."}},
+    {"@type": "Question", "name": "What is cross-validation and when should I use it?", "acceptedAnswer": {"@type": "Answer", "text": "Cross-validation is a technique for evaluating model performance by splitting data into K folds, training on K-1 folds and validating on the remaining one, then rotating through all folds. K-fold cross-validation (typically K=5 or K=10) provides a more reliable estimate of generalization performance than a single train-test split, especially on small datasets. Use it whenever you need to compare models or tune hyperparameters."}}
+  ]
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {"@type": "ListItem", "position": 1, "name": "Home", "item": "https://ml0x.com/"},
+    {"@type": "ListItem", "position": 2, "name": "Guides", "item": "https://ml0x.com/guides/"},
+    {"@type": "ListItem", "position": 3, "name": "Overfitting vs Underfitting Guide"}
+  ]
+}
+</script>
+</head>
+<body>
+
+<header>
+  <div class="container header-inner">
+    <a href="/" class="logo">ml0x</a>
+    <nav>
+      <a href="/">Home</a>
+      <a href="/research/">Research</a>
+      <a href="/tools/">Tools</a>
+      <a href="/guides/">Guides</a>
+      <a href="/answers/">Answers</a>
+      <div class="nav-right">
+        <a href="https://zovo.one/pricing?utm_source=ml0x.com&utm_medium=satellite&utm_campaign=nav-link" class="nav-pro" target="_blank">Go Pro &#10022;</a>
+        <a href="https://zovo.one/tools" class="nav-zovo">Zovo Tools</a>
+      </div>
+    </nav>
+  </div>
+</header>
+
+<main class="container">
+  <div class="breadcrumb">
+    <a href="/">Home</a> <span>&rsaquo;</span> <a href="/guides/">Guides</a> <span>&rsaquo;</span> Overfitting vs Underfitting
+  </div>
+
+  <div class="hero">
+    <h1>Overfitting vs <span>Underfitting</span></h1>
+    <p>Interactive bias-variance tradeoff demo. Adjust the polynomial degree to see how model complexity affects fitting. Watch training and test errors change in real time. All computations run locally in your browser.</p>
+  </div>
+
+  <div class="tool-card">
+    <h3>Bias-Variance Tradeoff Demo</h3>
+    <div class="control-row">
+      <div class="control-group slider-group">
+        <label>Polynomial Degree: <span class="slider-value" id="degreeDisplay">3</span></label>
+        <input type="range" id="degreeSlider" min="1" max="15" value="3">
+      </div>
+      <div class="control-group slider-group">
+        <label>Noise Level: <span class="slider-value" id="noiseDisplay">0.30</span></label>
+        <input type="range" id="noiseSlider" min="5" max="80" value="30">
+      </div>
+      <div class="control-group">
+        <label>Data Points</label>
+        <select id="numPoints">
+          <option value="20">20</option>
+          <option value="40" selected>40</option>
+          <option value="80">80</option>
+        </select>
+      </div>
+      <button class="btn" id="bvRegenBtn">New Data</button>
+    </div>
+    <div class="viz-container">
+      <canvas id="bvCanvas" width="700" height="400"></canvas>
+    </div>
+    <div class="stat-grid">
+      <div class="stat-card"><div class="value" id="trainErr">--</div><div class="label">Train MSE</div></div>
+      <div class="stat-card"><div class="value" id="testErr">--</div><div class="label">Test MSE</div></div>
+      <div class="stat-card"><div class="value" id="fitStatus">--</div><div class="label">Fit Status</div></div>
+      <div class="stat-card"><div class="value" id="degreeVal">3</div><div class="label">Degree</div></div>
+    </div>
+    <div class="results-box" id="fitAdvice" style="margin-top:12px;">
+      <p style="color:#888;margin:0;">Adjust the polynomial degree slider to explore underfitting, good fit, and overfitting regimes.</p>
+    </div>
+  </div>
+
+  <section class="explainer-section">
+    <h2>The Bias-Variance Tradeoff</h2>
+    <p>The bias-variance tradeoff is one of the most fundamental concepts in machine learning. Every prediction error can be decomposed into three components: bias, variance, and irreducible noise. Understanding this decomposition is essential for diagnosing model problems and choosing appropriate solutions.</p>
+    <p><strong>Bias</strong> is the error introduced by approximating a complex real-world problem with a simplified model. A linear model trying to fit a quadratic relationship has high bias. It consistently misses the true pattern regardless of the training data. High-bias models are said to underfit the data.</p>
+    <p><strong>Variance</strong> is the error introduced by the model's sensitivity to fluctuations in the training set. A degree-15 polynomial fit to 20 noisy data points will produce wildly different curves depending on which 20 points are sampled. The model captures noise as if it were signal. High-variance models are said to overfit the data.</p>
+    <p><strong>Irreducible noise</strong> is the inherent randomness in the data that no model can explain. This sets a floor on achievable error. Trying to reduce error below this floor causes the model to fit noise, increasing variance.</p>
+    <p>The total expected error is: <code>Error = Bias^2 + Variance + Noise</code>. As model complexity increases, bias decreases (the model can represent more complex patterns) but variance increases (the model becomes more sensitive to training data). The optimal model minimizes the sum of both.</p>
+
+    <h2>What Is Overfitting?</h2>
+    <p>Overfitting occurs when a model learns the noise and random fluctuations in the training data rather than the underlying pattern. An overfit model performs excellently on training data but poorly on unseen data. In the visualization above, increase the polynomial degree to 12 or higher and observe how the curve passes through every training point but oscillates wildly between them. Those wild oscillations predict nonsensical values for new data points.</p>
+    <p>Overfitting is more likely when:</p>
+    <ul>
+      <li>The model has too many parameters relative to the number of training examples</li>
+      <li>Training data is noisy or contains outliers</li>
+      <li>The model trains for too many epochs without validation monitoring</li>
+      <li>No regularization is applied</li>
+      <li>The training set is not representative of the true data distribution</li>
+    </ul>
+    <p>A classic sign of overfitting is a large gap between training and validation performance. If your model achieves 99% accuracy on training data but only 60% on validation data, it has memorized the training set rather than learning generalizable patterns.</p>
+
+    <h2>What Is Underfitting?</h2>
+    <p>Underfitting occurs when a model is too simple to capture the underlying pattern in the data. It performs poorly on both training and test data. In the visualization above, set the polynomial degree to 1. The straight line cannot capture the curved relationship, resulting in high error on both training and test data.</p>
+    <p>Underfitting is more likely when:</p>
+    <ul>
+      <li>The model is too simple (too few parameters or too restrictive an assumption)</li>
+      <li>Important features are missing from the input</li>
+      <li>Excessive regularization constrains the model too much</li>
+      <li>Training is stopped too early</li>
+      <li>The learning rate is too low and the optimizer has not converged</li>
+    </ul>
+
+    <h2>Regularization Techniques</h2>
+    <p>Regularization adds constraints or penalties to the learning process to reduce overfitting. The key insight is that simpler models generalize better. Regularization explicitly favors simplicity.</p>
+    <h3>L1 Regularization (Lasso)</h3>
+    <p>L1 adds the sum of absolute values of weights to the loss function: <code>Loss = Original_Loss + lambda * sum(|w|)</code>. L1 drives some weights exactly to zero, effectively performing automatic feature selection. It produces sparse models where irrelevant features are eliminated. Use L1 when you suspect many features are irrelevant.</p>
+    <h3>L2 Regularization (Ridge)</h3>
+    <p>L2 adds the sum of squared weights to the loss: <code>Loss = Original_Loss + lambda * sum(w^2)</code>. L2 penalizes large weights but does not drive them to zero. It distributes the weight values more evenly, preventing any single feature from dominating. L2 is the default regularization for most tasks and is equivalent to weight decay in neural networks.</p>
+    <h3>Elastic Net</h3>
+    <p>Elastic Net combines L1 and L2 regularization: <code>Loss = Original_Loss + lambda1 * sum(|w|) + lambda2 * sum(w^2)</code>. This gets the feature selection benefit of L1 with the stability of L2. Particularly useful when features are correlated.</p>
+    <h3>Dropout</h3>
+    <p>Dropout randomly sets a fraction of neuron activations to zero during each training step. This prevents neurons from co-adapting and forces the network to learn redundant representations. At test time, all neurons are active but their outputs are scaled by the dropout probability. Typical dropout rates are 0.2-0.5. Dropout is one of the most effective regularizers for neural networks.</p>
+    <h3>Data Augmentation</h3>
+    <p>Instead of constraining the model, data augmentation increases the effective training set size by creating modified copies of existing data. For images: rotation, flipping, cropping, color jitter. For text: synonym replacement, back-translation. For tabular data: SMOTE for class imbalance, mixup for interpolated examples. More data is almost always the best cure for overfitting.</p>
+
+    <h2>Cross-Validation</h2>
+    <p>Cross-validation provides a robust estimate of model performance by using all data for both training and validation. The most common variant is k-fold cross-validation:</p>
+    <ol>
+      <li>Split the data into k equal folds (typically k=5 or k=10).</li>
+      <li>For each fold: train the model on the other k-1 folds, evaluate on the held-out fold.</li>
+      <li>Average the k evaluation scores to get the final performance estimate.</li>
+    </ol>
+    <p>Cross-validation is more reliable than a single train-test split, especially on small datasets. It ensures every data point is used for both training and validation. Stratified k-fold preserves class proportions in each fold, which is important for imbalanced datasets.</p>
+    <p><strong>Leave-one-out cross-validation (LOOCV)</strong> uses k = n (one fold per data point). It is computationally expensive but provides the least biased estimate. <strong>Time-series cross-validation</strong> respects temporal ordering by always training on past data and validating on future data.</p>
+
+    <h2>Early Stopping</h2>
+    <p>Early stopping monitors validation performance during training and halts when it begins to degrade. The procedure is straightforward: after each epoch, evaluate the model on a validation set. If validation loss has not improved for a specified number of epochs (the patience parameter), stop training and restore the weights from the best epoch.</p>
+    <p>Early stopping acts as an implicit regularizer. As training progresses, the model first learns the true signal (both training and validation loss decrease) and then begins to memorize noise (training loss continues to decrease but validation loss increases). By stopping at the inflection point, early stopping captures the learned signal without the memorized noise.</p>
+    <p>Typical patience values range from 5 to 20 epochs. Set patience too low and you risk stopping prematurely (underfitting). Set it too high and you waste computation. A common pattern is to combine early stopping with a learning rate reducer: first reduce the learning rate when validation loss plateaus, then stop if it still does not improve.</p>
+
+    <h2>Practical Decision Framework</h2>
+    <p>When diagnosing a model, start with these questions:</p>
+    <ul>
+      <li><strong>Is training error high?</strong> You are underfitting. Increase model complexity, add features, reduce regularization, or train longer.</li>
+      <li><strong>Is training error low but test error high?</strong> You are overfitting. Add regularization, reduce model complexity, get more training data, or apply data augmentation.</li>
+      <li><strong>Are both training and test error low and close?</strong> You have a good fit. This is the target.</li>
+      <li><strong>Are both training and test error high?</strong> Either you are underfitting, or the problem is fundamentally hard (high irreducible noise). Try a more powerful model first.</li>
+    </ul>
+  </section>
+
+  <section class="faq-section">
+    <h2>Frequently Asked Questions</h2>
+    <details>
+      <summary>What is the difference between overfitting and underfitting?</summary>
+      <p>Overfitting occurs when a model learns noise rather than the underlying pattern, resulting in excellent training performance but poor generalization. Underfitting occurs when a model is too simple to capture the pattern, resulting in poor performance on both training and test data. The goal is the sweet spot between the two.</p>
+    </details>
+    <details>
+      <summary>What is the bias-variance tradeoff?</summary>
+      <p>The bias-variance tradeoff is the fundamental tension in ML. Bias is error from overly simplistic assumptions (underfitting). Variance is error from sensitivity to training data fluctuations (overfitting). Total error equals bias squared plus variance plus irreducible noise. Reducing bias typically increases variance and vice versa.</p>
+    </details>
+    <details>
+      <summary>How do I detect overfitting?</summary>
+      <p>Compare training and validation performance. If training loss is much lower than validation loss, or training accuracy is much higher than validation accuracy, the model is overfitting. Learning curves that diverge between training and validation sets are a clear signal.</p>
+    </details>
+    <details>
+      <summary>What regularization techniques prevent overfitting?</summary>
+      <p>Common techniques include: L1 (Lasso) which drives some weights to zero, L2 (Ridge) which penalizes large weights, dropout which randomly deactivates neurons during training, early stopping which halts training when validation loss increases, and data augmentation which creates synthetic training examples.</p>
+    </details>
+    <details>
+      <summary>What is cross-validation and when should I use it?</summary>
+      <p>Cross-validation splits data into K folds, trains on K-1 folds and validates on the remaining one, rotating through all folds. K-fold CV (typically K=5 or K=10) provides a more reliable estimate of generalization than a single train-test split, especially on small datasets.</p>
+    </details>
+  </section>
+
+  <section class="explainer-section">
+    <h2>Related Tools</h2>
+    <div class="related-grid">
+      <a href="/tools/neural-network-playground.html" class="related-card">
+        <div class="related-title">Neural Network Playground</div>
+        <div class="related-desc">Build and train neural networks in your browser. Watch decision boundaries form in real time.</div>
+      </a>
+      <a href="/guides/gradient-descent-explained.html" class="related-card">
+        <div class="related-title">Gradient Descent Explained</div>
+        <div class="related-desc">Interactive visualizer for SGD, momentum, Adam optimizer, and convergence.</div>
+      </a>
+      <a href="/research/feature-engineering-checklist.html" class="related-card">
+        <div class="related-title">Feature Engineering Checklist</div>
+        <div class="related-desc">Interactive checklist for feature engineering best practices across all data types.</div>
+      </a>
+    </div>
+  </section>
+
+  <section class="explainer-section">
+    <h2>About the Author</h2>
+    <p><strong>Michael Lip</strong> builds open-source ML tools and developer utilities at <a href="https://zovo.one">zovo.one</a>. ml0x is part of the Zovo Tools network, a collection of free, privacy-first tools for developers and data scientists. No tracking, no accounts required, no data leaves your browser.</p>
+  </section>
+
+  <p class="last-updated">Last updated: May 25, 2026</p>
+</main>
+
+<footer class="site-footer">
+    <div class="footer-inner">
+        <div class="footer-brand">Zovo Tools</div>
+        <div class="footer-tagline">Free developer tools by a solo dev. No tracking.</div>
+        <a href="https://zovo.one/pricing?utm_source=ml0x.com&utm_medium=satellite&utm_campaign=footer-link" class="footer-cta">Zovo Lifetime — $99 once, free forever &rarr;</a>
+        <div class="footer-copy">&copy; 2026 <a href="https://zovo.one">Zovo</a> &middot; 47/500 founding spots</div>
+    </div>
+</footer>
+
+<nav class="zovo-network" aria-label="Zovo Tools Network">
+    <div class="zovo-network-inner">
+        <h3 class="zovo-network-title">Explore More Tools</h3>
+        <div class="zovo-network-links">
+            <a href="https://abwex.com">ABWex — A/B Testing</a>
+            <a href="https://claudflow.com">ClaudFlow — Workflows</a>
+            <a href="https://claudhq.com">ClaudHQ — AI Code Tools &amp; Fixes</a>
+            <a href="https://claudkit.com">ClaudKit — API</a>
+            <a href="https://enhio.com">Enhio — Text Tools</a>
+            <a href="https://epochpilot.com">EpochPilot — Timestamps</a>
+            <a href="https://gen8x.com">Gen8X — Color Tools</a>
+            <a href="https://gpt0x.com">GPT0X — AI Models</a>
+            <a href="https://heytensor.com">HeyTensor — ML Tools</a>
+            <a href="https://invokebot.com">InvokeBot — Webhooks</a>
+            <a href="https://kappafy.com">Kappafy — JSON</a>
+            <a href="https://kappakit.com">KappaKit — Dev Toolkit</a>
+            <a href="https://kickllm.com">KickLLM — LLM Costs</a>
+            <a href="https://krzen.com">Krzen — Image Tools</a>
+            <a href="https://lochbot.com">LochBot — Security</a>
+            <a href="https://lockml.com">LockML — ML Compare</a>
+            <a href="https://ml3x.com">ML3X — Matrix Math</a>
+        </div>
+    </div>
+</nav>
+
+<script>
+(function() {
+  const canvas = document.getElementById('bvCanvas');
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+  const pad = 50;
+
+  let trainData = [], testData = [];
+
+  function trueFn(x) { return 0.5 * Math.sin(2.5 * x) + 0.3 * x; }
+
+  function generateData() {
+    const n = parseInt(document.getElementById('numPoints').value);
+    const noise = parseInt(document.getElementById('noiseSlider').value) / 100;
+    trainData = [];
+    testData = [];
+    for (let i = 0; i < n; i++) {
+      const x = (i / (n - 1)) * 4 - 2;
+      trainData.push({x, y: trueFn(x) + (Math.random() - 0.5) * noise * 2});
+    }
+    for (let i = 0; i < n; i++) {
+      const x = Math.random() * 4 - 2;
+      testData.push({x, y: trueFn(x) + (Math.random() - 0.5) * noise * 2});
+    }
+  }
+
+  // Polynomial regression via normal equations
+  function polyFit(data, degree) {
+    const n = data.length;
+    const X = [];
+    const Y = [];
+    for (let i = 0; i < n; i++) {
+      const row = [];
+      for (let d = 0; d <= degree; d++) row.push(Math.pow(data[i].x, d));
+      X.push(row);
+      Y.push(data[i].y);
+    }
+
+    // X^T X
+    const cols = degree + 1;
+    const XtX = Array.from({length: cols}, () => new Array(cols).fill(0));
+    const XtY = new Array(cols).fill(0);
+    for (let i = 0; i < n; i++) {
+      for (let j = 0; j < cols; j++) {
+        XtY[j] += X[i][j] * Y[i];
+        for (let k = 0; k < cols; k++) {
+          XtX[j][k] += X[i][j] * X[i][k];
+        }
+      }
+    }
+
+    // Add small ridge to prevent singular matrix
+    for (let i = 0; i < cols; i++) XtX[i][i] += 1e-8;
+
+    // Solve via Gaussian elimination
+    const aug = XtX.map((row, i) => [...row, XtY[i]]);
+    for (let i = 0; i < cols; i++) {
+      let maxRow = i;
+      for (let k = i + 1; k < cols; k++) {
+        if (Math.abs(aug[k][i]) > Math.abs(aug[maxRow][i])) maxRow = k;
+      }
+      [aug[i], aug[maxRow]] = [aug[maxRow], aug[i]];
+      if (Math.abs(aug[i][i]) < 1e-12) continue;
+      for (let k = i + 1; k < cols; k++) {
+        const factor = aug[k][i] / aug[i][i];
+        for (let j = i; j <= cols; j++) aug[k][j] -= factor * aug[i][j];
+      }
+    }
+    const coeffs = new Array(cols).fill(0);
+    for (let i = cols - 1; i >= 0; i--) {
+      let sum = aug[i][cols];
+      for (let j = i + 1; j < cols; j++) sum -= aug[i][j] * coeffs[j];
+      coeffs[i] = sum / aug[i][i];
+    }
+    return coeffs;
+  }
+
+  function polyEval(coeffs, x) {
+    let y = 0;
+    for (let i = 0; i < coeffs.length; i++) y += coeffs[i] * Math.pow(x, i);
+    return y;
+  }
+
+  function mse(coeffs, data) {
+    let sum = 0;
+    for (const pt of data) {
+      const err = pt.y - polyEval(coeffs, pt.x);
+      sum += err * err;
+    }
+    return sum / data.length;
+  }
+
+  function update() {
+    const degree = parseInt(document.getElementById('degreeSlider').value);
+    document.getElementById('degreeDisplay').textContent = degree;
+    document.getElementById('degreeVal').textContent = degree;
+
+    const coeffs = polyFit(trainData, degree);
+    const trainMSE = mse(coeffs, trainData);
+    const testMSE = mse(coeffs, testData);
+
+    document.getElementById('trainErr').textContent = trainMSE.toFixed(4);
+    document.getElementById('testErr').textContent = testMSE.toFixed(4);
+
+    let status, advice;
+    const ratio = testMSE / (trainMSE + 1e-10);
+    if (trainMSE > 0.05 && testMSE > 0.05) {
+      status = 'Underfitting';
+      advice = 'Both training and test errors are high. The model is too simple to capture the underlying pattern. Increase the polynomial degree to add capacity.';
+    } else if (ratio > 3 && degree > 5) {
+      status = 'Overfitting';
+      advice = 'Training error is low but test error is much higher. The model is fitting noise. Reduce the polynomial degree or add regularization to improve generalization.';
+    } else {
+      status = 'Good Fit';
+      advice = 'Training and test errors are both reasonably low and close together. The model captures the underlying pattern without fitting noise.';
+    }
+    document.getElementById('fitStatus').textContent = status;
+    document.getElementById('fitStatus').style.color = status === 'Good Fit' ? '#22c55e' : status === 'Overfitting' ? '#f87171' : '#eab308';
+    document.getElementById('fitAdvice').innerHTML = '<p style="color:#888;margin:0;"><strong style="color:' +
+      (status === 'Good Fit' ? '#22c55e' : status === 'Overfitting' ? '#f87171' : '#eab308') + '">' + status + ':</strong> ' + advice + '</p>';
+
+    draw(coeffs);
+  }
+
+  function draw(coeffs) {
+    ctx.clearRect(0, 0, W, H);
+    ctx.fillStyle = '#141414';
+    ctx.fillRect(0, 0, W, H);
+
+    const xMin = -2.2, xMax = 2.2;
+    const allY = [...trainData.map(d => d.y), ...testData.map(d => d.y)];
+    let yMin = Math.min(...allY) - 0.3;
+    let yMax = Math.max(...allY) + 0.3;
+
+    function toX(x) { return pad + (x - xMin) / (xMax - xMin) * (W - 2 * pad); }
+    function toY(y) { return (H - pad) - (y - yMin) / (yMax - yMin) * (H - 2 * pad); }
+
+    // Grid
+    ctx.strokeStyle = '#222';
+    ctx.lineWidth = 0.5;
+    for (let i = 0; i <= 4; i++) {
+      const x = xMin + (xMax - xMin) * i / 4;
+      ctx.beginPath(); ctx.moveTo(toX(x), pad); ctx.lineTo(toX(x), H - pad); ctx.stroke();
+      ctx.fillStyle = '#555';
+      ctx.font = '10px IBM Plex Sans';
+      ctx.fillText(x.toFixed(1), toX(x) - 10, H - pad + 16);
+    }
+    for (let i = 0; i <= 4; i++) {
+      const y = yMin + (yMax - yMin) * i / 4;
+      ctx.beginPath(); ctx.moveTo(pad, toY(y)); ctx.lineTo(W - pad, toY(y)); ctx.stroke();
+      ctx.fillText(y.toFixed(1), 8, toY(y) + 4);
+    }
+
+    // Axes
+    ctx.strokeStyle = '#444';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(pad, pad); ctx.lineTo(pad, H - pad); ctx.lineTo(W - pad, H - pad);
+    ctx.stroke();
+
+    // True function
+    ctx.beginPath();
+    ctx.strokeStyle = 'rgba(34,197,94,0.4)';
+    ctx.lineWidth = 2;
+    ctx.setLineDash([6, 4]);
+    for (let px = pad; px <= W - pad; px++) {
+      const x = xMin + (px - pad) / (W - 2 * pad) * (xMax - xMin);
+      const y = trueFn(x);
+      if (px === pad) ctx.moveTo(px, toY(y)); else ctx.lineTo(px, toY(y));
+    }
+    ctx.stroke();
+    ctx.setLineDash([]);
+
+    // Fitted curve
+    ctx.beginPath();
+    ctx.strokeStyle = '#3b82f6';
+    ctx.lineWidth = 2.5;
+    for (let px = pad; px <= W - pad; px++) {
+      const x = xMin + (px - pad) / (W - 2 * pad) * (xMax - xMin);
+      const y = polyEval(coeffs, x);
+      const cy = Math.max(pad - 20, Math.min(H - pad + 20, toY(y)));
+      if (px === pad) ctx.moveTo(px, cy); else ctx.lineTo(px, cy);
+    }
+    ctx.stroke();
+
+    // Train points
+    for (const pt of trainData) {
+      ctx.beginPath();
+      ctx.arc(toX(pt.x), toY(pt.y), 5, 0, Math.PI * 2);
+      ctx.fillStyle = '#3b82f6';
+      ctx.fill();
+      ctx.strokeStyle = '#fff';
+      ctx.lineWidth = 1;
+      ctx.stroke();
+    }
+
+    // Test points
+    for (const pt of testData) {
+      ctx.beginPath();
+      ctx.arc(toX(pt.x), toY(pt.y), 4, 0, Math.PI * 2);
+      ctx.fillStyle = 'transparent';
+      ctx.strokeStyle = '#f87171';
+      ctx.lineWidth = 1.5;
+      ctx.stroke();
+    }
+
+    // Legend
+    ctx.font = '11px IBM Plex Sans, sans-serif';
+    ctx.fillStyle = '#3b82f6';
+    ctx.fillText('\u25CF Train data', W - pad - 180, pad + 16);
+    ctx.fillStyle = '#f87171';
+    ctx.fillText('\u25CB Test data', W - pad - 180, pad + 32);
+    ctx.fillStyle = '#22c55e';
+    ctx.fillText('--- True function', W - pad - 180, pad + 48);
+    ctx.fillStyle = '#3b82f6';
+    ctx.fillText('\u2014 Fitted polynomial', W - pad - 180, pad + 64);
+  }
+
+  document.getElementById('degreeSlider').addEventListener('input', update);
+  document.getElementById('noiseSlider').addEventListener('input', function() {
+    document.getElementById('noiseDisplay').textContent = (this.value / 100).toFixed(2);
+    generateData();
+    update();
+  });
+  document.getElementById('numPoints').addEventListener('change', function() { generateData(); update(); });
+  document.getElementById('bvRegenBtn').addEventListener('click', function() { generateData(); update(); });
+
+  generateData();
+  update();
+})();
+</script>
+</body>
+</html>

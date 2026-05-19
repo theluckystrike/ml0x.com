@@ -1,0 +1,575 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Confusion Matrix Calculator — Precision, Recall, F1 Visualization | ml0x</title>
+<meta name="description" content="Free confusion matrix calculator with precision, recall, F1, accuracy, specificity, and MCC. SVG heatmap visualization, ROC point plotting, and multi-class support up to 5 classes.">
+<meta name="keywords" content="confusion matrix calculator, precision recall F1, classification metrics, accuracy, specificity, MCC, Matthews correlation, ROC curve, multi-class confusion matrix, machine learning evaluation">
+<link rel="canonical" href="https://ml0x.com/tools/confusion-matrix-calculator.html">
+<link rel="alternate" hreflang="en" href="https://ml0x.com/tools/confusion-matrix-calculator.html">
+<link rel="alternate" hreflang="x-default" href="https://ml0x.com/tools/confusion-matrix-calculator.html">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Confusion Matrix Calculator — Precision, Recall, F1 Visualization">
+<meta property="og:description" content="Enter TP/FP/TN/FN values and instantly compute precision, recall, F1, accuracy, specificity, and MCC. SVG heatmap, ROC point, and multi-class support.">
+<meta property="og:url" content="https://ml0x.com/tools/confusion-matrix-calculator.html">
+<meta property="og:site_name" content="Zovo Tools">
+<meta property="og:locale" content="en_US">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Confusion Matrix Calculator — Precision, Recall, F1 Visualization">
+<meta name="twitter:description" content="Enter TP/FP/TN/FN values and instantly compute precision, recall, F1, accuracy, specificity, and MCC with visual heatmap.">
+<meta name="author" content="Michael Lip">
+<meta name="robots" content="index, follow">
+<link rel="stylesheet" href="/assets/style.css">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebApplication",
+  "name": "Confusion Matrix Calculator",
+  "description": "Free confusion matrix calculator with precision, recall, F1, accuracy, specificity, MCC. SVG heatmap visualization, ROC point plotting, and multi-class support up to 5 classes.",
+  "url": "https://ml0x.com/tools/confusion-matrix-calculator.html",
+  "applicationCategory": "EducationalApplication",
+  "operatingSystem": "Any",
+  "offers": {"@type": "Offer", "price": "0", "priceCurrency": "USD"},
+  "author": {"@type": "Person", "name": "Michael Lip", "url": "https://zovo.one"},
+  "publisher": {"@type": "Organization", "name": "ML0X", "url": "https://ml0x.com"},
+  "datePublished": "2026-05-25",
+  "dateModified": "2026-05-25"
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {"@type": "Question", "name": "What is a confusion matrix?", "acceptedAnswer": {"@type": "Answer", "text": "A confusion matrix is a table that summarizes the performance of a classification model by comparing predicted labels against actual labels. For binary classification, it contains four cells: True Positives (correctly predicted positives), False Positives (incorrectly predicted positives), True Negatives (correctly predicted negatives), and False Negatives (incorrectly predicted negatives). It reveals not just overall accuracy but the specific types of errors the model makes."}},
+    {"@type": "Question", "name": "What is the difference between precision and recall?", "acceptedAnswer": {"@type": "Answer", "text": "Precision measures the fraction of positive predictions that are actually correct: TP / (TP + FP). It answers 'of all items predicted positive, how many truly are positive?' Recall (sensitivity) measures the fraction of actual positives that are correctly identified: TP / (TP + FN). It answers 'of all truly positive items, how many did the model find?' High precision means few false alarms; high recall means few missed positives."}},
+    {"@type": "Question", "name": "When should I use F1 score vs accuracy?", "acceptedAnswer": {"@type": "Answer", "text": "Use accuracy when classes are balanced and both types of errors are equally costly. Use F1 score when classes are imbalanced or when you need to balance precision and recall. For example, in fraud detection where 99% of transactions are legitimate, a model predicting 'not fraud' always gets 99% accuracy but 0% F1 on the fraud class. F1 is the harmonic mean of precision and recall, so it penalizes models that sacrifice one for the other."}},
+    {"@type": "Question", "name": "What is Matthews Correlation Coefficient (MCC)?", "acceptedAnswer": {"@type": "Answer", "text": "MCC is a balanced metric that uses all four confusion matrix values (TP, TN, FP, FN) and returns a value between -1 and +1. A value of +1 indicates perfect prediction, 0 indicates random prediction, and -1 indicates total disagreement. MCC is considered the most informative single metric for binary classification because it accounts for class imbalance and treats both classes symmetrically, unlike accuracy or F1 which can be misleading on imbalanced datasets."}},
+    {"@type": "Question", "name": "How do I interpret the ROC point on the chart?", "acceptedAnswer": {"@type": "Answer", "text": "The ROC (Receiver Operating Characteristic) space plots True Positive Rate (recall) on the Y-axis against False Positive Rate (1 - specificity) on the X-axis. The ideal point is the top-left corner (0, 1) representing perfect classification. The diagonal line represents random guessing. Points above the diagonal are better than random; points below are worse. The closer your model's point to the top-left corner, the better its discrimination ability between positive and negative classes."}}
+  ]
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {"@type": "ListItem", "position": 1, "name": "Home", "item": "https://ml0x.com/"},
+    {"@type": "ListItem", "position": 2, "name": "Tools", "item": "https://ml0x.com/tools/"},
+    {"@type": "ListItem", "position": 3, "name": "Confusion Matrix Calculator"}
+  ]
+}
+</script>
+</head>
+<body>
+
+<header>
+  <div class="container header-inner">
+    <a href="/" class="logo">ml0x</a>
+    <nav>
+      <a href="/">Home</a>
+      <a href="/research/">Research</a>
+      <a href="/tools/">Tools</a>
+      <a href="/guides/">Guides</a>
+      <a href="/answers/">Answers</a>
+      <div class="nav-right">
+        <a href="https://zovo.one/pricing?utm_source=ml0x.com&utm_medium=satellite&utm_campaign=nav-link" class="nav-pro" target="_blank">Go Pro &#10022;</a>
+        <a href="https://zovo.one/tools" class="nav-zovo">Zovo Tools</a>
+      </div>
+    </nav>
+  </div>
+</header>
+
+<main class="container">
+  <div class="breadcrumb">
+    <a href="/">Home</a> <span>&rsaquo;</span> <a href="/tools/">Tools</a> <span>&rsaquo;</span> Confusion Matrix Calculator
+  </div>
+
+  <div class="hero">
+    <h1>Confusion Matrix <span>Calculator</span></h1>
+    <p>Enter your classification results to compute precision, recall, F1 score, accuracy, specificity, and Matthews Correlation Coefficient. Visualize the confusion matrix as an SVG heatmap and plot your model's operating point in ROC space. Supports binary and multi-class (up to 5 classes). All computation runs locally in your browser.</p>
+  </div>
+
+  <div class="tool-card">
+    <h3>Mode Selection</h3>
+    <div class="control-row">
+      <div class="control-group">
+        <label>Classification Type</label>
+        <select id="modeSelect">
+          <option value="binary" selected>Binary (2 classes)</option>
+          <option value="multi3">Multi-class (3)</option>
+          <option value="multi4">Multi-class (4)</option>
+          <option value="multi5">Multi-class (5)</option>
+        </select>
+      </div>
+      <button class="btn" id="computeBtn">Compute Metrics</button>
+      <button class="btn btn-secondary" id="exampleBtn">Load Example</button>
+      <button class="btn btn-secondary" id="resetBtn">Reset</button>
+    </div>
+  </div>
+
+  <div class="tool-card" id="binarySection">
+    <h3>Binary Confusion Matrix Input</h3>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;max-width:400px;margin:0 auto;">
+      <div style="text-align:center;">
+        <label style="color:#22c55e;font-weight:600;font-size:13px;">True Positive (TP)</label>
+        <input type="number" id="inputTP" value="50" min="0" style="width:100%;padding:10px;background:#1a1a1a;border:1px solid #333;border-radius:6px;color:#e0e0e0;font-size:18px;text-align:center;margin-top:4px;">
+      </div>
+      <div style="text-align:center;">
+        <label style="color:#ef4444;font-weight:600;font-size:13px;">False Positive (FP)</label>
+        <input type="number" id="inputFP" value="10" min="0" style="width:100%;padding:10px;background:#1a1a1a;border:1px solid #333;border-radius:6px;color:#e0e0e0;font-size:18px;text-align:center;margin-top:4px;">
+      </div>
+      <div style="text-align:center;">
+        <label style="color:#ef4444;font-weight:600;font-size:13px;">False Negative (FN)</label>
+        <input type="number" id="inputFN" value="5" min="0" style="width:100%;padding:10px;background:#1a1a1a;border:1px solid #333;border-radius:6px;color:#e0e0e0;font-size:18px;text-align:center;margin-top:4px;">
+      </div>
+      <div style="text-align:center;">
+        <label style="color:#22c55e;font-weight:600;font-size:13px;">True Negative (TN)</label>
+        <input type="number" id="inputTN" value="85" min="0" style="width:100%;padding:10px;background:#1a1a1a;border:1px solid #333;border-radius:6px;color:#e0e0e0;font-size:18px;text-align:center;margin-top:4px;">
+      </div>
+    </div>
+  </div>
+
+  <div class="tool-card" id="multiSection" style="display:none;">
+    <h3>Multi-Class Confusion Matrix Input</h3>
+    <p style="color:#aaa;font-size:13px;margin-bottom:12px;">Enter counts: row = actual class, column = predicted class. Diagonal = correct predictions.</p>
+    <div id="multiGrid" style="overflow-x:auto;"></div>
+  </div>
+
+  <div id="resultsSection" style="display:none;">
+    <div class="stat-grid">
+      <div class="stat-card"><div class="value" id="metAccuracy">--</div><div class="label">Accuracy</div></div>
+      <div class="stat-card"><div class="value" id="metPrecision">--</div><div class="label">Precision</div></div>
+      <div class="stat-card"><div class="value" id="metRecall">--</div><div class="label">Recall</div></div>
+      <div class="stat-card"><div class="value" id="metF1">--</div><div class="label">F1 Score</div></div>
+      <div class="stat-card"><div class="value" id="metSpecificity">--</div><div class="label">Specificity</div></div>
+      <div class="stat-card"><div class="value" id="metMCC">--</div><div class="label">MCC</div></div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:16px;">
+      <div class="tool-card">
+        <h3>Heatmap</h3>
+        <div class="viz-container"><svg id="heatmapSvg" width="350" height="350" viewBox="0 0 350 350"></svg></div>
+      </div>
+      <div class="tool-card">
+        <h3>ROC Space</h3>
+        <div class="viz-container"><svg id="rocSvg" width="350" height="350" viewBox="0 0 350 350"></svg></div>
+      </div>
+    </div>
+
+    <div class="tool-card" id="perClassSection" style="display:none;">
+      <h3>Per-Class Metrics</h3>
+      <div style="overflow-x:auto;">
+        <table style="width:100%;border-collapse:collapse;font-size:14px;" id="perClassTable">
+          <thead>
+            <tr style="border-bottom:2px solid #333;">
+              <th style="text-align:left;padding:8px;color:#aaa;">Class</th>
+              <th style="text-align:right;padding:8px;color:#aaa;">Precision</th>
+              <th style="text-align:right;padding:8px;color:#aaa;">Recall</th>
+              <th style="text-align:right;padding:8px;color:#aaa;">F1</th>
+              <th style="text-align:right;padding:8px;color:#aaa;">Support</th>
+            </tr>
+          </thead>
+          <tbody id="perClassBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <section class="explainer-section">
+    <h2>Understanding the Confusion Matrix</h2>
+    <p>A confusion matrix is the foundational tool for evaluating classification models. Unlike single-number metrics such as accuracy, the confusion matrix reveals the complete picture of how a model's predictions relate to actual outcomes. For binary classification, the matrix is a 2x2 table with four cells that capture every possible outcome of a prediction.</p>
+    <p><strong>True Positives (TP)</strong> are cases where the model correctly predicts the positive class. The patient has the disease and the model says "positive." <strong>True Negatives (TN)</strong> are cases where the model correctly predicts the negative class. The patient is healthy and the model says "negative." <strong>False Positives (FP)</strong>, also called Type I errors or false alarms, occur when the model incorrectly predicts positive. The patient is healthy but the model says "positive." <strong>False Negatives (FN)</strong>, also called Type II errors or misses, occur when the model incorrectly predicts negative. The patient has the disease but the model says "negative."</p>
+    <p>The relative cost of FP vs FN depends entirely on the application. In cancer screening, false negatives (missing a cancer diagnosis) are far more dangerous than false positives (unnecessary follow-up tests). In spam filtering, false positives (blocking legitimate emails) may be more costly than false negatives (letting spam through). Understanding these trade-offs is essential for choosing the right threshold and the right evaluation metric.</p>
+
+    <h2>Precision, Recall, and the F1 Score</h2>
+    <p><strong>Precision</strong> (also called Positive Predictive Value) is defined as TP / (TP + FP). It answers the question: "Of all the items the model predicted as positive, what fraction are actually positive?" High precision means the model rarely produces false alarms. Precision is critical in applications like search engines (users expect top results to be relevant) and legal document review (flagged documents should actually be relevant).</p>
+    <p><strong>Recall</strong> (also called Sensitivity or True Positive Rate) is defined as TP / (TP + FN). It answers the question: "Of all the items that are actually positive, what fraction did the model successfully identify?" High recall means the model rarely misses positive cases. Recall is critical in medical diagnosis (you don't want to miss a disease), fraud detection (you don't want to miss fraudulent transactions), and safety systems (you don't want to miss defective products).</p>
+    <p>Precision and recall are inherently in tension. Lowering the classification threshold (predicting positive more aggressively) increases recall but decreases precision. Raising the threshold does the opposite. The <strong>F1 Score</strong> is the harmonic mean of precision and recall: F1 = 2 * (Precision * Recall) / (Precision + Recall). It ranges from 0 to 1, where 1 indicates perfect precision and recall. The harmonic mean penalizes extreme imbalances between precision and recall more than the arithmetic mean would, making F1 a good single-number summary when you need to balance both metrics.</p>
+
+    <h2>Accuracy and Its Limitations</h2>
+    <p><strong>Accuracy</strong> is the simplest metric: (TP + TN) / (TP + TN + FP + FN), the fraction of all predictions that are correct. It is intuitive and appropriate when classes are balanced and all errors are equally costly. However, accuracy is misleading on imbalanced datasets. Consider a dataset with 99% negative examples and 1% positive. A model that always predicts "negative" achieves 99% accuracy but catches zero positive cases, making it useless for the actual task.</p>
+    <p><strong>Specificity</strong> (True Negative Rate) is defined as TN / (TN + FP). It answers: "Of all the items that are actually negative, what fraction did the model correctly identify as negative?" Specificity complements recall: recall focuses on catching positives, specificity focuses on correctly identifying negatives. Together, they define the model's operating point in ROC space.</p>
+
+    <h2>Matthews Correlation Coefficient</h2>
+    <p>The <strong>Matthews Correlation Coefficient (MCC)</strong> is considered by many researchers to be the most informative single metric for binary classification. It is defined as: MCC = (TP * TN - FP * FN) / sqrt((TP+FP)(TP+FN)(TN+FP)(TN+FN)). MCC ranges from -1 (complete disagreement) through 0 (random prediction) to +1 (perfect prediction). Its key advantage over accuracy and F1 is that it uses all four quadrants of the confusion matrix and is not misleading even on highly imbalanced datasets. A high MCC requires the model to perform well on both positive and negative classes.</p>
+
+    <h2>ROC Space and the Operating Point</h2>
+    <p>The ROC (Receiver Operating Characteristic) space is a 2D plot with False Positive Rate (FPR = FP / (FP + TN) = 1 - Specificity) on the X-axis and True Positive Rate (TPR = Recall = TP / (TP + FN)) on the Y-axis. Each classifier at a specific threshold maps to a single point in this space. The point (0, 1) in the top-left corner represents perfect classification. The diagonal line from (0, 0) to (1, 1) represents random guessing. Points above the diagonal are better than random; points below are worse. By varying the classification threshold, you trace out a ROC curve, and the area under this curve (AUC-ROC) is a threshold-independent measure of model quality.</p>
+
+    <h2>Multi-Class Confusion Matrices</h2>
+    <p>For problems with more than two classes, the confusion matrix generalizes to an NxN table where N is the number of classes. Row i, column j contains the count of examples that belong to class i but were predicted as class j. The diagonal entries are correct predictions, and off-diagonal entries are specific misclassifications. Per-class precision and recall are computed by treating each class as a one-vs-rest binary problem. Macro-averaged metrics average across classes (treating all classes equally), while weighted averages account for class support (the number of true instances for each class).</p>
+
+    <h2>Practical Tips for Evaluation</h2>
+    <ul>
+      <li>Always start by looking at the full confusion matrix before reducing to a single metric. The distribution of errors often reveals actionable insights.</li>
+      <li>For imbalanced datasets, use F1, MCC, or AUC-ROC instead of accuracy.</li>
+      <li>Choose your primary metric based on the relative cost of false positives vs false negatives in your specific application.</li>
+      <li>Report confidence intervals using bootstrap resampling, not just point estimates.</li>
+      <li>Use stratified cross-validation to get reliable metric estimates, especially with small or imbalanced datasets.</li>
+      <li>When comparing models, use the same evaluation set and consider statistical significance (paired t-test or McNemar's test).</li>
+      <li>For multi-class problems, examine per-class metrics to identify which classes the model struggles with most.</li>
+    </ul>
+  </section>
+
+  <section class="faq-section">
+    <h2>Frequently Asked Questions</h2>
+    <details>
+      <summary>What is a confusion matrix?</summary>
+      <p>A confusion matrix is a table that summarizes the performance of a classification model by comparing predicted labels against actual labels. For binary classification, it contains four cells: True Positives, False Positives, True Negatives, and False Negatives. It reveals not just overall accuracy but the specific types of errors the model makes.</p>
+    </details>
+    <details>
+      <summary>What is the difference between precision and recall?</summary>
+      <p>Precision measures the fraction of positive predictions that are actually correct: TP / (TP + FP). Recall measures the fraction of actual positives that are correctly identified: TP / (TP + FN). High precision means few false alarms; high recall means few missed positives.</p>
+    </details>
+    <details>
+      <summary>When should I use F1 score vs accuracy?</summary>
+      <p>Use accuracy when classes are balanced and both types of errors are equally costly. Use F1 score when classes are imbalanced or when you need to balance precision and recall. F1 is the harmonic mean of precision and recall, so it penalizes models that sacrifice one for the other.</p>
+    </details>
+    <details>
+      <summary>What is Matthews Correlation Coefficient (MCC)?</summary>
+      <p>MCC is a balanced metric that uses all four confusion matrix values and returns a value between -1 and +1. A value of +1 indicates perfect prediction, 0 indicates random prediction, and -1 indicates total disagreement. MCC is considered the most informative single metric for binary classification because it accounts for class imbalance.</p>
+    </details>
+    <details>
+      <summary>How do I interpret the ROC point on the chart?</summary>
+      <p>The ROC space plots True Positive Rate (recall) on the Y-axis against False Positive Rate (1 - specificity) on the X-axis. The ideal point is the top-left corner (0, 1). The diagonal line represents random guessing. The closer your model's point to the top-left corner, the better its discrimination ability.</p>
+    </details>
+  </section>
+
+  <section class="explainer-section">
+    <h2>Related Tools</h2>
+    <div class="related-grid">
+      <a href="/tools/neural-network-playground.html" class="related-card">
+        <div class="related-title">Neural Network Playground</div>
+        <div class="related-desc">Build, train, and visualize neural networks entirely in your browser.</div>
+      </a>
+      <a href="/answers/ml-metrics-explained.html" class="related-card">
+        <div class="related-title">ML Metrics Explained</div>
+        <div class="related-desc">Metric selector wizard for classification, regression, and ranking tasks.</div>
+      </a>
+      <a href="/guides/cross-validation-explained.html" class="related-card">
+        <div class="related-title">K-Fold Cross Validation</div>
+        <div class="related-desc">Interactive simulator showing fold splits, variance, and stratification.</div>
+      </a>
+    </div>
+  </section>
+
+  <section class="explainer-section">
+    <h2>About the Author</h2>
+    <p><strong>Michael Lip</strong> builds open-source ML tools and developer utilities at <a href="https://zovo.one">zovo.one</a>. ml0x is part of the Zovo Tools network, a collection of free, privacy-first tools for developers and data scientists. No tracking, no accounts required, no data leaves your browser.</p>
+  </section>
+
+  <p class="last-updated">Last updated: May 25, 2026</p>
+</main>
+
+<footer class="site-footer">
+    <div class="footer-inner">
+        <div class="footer-brand">Zovo Tools</div>
+        <div class="footer-tagline">Free developer tools by a solo dev. No tracking.</div>
+        <a href="https://zovo.one/pricing?utm_source=ml0x.com&utm_medium=satellite&utm_campaign=footer-link" class="footer-cta">Zovo Lifetime — $99 once, free forever &rarr;</a>
+        <div class="footer-copy">&copy; 2026 <a href="https://zovo.one">Zovo</a> &middot; 47/500 founding spots</div>
+    </div>
+</footer>
+
+<nav class="zovo-network" aria-label="Zovo Tools Network">
+    <div class="zovo-network-inner">
+        <h3 class="zovo-network-title">Explore More Tools</h3>
+        <div class="zovo-network-links">
+            <a href="https://abwex.com">ABWex — A/B Testing</a>
+            <a href="https://claudflow.com">ClaudFlow — Workflows</a>
+            <a href="https://claudhq.com">ClaudHQ — AI Code Tools &amp; Fixes</a>
+            <a href="https://claudkit.com">ClaudKit — API</a>
+            <a href="https://enhio.com">Enhio — Text Tools</a>
+            <a href="https://epochpilot.com">EpochPilot — Timestamps</a>
+            <a href="https://gen8x.com">Gen8X — Color Tools</a>
+            <a href="https://gpt0x.com">GPT0X — AI Models</a>
+            <a href="https://heytensor.com">HeyTensor — ML Tools</a>
+            <a href="https://invokebot.com">InvokeBot — Webhooks</a>
+            <a href="https://kappafy.com">Kappafy — JSON</a>
+            <a href="https://kappakit.com">KappaKit — Dev Toolkit</a>
+            <a href="https://kickllm.com">KickLLM — LLM Costs</a>
+            <a href="https://krzen.com">Krzen — Image Tools</a>
+            <a href="https://lochbot.com">LochBot — Security</a>
+            <a href="https://lockml.com">LockML — ML Compare</a>
+            <a href="https://ml3x.com">ML3X — Matrix Math</a>
+        </div>
+    </div>
+</nav>
+
+<script>
+(function() {
+  var mode = 'binary';
+  var classNames = ['Positive','Negative','Class C','Class D','Class E'];
+
+  function getNumClasses() {
+    if (mode === 'binary') return 2;
+    return parseInt(mode.replace('multi',''));
+  }
+
+  function buildMultiGrid() {
+    var n = getNumClasses();
+    var grid = document.getElementById('multiGrid');
+    var html = '<table style="border-collapse:collapse;margin:0 auto;">';
+    html += '<tr><td></td><td colspan="'+n+'" style="text-align:center;color:#3b82f6;font-weight:600;padding:8px;">Predicted</td></tr>';
+    html += '<tr><td></td>';
+    for (var j = 0; j < n; j++) html += '<td style="text-align:center;padding:6px;color:#aaa;font-size:12px;">'+classNames[j]+'</td>';
+    html += '</tr>';
+    for (var i = 0; i < n; i++) {
+      html += '<tr>';
+      if (i === 0) html += '<td rowspan="'+n+'" style="color:#a78bfa;font-weight:600;padding:8px;writing-mode:vertical-rl;text-orientation:mixed;">Actual</td>';
+      for (var j = 0; j < n; j++) {
+        var val = (i === j) ? 30 : 3;
+        html += '<td style="padding:4px;"><input type="number" class="mc-cell" data-r="'+i+'" data-c="'+j+'" value="'+val+'" min="0" style="width:60px;padding:8px;background:#1a1a1a;border:1px solid '+(i===j?'#22c55e':'#333')+';border-radius:4px;color:#e0e0e0;font-size:14px;text-align:center;"></td>';
+      }
+      html += '</tr>';
+    }
+    html += '</table>';
+    grid.innerHTML = html;
+  }
+
+  function getMatrix() {
+    var n = getNumClasses();
+    if (mode === 'binary') {
+      return [
+        [parseInt(document.getElementById('inputTP').value)||0, parseInt(document.getElementById('inputFP').value)||0],
+        [parseInt(document.getElementById('inputFN').value)||0, parseInt(document.getElementById('inputTN').value)||0]
+      ];
+    }
+    var mat = [];
+    for (var i = 0; i < n; i++) {
+      mat[i] = [];
+      for (var j = 0; j < n; j++) {
+        var el = document.querySelector('.mc-cell[data-r="'+i+'"][data-c="'+j+'"]');
+        mat[i][j] = el ? (parseInt(el.value)||0) : 0;
+      }
+    }
+    return mat;
+  }
+
+  function compute() {
+    var mat = getMatrix();
+    var n = mat.length;
+    var total = 0;
+    for (var i = 0; i < n; i++) for (var j = 0; j < n; j++) total += mat[i][j];
+    if (total === 0) return;
+
+    document.getElementById('resultsSection').style.display = 'block';
+
+    if (mode === 'binary') {
+      var tp = mat[0][0], fp = mat[0][1], fn = mat[1][0], tn = mat[1][1];
+      var acc = (tp + tn) / total;
+      var prec = (tp + fp) > 0 ? tp / (tp + fp) : 0;
+      var rec = (tp + fn) > 0 ? tp / (tp + fn) : 0;
+      var f1 = (prec + rec) > 0 ? 2 * prec * rec / (prec + rec) : 0;
+      var spec = (tn + fp) > 0 ? tn / (tn + fp) : 0;
+      var denom = Math.sqrt((tp+fp)*(tp+fn)*(tn+fp)*(tn+fn));
+      var mcc = denom > 0 ? (tp*tn - fp*fn) / denom : 0;
+
+      document.getElementById('metAccuracy').textContent = (acc*100).toFixed(1)+'%';
+      document.getElementById('metPrecision').textContent = (prec*100).toFixed(1)+'%';
+      document.getElementById('metRecall').textContent = (rec*100).toFixed(1)+'%';
+      document.getElementById('metF1').textContent = f1.toFixed(4);
+      document.getElementById('metSpecificity').textContent = (spec*100).toFixed(1)+'%';
+      document.getElementById('metMCC').textContent = mcc.toFixed(4);
+
+      document.getElementById('perClassSection').style.display = 'none';
+      drawHeatmapBinary(tp, fp, fn, tn);
+      drawROC(rec, 1 - spec);
+    } else {
+      var correct = 0;
+      for (var i = 0; i < n; i++) correct += mat[i][i];
+      var acc = correct / total;
+
+      var perClass = [];
+      var macroPr = 0, macroRe = 0, macroF1 = 0;
+      for (var c = 0; c < n; c++) {
+        var tp_c = mat[c][c];
+        var fp_c = 0, fn_c = 0;
+        for (var i = 0; i < n; i++) { if (i !== c) fp_c += mat[i][c]; }
+        for (var j = 0; j < n; j++) { if (j !== c) fn_c += mat[c][j]; }
+        var support = 0; for (var j = 0; j < n; j++) support += mat[c][j];
+        var p = (tp_c + fp_c) > 0 ? tp_c / (tp_c + fp_c) : 0;
+        var r = (tp_c + fn_c) > 0 ? tp_c / (tp_c + fn_c) : 0;
+        var f = (p + r) > 0 ? 2 * p * r / (p + r) : 0;
+        perClass.push({name: classNames[c], prec: p, rec: r, f1: f, support: support});
+        macroPr += p; macroRe += r; macroF1 += f;
+      }
+      macroPr /= n; macroRe /= n; macroF1 /= n;
+
+      document.getElementById('metAccuracy').textContent = (acc*100).toFixed(1)+'%';
+      document.getElementById('metPrecision').textContent = (macroPr*100).toFixed(1)+'%';
+      document.getElementById('metRecall').textContent = (macroRe*100).toFixed(1)+'%';
+      document.getElementById('metF1').textContent = macroF1.toFixed(4);
+      document.getElementById('metSpecificity').textContent = 'N/A';
+      document.getElementById('metMCC').textContent = 'N/A';
+
+      document.getElementById('perClassSection').style.display = 'block';
+      var tbody = document.getElementById('perClassBody');
+      tbody.innerHTML = '';
+      for (var i = 0; i < perClass.length; i++) {
+        var row = '<tr style="border-bottom:1px solid #222;">';
+        row += '<td style="padding:8px;color:#ccc;font-weight:600;">'+perClass[i].name+'</td>';
+        row += '<td style="padding:8px;text-align:right;color:#ddd;">'+(perClass[i].prec*100).toFixed(1)+'%</td>';
+        row += '<td style="padding:8px;text-align:right;color:#ddd;">'+(perClass[i].rec*100).toFixed(1)+'%</td>';
+        row += '<td style="padding:8px;text-align:right;color:#ddd;">'+perClass[i].f1.toFixed(4)+'</td>';
+        row += '<td style="padding:8px;text-align:right;color:#aaa;">'+perClass[i].support+'</td>';
+        row += '</tr>';
+        tbody.innerHTML += row;
+      }
+
+      drawHeatmapMulti(mat, n);
+      drawROCMulti(perClass);
+    }
+  }
+
+  function drawHeatmapBinary(tp, fp, fn, tn) {
+    var svg = document.getElementById('heatmapSvg');
+    var max = Math.max(tp, fp, fn, tn, 1);
+    var cells = [[tp,'TP'],[fp,'FP'],[fn,'FN'],[tn,'TN']];
+    var colors = ['#22c55e','#ef4444','#ef4444','#22c55e'];
+    var ox = 80, oy = 60, cw = 120, ch = 120;
+    var html = '<rect width="350" height="350" fill="#141414"/>';
+    html += '<text x="175" y="25" text-anchor="middle" fill="#aaa" font-size="12" font-family="IBM Plex Sans,sans-serif">Predicted</text>';
+    html += '<text x="'+(ox+cw/2)+'" y="45" text-anchor="middle" fill="#3b82f6" font-size="11" font-family="IBM Plex Sans,sans-serif">Positive</text>';
+    html += '<text x="'+(ox+cw+cw/2)+'" y="45" text-anchor="middle" fill="#3b82f6" font-size="11" font-family="IBM Plex Sans,sans-serif">Negative</text>';
+    html += '<text x="30" y="175" text-anchor="middle" fill="#aaa" font-size="12" font-family="IBM Plex Sans,sans-serif" transform="rotate(-90,30,175)">Actual</text>';
+    html += '<text x="65" y="'+(oy+ch/2+4)+'" text-anchor="end" fill="#a78bfa" font-size="11" font-family="IBM Plex Sans,sans-serif">Positive</text>';
+    html += '<text x="65" y="'+(oy+ch+ch/2+4)+'" text-anchor="end" fill="#a78bfa" font-size="11" font-family="IBM Plex Sans,sans-serif">Negative</text>';
+
+    for (var i = 0; i < 4; i++) {
+      var r = Math.floor(i / 2), c = i % 2;
+      var intensity = cells[i][0] / max;
+      var baseColor = colors[i];
+      var opacity = 0.15 + intensity * 0.6;
+      html += '<rect x="'+(ox+c*cw)+'" y="'+(oy+r*ch)+'" width="'+cw+'" height="'+ch+'" fill="'+baseColor+'" opacity="'+opacity+'" rx="4"/>';
+      html += '<rect x="'+(ox+c*cw)+'" y="'+(oy+r*ch)+'" width="'+cw+'" height="'+ch+'" fill="none" stroke="#333" stroke-width="1" rx="4"/>';
+      html += '<text x="'+(ox+c*cw+cw/2)+'" y="'+(oy+r*ch+ch/2-8)+'" text-anchor="middle" fill="#e0e0e0" font-size="24" font-weight="700" font-family="IBM Plex Mono,monospace">'+cells[i][0]+'</text>';
+      html += '<text x="'+(ox+c*cw+cw/2)+'" y="'+(oy+r*ch+ch/2+14)+'" text-anchor="middle" fill="#aaa" font-size="12" font-family="IBM Plex Sans,sans-serif">'+cells[i][1]+'</text>';
+    }
+    svg.innerHTML = html;
+  }
+
+  function drawHeatmapMulti(mat, n) {
+    var svg = document.getElementById('heatmapSvg');
+    var max = 1;
+    for (var i = 0; i < n; i++) for (var j = 0; j < n; j++) if (mat[i][j] > max) max = mat[i][j];
+    var ox = 70, oy = 50;
+    var cw = Math.floor((280 - ox) / n);
+    var ch = Math.floor((300 - oy) / n);
+    var html = '<rect width="350" height="350" fill="#141414"/>';
+    html += '<text x="'+(ox+(350-ox)/2)+'" y="20" text-anchor="middle" fill="#aaa" font-size="11" font-family="IBM Plex Sans,sans-serif">Predicted</text>';
+    for (var j = 0; j < n; j++) html += '<text x="'+(ox+j*cw+cw/2)+'" y="40" text-anchor="middle" fill="#3b82f6" font-size="10" font-family="IBM Plex Sans,sans-serif">'+classNames[j].substring(0,6)+'</text>';
+    for (var i = 0; i < n; i++) html += '<text x="'+(ox-6)+'" y="'+(oy+i*ch+ch/2+4)+'" text-anchor="end" fill="#a78bfa" font-size="10" font-family="IBM Plex Sans,sans-serif">'+classNames[i].substring(0,6)+'</text>';
+    for (var i = 0; i < n; i++) {
+      for (var j = 0; j < n; j++) {
+        var intensity = mat[i][j] / max;
+        var color = i === j ? '#22c55e' : '#ef4444';
+        var opacity = 0.1 + intensity * 0.7;
+        html += '<rect x="'+(ox+j*cw)+'" y="'+(oy+i*ch)+'" width="'+cw+'" height="'+ch+'" fill="'+color+'" opacity="'+opacity+'" rx="2"/>';
+        html += '<rect x="'+(ox+j*cw)+'" y="'+(oy+i*ch)+'" width="'+cw+'" height="'+ch+'" fill="none" stroke="#333" stroke-width="0.5" rx="2"/>';
+        html += '<text x="'+(ox+j*cw+cw/2)+'" y="'+(oy+i*ch+ch/2+5)+'" text-anchor="middle" fill="#e0e0e0" font-size="'+(n>3?'12':'14')+'" font-weight="600" font-family="IBM Plex Mono,monospace">'+mat[i][j]+'</text>';
+      }
+    }
+    svg.innerHTML = html;
+  }
+
+  function drawROC(tpr, fpr) {
+    var svg = document.getElementById('rocSvg');
+    var pad = 50, w = 300 - pad, h = 300 - pad;
+    var html = '<rect width="350" height="350" fill="#141414"/>';
+    // Axes
+    html += '<line x1="'+pad+'" y1="'+(h+10)+'" x2="'+(w+pad)+'" y2="'+(h+10)+'" stroke="#333" stroke-width="1"/>';
+    html += '<line x1="'+pad+'" y1="10" x2="'+pad+'" y2="'+(h+10)+'" stroke="#333" stroke-width="1"/>';
+    // Diagonal
+    html += '<line x1="'+pad+'" y1="'+(h+10)+'" x2="'+(w+pad)+'" y2="10" stroke="#555" stroke-width="1" stroke-dasharray="4,4"/>';
+    // Labels
+    html += '<text x="'+(pad+w/2)+'" y="'+(h+40)+'" text-anchor="middle" fill="#aaa" font-size="11" font-family="IBM Plex Sans,sans-serif">False Positive Rate</text>';
+    html += '<text x="15" y="'+(10+h/2)+'" text-anchor="middle" fill="#aaa" font-size="11" font-family="IBM Plex Sans,sans-serif" transform="rotate(-90,15,'+(10+h/2)+')">True Positive Rate</text>';
+    html += '<text x="'+pad+'" y="'+(h+26)+'" text-anchor="middle" fill="#666" font-size="10" font-family="IBM Plex Mono,monospace">0</text>';
+    html += '<text x="'+(w+pad)+'" y="'+(h+26)+'" text-anchor="middle" fill="#666" font-size="10" font-family="IBM Plex Mono,monospace">1</text>';
+    html += '<text x="'+(pad-8)+'" y="'+(h+14)+'" text-anchor="end" fill="#666" font-size="10" font-family="IBM Plex Mono,monospace">0</text>';
+    html += '<text x="'+(pad-8)+'" y="16" text-anchor="end" fill="#666" font-size="10" font-family="IBM Plex Mono,monospace">1</text>';
+    // Point
+    var px = pad + fpr * w;
+    var py = h + 10 - tpr * h;
+    html += '<circle cx="'+px+'" cy="'+py+'" r="8" fill="#3b82f6" opacity="0.3"/>';
+    html += '<circle cx="'+px+'" cy="'+py+'" r="4" fill="#3b82f6"/>';
+    html += '<text x="'+(px+12)+'" y="'+(py-8)+'" fill="#3b82f6" font-size="11" font-family="IBM Plex Sans,sans-serif">('+fpr.toFixed(2)+', '+tpr.toFixed(2)+')</text>';
+    // Ideal point
+    html += '<circle cx="'+pad+'" cy="10" r="3" fill="#22c55e" opacity="0.5"/>';
+    html += '<text x="'+(pad+8)+'" y="8" fill="#22c55e" font-size="9" font-family="IBM Plex Sans,sans-serif">Ideal</text>';
+    svg.innerHTML = html;
+  }
+
+  function drawROCMulti(perClass) {
+    var svg = document.getElementById('rocSvg');
+    var pad = 50, w = 300 - pad, h = 300 - pad;
+    var html = '<rect width="350" height="350" fill="#141414"/>';
+    html += '<line x1="'+pad+'" y1="'+(h+10)+'" x2="'+(w+pad)+'" y2="'+(h+10)+'" stroke="#333" stroke-width="1"/>';
+    html += '<line x1="'+pad+'" y1="10" x2="'+pad+'" y2="'+(h+10)+'" stroke="#333" stroke-width="1"/>';
+    html += '<line x1="'+pad+'" y1="'+(h+10)+'" x2="'+(w+pad)+'" y2="10" stroke="#555" stroke-width="1" stroke-dasharray="4,4"/>';
+    html += '<text x="'+(pad+w/2)+'" y="'+(h+40)+'" text-anchor="middle" fill="#aaa" font-size="11" font-family="IBM Plex Sans,sans-serif">1 - Precision</text>';
+    html += '<text x="15" y="'+(10+h/2)+'" text-anchor="middle" fill="#aaa" font-size="11" font-family="IBM Plex Sans,sans-serif" transform="rotate(-90,15,'+(10+h/2)+')">Recall</text>';
+    var colors = ['#3b82f6','#22c55e','#f59e0b','#ef4444','#a78bfa'];
+    for (var i = 0; i < perClass.length; i++) {
+      var px = pad + (1 - perClass[i].prec) * w;
+      var py = h + 10 - perClass[i].rec * h;
+      html += '<circle cx="'+px+'" cy="'+py+'" r="6" fill="'+colors[i]+'" opacity="0.4"/>';
+      html += '<circle cx="'+px+'" cy="'+py+'" r="3" fill="'+colors[i]+'"/>';
+      html += '<text x="'+(px+8)+'" y="'+(py-6)+'" fill="'+colors[i]+'" font-size="10" font-family="IBM Plex Sans,sans-serif">'+perClass[i].name+'</text>';
+    }
+    svg.innerHTML = html;
+  }
+
+  document.getElementById('modeSelect').addEventListener('change', function() {
+    mode = this.value;
+    if (mode === 'binary') {
+      document.getElementById('binarySection').style.display = 'block';
+      document.getElementById('multiSection').style.display = 'none';
+    } else {
+      document.getElementById('binarySection').style.display = 'none';
+      document.getElementById('multiSection').style.display = 'block';
+      buildMultiGrid();
+    }
+    document.getElementById('resultsSection').style.display = 'none';
+  });
+
+  document.getElementById('computeBtn').addEventListener('click', compute);
+
+  document.getElementById('exampleBtn').addEventListener('click', function() {
+    if (mode === 'binary') {
+      document.getElementById('inputTP').value = 85;
+      document.getElementById('inputFP').value = 15;
+      document.getElementById('inputFN').value = 10;
+      document.getElementById('inputTN').value = 190;
+    } else {
+      var n = getNumClasses();
+      for (var i = 0; i < n; i++) {
+        for (var j = 0; j < n; j++) {
+          var el = document.querySelector('.mc-cell[data-r="'+i+'"][data-c="'+j+'"]');
+          if (el) el.value = (i === j) ? (40 + Math.floor(Math.random()*20)) : Math.floor(Math.random()*8);
+        }
+      }
+    }
+    compute();
+  });
+
+  document.getElementById('resetBtn').addEventListener('click', function() {
+    if (mode === 'binary') {
+      document.getElementById('inputTP').value = 0;
+      document.getElementById('inputFP').value = 0;
+      document.getElementById('inputFN').value = 0;
+      document.getElementById('inputTN').value = 0;
+    } else {
+      var cells = document.querySelectorAll('.mc-cell');
+      for (var i = 0; i < cells.length; i++) cells[i].value = 0;
+    }
+    document.getElementById('resultsSection').style.display = 'none';
+  });
+
+  compute();
+})();
+</script>
+</body>
+</html>

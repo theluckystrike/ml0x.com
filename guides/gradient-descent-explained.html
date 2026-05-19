@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gradient Descent Explained — Interactive Visualizer & Complete Guide | ml0x</title>
+<meta name="description" content="Interactive gradient descent visualizer with step-by-step animation. Learn SGD, mini-batch, Adam optimizer, learning rate selection, momentum, and convergence criteria. All calculations run in your browser.">
+<meta name="keywords" content="gradient descent, SGD, Adam optimizer, learning rate, momentum, mini-batch gradient descent, optimization algorithm, loss function, convergence, machine learning optimization">
+<link rel="canonical" href="https://ml0x.com/guides/gradient-descent-explained.html">
+<link rel="alternate" hreflang="en" href="https://ml0x.com/guides/gradient-descent-explained.html">
+<link rel="alternate" hreflang="x-default" href="https://ml0x.com/guides/gradient-descent-explained.html">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Gradient Descent Explained — Interactive Visualizer & Complete Guide">
+<meta property="og:description" content="Interactive gradient descent visualizer with step-by-step animation. Learn SGD, Adam, momentum, and convergence. No data leaves your browser.">
+<meta property="og:url" content="https://ml0x.com/guides/gradient-descent-explained.html">
+<meta property="og:site_name" content="ml0x">
+<meta property="og:locale" content="en_US">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Gradient Descent Explained — Interactive Visualizer & Complete Guide">
+<meta name="twitter:description" content="Interactive gradient descent visualizer with step-by-step animation. Learn SGD, Adam, momentum, and convergence.">
+<meta name="author" content="Michael Lip">
+<meta name="robots" content="index, follow">
+<link rel="stylesheet" href="/assets/style.css">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Article",
+  "headline": "Gradient Descent Explained — Interactive Visualizer & Complete Guide",
+  "description": "Interactive gradient descent visualizer with step-by-step animation. Learn SGD, mini-batch, Adam optimizer, learning rate selection, momentum, and convergence criteria.",
+  "author": {"@type": "Person", "name": "Michael Lip", "url": "https://zovo.one"},
+  "publisher": {"@type": "Organization", "name": "ml0x", "url": "https://ml0x.com"},
+  "datePublished": "2026-05-25",
+  "dateModified": "2026-05-25",
+  "mainEntityOfPage": {"@type": "WebPage", "@id": "https://ml0x.com/guides/gradient-descent-explained.html"},
+  "url": "https://ml0x.com/guides/gradient-descent-explained.html"
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {"@type": "Question", "name": "What is gradient descent in machine learning?", "acceptedAnswer": {"@type": "Answer", "text": "Gradient descent is an iterative optimization algorithm used to minimize a loss function by repeatedly adjusting parameters in the direction of steepest descent. It computes the gradient (partial derivatives) of the loss with respect to each parameter, then updates each parameter by subtracting the gradient multiplied by a learning rate. It is the foundation of training nearly all modern machine learning models including neural networks."}},
+    {"@type": "Question", "name": "What is the difference between SGD, mini-batch, and batch gradient descent?", "acceptedAnswer": {"@type": "Answer", "text": "Batch gradient descent computes the gradient over the entire dataset per update, giving stable but slow convergence. Stochastic Gradient Descent (SGD) uses a single random sample per update, which is fast but noisy. Mini-batch gradient descent is the practical middle ground: it uses a small batch (typically 32-256 samples) per update, balancing computational efficiency with gradient stability. Most deep learning uses mini-batch."}},
+    {"@type": "Question", "name": "How do I choose a learning rate for gradient descent?", "acceptedAnswer": {"@type": "Answer", "text": "Start with common defaults like 0.001 for Adam or 0.01 for SGD. Use learning rate schedulers (cosine annealing, step decay, or warm-up + decay) to adjust during training. The learning rate finder technique (gradually increasing LR and plotting loss) helps identify the optimal range. Too high causes divergence; too low causes slow convergence or getting stuck in local minima."}},
+    {"@type": "Question", "name": "What is momentum in gradient descent?", "acceptedAnswer": {"@type": "Answer", "text": "Momentum adds a fraction (typically 0.9) of the previous update vector to the current gradient step. This accelerates convergence in consistent gradient directions and dampens oscillations in noisy or ravine-like loss surfaces. It helps the optimizer build velocity and escape shallow local minima. Nesterov momentum is a variant that computes the gradient at the look-ahead position for even faster convergence."}},
+    {"@type": "Question", "name": "Why does gradient descent sometimes not converge?", "acceptedAnswer": {"@type": "Answer", "text": "Common causes of non-convergence include: learning rate too high (parameters overshoot the minimum), exploding gradients in deep networks (use gradient clipping), vanishing gradients (use ReLU activations or residual connections), saddle points in high dimensions, poor weight initialization, and non-convex loss landscapes with many local minima. Adaptive optimizers like Adam handle many of these issues automatically."}}
+  ]
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {"@type": "ListItem", "position": 1, "name": "Home", "item": "https://ml0x.com/"},
+    {"@type": "ListItem", "position": 2, "name": "Guides", "item": "https://ml0x.com/guides/"},
+    {"@type": "ListItem", "position": 3, "name": "Gradient Descent Explained"}
+  ]
+}
+</script>
+</head>
+<body>
+
+<header>
+  <div class="container header-inner">
+    <a href="/" class="logo">ml0x</a>
+    <nav>
+      <a href="/">Home</a>
+      <a href="/research/">Research</a>
+      <a href="/tools/">Tools</a>
+      <a href="/guides/">Guides</a>
+      <a href="/answers/">Answers</a>
+      <div class="nav-right">
+        <a href="https://zovo.one/pricing?utm_source=ml0x.com&utm_medium=satellite&utm_campaign=nav-link" class="nav-pro" target="_blank">Go Pro &#10022;</a>
+        <a href="https://zovo.one/tools" class="nav-zovo">Zovo Tools</a>
+      </div>
+    </nav>
+  </div>
+</header>
+
+<main class="container">
+  <div class="breadcrumb">
+    <a href="/">Home</a> <span>&rsaquo;</span> <a href="/guides/">Guides</a> <span>&rsaquo;</span> Gradient Descent Explained
+  </div>
+
+  <div class="hero">
+    <h1>Gradient Descent <span>Explained</span></h1>
+    <p>Interactive visualizer showing how gradient descent navigates a loss landscape step by step. Adjust learning rate, toggle momentum, and watch convergence in real time. No data leaves your browser.</p>
+  </div>
+
+  <div class="tool-card">
+    <h3>Gradient Descent Visualizer</h3>
+    <div class="control-row">
+      <div class="control-group slider-group">
+        <label>Learning Rate: <span class="slider-value" id="lrDisplay">0.050</span></label>
+        <input type="range" id="lrSlider" min="1" max="1000" value="50" step="1">
+      </div>
+      <div class="control-group">
+        <label>Optimizer</label>
+        <select id="optimizerSelect">
+          <option value="sgd">SGD</option>
+          <option value="momentum">SGD + Momentum</option>
+          <option value="adam" selected>Adam</option>
+        </select>
+      </div>
+    </div>
+    <div class="control-row">
+      <div class="control-group">
+        <label>Loss Surface</label>
+        <select id="surfaceSelect">
+          <option value="bowl">Quadratic Bowl</option>
+          <option value="ravine">Narrow Ravine</option>
+          <option value="multimodal">Multi-Modal</option>
+        </select>
+      </div>
+      <button class="btn" id="stepBtn">Step</button>
+      <button class="btn btn-secondary" id="autoBtn">Auto-Play</button>
+      <button class="btn btn-secondary" id="resetBtn">Reset</button>
+    </div>
+    <div class="viz-container">
+      <canvas id="gdCanvas" width="700" height="420"></canvas>
+    </div>
+    <div class="stat-grid">
+      <div class="stat-card"><div class="value" id="statStep">0</div><div class="label">Steps</div></div>
+      <div class="stat-card"><div class="value" id="statLoss">--</div><div class="label">Loss</div></div>
+      <div class="stat-card"><div class="value" id="statGradX">--</div><div class="label">Grad X</div></div>
+      <div class="stat-card"><div class="value" id="statGradY">--</div><div class="label">Grad Y</div></div>
+      <div class="stat-card"><div class="value" id="statStatus">Ready</div><div class="label">Status</div></div>
+    </div>
+  </div>
+
+  <section class="explainer-section">
+    <h2>What Is Gradient Descent?</h2>
+    <p>Gradient descent is the backbone of nearly every machine learning training algorithm. At its core, it is an optimization procedure that iteratively adjusts model parameters to minimize a loss function. Imagine standing on a hilly landscape in dense fog. You cannot see the lowest valley, but you can feel the slope beneath your feet. Gradient descent works the same way: at each step it computes the direction of steepest descent and moves the parameters downhill by a small amount proportional to the learning rate.</p>
+    <p>Formally, given a loss function <code>L(theta)</code> and parameters <code>theta</code>, the update rule is:</p>
+    <pre>theta_new = theta_old - lr * gradient(L(theta_old))</pre>
+    <p>The gradient is the vector of partial derivatives of the loss with respect to each parameter. It points in the direction of steepest <em>increase</em>, so we subtract it to move toward the minimum. The learning rate <code>lr</code> controls the step size. Too large and you overshoot; too small and training takes prohibitively long or gets stuck in a shallow local minimum.</p>
+
+    <h2>Variants of Gradient Descent</h2>
+    <h3>Batch Gradient Descent</h3>
+    <p>Batch (or vanilla) gradient descent computes the gradient over the entire training dataset before making a single parameter update. This produces the most accurate gradient estimate but is computationally expensive for large datasets. It requires the entire dataset to fit in memory and makes only one update per pass through the data. In practice, batch gradient descent is rarely used for large-scale problems, but it is useful for understanding the theoretical behavior of the algorithm.</p>
+
+    <h3>Stochastic Gradient Descent (SGD)</h3>
+    <p>Stochastic gradient descent computes the gradient from a single randomly selected training example per update. This makes each step extremely fast but introduces high variance into the gradient estimate. The noisy updates can actually be beneficial: they help the optimizer escape shallow local minima and saddle points. However, SGD rarely converges smoothly and requires careful learning rate scheduling to achieve good results. It is the simplest form of gradient descent and remains a strong baseline, especially when combined with momentum.</p>
+
+    <h3>Mini-Batch Gradient Descent</h3>
+    <p>Mini-batch gradient descent is the practical sweet spot used in virtually all deep learning. It computes the gradient over a small random subset of the data (typically 32 to 256 samples) per update. This balances the gradient accuracy of batch methods with the speed and regularizing noise of SGD. Mini-batches also exploit hardware parallelism: GPUs process batches of data much more efficiently than individual samples. Batch size is a hyperparameter that affects both training speed and generalization performance.</p>
+
+    <h3>SGD with Momentum</h3>
+    <p>Momentum modifies SGD by adding a fraction of the previous update vector to the current step. The velocity accumulates over time, accelerating the optimizer in directions of consistent gradient and damping oscillations in directions of high curvature. Standard momentum uses a coefficient (typically 0.9) applied to the previous velocity. Nesterov accelerated gradient (NAG) is a refinement that computes the gradient at the look-ahead position, providing even faster convergence on convex problems.</p>
+    <pre>v_t = beta * v_{t-1} + gradient(L(theta))
+theta = theta - lr * v_t</pre>
+
+    <h3>Adam (Adaptive Moment Estimation)</h3>
+    <p>Adam is the most widely used optimizer in modern deep learning. It combines the benefits of momentum (first moment) with RMSProp-style adaptive learning rates (second moment). Each parameter gets its own effective learning rate that scales inversely with the root mean square of its recent gradients. Parameters with consistently large gradients get smaller effective learning rates, while parameters with small or sparse gradients get larger ones. Adam uses bias correction in the first few steps to counteract initialization effects.</p>
+    <pre>m_t = beta1 * m_{t-1} + (1 - beta1) * g_t       // first moment
+v_t = beta2 * v_{t-1} + (1 - beta2) * g_t^2      // second moment
+m_hat = m_t / (1 - beta1^t)                        // bias correction
+v_hat = v_t / (1 - beta2^t)
+theta = theta - lr * m_hat / (sqrt(v_hat) + eps)</pre>
+    <p>Common defaults are <code>lr=0.001</code>, <code>beta1=0.9</code>, <code>beta2=0.999</code>, and <code>eps=1e-8</code>. Adam converges faster than SGD on most problems but can generalize slightly worse on some tasks. AdamW adds decoupled weight decay to address this.</p>
+
+    <h2>Learning Rate Selection</h2>
+    <p>The learning rate is arguably the single most important hyperparameter in gradient-based optimization. It governs the trade-off between convergence speed and stability. A learning rate that is too high causes the loss to oscillate or diverge. A learning rate that is too low leads to painfully slow convergence and can trap the optimizer in suboptimal local minima.</p>
+    <p>Several strategies exist for setting and adjusting the learning rate:</p>
+    <ul>
+      <li><strong>Grid search:</strong> Try values on a logarithmic scale (1e-5, 1e-4, 1e-3, 1e-2, 1e-1) and pick the one that produces the fastest stable decrease in validation loss.</li>
+      <li><strong>Learning rate finder:</strong> Gradually increase the learning rate from a very small value over one epoch while recording the loss. Plot loss vs. learning rate and choose the rate just before the loss starts increasing sharply.</li>
+      <li><strong>Warm-up:</strong> Start with a very low learning rate and gradually increase it over the first few hundred or thousand steps. This stabilizes training, especially for transformer architectures and large batch sizes.</li>
+      <li><strong>Cosine annealing:</strong> After warm-up, decrease the learning rate following a cosine schedule down to near zero. This produces smooth convergence without abrupt schedule changes.</li>
+      <li><strong>Step decay:</strong> Multiply the learning rate by a factor (e.g., 0.1) at fixed epoch milestones. Simple and effective for many problems.</li>
+      <li><strong>Reduce on plateau:</strong> Monitor validation loss and reduce the learning rate by a factor when it stops improving. Adaptive and requires less manual tuning.</li>
+    </ul>
+
+    <h2>Convergence Criteria</h2>
+    <p>How do you know when gradient descent has finished? In practice, you monitor several signals:</p>
+    <ul>
+      <li><strong>Loss plateau:</strong> When the training loss changes by less than a threshold (e.g., 1e-6) over several consecutive epochs, the optimizer has likely found a minimum.</li>
+      <li><strong>Validation performance:</strong> If validation loss stops improving or begins increasing while training loss continues to drop, you are overfitting and should stop training (early stopping).</li>
+      <li><strong>Gradient magnitude:</strong> When the norm of the gradient approaches zero, the optimizer is at a critical point (minimum, maximum, or saddle point).</li>
+      <li><strong>Maximum iterations:</strong> Set a hard cap on epochs to prevent runaway training. This is a safety measure, not a convergence signal.</li>
+      <li><strong>Parameter stability:</strong> When parameters change by negligible amounts between updates, the model has effectively converged.</li>
+    </ul>
+
+    <h2>Common Pitfalls</h2>
+    <p>Even experienced practitioners fall into gradient descent traps. Here are the most common issues and their solutions:</p>
+    <ul>
+      <li><strong>Exploding gradients:</strong> In deep networks (especially RNNs), gradients can grow exponentially through backpropagation. Use gradient clipping (cap the gradient norm at a threshold, typically 1.0) to prevent this.</li>
+      <li><strong>Vanishing gradients:</strong> Gradients shrink exponentially in deep networks using sigmoid or tanh activations. Switch to ReLU-family activations, use residual connections, or apply batch normalization.</li>
+      <li><strong>Saddle points:</strong> In high-dimensional spaces, most critical points are saddle points rather than local minima. SGD noise and momentum help escape them. Adam is particularly robust to saddle points.</li>
+      <li><strong>Poor initialization:</strong> Starting with all-zero weights in a neural network means all neurons learn the same thing (symmetry problem). Use Xavier or He initialization to break symmetry.</li>
+      <li><strong>Not shuffling data:</strong> If training data is ordered (e.g., all class-A samples first), gradients will be biased. Always shuffle before each epoch.</li>
+      <li><strong>Feature scale mismatch:</strong> When features have vastly different scales, the loss landscape becomes elongated, causing slow convergence. Normalize or standardize features before training.</li>
+    </ul>
+
+    <h2>Gradient Descent in Practice</h2>
+    <p>When training a real model, gradient descent is just one piece of the puzzle. You also need proper data preprocessing (normalization, handling missing values), a well-chosen architecture, regularization (dropout, weight decay, data augmentation), and a validation strategy (hold-out set or k-fold cross-validation). The optimizer choice matters, but it is rarely the bottleneck. Focus on data quality, feature engineering, and architecture selection first. Use Adam as a sensible default optimizer, switch to SGD with momentum if you need better generalization, and always use a learning rate scheduler.</p>
+    <p>For the interactive visualizer above, try experimenting with different settings: increase the learning rate on the ravine surface to see oscillation, switch between SGD and Adam on the multi-modal surface to see how adaptive methods handle complex landscapes, and toggle momentum to observe how velocity accumulation affects convergence speed. All computations run entirely in your browser with no data sent to any server.</p>
+  </section>
+
+  <section class="faq-section">
+    <h2>Frequently Asked Questions</h2>
+    <details>
+      <summary>What is gradient descent in machine learning?</summary>
+      <p>Gradient descent is an iterative optimization algorithm used to minimize a loss function by repeatedly adjusting parameters in the direction of steepest descent. It computes the gradient (partial derivatives) of the loss with respect to each parameter, then updates each parameter by subtracting the gradient multiplied by a learning rate. It is the foundation of training nearly all modern machine learning models including neural networks.</p>
+    </details>
+    <details>
+      <summary>What is the difference between SGD, mini-batch, and batch gradient descent?</summary>
+      <p>Batch gradient descent computes the gradient over the entire dataset per update, giving stable but slow convergence. Stochastic Gradient Descent (SGD) uses a single random sample per update, which is fast but noisy. Mini-batch gradient descent is the practical middle ground: it uses a small batch (typically 32-256 samples) per update, balancing computational efficiency with gradient stability. Most deep learning uses mini-batch.</p>
+    </details>
+    <details>
+      <summary>How do I choose a learning rate for gradient descent?</summary>
+      <p>Start with common defaults like 0.001 for Adam or 0.01 for SGD. Use learning rate schedulers (cosine annealing, step decay, or warm-up + decay) to adjust during training. The learning rate finder technique (gradually increasing LR and plotting loss) helps identify the optimal range. Too high causes divergence; too low causes slow convergence or getting stuck in local minima.</p>
+    </details>
+    <details>
+      <summary>What is momentum in gradient descent?</summary>
+      <p>Momentum adds a fraction (typically 0.9) of the previous update vector to the current gradient step. This accelerates convergence in consistent gradient directions and dampens oscillations in noisy or ravine-like loss surfaces. It helps the optimizer build velocity and escape shallow local minima. Nesterov momentum is a variant that computes the gradient at the look-ahead position for even faster convergence.</p>
+    </details>
+    <details>
+      <summary>Why does gradient descent sometimes not converge?</summary>
+      <p>Common causes of non-convergence include: learning rate too high (parameters overshoot the minimum), exploding gradients in deep networks (use gradient clipping), vanishing gradients (use ReLU activations or residual connections), saddle points in high dimensions, poor weight initialization, and non-convex loss landscapes with many local minima. Adaptive optimizers like Adam handle many of these issues automatically.</p>
+    </details>
+  </section>
+
+  <section class="explainer-section">
+    <h2>Related Tools</h2>
+    <div class="related-grid">
+      <a href="/tools/neural-network-playground.html" class="related-card">
+        <div class="related-title">Neural Network Playground</div>
+        <div class="related-desc">Build and train a neural network in your browser. Visualize decision boundaries and loss curves.</div>
+      </a>
+      <a href="/guides/overfitting-underfitting-guide.html" class="related-card">
+        <div class="related-title">Overfitting & Underfitting Guide</div>
+        <div class="related-desc">Interactive bias-variance tradeoff demo. Fit polynomials, see training vs test error.</div>
+      </a>
+      <a href="/research/ml-cheatsheet.html" class="related-card">
+        <div class="related-title">ML Cheatsheet 2026</div>
+        <div class="related-desc">Complete reference for algorithms, metrics, sklearn code, and hyperparameter tuning.</div>
+      </a>
+    </div>
+  </section>
+
+  <section class="explainer-section">
+    <h2>About the Author</h2>
+    <p><strong>Michael Lip</strong> builds open-source ML tools and developer utilities at <a href="https://zovo.one">zovo.one</a>. ml0x is part of the Zovo Tools network, a collection of free, privacy-first tools for developers and data scientists. No tracking, no accounts required, no data leaves your browser.</p>
+  </section>
+
+  <p class="last-updated">Last updated: May 25, 2026</p>
+</main>
+
+<footer class="site-footer">
+    <div class="footer-inner">
+        <div class="footer-brand">Zovo Tools</div>
+        <div class="footer-tagline">Free developer tools by a solo dev. No tracking.</div>
+        <a href="https://zovo.one/pricing?utm_source=ml0x.com&utm_medium=satellite&utm_campaign=footer-link" class="footer-cta">Zovo Lifetime — $99 once, free forever &rarr;</a>
+        <div class="footer-copy">&copy; 2026 <a href="https://zovo.one">Zovo</a> &middot; 47/500 founding spots</div>
+    </div>
+</footer>
+
+<nav class="zovo-network" aria-label="Zovo Tools Network">
+    <div class="zovo-network-inner">
+        <h3 class="zovo-network-title">Explore More Tools</h3>
+        <div class="zovo-network-links">
+            <a href="https://abwex.com">ABWex — A/B Testing</a>
+            <a href="https://claudflow.com">ClaudFlow — Workflows</a>
+            <a href="https://claudhq.com">ClaudHQ — AI Code Tools &amp; Fixes</a>
+            <a href="https://claudkit.com">ClaudKit — API</a>
+            <a href="https://enhio.com">Enhio — Text Tools</a>
+            <a href="https://epochpilot.com">EpochPilot — Timestamps</a>
+            <a href="https://gen8x.com">Gen8X — Color Tools</a>
+            <a href="https://gpt0x.com">GPT0X — AI Models</a>
+            <a href="https://heytensor.com">HeyTensor — ML Tools</a>
+            <a href="https://invokebot.com">InvokeBot — Webhooks</a>
+            <a href="https://kappafy.com">Kappafy — JSON</a>
+            <a href="https://kappakit.com">KappaKit — Dev Toolkit</a>
+            <a href="https://kickllm.com">KickLLM — LLM Costs</a>
+            <a href="https://krzen.com">Krzen — Image Tools</a>
+            <a href="https://lochbot.com">LochBot — Security</a>
+            <a href="https://lockml.com">LockML — ML Compare</a>
+            <a href="https://ml3x.com">ML3X — Matrix Math</a>
+        </div>
+    </div>
+</nav>
+
+<script>
+(function() {
+  const canvas = document.getElementById('gdCanvas');
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+  const lrSlider = document.getElementById('lrSlider');
+  const lrDisplay = document.getElementById('lrDisplay');
+  const optimizerSel = document.getElementById('optimizerSelect');
+  const surfaceSel = document.getElementById('surfaceSelect');
+  const stepBtn = document.getElementById('stepBtn');
+  const autoBtn = document.getElementById('autoBtn');
+  const resetBtn = document.getElementById('resetBtn');
+
+  let pos = {x: 3.5, y: 3.5};
+  let vel = {x: 0, y: 0};
+  let m = {x: 0, y: 0};
+  let v = {x: 0, y: 0};
+  let steps = 0;
+  let autoInterval = null;
+  let path = [];
+  const beta1 = 0.9, beta2 = 0.999, eps = 1e-8;
+
+  function getLR() { return lrSlider.value / 1000; }
+
+  lrSlider.addEventListener('input', function() {
+    lrDisplay.textContent = getLR().toFixed(3);
+  });
+
+  function lossFn(x, y) {
+    const s = surfaceSel.value;
+    if (s === 'bowl') return 0.5 * (x * x + y * y);
+    if (s === 'ravine') return 0.5 * (10 * x * x + y * y);
+    // multimodal
+    return 0.5 * (x * x + y * y) + 3 * Math.sin(x * 1.5) * Math.sin(y * 1.5);
+  }
+
+  function gradFn(x, y) {
+    const s = surfaceSel.value;
+    if (s === 'bowl') return {gx: x, gy: y};
+    if (s === 'ravine') return {gx: 10 * x, gy: y};
+    return {gx: x + 4.5 * Math.cos(x * 1.5) * Math.sin(y * 1.5), gy: y + 4.5 * Math.sin(x * 1.5) * Math.cos(y * 1.5)};
+  }
+
+  function step() {
+    const lr = getLR();
+    const g = gradFn(pos.x, pos.y);
+    const opt = optimizerSel.value;
+    steps++;
+
+    if (opt === 'sgd') {
+      pos.x -= lr * g.gx;
+      pos.y -= lr * g.gy;
+    } else if (opt === 'momentum') {
+      vel.x = 0.9 * vel.x + g.gx;
+      vel.y = 0.9 * vel.y + g.gy;
+      pos.x -= lr * vel.x;
+      pos.y -= lr * vel.y;
+    } else {
+      m.x = beta1 * m.x + (1 - beta1) * g.gx;
+      m.y = beta1 * m.y + (1 - beta1) * g.gy;
+      v.x = beta2 * v.x + (1 - beta2) * g.gx * g.gx;
+      v.y = beta2 * v.y + (1 - beta2) * g.gy * g.gy;
+      const mhx = m.x / (1 - Math.pow(beta1, steps));
+      const mhy = m.y / (1 - Math.pow(beta1, steps));
+      const vhx = v.x / (1 - Math.pow(beta2, steps));
+      const vhy = v.y / (1 - Math.pow(beta2, steps));
+      pos.x -= lr * mhx / (Math.sqrt(vhx) + eps);
+      pos.y -= lr * mhy / (Math.sqrt(vhy) + eps);
+    }
+
+    path.push({x: pos.x, y: pos.y});
+    updateStats();
+    draw();
+  }
+
+  function updateStats() {
+    const loss = lossFn(pos.x, pos.y);
+    const g = gradFn(pos.x, pos.y);
+    document.getElementById('statStep').textContent = steps;
+    document.getElementById('statLoss').textContent = loss.toFixed(4);
+    document.getElementById('statGradX').textContent = g.gx.toFixed(4);
+    document.getElementById('statGradY').textContent = g.gy.toFixed(4);
+    const gMag = Math.sqrt(g.gx * g.gx + g.gy * g.gy);
+    document.getElementById('statStatus').textContent = gMag < 0.01 ? 'Converged' : gMag < 0.1 ? 'Near Min' : 'Descending';
+  }
+
+  function toCanvas(x, y) {
+    return {cx: W / 2 + x * (W / 10), cy: H / 2 + y * (H / 10)};
+  }
+
+  function draw() {
+    ctx.clearRect(0, 0, W, H);
+    // Draw contour plot
+    const imgData = ctx.createImageData(W, H);
+    let maxL = 0;
+    const losses = new Float32Array(W * H);
+    for (let py = 0; py < H; py++) {
+      for (let px = 0; px < W; px++) {
+        const wx = (px - W / 2) / (W / 10);
+        const wy = (py - H / 2) / (H / 10);
+        const l = lossFn(wx, wy);
+        losses[py * W + px] = l;
+        if (l > maxL) maxL = l;
+      }
+    }
+    for (let py = 0; py < H; py++) {
+      for (let px = 0; px < W; px++) {
+        const idx = (py * W + px) * 4;
+        const norm = Math.min(losses[py * W + px] / (maxL * 0.5), 1);
+        const t = Math.pow(norm, 0.5);
+        imgData.data[idx] = Math.floor(10 + t * 40);
+        imgData.data[idx + 1] = Math.floor(10 + (1 - t) * 80);
+        imgData.data[idx + 2] = Math.floor(30 + (1 - t) * 216);
+        imgData.data[idx + 3] = 255;
+      }
+    }
+    ctx.putImageData(imgData, 0, 0);
+
+    // Draw contour lines
+    ctx.strokeStyle = 'rgba(255,255,255,0.08)';
+    ctx.lineWidth = 0.5;
+    const levels = 15;
+    for (let i = 1; i <= levels; i++) {
+      const threshold = (i / levels) * maxL * 0.5;
+      ctx.beginPath();
+      for (let py = 1; py < H - 1; py += 2) {
+        for (let px = 1; px < W - 1; px += 2) {
+          const l = losses[py * W + px];
+          const lr2 = losses[py * W + px + 1];
+          if ((l < threshold && lr2 >= threshold) || (l >= threshold && lr2 < threshold)) {
+            ctx.moveTo(px, py);
+            ctx.lineTo(px + 1, py);
+          }
+        }
+      }
+      ctx.stroke();
+    }
+
+    // Draw minimum marker
+    const minC = toCanvas(0, 0);
+    ctx.beginPath();
+    ctx.arc(minC.cx, minC.cy, 4, 0, Math.PI * 2);
+    ctx.fillStyle = '#22c55e';
+    ctx.fill();
+    ctx.strokeStyle = '#22c55e';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.arc(minC.cx, minC.cy, 8, 0, Math.PI * 2);
+    ctx.stroke();
+
+    // Draw path
+    if (path.length > 1) {
+      ctx.beginPath();
+      ctx.strokeStyle = 'rgba(251,146,60,0.7)';
+      ctx.lineWidth = 2;
+      const p0 = toCanvas(path[0].x, path[0].y);
+      ctx.moveTo(p0.cx, p0.cy);
+      for (let i = 1; i < path.length; i++) {
+        const p = toCanvas(path[i].x, path[i].y);
+        ctx.lineTo(p.cx, p.cy);
+      }
+      ctx.stroke();
+
+      // Draw dots along path
+      for (let i = 0; i < path.length; i++) {
+        const p = toCanvas(path[i].x, path[i].y);
+        ctx.beginPath();
+        ctx.arc(p.cx, p.cy, 2, 0, Math.PI * 2);
+        ctx.fillStyle = 'rgba(251,146,60,0.5)';
+        ctx.fill();
+      }
+    }
+
+    // Draw current position
+    const cur = toCanvas(pos.x, pos.y);
+    ctx.beginPath();
+    ctx.arc(cur.cx, cur.cy, 7, 0, Math.PI * 2);
+    ctx.fillStyle = '#3b82f6';
+    ctx.fill();
+    ctx.strokeStyle = '#fff';
+    ctx.lineWidth = 2;
+    ctx.stroke();
+
+    // Draw gradient arrow
+    const g = gradFn(pos.x, pos.y);
+    const gMag = Math.sqrt(g.gx * g.gx + g.gy * g.gy);
+    if (gMag > 0.01) {
+      const arrowLen = Math.min(gMag * 15, 50);
+      const nx = -g.gx / gMag;
+      const ny = -g.gy / gMag;
+      ctx.beginPath();
+      ctx.strokeStyle = '#f87171';
+      ctx.lineWidth = 2;
+      ctx.moveTo(cur.cx, cur.cy);
+      ctx.lineTo(cur.cx + nx * arrowLen, cur.cy + ny * arrowLen);
+      ctx.stroke();
+      // Arrowhead
+      const ax = cur.cx + nx * arrowLen;
+      const ay = cur.cy + ny * arrowLen;
+      const angle = Math.atan2(ny, nx);
+      ctx.beginPath();
+      ctx.moveTo(ax, ay);
+      ctx.lineTo(ax - 8 * Math.cos(angle - 0.4), ay - 8 * Math.sin(angle - 0.4));
+      ctx.lineTo(ax - 8 * Math.cos(angle + 0.4), ay - 8 * Math.sin(angle + 0.4));
+      ctx.closePath();
+      ctx.fillStyle = '#f87171';
+      ctx.fill();
+    }
+
+    // Legend
+    ctx.font = '12px IBM Plex Sans, sans-serif';
+    ctx.fillStyle = '#888';
+    ctx.fillText('Blue dot = current position', 10, H - 36);
+    ctx.fillText('Red arrow = negative gradient direction', 10, H - 20);
+    ctx.fillStyle = '#22c55e';
+    ctx.fillText('Green = minimum', 10, H - 52);
+  }
+
+  function reset() {
+    if (autoInterval) { clearInterval(autoInterval); autoInterval = null; autoBtn.textContent = 'Auto-Play'; }
+    pos = {x: 3.5, y: 3.5};
+    vel = {x: 0, y: 0};
+    m = {x: 0, y: 0};
+    v = {x: 0, y: 0};
+    steps = 0;
+    path = [{x: pos.x, y: pos.y}];
+    document.getElementById('statStep').textContent = '0';
+    document.getElementById('statLoss').textContent = '--';
+    document.getElementById('statGradX').textContent = '--';
+    document.getElementById('statGradY').textContent = '--';
+    document.getElementById('statStatus').textContent = 'Ready';
+    draw();
+  }
+
+  stepBtn.addEventListener('click', step);
+  resetBtn.addEventListener('click', reset);
+  autoBtn.addEventListener('click', function() {
+    if (autoInterval) {
+      clearInterval(autoInterval);
+      autoInterval = null;
+      autoBtn.textContent = 'Auto-Play';
+    } else {
+      autoInterval = setInterval(function() {
+        step();
+        if (steps > 500) { clearInterval(autoInterval); autoInterval = null; autoBtn.textContent = 'Auto-Play'; }
+      }, 60);
+      autoBtn.textContent = 'Pause';
+    }
+  });
+  surfaceSel.addEventListener('change', reset);
+
+  reset();
+})();
+</script>
+</body>
+</html>

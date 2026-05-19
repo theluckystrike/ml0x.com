@@ -1,0 +1,566 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Batch Size Optimizer — GPU Memory vs Convergence Tradeoff Calculator | ml0x</title>
+<meta name="description" content="Free batch size optimizer. Calculate maximum batch size from GPU memory and model parameters. Visualize memory vs convergence tradeoffs, gradient accumulation, and multi-GPU scaling for fp32, fp16, and bf16 precision.">
+<meta name="keywords" content="batch size optimizer, GPU memory calculator, gradient accumulation, multi-GPU scaling, fp16 training, bf16 training, mixed precision, deep learning, convergence tradeoff, VRAM calculator">
+<link rel="canonical" href="https://ml0x.com/answers/batch-size-optimizer.html">
+<link rel="alternate" hreflang="en" href="https://ml0x.com/answers/batch-size-optimizer.html">
+<link rel="alternate" hreflang="x-default" href="https://ml0x.com/answers/batch-size-optimizer.html">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Batch Size Optimizer — GPU Memory vs Convergence Tradeoff Calculator">
+<meta property="og:description" content="Calculate max batch size from GPU memory. Visualize memory vs convergence tradeoffs, gradient accumulation, and multi-GPU scaling.">
+<meta property="og:url" content="https://ml0x.com/answers/batch-size-optimizer.html">
+<meta property="og:site_name" content="Zovo Tools">
+<meta property="og:locale" content="en_US">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Batch Size Optimizer — GPU Memory vs Convergence Tradeoff Calculator">
+<meta name="twitter:description" content="Calculate maximum batch size from GPU VRAM. Gradient accumulation and multi-GPU scaling for fp32/fp16/bf16.">
+<meta name="author" content="Michael Lip">
+<meta name="robots" content="index, follow">
+<link rel="stylesheet" href="/assets/style.css">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Article",
+  "headline": "Batch Size Optimizer — GPU Memory vs Convergence Tradeoff Calculator",
+  "description": "Calculate maximum batch size from GPU memory and model parameters. Visualize memory vs convergence tradeoffs with gradient accumulation and multi-GPU scaling.",
+  "url": "https://ml0x.com/answers/batch-size-optimizer.html",
+  "author": {"@type": "Person", "name": "Michael Lip", "url": "https://zovo.one"},
+  "publisher": {"@type": "Organization", "name": "ML0X", "url": "https://ml0x.com"},
+  "datePublished": "2026-05-25",
+  "dateModified": "2026-05-25"
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {"@type": "Question", "name": "How does batch size affect training convergence?", "acceptedAnswer": {"@type": "Answer", "text": "Larger batch sizes produce more accurate gradient estimates, leading to smoother optimization and faster wall-clock training (more data processed per step). However, research shows that very large batches can lead to sharp minima that generalize poorly (the 'generalization gap'). Smaller batches introduce noise that acts as implicit regularization, often finding flatter minima with better test performance. The optimal batch size depends on dataset size, model architecture, and learning rate schedule. As a rule of thumb, when doubling the batch size, also scale the learning rate by sqrt(2) to 2x."}},
+    {"@type": "Question", "name": "How do I calculate maximum batch size for my GPU?", "acceptedAnswer": {"@type": "Answer", "text": "GPU memory during training is consumed by three main components: model parameters, optimizer states, and activations. For a model with P parameters in fp32, parameters take 4P bytes, gradients take 4P bytes, and Adam optimizer states take 8P bytes (momentum + variance). Activations scale linearly with batch size and depend on model architecture. A rough formula is: available_memory = GPU_VRAM - model_overhead, then max_batch = available_memory / memory_per_sample. Mixed precision (fp16/bf16) roughly halves the parameter and activation memory, nearly doubling the maximum batch size."}},
+    {"@type": "Question", "name": "What is gradient accumulation and when should I use it?", "acceptedAnswer": {"@type": "Answer", "text": "Gradient accumulation simulates a larger effective batch size by running multiple forward/backward passes with smaller micro-batches and accumulating the gradients before performing an optimizer step. If your GPU can only fit batch_size=8 but you want an effective batch_size=32, you accumulate gradients over 4 micro-batches. The result is mathematically equivalent to training with the larger batch size (ignoring batch normalization statistics). Use gradient accumulation when your desired batch size exceeds GPU memory, or when you want large-batch training benefits without multiple GPUs."}},
+    {"@type": "Question", "name": "What is the difference between fp32, fp16, and bf16 precision?", "acceptedAnswer": {"@type": "Answer", "text": "fp32 (float32) uses 4 bytes per value with 23 bits of mantissa, providing high precision but consuming the most memory. fp16 (float16) uses 2 bytes with 10 bits of mantissa, halving memory but with a narrow dynamic range that can cause overflow/underflow without loss scaling. bf16 (bfloat16) uses 2 bytes with 7 bits of mantissa but the same exponent range as fp32, making it more numerically stable than fp16 for training. Mixed precision training uses fp16/bf16 for most operations and fp32 for critical accumulations, nearly halving memory with minimal accuracy loss."}},
+    {"@type": "Question", "name": "How does multi-GPU training scale with batch size?", "acceptedAnswer": {"@type": "Answer", "text": "In data-parallel multi-GPU training, each GPU processes a fraction of the global batch. With N GPUs, the effective batch size is N times the per-GPU batch size. Communication overhead (gradient all-reduce) means scaling is sub-linear: 2 GPUs give roughly 1.8-1.95x speedup, not 2x. For very large GPU counts, the communication-to-computation ratio increases and the effective learning rate may need adjustment. Model parallelism (splitting the model across GPUs) is needed when the model itself doesn't fit in a single GPU's memory, which is orthogonal to batch size scaling."}}
+  ]
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {"@type": "ListItem", "position": 1, "name": "Home", "item": "https://ml0x.com/"},
+    {"@type": "ListItem", "position": 2, "name": "Answers", "item": "https://ml0x.com/answers/"},
+    {"@type": "ListItem", "position": 3, "name": "Batch Size Optimizer"}
+  ]
+}
+</script>
+</head>
+<body>
+
+<header>
+  <div class="container header-inner">
+    <a href="/" class="logo">ml0x</a>
+    <nav>
+      <a href="/">Home</a>
+      <a href="/research/">Research</a>
+      <a href="/tools/">Tools</a>
+      <a href="/guides/">Guides</a>
+      <a href="/answers/">Answers</a>
+      <div class="nav-right">
+        <a href="https://zovo.one/pricing?utm_source=ml0x.com&utm_medium=satellite&utm_campaign=nav-link" class="nav-pro" target="_blank">Go Pro &#10022;</a>
+        <a href="https://zovo.one/tools" class="nav-zovo">Zovo Tools</a>
+      </div>
+    </nav>
+  </div>
+</header>
+
+<main class="container">
+  <div class="breadcrumb">
+    <a href="/">Home</a> <span>&rsaquo;</span> <a href="/answers/">Answers</a> <span>&rsaquo;</span> Batch Size Optimizer
+  </div>
+
+  <div class="hero">
+    <h1>Batch Size <span>Optimizer</span></h1>
+    <p>Calculate the maximum batch size your GPU can handle based on model parameters, memory capacity, and numerical precision. Visualize the tradeoff between larger batches (faster training) and smaller batches (better generalization). Estimate effective batch size with gradient accumulation, and plan multi-GPU scaling strategies. All computation is performed locally in your browser.</p>
+  </div>
+
+  <div class="tool-card">
+    <h3>GPU &amp; Model Configuration</h3>
+    <div class="control-row">
+      <div class="control-group">
+        <label>GPU Memory (GB)</label>
+        <select id="gpuMem">
+          <option value="8">8 GB (RTX 3060 Ti)</option>
+          <option value="10">10 GB (RTX 3080)</option>
+          <option value="12">12 GB (RTX 4070)</option>
+          <option value="16">16 GB (RTX 4080)</option>
+          <option value="24" selected>24 GB (RTX 4090)</option>
+          <option value="40">40 GB (A100-40)</option>
+          <option value="48">48 GB (A6000)</option>
+          <option value="80">80 GB (A100-80/H100)</option>
+        </select>
+      </div>
+      <div class="control-group">
+        <label>Model Parameters (M)</label>
+        <input type="number" id="modelParams" value="125" min="1" max="175000" style="width:100%;padding:8px;background:#1a1a1a;border:1px solid #333;border-radius:6px;color:#e0e0e0;">
+      </div>
+      <div class="control-group">
+        <label>Precision</label>
+        <select id="precision">
+          <option value="fp32">fp32 (4 bytes)</option>
+          <option value="fp16" selected>fp16 (2 bytes)</option>
+          <option value="bf16">bf16 (2 bytes)</option>
+        </select>
+      </div>
+    </div>
+    <div class="control-row" style="margin-top:12px;">
+      <div class="control-group">
+        <label>Optimizer</label>
+        <select id="optimizer">
+          <option value="adam" selected>Adam / AdamW</option>
+          <option value="sgd">SGD + Momentum</option>
+          <option value="adafactor">Adafactor</option>
+        </select>
+      </div>
+      <div class="control-group">
+        <label>Sequence Length / Input Size</label>
+        <select id="seqLen">
+          <option value="128">128 tokens</option>
+          <option value="256">256 tokens</option>
+          <option value="512" selected>512 tokens</option>
+          <option value="1024">1024 tokens</option>
+          <option value="2048">2048 tokens</option>
+          <option value="4096">4096 tokens</option>
+        </select>
+      </div>
+      <div class="control-group">
+        <label>Model Type</label>
+        <select id="modelType">
+          <option value="transformer" selected>Transformer (LLM)</option>
+          <option value="cnn">CNN (Vision)</option>
+          <option value="resnet">ResNet</option>
+        </select>
+      </div>
+    </div>
+    <div class="control-row" style="margin-top:12px;">
+      <button class="btn" id="calcBtn">Calculate Batch Size</button>
+      <button class="btn btn-secondary" id="resetBtn">Reset</button>
+    </div>
+  </div>
+
+  <div id="resultsSection" style="display:none;">
+    <div class="stat-grid">
+      <div class="stat-card"><div class="value" id="metMaxBatch">--</div><div class="label">Max Batch Size</div></div>
+      <div class="stat-card"><div class="value" id="metModelMem">--</div><div class="label">Model Memory (GB)</div></div>
+      <div class="stat-card"><div class="value" id="metOptMem">--</div><div class="label">Optimizer Memory (GB)</div></div>
+      <div class="stat-card"><div class="value" id="metActMem">--</div><div class="label">Activation Memory / Sample (MB)</div></div>
+      <div class="stat-card"><div class="value" id="metFreeMem">--</div><div class="label">Available for Activations (GB)</div></div>
+      <div class="stat-card"><div class="value" id="metUtil">--</div><div class="label">Memory Utilization</div></div>
+    </div>
+
+    <div class="tool-card" style="margin-top:16px;">
+      <h3>Memory Breakdown</h3>
+      <div class="viz-container"><svg id="memSvg" width="700" height="250" viewBox="0 0 700 250"></svg></div>
+    </div>
+
+    <div class="tool-card" style="margin-top:16px;">
+      <h3>Batch Size vs Convergence Tradeoff</h3>
+      <div class="viz-container"><svg id="tradeoffSvg" width="700" height="300" viewBox="0 0 700 300"></svg></div>
+      <div style="display:flex;gap:16px;margin-top:8px;font-size:12px;color:#aaa;">
+        <span><span style="color:#3b82f6;">&#9644;</span> Training Speed (samples/sec)</span>
+        <span><span style="color:#22c55e;">&#9644;</span> Generalization Score</span>
+        <span><span style="color:#f59e0b;">- -</span> Your Max Batch Size</span>
+      </div>
+    </div>
+
+    <div class="tool-card" style="margin-top:16px;">
+      <h3>Gradient Accumulation Calculator</h3>
+      <div class="control-row" style="margin-bottom:12px;">
+        <div class="control-group">
+          <label>Target Effective Batch Size</label>
+          <input type="number" id="targetBatch" value="256" min="1" style="width:100%;padding:8px;background:#1a1a1a;border:1px solid #333;border-radius:6px;color:#e0e0e0;">
+        </div>
+        <button class="btn btn-secondary" id="accumBtn">Calculate Accumulation Steps</button>
+      </div>
+      <div id="accumResult" style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;">
+        <div class="stat-card"><div class="value" id="accumSteps">--</div><div class="label">Accumulation Steps</div></div>
+        <div class="stat-card"><div class="value" id="accumMicro">--</div><div class="label">Micro-Batch Size</div></div>
+        <div class="stat-card"><div class="value" id="accumEffective">--</div><div class="label">Effective Batch Size</div></div>
+        <div class="stat-card"><div class="value" id="accumSlowdown">--</div><div class="label">Slowdown Factor</div></div>
+      </div>
+    </div>
+
+    <div class="tool-card" style="margin-top:16px;">
+      <h3>Multi-GPU Scaling Estimator</h3>
+      <div class="viz-container"><svg id="scalingSvg" width="700" height="280" viewBox="0 0 700 280"></svg></div>
+      <div style="display:flex;gap:16px;margin-top:8px;font-size:12px;color:#aaa;">
+        <span><span style="color:#3b82f6;">&#9644;</span> Ideal (linear) scaling</span>
+        <span><span style="color:#22c55e;">&#9644;</span> Realistic scaling</span>
+        <span><span style="color:#a78bfa;">&#9644;</span> Effective batch size</span>
+      </div>
+    </div>
+  </div>
+
+  <section class="explainer-section">
+    <h2>Understanding Batch Size in Deep Learning</h2>
+    <p>The batch size is the number of training examples processed in a single forward-backward pass before updating model weights. It is one of the most consequential hyperparameters in deep learning, affecting training speed, memory usage, convergence dynamics, and generalization performance. Despite its importance, many practitioners choose batch sizes based on what fits in GPU memory rather than on principled analysis. This calculator helps you make informed decisions by quantifying the memory constraints and tradeoffs involved.</p>
+    <p>When you perform a forward pass with a batch of B examples, the GPU must store the model parameters, the intermediate activations (needed for backpropagation), the gradients, and the optimizer states. Parameters and optimizer states are fixed costs independent of batch size, while activation memory scales linearly (or sometimes quadratically, in the case of attention mechanisms) with batch size. This is why the maximum batch size is determined by how much memory remains after the fixed costs are accounted for.</p>
+
+    <h2>The Memory Budget: Where Does VRAM Go?</h2>
+    <p><strong>Model parameters</strong> consume 4 bytes per parameter in fp32, or 2 bytes in fp16/bf16. A 125M parameter model takes 500 MB in fp32 or 250 MB in fp16. A 7B parameter model takes 28 GB in fp32 or 14 GB in fp16. For very large models, the parameters alone can exceed the VRAM of consumer GPUs, requiring model parallelism or offloading.</p>
+    <p><strong>Optimizer states</strong> are often the largest fixed cost. Adam and AdamW maintain two state tensors (first and second moment estimates) per parameter, each the same size as the parameters. In fp32, Adam's optimizer states consume 8 bytes per parameter (2 states at 4 bytes each). For a 125M model, that is 1 GB. SGD with momentum stores only one state tensor (momentum buffer), consuming 4 bytes per parameter. Adafactor uses a factored representation that reduces optimizer memory by approximately 50% compared to Adam.</p>
+    <p><strong>Gradients</strong> require the same memory as the parameters: 4 bytes per parameter in fp32, 2 bytes in fp16/bf16. These are needed during the backward pass and are freed (or accumulated) after the optimizer step.</p>
+    <p><strong>Activation memory</strong> is the variable cost that determines your batch size budget. For Transformers, activation memory per token per layer is approximately 34 * hidden_dim * seq_len bytes in fp32 (accounting for attention matrices, intermediate representations, and residual connections). The quadratic attention memory (seq_len^2 per head per layer) becomes dominant for long sequences. For CNNs, activation memory scales with the spatial resolution and channel count at each layer. Activation checkpointing (recomputation) can reduce activation memory by 60-80% at the cost of 20-30% more computation.</p>
+
+    <h2>The Batch Size Convergence Tradeoff</h2>
+    <p>Larger batch sizes provide more accurate gradient estimates, because the average over more samples reduces the variance of the gradient. This leads to smoother optimization trajectories and allows larger learning rates. Training throughput (samples per second) increases with batch size up to the point where the GPU is fully utilized, after which further increases provide diminishing returns.</p>
+    <p>However, the seminal paper by Keskar et al. (2016) "On Large-Batch Training for Deep Learning" showed that very large batch sizes tend to converge to sharp minima that generalize poorly to test data. This "generalization gap" arises because the noise in small-batch gradient estimates acts as implicit regularization, steering optimization toward flat minima with better generalization. Subsequent research by Smith et al. (2018) showed that this gap can be partially closed by scaling the learning rate with batch size and using appropriate warmup.</p>
+    <p>The practical consensus is that there exists a "critical batch size" for each task, beyond which increasing batch size provides no benefit (Shallue et al., 2019). Below this critical size, doubling the batch size roughly halves the number of optimization steps needed to reach a target performance. Above it, additional batch size merely wastes computation. The critical batch size varies widely: it might be 256 for CIFAR-10, 2048 for ImageNet, and 65536 for some language modeling tasks.</p>
+
+    <h2>Gradient Accumulation: Simulating Larger Batches</h2>
+    <p>When your desired batch size exceeds GPU memory, gradient accumulation is the standard solution. Instead of processing the full batch in one step, you split it into K micro-batches, run forward-backward on each, sum the gradients, and perform a single optimizer step. The result is mathematically equivalent to training with a batch of K * micro_batch_size examples, with two caveats.</p>
+    <p>First, batch normalization statistics are computed per micro-batch, not per effective batch. If your micro-batch is very small (less than 16), the batch norm statistics become noisy and can hurt performance. Solutions include using Group Normalization or Layer Normalization instead, or synchronizing batch norm statistics across micro-batches. Second, gradient accumulation introduces a linear slowdown: K accumulation steps take K times longer than one step, because you must perform K forward-backward passes. This is still faster than not training at all, but slower than having enough memory for the full batch.</p>
+    <p>Gradient accumulation is particularly important for fine-tuning large language models, where the model itself consumes most of the GPU memory and only tiny micro-batches fit. For example, fine-tuning a 7B parameter model on a 24 GB GPU might only allow a micro-batch size of 1-2, requiring gradient accumulation over 16-64 steps to achieve a reasonable effective batch size.</p>
+
+    <h2>Mixed Precision Training</h2>
+    <p>Mixed precision training uses lower-precision formats (fp16 or bf16) for most computations while maintaining fp32 for critical operations. This nearly halves memory usage for parameters, activations, and gradients, effectively doubling the maximum batch size. Modern GPUs (A100, H100, RTX 30xx/40xx) have dedicated tensor cores that compute fp16/bf16 operations 2-8x faster than fp32, so mixed precision also improves training speed.</p>
+    <p>fp16 has a narrow dynamic range (max value ~65504, min positive ~6e-8), which can cause gradient overflow or underflow. Loss scaling addresses this by multiplying the loss by a large factor before backpropagation and dividing the gradients by the same factor afterward. bf16 has the same exponent range as fp32 (max value ~3.4e38), making it more numerically stable without loss scaling, but with less precision (7 mantissa bits vs 23 for fp32 and 10 for fp16). For most modern training, bf16 is preferred when available.</p>
+
+    <h2>Multi-GPU Scaling Considerations</h2>
+    <p>Data-parallel training distributes the batch across multiple GPUs, each processing a fraction of the data. After the backward pass, gradients are synchronized across GPUs using an all-reduce operation. The effective batch size scales linearly with GPU count, but the communication overhead means actual speedup is sub-linear. For well-optimized setups with high-bandwidth interconnects (NVLink, InfiniBand), efficiency is 90-95% at 2-8 GPUs and 80-90% at 8-64 GPUs. Beyond 64 GPUs, communication often dominates unless the model and batch are very large.</p>
+    <p>When scaling to many GPUs, the effective batch size can become very large, potentially exceeding the critical batch size. In this regime, you should either reduce the per-GPU batch size (wasting GPU compute) or use the LARS/LAMB optimizer, which adapts the learning rate per layer to handle very large batches. Facebook's 2017 result of training ImageNet in 1 hour used a batch size of 8192 across 256 GPUs, requiring careful learning rate warmup and scaling.</p>
+
+    <h2>Practical Batch Size Selection Guidelines</h2>
+    <ul>
+      <li>Start with the largest batch size that fits in memory with mixed precision. This maximizes GPU utilization.</li>
+      <li>If validation performance degrades compared to a smaller batch, reduce the batch size or increase regularization (dropout, weight decay, augmentation).</li>
+      <li>Scale the learning rate with batch size: use linear scaling (LR *= batch_size / base_batch_size) for moderate increases, or square root scaling for large increases.</li>
+      <li>Always use learning rate warmup when training with large batches. Warmup over 5-10% of total steps prevents early divergence.</li>
+      <li>For Transformers, bf16 is almost always preferred over fp16 due to better numerical stability.</li>
+      <li>Use gradient accumulation to achieve target effective batch sizes that exceed GPU memory, but monitor micro-batch normalization statistics.</li>
+      <li>Monitor gradient norm during training. If it spikes or explodes, your effective learning rate (LR * batch_size) is too high.</li>
+    </ul>
+  </section>
+
+  <section class="faq-section">
+    <h2>Frequently Asked Questions</h2>
+    <details>
+      <summary>How does batch size affect training convergence?</summary>
+      <p>Larger batch sizes produce more accurate gradient estimates and faster wall-clock training, but very large batches can lead to sharp minima that generalize poorly. Smaller batches introduce noise that acts as implicit regularization. When doubling the batch size, scale the learning rate by sqrt(2) to 2x.</p>
+    </details>
+    <details>
+      <summary>How do I calculate maximum batch size for my GPU?</summary>
+      <p>GPU memory is consumed by model parameters, optimizer states, and activations. Subtract the fixed costs (parameters + gradients + optimizer states) from total VRAM. Divide the remaining memory by the activation memory per sample. Mixed precision roughly doubles the maximum batch size.</p>
+    </details>
+    <details>
+      <summary>What is gradient accumulation and when should I use it?</summary>
+      <p>Gradient accumulation runs multiple forward-backward passes with smaller micro-batches, accumulating gradients before one optimizer step. It simulates a larger effective batch size without requiring more memory. Use it when your desired batch size exceeds GPU memory.</p>
+    </details>
+    <details>
+      <summary>What is the difference between fp32, fp16, and bf16 precision?</summary>
+      <p>fp32 uses 4 bytes with high precision. fp16 uses 2 bytes with narrow dynamic range (needs loss scaling). bf16 uses 2 bytes with fp32's dynamic range but less mantissa precision. bf16 is preferred for training when available; it is more stable than fp16 without loss scaling.</p>
+    </details>
+    <details>
+      <summary>How does multi-GPU training scale with batch size?</summary>
+      <p>In data-parallel training, effective batch size is N GPUs times per-GPU batch size. Scaling is sub-linear due to gradient synchronization overhead: 2 GPUs give roughly 1.8-1.95x speedup. For very large GPU counts, use LARS/LAMB optimizers and careful learning rate warmup.</p>
+    </details>
+  </section>
+
+  <section class="explainer-section">
+    <h2>Related Tools</h2>
+    <div class="related-grid">
+      <a href="/tools/learning-rate-finder.html" class="related-card">
+        <div class="related-title">Learning Rate Finder</div>
+        <div class="related-desc">Simulate an LR range test to find the optimal learning rate for your model.</div>
+      </a>
+      <a href="/tools/model-complexity-calculator.html" class="related-card">
+        <div class="related-title">Model Complexity Calculator</div>
+        <div class="related-desc">Calculate parameter count, FLOPS, and memory footprint for neural network architectures.</div>
+      </a>
+      <a href="/guides/gradient-descent-explained.html" class="related-card">
+        <div class="related-title">Gradient Descent Explained</div>
+        <div class="related-desc">Interactive guide to gradient descent optimization with step-by-step visualization.</div>
+      </a>
+    </div>
+  </section>
+
+  <section class="explainer-section">
+    <h2>About the Author</h2>
+    <p><strong>Michael Lip</strong> builds open-source ML tools and developer utilities at <a href="https://zovo.one">zovo.one</a>. ml0x is part of the Zovo Tools network, a collection of free, privacy-first tools for developers and data scientists. No tracking, no accounts required, no data leaves your browser.</p>
+  </section>
+
+  <p class="last-updated">Last updated: May 25, 2026</p>
+</main>
+
+<footer class="site-footer">
+    <div class="footer-inner">
+        <div class="footer-brand">Zovo Tools</div>
+        <div class="footer-tagline">Free developer tools by a solo dev. No tracking.</div>
+        <a href="https://zovo.one/pricing?utm_source=ml0x.com&utm_medium=satellite&utm_campaign=footer-link" class="footer-cta">Zovo Lifetime — $99 once, free forever &rarr;</a>
+        <div class="footer-copy">&copy; 2026 <a href="https://zovo.one">Zovo</a> &middot; 47/500 founding spots</div>
+    </div>
+</footer>
+
+<nav class="zovo-network" aria-label="Zovo Tools Network">
+    <div class="zovo-network-inner">
+        <h3 class="zovo-network-title">Explore More Tools</h3>
+        <div class="zovo-network-links">
+            <a href="https://abwex.com">ABWex — A/B Testing</a>
+            <a href="https://claudflow.com">ClaudFlow — Workflows</a>
+            <a href="https://claudhq.com">ClaudHQ — AI Code Tools &amp; Fixes</a>
+            <a href="https://claudkit.com">ClaudKit — API</a>
+            <a href="https://enhio.com">Enhio — Text Tools</a>
+            <a href="https://epochpilot.com">EpochPilot — Timestamps</a>
+            <a href="https://gen8x.com">Gen8X — Color Tools</a>
+            <a href="https://gpt0x.com">GPT0X — AI Models</a>
+            <a href="https://heytensor.com">HeyTensor — ML Tools</a>
+            <a href="https://invokebot.com">InvokeBot — Webhooks</a>
+            <a href="https://kappafy.com">Kappafy — JSON</a>
+            <a href="https://kappakit.com">KappaKit — Dev Toolkit</a>
+            <a href="https://kickllm.com">KickLLM — LLM Costs</a>
+            <a href="https://krzen.com">Krzen — Image Tools</a>
+            <a href="https://lochbot.com">LochBot — Security</a>
+            <a href="https://lockml.com">LockML — ML Compare</a>
+            <a href="https://ml3x.com">ML3X — Matrix Math</a>
+        </div>
+    </div>
+</nav>
+
+<script>
+(function() {
+  var maxBatch = 0;
+
+  function bytesPerParam(prec) {
+    return prec === 'fp32' ? 4 : 2;
+  }
+
+  function optimizerMultiplier(opt, prec) {
+    var bpp = bytesPerParam(prec);
+    if (opt === 'adam') return 2 * 4 + bpp;
+    if (opt === 'sgd') return 4 + bpp;
+    return 4 + bpp * 0.5;
+  }
+
+  function activationPerSample(params, seqLen, modelType, prec) {
+    var bpp = bytesPerParam(prec);
+    var hidden;
+    if (params < 50) hidden = 512;
+    else if (params < 200) hidden = 768;
+    else if (params < 1000) hidden = 1024;
+    else if (params < 5000) hidden = 2048;
+    else if (params < 20000) hidden = 4096;
+    else hidden = 8192;
+
+    var numLayers = Math.max(4, Math.round(params * 1e6 / (12 * hidden * hidden)));
+
+    if (modelType === 'transformer') {
+      var perLayer = (34 * hidden * seqLen + seqLen * seqLen * (hidden / 64)) * bpp;
+      return perLayer * numLayers;
+    } else if (modelType === 'cnn' || modelType === 'resnet') {
+      return params * 1e6 * 0.5 * bpp;
+    }
+    return params * 1e6 * bpp;
+  }
+
+  function calculate() {
+    var gpuGB = parseInt(document.getElementById('gpuMem').value);
+    var params = parseFloat(document.getElementById('modelParams').value);
+    var prec = document.getElementById('precision').value;
+    var opt = document.getElementById('optimizer').value;
+    var seqLen = parseInt(document.getElementById('seqLen').value);
+    var modelType = document.getElementById('modelType').value;
+
+    if (isNaN(params) || params <= 0) return;
+
+    var gpuBytes = gpuGB * 1024 * 1024 * 1024;
+    var bpp = bytesPerParam(prec);
+    var paramBytes = params * 1e6 * bpp;
+    var gradBytes = params * 1e6 * bpp;
+    var optBytes = params * 1e6 * optimizerMultiplier(opt, prec);
+    var modelOverhead = paramBytes + gradBytes + optBytes;
+    var cudaOverhead = gpuBytes * 0.05;
+    var availableForAct = gpuBytes - modelOverhead - cudaOverhead;
+
+    if (availableForAct < 0) availableForAct = 0;
+    var actPerSample = activationPerSample(params, seqLen, modelType, prec);
+    maxBatch = actPerSample > 0 ? Math.floor(availableForAct / actPerSample) : 0;
+    if (maxBatch < 1) maxBatch = 1;
+
+    var totalUsed = modelOverhead + maxBatch * actPerSample;
+    var utilization = Math.min(100, (totalUsed / gpuBytes * 100));
+
+    document.getElementById('metMaxBatch').textContent = maxBatch;
+    document.getElementById('metModelMem').textContent = ((paramBytes + gradBytes) / (1024*1024*1024)).toFixed(2);
+    document.getElementById('metOptMem').textContent = (optBytes / (1024*1024*1024)).toFixed(2);
+    document.getElementById('metActMem').textContent = (actPerSample / (1024*1024)).toFixed(1);
+    document.getElementById('metFreeMem').textContent = (availableForAct / (1024*1024*1024)).toFixed(2);
+    document.getElementById('metUtil').textContent = utilization.toFixed(1) + '%';
+
+    document.getElementById('resultsSection').style.display = 'block';
+    drawMemoryBreakdown(paramBytes + gradBytes, optBytes, maxBatch * actPerSample, cudaOverhead, gpuBytes);
+    drawTradeoffCurve(maxBatch);
+    drawScalingCurve(maxBatch);
+  }
+
+  function drawMemoryBreakdown(paramGrad, opt, act, overhead, total) {
+    var svg = document.getElementById('memSvg');
+    var pad = {l:60, r:30, t:30, b:40};
+    var w = 700 - pad.l - pad.r, h = 250 - pad.t - pad.b;
+    var totalGB = total / (1024*1024*1024);
+    var segments = [
+      {label:'Parameters + Gradients', bytes:paramGrad, color:'#3b82f6'},
+      {label:'Optimizer States', bytes:opt, color:'#a78bfa'},
+      {label:'Activations (batch)', bytes:act, color:'#22c55e'},
+      {label:'CUDA Overhead', bytes:overhead, color:'#666'},
+      {label:'Free', bytes:Math.max(0, total - paramGrad - opt - act - overhead), color:'#1a1a1a'}
+    ];
+
+    var html = '<rect width="700" height="250" fill="#141414"/>';
+    var barY = pad.t, barH = 50;
+    var x = pad.l;
+    for (var i = 0; i < segments.length; i++) {
+      var segW = (segments[i].bytes / total) * w;
+      if (segW < 1 && segments[i].bytes > 0) segW = 1;
+      html += '<rect x="'+x+'" y="'+barY+'" width="'+segW+'" height="'+barH+'" fill="'+segments[i].color+'" rx="'+(i===0?'4':'0')+'" opacity="0.8"/>';
+      x += segW;
+    }
+    html += '<rect x="'+pad.l+'" y="'+barY+'" width="'+w+'" height="'+barH+'" fill="none" stroke="#444" stroke-width="1" rx="4"/>';
+
+    var legendY = barY + barH + 30;
+    var cols = 3;
+    for (var i = 0; i < segments.length; i++) {
+      var col = i % cols;
+      var row = Math.floor(i / cols);
+      var lx = pad.l + col * (w / cols);
+      var ly = legendY + row * 28;
+      var gb = (segments[i].bytes / (1024*1024*1024)).toFixed(2);
+      html += '<rect x="'+lx+'" y="'+(ly-8)+'" width="12" height="12" fill="'+segments[i].color+'" rx="2" opacity="0.8"/>';
+      html += '<text x="'+(lx+18)+'" y="'+(ly+2)+'" fill="#ccc" font-size="11" font-family="IBM Plex Sans,sans-serif">'+segments[i].label+': '+gb+' GB</text>';
+    }
+    html += '<text x="'+(pad.l+w/2)+'" y="'+(pad.t+barH/2+5)+'" text-anchor="middle" fill="#fff" font-size="12" font-weight="600" font-family="IBM Plex Sans,sans-serif">Total: '+totalGB.toFixed(1)+' GB</text>';
+    svg.innerHTML = html;
+  }
+
+  function drawTradeoffCurve(maxBS) {
+    var svg = document.getElementById('tradeoffSvg');
+    var pad = {l:70, r:50, t:20, b:50};
+    var w = 700 - pad.l - pad.r, h = 300 - pad.t - pad.b;
+    var maxX = Math.max(512, maxBS * 2);
+    var batchSizes = [];
+    for (var b = 1; b <= maxX; b = Math.ceil(b * 1.2)) batchSizes.push(b);
+
+    function sx(b) { return pad.l + Math.log2(b) / Math.log2(maxX) * w; }
+    function sySpeed(v) { return pad.t + (1 - v) * h; }
+    function syGen(v) { return pad.t + (1 - v) * h; }
+
+    var html = '<rect width="700" height="300" fill="#141414"/>';
+    html += '<line x1="'+pad.l+'" y1="'+(pad.t+h)+'" x2="'+(pad.l+w)+'" y2="'+(pad.t+h)+'" stroke="#333" stroke-width="1"/>';
+    html += '<line x1="'+pad.l+'" y1="'+pad.t+'" x2="'+pad.l+'" y2="'+(pad.t+h)+'" stroke="#333" stroke-width="1"/>';
+
+    var xTicks = [1,2,4,8,16,32,64,128,256,512,1024,2048,4096];
+    for (var i = 0; i < xTicks.length; i++) {
+      if (xTicks[i] > maxX) break;
+      var x = sx(xTicks[i]);
+      html += '<text x="'+x+'" y="'+(pad.t+h+18)+'" text-anchor="middle" fill="#666" font-size="9" font-family="IBM Plex Mono,monospace">'+xTicks[i]+'</text>';
+      html += '<line x1="'+x+'" y1="'+(pad.t+h)+'" x2="'+x+'" y2="'+(pad.t+h+4)+'" stroke="#444" stroke-width="1"/>';
+    }
+    html += '<text x="'+(pad.l+w/2)+'" y="'+(pad.t+h+40)+'" text-anchor="middle" fill="#aaa" font-size="11" font-family="IBM Plex Sans,sans-serif">Batch Size</text>';
+
+    var speedPath = 'M', genPath = 'M';
+    for (var i = 0; i < batchSizes.length; i++) {
+      var b = batchSizes[i];
+      var speed = Math.min(1, 0.15 + 0.85 * (1 - Math.exp(-b / 64)));
+      var gen = Math.max(0.1, 1 - 0.3 * Math.pow(Math.log2(Math.max(1, b / 32)), 1.5) / 5);
+      speedPath += (i>0?' L':'')+sx(b).toFixed(1)+' '+sySpeed(speed).toFixed(1);
+      genPath += (i>0?' L':'')+sx(b).toFixed(1)+' '+syGen(gen).toFixed(1);
+    }
+    html += '<path d="'+speedPath+'" fill="none" stroke="#3b82f6" stroke-width="2"/>';
+    html += '<path d="'+genPath+'" fill="none" stroke="#22c55e" stroke-width="2"/>';
+
+    if (maxBS > 0 && maxBS <= maxX) {
+      var mx = sx(maxBS);
+      html += '<line x1="'+mx+'" y1="'+pad.t+'" x2="'+mx+'" y2="'+(pad.t+h)+'" stroke="#f59e0b" stroke-width="1.5" stroke-dasharray="4,4"/>';
+      html += '<text x="'+(mx+4)+'" y="'+(pad.t+12)+'" fill="#f59e0b" font-size="10" font-family="IBM Plex Sans,sans-serif">Max: '+maxBS+'</text>';
+    }
+
+    html += '<text x="'+(pad.l-8)+'" y="'+(pad.t+4)+'" text-anchor="end" fill="#666" font-size="9" font-family="IBM Plex Mono,monospace">High</text>';
+    html += '<text x="'+(pad.l-8)+'" y="'+(pad.t+h+4)+'" text-anchor="end" fill="#666" font-size="9" font-family="IBM Plex Mono,monospace">Low</text>';
+
+    svg.innerHTML = html;
+  }
+
+  function drawScalingCurve(perGpuBatch) {
+    var svg = document.getElementById('scalingSvg');
+    var pad = {l:70, r:60, t:20, b:50};
+    var w = 700 - pad.l - pad.r, h = 280 - pad.t - pad.b;
+    var gpuCounts = [1,2,4,8,16,32,64];
+
+    function sx(g) { return pad.l + (Math.log2(g) / Math.log2(64)) * w; }
+    function sySpeed(v) { return pad.t + (1 - v / 64) * h; }
+    function syBatch(v) { return pad.t + (1 - v / (64 * perGpuBatch)) * h; }
+
+    var html = '<rect width="700" height="280" fill="#141414"/>';
+    html += '<line x1="'+pad.l+'" y1="'+(pad.t+h)+'" x2="'+(pad.l+w)+'" y2="'+(pad.t+h)+'" stroke="#333" stroke-width="1"/>';
+    html += '<line x1="'+pad.l+'" y1="'+pad.t+'" x2="'+pad.l+'" y2="'+(pad.t+h)+'" stroke="#333" stroke-width="1"/>';
+
+    for (var i = 0; i < gpuCounts.length; i++) {
+      var x = sx(gpuCounts[i]);
+      html += '<text x="'+x+'" y="'+(pad.t+h+18)+'" text-anchor="middle" fill="#666" font-size="10" font-family="IBM Plex Mono,monospace">'+gpuCounts[i]+'</text>';
+    }
+    html += '<text x="'+(pad.l+w/2)+'" y="'+(pad.t+h+40)+'" text-anchor="middle" fill="#aaa" font-size="11" font-family="IBM Plex Sans,sans-serif">Number of GPUs</text>';
+    html += '<text x="15" y="'+(pad.t+h/2)+'" text-anchor="middle" fill="#aaa" font-size="11" font-family="IBM Plex Sans,sans-serif" transform="rotate(-90,15,'+(pad.t+h/2)+')">Speedup Factor</text>';
+
+    var idealPath = 'M', realPath = 'M', batchPath = 'M';
+    for (var i = 0; i < gpuCounts.length; i++) {
+      var g = gpuCounts[i];
+      var ideal = g;
+      var real = g * (0.95 - 0.005 * g);
+      if (real < 1) real = 1;
+      var effBatch = g * perGpuBatch;
+      idealPath += (i>0?' L':'')+sx(g).toFixed(1)+' '+sySpeed(ideal).toFixed(1);
+      realPath += (i>0?' L':'')+sx(g).toFixed(1)+' '+sySpeed(real).toFixed(1);
+      batchPath += (i>0?' L':'')+sx(g).toFixed(1)+' '+syBatch(effBatch).toFixed(1);
+
+      if (i > 0) {
+        html += '<text x="'+(sx(g)+4)+'" y="'+(sySpeed(real)-4)+'" fill="#22c55e" font-size="9" font-family="IBM Plex Mono,monospace">'+real.toFixed(1)+'x</text>';
+      }
+    }
+    html += '<path d="'+idealPath+'" fill="none" stroke="#3b82f6" stroke-width="1.5" stroke-dasharray="4,2"/>';
+    html += '<path d="'+realPath+'" fill="none" stroke="#22c55e" stroke-width="2"/>';
+    html += '<path d="'+batchPath+'" fill="none" stroke="#a78bfa" stroke-width="1.5"/>';
+
+    for (var i = 0; i < gpuCounts.length; i++) {
+      var g = gpuCounts[i];
+      html += '<text x="'+(700-pad.r+4)+'" y="'+(syBatch(g*perGpuBatch)+4)+'" fill="#a78bfa" font-size="9" font-family="IBM Plex Mono,monospace">'+(g*perGpuBatch)+'</text>';
+    }
+
+    svg.innerHTML = html;
+  }
+
+  document.getElementById('calcBtn').addEventListener('click', calculate);
+  document.getElementById('resetBtn').addEventListener('click', function() {
+    document.getElementById('resultsSection').style.display = 'none';
+  });
+
+  document.getElementById('accumBtn').addEventListener('click', function() {
+    if (maxBatch <= 0) return;
+    var target = parseInt(document.getElementById('targetBatch').value);
+    if (isNaN(target) || target <= 0) return;
+    var microBatch = Math.min(maxBatch, target);
+    var steps = Math.ceil(target / microBatch);
+    var effective = steps * microBatch;
+    document.getElementById('accumSteps').textContent = steps;
+    document.getElementById('accumMicro').textContent = microBatch;
+    document.getElementById('accumEffective').textContent = effective;
+    document.getElementById('accumSlowdown').textContent = steps + 'x';
+  });
+
+  calculate();
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,780 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dataset Splitter Calculator — Train/Val/Test Split with Stratification Preview | ml0x</title>
+<meta name="description" content="Free dataset splitter calculator for machine learning. Configure train/validation/test ratios, preview stratified splits, check class balance, and generate Python code for sklearn train_test_split.">
+<meta name="keywords" content="dataset splitter, train test split, train validation test, stratified split, sklearn train_test_split, cross-validation, class imbalance, holdout method, data splitting, machine learning dataset">
+<link rel="canonical" href="https://ml0x.com/tools/dataset-splitter.html">
+<link rel="alternate" hreflang="en" href="https://ml0x.com/tools/dataset-splitter.html">
+<link rel="alternate" hreflang="x-default" href="https://ml0x.com/tools/dataset-splitter.html">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Dataset Splitter Calculator — Train/Val/Test Split with Stratification Preview">
+<meta property="og:description" content="Configure train/validation/test split ratios, preview stratified distributions, check class balance, and generate sklearn code. All computation runs in your browser.">
+<meta property="og:url" content="https://ml0x.com/tools/dataset-splitter.html">
+<meta property="og:site_name" content="Zovo Tools">
+<meta property="og:locale" content="en_US">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Dataset Splitter Calculator — Train/Val/Test Split with Stratification Preview">
+<meta name="twitter:description" content="Calculate optimal train/val/test splits with stratification preview and class balance verification. Generate Python code instantly.">
+<meta name="author" content="Michael Lip">
+<meta name="robots" content="index, follow">
+<link rel="stylesheet" href="/assets/style.css">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebApplication",
+  "name": "Dataset Splitter Calculator",
+  "description": "Free dataset splitter calculator for machine learning. Configure train/validation/test ratios, preview stratified splits, check class balance, and generate Python code for sklearn train_test_split.",
+  "url": "https://ml0x.com/tools/dataset-splitter.html",
+  "applicationCategory": "EducationalApplication",
+  "operatingSystem": "Any",
+  "offers": {"@type": "Offer", "price": "0", "priceCurrency": "USD"},
+  "author": {"@type": "Person", "name": "Michael Lip", "url": "https://zovo.one"},
+  "publisher": {"@type": "Organization", "name": "ML0X", "url": "https://ml0x.com"},
+  "datePublished": "2026-05-25",
+  "dateModified": "2026-05-25"
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {"@type": "Question", "name": "What is the best train/test split ratio?", "acceptedAnswer": {"@type": "Answer", "text": "The most common split is 80/20 for train/test or 70/15/15 for train/validation/test. However, the optimal ratio depends on your dataset size. For large datasets (100K+ samples), you can use 90/5/5 or even 98/1/1 because even 1% provides thousands of test samples. For small datasets (under 1,000 samples), use cross-validation instead of a single holdout split to get more reliable performance estimates."}},
+    {"@type": "Question", "name": "What is stratified splitting and when should I use it?", "acceptedAnswer": {"@type": "Answer", "text": "Stratified splitting ensures that each split (train, validation, test) maintains the same class distribution as the original dataset. If your dataset is 90% class A and 10% class B, each split will also be approximately 90/10. You should always use stratified splitting for classification tasks, especially with imbalanced classes. Without stratification, a random split might put all rare class examples in one split and none in another, leading to unreliable evaluation."}},
+    {"@type": "Question", "name": "Why do I need a validation set separate from the test set?", "acceptedAnswer": {"@type": "Answer", "text": "The validation set is used during model development for hyperparameter tuning, model selection, and early stopping decisions. The test set is used only once at the very end to estimate final performance. If you use the test set for any decision-making during development, it becomes contaminated and your reported performance will be optimistically biased. Think of the test set as a sealed envelope you only open once."}},
+    {"@type": "Question", "name": "How do I handle time series data splitting?", "acceptedAnswer": {"@type": "Answer", "text": "Time series data must never be split randomly because it would leak future information into the training set. Instead, use temporal splitting: training data comes from the earliest period, validation from the middle period, and test from the most recent period. For cross-validation, use TimeSeriesSplit in sklearn, which creates expanding window folds that respect temporal ordering. The validation and test sets should always be from a later time period than the training data."}},
+    {"@type": "Question", "name": "What is data leakage and how does splitting prevent it?", "acceptedAnswer": {"@type": "Answer", "text": "Data leakage occurs when information from outside the training set influences model building. Common sources include: fitting preprocessors (scalers, encoders, imputers) on the full dataset before splitting, using future data in time series, or having duplicate/near-duplicate samples across splits. Proper splitting prevents leakage by ensuring all preprocessing is fit only on the training split. In sklearn, use Pipeline with cross_val_score to guarantee leak-free preprocessing."}}
+  ]
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {"@type": "ListItem", "position": 1, "name": "Home", "item": "https://ml0x.com/"},
+    {"@type": "ListItem", "position": 2, "name": "Tools", "item": "https://ml0x.com/tools/"},
+    {"@type": "ListItem", "position": 3, "name": "Dataset Splitter Calculator"}
+  ]
+}
+</script>
+</head>
+<body>
+
+<header>
+  <div class="container header-inner">
+    <a href="/" class="logo">ml0x</a>
+    <nav>
+      <a href="/">Home</a>
+      <a href="/research/">Research</a>
+      <a href="/tools/">Tools</a>
+      <a href="/guides/">Guides</a>
+      <a href="/answers/">Answers</a>
+      <div class="nav-right">
+        <a href="https://zovo.one/pricing?utm_source=ml0x.com&utm_medium=satellite&utm_campaign=nav-link" class="nav-pro" target="_blank">Go Pro &#10022;</a>
+        <a href="https://zovo.one/tools" class="nav-zovo">Zovo Tools</a>
+      </div>
+    </nav>
+  </div>
+</header>
+
+<main class="container">
+  <div class="breadcrumb">
+    <a href="/">Home</a> <span>&rsaquo;</span> <a href="/tools/">Tools</a> <span>&rsaquo;</span> Dataset Splitter Calculator
+  </div>
+
+  <div class="hero">
+    <h1>Dataset Splitter <span>Calculator</span></h1>
+    <p>Configure train, validation, and test split ratios for your machine learning dataset. Preview how stratification preserves class distributions across splits, verify minimum samples per class, and generate production-ready Python code. Supports binary and multi-class datasets with up to 10 classes. All computation runs locally in your browser.</p>
+  </div>
+
+  <div class="tool-card">
+    <h3>Dataset Configuration</h3>
+    <div class="control-row">
+      <div class="control-group">
+        <label>Total Samples</label>
+        <input type="number" id="totalSamples" value="10000" min="10" max="10000000" style="width:120px;padding:8px;background:#1a1a1a;border:1px solid #333;border-radius:6px;color:#e0e0e0;font-size:14px;">
+      </div>
+      <div class="control-group">
+        <label>Number of Classes</label>
+        <select id="numClasses">
+          <option value="2" selected>2 (Binary)</option>
+          <option value="3">3</option>
+          <option value="5">5</option>
+          <option value="10">10</option>
+        </select>
+      </div>
+      <div class="control-group">
+        <label>Class Distribution</label>
+        <select id="classDist">
+          <option value="balanced" selected>Balanced</option>
+          <option value="moderate">Moderate Imbalance (70/30)</option>
+          <option value="severe">Severe Imbalance (95/5)</option>
+          <option value="custom">Custom</option>
+        </select>
+      </div>
+    </div>
+    <div id="customClassSection" style="display:none;margin-top:12px;">
+      <label style="color:#aaa;font-size:13px;">Custom class proportions (comma-separated, must sum to 100):</label>
+      <input type="text" id="customProportions" value="50,50" style="width:300px;padding:8px;background:#1a1a1a;border:1px solid #333;border-radius:6px;color:#e0e0e0;font-size:13px;margin-top:4px;">
+    </div>
+  </div>
+
+  <div class="tool-card">
+    <h3>Split Configuration</h3>
+    <div class="control-row">
+      <div class="control-group">
+        <label>Split Strategy</label>
+        <select id="splitStrategy">
+          <option value="train_test">Train / Test</option>
+          <option value="train_val_test" selected>Train / Validation / Test</option>
+          <option value="kfold">K-Fold Cross-Validation</option>
+        </select>
+      </div>
+      <div class="control-group" id="kfoldGroup" style="display:none;">
+        <label>Number of Folds (K)</label>
+        <select id="numFolds">
+          <option value="3">3</option>
+          <option value="5" selected>5</option>
+          <option value="10">10</option>
+        </select>
+      </div>
+      <div class="control-group">
+        <label>Stratified?</label>
+        <select id="stratified">
+          <option value="yes" selected>Yes (preserve class ratios)</option>
+          <option value="no">No (random split)</option>
+        </select>
+      </div>
+      <div class="control-group">
+        <label>Random Seed</label>
+        <input type="number" id="randomSeed" value="42" min="0" style="width:80px;padding:8px;background:#1a1a1a;border:1px solid #333;border-radius:6px;color:#e0e0e0;font-size:14px;">
+      </div>
+    </div>
+    <div id="ratioSection">
+      <div class="control-row" style="margin-top:16px;">
+        <div class="control-group" style="flex:2;">
+          <label>Train: <strong id="trainLabel">70%</strong></label>
+          <input type="range" id="trainSlider" min="10" max="95" value="70" style="width:100%;">
+        </div>
+        <div class="control-group" id="valGroup">
+          <label>Validation: <strong id="valLabel">15%</strong></label>
+          <input type="range" id="valSlider" min="5" max="40" value="15" style="width:100%;">
+        </div>
+        <div class="control-group">
+          <label>Test: <strong id="testLabel">15%</strong></label>
+          <div style="padding:8px;color:#3b82f6;font-size:18px;font-weight:600;" id="testPct">15%</div>
+        </div>
+      </div>
+    </div>
+    <div class="control-row" style="margin-top:12px;">
+      <button class="btn" id="computeBtn">Calculate Split</button>
+      <button class="btn btn-secondary" id="presetBtn1">80/20</button>
+      <button class="btn btn-secondary" id="presetBtn2">70/15/15</button>
+      <button class="btn btn-secondary" id="presetBtn3">60/20/20</button>
+      <button class="btn btn-secondary" id="resetBtn">Reset</button>
+    </div>
+  </div>
+
+  <div id="resultsSection" style="display:none;">
+    <div class="stat-grid">
+      <div class="stat-card"><div class="value" id="metTrain">--</div><div class="label">Train Samples</div></div>
+      <div class="stat-card"><div class="value" id="metVal">--</div><div class="label">Validation Samples</div></div>
+      <div class="stat-card"><div class="value" id="metTest">--</div><div class="label">Test Samples</div></div>
+      <div class="stat-card"><div class="value" id="metMinClass">--</div><div class="label">Min Class (Test)</div></div>
+      <div class="stat-card"><div class="value" id="metImbalance">--</div><div class="label">Imbalance Ratio</div></div>
+      <div class="stat-card"><div class="value" id="metWarning">--</div><div class="label">Status</div></div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:16px;">
+      <div class="tool-card">
+        <h3>Split Size Distribution</h3>
+        <div class="viz-container"><svg id="splitSvg" width="400" height="300" viewBox="0 0 400 300"></svg></div>
+      </div>
+      <div class="tool-card">
+        <h3>Stratification Preview</h3>
+        <div class="viz-container"><svg id="stratSvg" width="400" height="300" viewBox="0 0 400 300"></svg></div>
+      </div>
+    </div>
+
+    <div class="tool-card">
+      <h3>Per-Class Split Breakdown</h3>
+      <div style="overflow-x:auto;">
+        <table style="width:100%;border-collapse:collapse;font-size:14px;" id="classTable">
+          <thead>
+            <tr style="border-bottom:2px solid #333;">
+              <th style="text-align:left;padding:8px;color:#aaa;">Class</th>
+              <th style="text-align:right;padding:8px;color:#aaa;">Total</th>
+              <th style="text-align:right;padding:8px;color:#aaa;">Train</th>
+              <th style="text-align:right;padding:8px;color:#aaa;">Validation</th>
+              <th style="text-align:right;padding:8px;color:#aaa;">Test</th>
+              <th style="text-align:right;padding:8px;color:#aaa;">Train %</th>
+              <th style="text-align:right;padding:8px;color:#aaa;">Test %</th>
+            </tr>
+          </thead>
+          <tbody id="classBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="tool-card" id="warningsCard" style="display:none;">
+      <h3 style="color:#f59e0b;">Warnings & Recommendations</h3>
+      <ul id="warningsList" style="color:#ddd;line-height:1.8;"></ul>
+    </div>
+
+    <div class="tool-card">
+      <h3>Generated Python Code</h3>
+      <pre id="codeOutput" style="background:#0d0d0d;border:1px solid #333;border-radius:8px;padding:16px;color:#e0e0e0;font-size:13px;font-family:'IBM Plex Mono',monospace;overflow-x:auto;white-space:pre;line-height:1.5;max-height:400px;overflow-y:auto;"></pre>
+      <button class="btn btn-secondary" id="copyCodeBtn" style="margin-top:8px;">Copy Code</button>
+    </div>
+  </div>
+
+  <section class="explainer-section">
+    <h2>Why Data Splitting Matters</h2>
+    <p>Proper data splitting is one of the most important steps in any machine learning pipeline, yet it is frequently done incorrectly. The fundamental goal is to evaluate your model on data it has never seen during training or any decision-making process. Without a clean separation between training and evaluation data, your reported model performance will be optimistically biased, sometimes dramatically so. Models that appear to achieve 99% accuracy during development may perform at 70% in production because the evaluation was contaminated.</p>
+    <p>The standard approach divides your dataset into three parts. The <strong>training set</strong> (typically 60-80% of data) is used to fit model parameters: learning the weights of a neural network, the split points of a decision tree, or the coefficients of a linear model. The <strong>validation set</strong> (typically 10-20%) is used during development for hyperparameter tuning, model selection, architecture decisions, and early stopping. The <strong>test set</strong> (typically 10-20%) is held out completely until the very end and used exactly once to estimate the final generalization performance that you report in papers, to stakeholders, or use for deployment decisions.</p>
+    <p>A common mistake is using only a train/test split and then tuning hyperparameters against the test set. Every time you evaluate on the test set and make a decision (change the learning rate, add a layer, try a different model), you are implicitly fitting to the test set. After dozens of such decisions, the test performance is no longer a reliable estimate of true generalization. The validation set exists specifically to absorb this optimization pressure, keeping the test set pristine.</p>
+
+    <h2>Understanding Split Ratios</h2>
+    <p>The optimal split ratio depends primarily on your dataset size. For <strong>large datasets</strong> (100,000+ samples), you can afford to allocate a smaller percentage to validation and test because even a small percentage yields thousands of samples, providing reliable performance estimates. Ratios like 90/5/5 or 95/2.5/2.5 are common in large-scale deep learning. Andrew Ng recommends that in the era of big data, you should have just enough validation and test data to evaluate your model, and put everything else in training.</p>
+    <p>For <strong>medium datasets</strong> (1,000-100,000 samples), the classic 70/15/15 or 80/10/10 split works well. This provides enough training data for the model to learn meaningful patterns while keeping enough evaluation data for reliable metrics. For <strong>small datasets</strong> (under 1,000 samples), a single holdout split may have high variance: different random splits can produce very different performance estimates. In this case, <strong>cross-validation</strong> is strongly preferred, where you rotate the validation fold across the entire dataset and average the results.</p>
+    <p>The minimum test set size depends on the granularity of metric you need. For binary classification accuracy, you need approximately 384 test samples for a 95% confidence interval of plus or minus 5 percentage points (based on the normal approximation to the binomial). For more precise estimates (plus or minus 1%), you need approximately 9,604 samples. For rare classes, you need enough test samples of the minority class to compute meaningful precision and recall.</p>
+
+    <h2>Stratified Splitting Explained</h2>
+    <p><strong>Stratified splitting</strong> ensures that each partition (train, validation, test) has approximately the same class distribution as the original dataset. If your dataset is 85% negative and 15% positive, a stratified split guarantees each partition is approximately 85/15. This is critical for classification tasks because a purely random split can produce partitions with very different class ratios, especially when classes are imbalanced or the dataset is small.</p>
+    <p>Consider a dataset with 1,000 samples where 50 belong to the positive class (5% prevalence). A random 80/20 split might put anywhere from 2 to 18 positive samples in the test set of 200 (expected: 10). With only 2 positive test samples, precision and recall become meaningless. Stratified splitting guarantees approximately 10 positive samples in the test set, providing a more reliable evaluation. In scikit-learn, <code>train_test_split(X, y, stratify=y)</code> enables stratification with a single parameter.</p>
+    <p>Beyond class labels, you may need to stratify on other factors. In medical imaging, stratify by patient ID to prevent the same patient's images from appearing in both train and test (data leakage). In multi-site studies, stratify by site to ensure each split represents all sites. In time series, use temporal splits rather than random splits. For regression tasks, you can stratify on binned target values to ensure the range of target values is represented in all splits.</p>
+
+    <h2>Cross-Validation: Beyond Single Splits</h2>
+    <p><strong>K-fold cross-validation</strong> divides the dataset into K equally-sized folds, trains the model K times (each time using K-1 folds for training and 1 fold for validation), and averages the K performance estimates. The standard choice is K=5 or K=10. Cross-validation uses all data for both training and evaluation, producing lower-variance performance estimates than a single holdout split.</p>
+    <p><strong>Stratified K-fold</strong> preserves class distributions within each fold. <strong>Repeated stratified K-fold</strong> runs the procedure multiple times with different random splits and averages across all repetitions, further reducing variance. <strong>Leave-one-out cross-validation (LOOCV)</strong> uses K=N (each sample is a fold), providing the lowest-bias estimate but highest variance and highest compute cost. LOOCV is appropriate for very small datasets (under 50 samples).</p>
+    <p>Even when using cross-validation for model selection and hyperparameter tuning, you should still hold out a final test set that is never used in the cross-validation loop. This nested approach (outer split for final evaluation, inner cross-validation for model selection) provides an honest estimate of generalization performance. In scikit-learn, <code>cross_val_score</code> with a separate test set or <code>nested cross-validation</code> implements this pattern.</p>
+
+    <h2>Data Leakage: The Silent Killer</h2>
+    <p>Data leakage occurs when information from the evaluation set leaks into the training process, producing artificially inflated performance metrics. It is the most common and most damaging mistake in machine learning evaluation. Leakage can be subtle and hard to detect. Common sources include fitting preprocessing steps on the entire dataset before splitting, allowing duplicate or near-duplicate samples across splits, and using future information in time series predictions.</p>
+    <p><strong>Preprocessing leakage</strong> is the most frequent form. If you standardize features (subtract mean, divide by standard deviation) using the entire dataset, the training set's statistics are contaminated by information from the test set. The correct approach is to fit the scaler on the training set only, then transform both training and test sets using the training set's statistics. In scikit-learn, always use <code>Pipeline</code> to chain preprocessing and modeling steps, ensuring that <code>cross_val_score</code> correctly fits preprocessing within each fold.</p>
+    <p><strong>Sample leakage</strong> occurs when related samples appear in both train and test sets. Medical images from the same patient, text documents with overlapping content, or augmented versions of the same image can all cause leakage. Use group-aware splits (<code>GroupKFold</code> in scikit-learn) to ensure that all samples from the same group (patient, document, session) stay in the same split.</p>
+    <p><strong>Temporal leakage</strong> occurs in time series when future data is used to predict the past. Always split time series chronologically, with training data from earlier periods and test data from later periods. Never shuffle time series data before splitting. Use <code>TimeSeriesSplit</code> in scikit-learn for temporal cross-validation.</p>
+
+    <h2>Special Considerations for Deep Learning</h2>
+    <p>Deep learning introduces additional splitting considerations. Large models with millions of parameters need more training data, so allocate as much as possible to the training set. The validation set serves double duty: it is used for early stopping (stopping training when validation loss stops decreasing) and for hyperparameter tuning. Some practitioners use separate validation sets for each purpose to avoid overfitting the early stopping decision to the hyperparameter tuning set, though this is rarely necessary in practice.</p>
+    <p>Data augmentation should be applied only to the training set, never to validation or test sets. If you augment before splitting, augmented versions of the same original sample may appear in both train and test, creating leakage. In practice, augmentation is typically applied on-the-fly during training using data loaders (PyTorch's <code>DataLoader</code> with transform pipelines).</p>
+    <p>For transfer learning and fine-tuning, the split strategy depends on how much data you have. With very few samples (under 100), freeze the pretrained backbone and only train the classifier head, using cross-validation for evaluation. With moderate data (100-10,000), fine-tune with a standard train/val/test split. With abundant data (10,000+), you can afford to train longer and use smaller validation/test ratios.</p>
+
+    <h2>Practical Recommendations</h2>
+    <ul>
+      <li>Always use stratified splitting for classification tasks. It costs nothing and prevents many problems.</li>
+      <li>For datasets under 1,000 samples, use stratified K-fold cross-validation (K=5 or K=10) instead of a single holdout split.</li>
+      <li>Never look at or evaluate on the test set until you have finalized your model. Treat it as sealed.</li>
+      <li>Fit all preprocessing (scaling, encoding, imputation) on the training set only. Use sklearn Pipeline to automate this.</li>
+      <li>For time series, always split chronologically. Never shuffle before splitting.</li>
+      <li>Check for duplicate or near-duplicate samples across splits. Even partial overlap can inflate metrics.</li>
+      <li>Report confidence intervals on your test metrics, not just point estimates. Bootstrap resampling of the test set is the simplest approach.</li>
+      <li>Document your splitting strategy, random seed, and split sizes. Reproducibility requires exact specification of the data split.</li>
+    </ul>
+  </section>
+
+  <section class="faq-section">
+    <h2>Frequently Asked Questions</h2>
+    <details>
+      <summary>What is the best train/test split ratio?</summary>
+      <p>The most common split is 80/20 for train/test or 70/15/15 for train/validation/test. For large datasets (100K+), use 90/5/5 or 98/1/1. For small datasets (under 1,000), use cross-validation instead of a single holdout split.</p>
+    </details>
+    <details>
+      <summary>What is stratified splitting and when should I use it?</summary>
+      <p>Stratified splitting ensures each split maintains the same class distribution as the original dataset. Always use it for classification tasks, especially with imbalanced classes, to prevent unreliable evaluation from skewed splits.</p>
+    </details>
+    <details>
+      <summary>Why do I need a validation set separate from the test set?</summary>
+      <p>The validation set is used during development for hyperparameter tuning and model selection. The test set is used only once at the end. Using the test set for decisions during development contaminates it and produces optimistically biased performance estimates.</p>
+    </details>
+    <details>
+      <summary>How do I handle time series data splitting?</summary>
+      <p>Time series must be split chronologically, not randomly. Training data from the earliest period, validation from the middle, test from the most recent. Use TimeSeriesSplit in sklearn for temporal cross-validation.</p>
+    </details>
+    <details>
+      <summary>What is data leakage and how does splitting prevent it?</summary>
+      <p>Data leakage occurs when information from outside the training set influences model building. Proper splitting with preprocessing fit only on training data prevents leakage. Use sklearn Pipeline with cross_val_score for leak-free workflows.</p>
+    </details>
+  </section>
+
+  <section class="explainer-section">
+    <h2>Related Tools</h2>
+    <div class="related-grid">
+      <a href="/tools/confusion-matrix-calculator.html" class="related-card">
+        <div class="related-title">Confusion Matrix Calculator</div>
+        <div class="related-desc">Compute precision, recall, F1, accuracy, and MCC with visual heatmap and ROC plotting.</div>
+      </a>
+      <a href="/answers/hyperparameter-tuning-guide.html" class="related-card">
+        <div class="related-title">Hyperparameter Tuning Guide</div>
+        <div class="related-desc">Compare grid search, random search, and Bayesian optimization with interactive visualization.</div>
+      </a>
+      <a href="/guides/cross-validation-explained.html" class="related-card">
+        <div class="related-title">K-Fold Cross Validation</div>
+        <div class="related-desc">Interactive simulator showing fold splits, variance, and stratification effects.</div>
+      </a>
+    </div>
+  </section>
+
+  <section class="explainer-section">
+    <h2>About the Author</h2>
+    <p><strong>Michael Lip</strong> builds open-source ML tools and developer utilities at <a href="https://zovo.one">zovo.one</a>. ml0x is part of the Zovo Tools network, a collection of free, privacy-first tools for developers and data scientists. No tracking, no accounts required, no data leaves your browser.</p>
+  </section>
+
+  <p class="last-updated">Last updated: May 25, 2026</p>
+</main>
+
+<footer class="site-footer">
+    <div class="footer-inner">
+        <div class="footer-brand">Zovo Tools</div>
+        <div class="footer-tagline">Free developer tools by a solo dev. No tracking.</div>
+        <a href="https://zovo.one/pricing?utm_source=ml0x.com&utm_medium=satellite&utm_campaign=footer-link" class="footer-cta">Zovo Lifetime — $99 once, free forever &rarr;</a>
+        <div class="footer-copy">&copy; 2026 <a href="https://zovo.one">Zovo</a> &middot; 47/500 founding spots</div>
+    </div>
+</footer>
+
+<nav class="zovo-network" aria-label="Zovo Tools Network">
+    <div class="zovo-network-inner">
+        <h3 class="zovo-network-title">Explore More Tools</h3>
+        <div class="zovo-network-links">
+            <a href="https://abwex.com">ABWex — A/B Testing</a>
+            <a href="https://claudflow.com">ClaudFlow — Workflows</a>
+            <a href="https://claudhq.com">ClaudHQ — AI Code Tools &amp; Fixes</a>
+            <a href="https://claudkit.com">ClaudKit — API</a>
+            <a href="https://enhio.com">Enhio — Text Tools</a>
+            <a href="https://epochpilot.com">EpochPilot — Timestamps</a>
+            <a href="https://gen8x.com">Gen8X — Color Tools</a>
+            <a href="https://gpt0x.com">GPT0X — AI Models</a>
+            <a href="https://heytensor.com">HeyTensor — ML Tools</a>
+            <a href="https://invokebot.com">InvokeBot — Webhooks</a>
+            <a href="https://kappafy.com">Kappafy — JSON</a>
+            <a href="https://kappakit.com">KappaKit — Dev Toolkit</a>
+            <a href="https://kickllm.com">KickLLM — LLM Costs</a>
+            <a href="https://krzen.com">Krzen — Image Tools</a>
+            <a href="https://lochbot.com">LochBot — Security</a>
+            <a href="https://lockml.com">LockML — ML Compare</a>
+            <a href="https://ml3x.com">ML3X — Matrix Math</a>
+        </div>
+    </div>
+</nav>
+
+<script>
+(function() {
+  var trainPct = 70, valPct = 15;
+
+  function getTestPct() {
+    var strategy = document.getElementById('splitStrategy').value;
+    if (strategy === 'train_test') return 100 - trainPct;
+    return Math.max(0, 100 - trainPct - valPct);
+  }
+
+  function updateSliderLabels() {
+    var strategy = document.getElementById('splitStrategy').value;
+    document.getElementById('trainLabel').textContent = trainPct + '%';
+    document.getElementById('valLabel').textContent = valPct + '%';
+    var testP = getTestPct();
+    document.getElementById('testLabel').textContent = testP + '%';
+    document.getElementById('testPct').textContent = testP + '%';
+    document.getElementById('testPct').style.color = testP < 5 ? '#ef4444' : (testP < 10 ? '#f59e0b' : '#3b82f6');
+  }
+
+  function getClassProportions() {
+    var nClasses = parseInt(document.getElementById('numClasses').value);
+    var dist = document.getElementById('classDist').value;
+    var props = [];
+    if (dist === 'balanced') {
+      for (var i = 0; i < nClasses; i++) props.push(1 / nClasses);
+    } else if (dist === 'moderate') {
+      props.push(0.7);
+      var rem = 0.3 / (nClasses - 1);
+      for (var i = 1; i < nClasses; i++) props.push(rem);
+    } else if (dist === 'severe') {
+      props.push(0.95);
+      var rem = 0.05 / (nClasses - 1);
+      for (var i = 1; i < nClasses; i++) props.push(rem);
+    } else {
+      var parts = document.getElementById('customProportions').value.split(',').map(function(s) { return parseFloat(s.trim()); });
+      var sum = 0;
+      for (var i = 0; i < parts.length; i++) sum += (parts[i] || 0);
+      if (parts.length < nClasses) {
+        for (var i = parts.length; i < nClasses; i++) parts.push(0);
+        sum = 0; for (var i = 0; i < parts.length; i++) sum += parts[i];
+      }
+      for (var i = 0; i < nClasses; i++) props.push(sum > 0 ? (parts[i] || 0) / sum : 1/nClasses);
+    }
+    return props;
+  }
+
+  function compute() {
+    var total = parseInt(document.getElementById('totalSamples').value) || 1000;
+    var nClasses = parseInt(document.getElementById('numClasses').value);
+    var strategy = document.getElementById('splitStrategy').value;
+    var isStratified = document.getElementById('stratified').value === 'yes';
+    var seed = parseInt(document.getElementById('randomSeed').value) || 42;
+    var props = getClassProportions();
+
+    var testP = getTestPct();
+    var trainN, valN, testN;
+    if (strategy === 'kfold') {
+      var k = parseInt(document.getElementById('numFolds').value);
+      testN = Math.round(total / k);
+      valN = 0;
+      trainN = total - testN;
+    } else if (strategy === 'train_test') {
+      trainN = Math.round(total * trainPct / 100);
+      valN = 0;
+      testN = total - trainN;
+    } else {
+      trainN = Math.round(total * trainPct / 100);
+      valN = Math.round(total * valPct / 100);
+      testN = total - trainN - valN;
+    }
+
+    document.getElementById('resultsSection').style.display = 'block';
+    document.getElementById('metTrain').textContent = trainN.toLocaleString();
+    document.getElementById('metVal').textContent = strategy === 'kfold' ? 'N/A' : valN.toLocaleString();
+    document.getElementById('metTest').textContent = testN.toLocaleString();
+
+    var classData = [];
+    var minTestClass = Infinity;
+    var maxProp = 0, minProp = 1;
+    for (var c = 0; c < nClasses; c++) {
+      var cTotal = Math.round(total * props[c]);
+      var cTrain, cVal, cTest;
+      if (isStratified) {
+        cTrain = Math.round(cTotal * trainPct / 100);
+        if (strategy === 'train_val_test') {
+          cVal = Math.round(cTotal * valPct / 100);
+          cTest = cTotal - cTrain - cVal;
+        } else if (strategy === 'kfold') {
+          var k = parseInt(document.getElementById('numFolds').value);
+          cTest = Math.round(cTotal / k);
+          cVal = 0;
+          cTrain = cTotal - cTest;
+        } else {
+          cVal = 0;
+          cTest = cTotal - cTrain;
+        }
+      } else {
+        var rng = seed + c * 137;
+        var fudge = ((Math.sin(rng) * 10000) % 1);
+        var noise = (fudge - 0.5) * 0.1;
+        cTrain = Math.round(cTotal * (trainPct/100 + noise));
+        cTrain = Math.max(1, Math.min(cTotal - 1, cTrain));
+        if (strategy === 'train_val_test') {
+          cVal = Math.round((cTotal - cTrain) * valPct / (valPct + testP));
+          cTest = cTotal - cTrain - cVal;
+        } else {
+          cVal = 0;
+          cTest = cTotal - cTrain;
+        }
+      }
+      cTest = Math.max(0, cTest);
+      classData.push({name: 'Class ' + c, total: cTotal, train: cTrain, val: cVal, test: cTest, prop: props[c]});
+      if (cTest < minTestClass) minTestClass = cTest;
+      if (props[c] > maxProp) maxProp = props[c];
+      if (props[c] < minProp) minProp = props[c];
+    }
+
+    document.getElementById('metMinClass').textContent = minTestClass;
+    document.getElementById('metMinClass').style.color = minTestClass < 10 ? '#ef4444' : (minTestClass < 30 ? '#f59e0b' : '#22c55e');
+    var imbalanceRatio = minProp > 0 ? (maxProp / minProp).toFixed(1) : 'Inf';
+    document.getElementById('metImbalance').textContent = imbalanceRatio + ':1';
+
+    var warnings = [];
+    if (minTestClass < 10) warnings.push('Minority class has fewer than 10 test samples. Metrics will be unreliable. Consider collecting more data or using cross-validation.');
+    if (minTestClass < 30 && minTestClass >= 10) warnings.push('Minority class has fewer than 30 test samples. Precision and recall confidence intervals will be wide.');
+    if (testN < 100) warnings.push('Test set has fewer than 100 samples. Consider using cross-validation for more reliable estimates.');
+    if (testP < 5) warnings.push('Test set is less than 5% of data. This may not be representative of the true distribution.');
+    if (parseFloat(imbalanceRatio) > 20) warnings.push('Severe class imbalance detected (>' + imbalanceRatio + ':1). Consider oversampling (SMOTE), undersampling, or class-weighted loss functions.');
+    if (strategy !== 'kfold' && total < 1000) warnings.push('Dataset has fewer than 1,000 samples. Consider using K-fold cross-validation instead of a single holdout split for more reliable evaluation.');
+    if (!isStratified && parseFloat(imbalanceRatio) > 3) warnings.push('Non-stratified split with imbalanced classes. Some splits may have very few minority class samples. Enable stratification.');
+    var status = warnings.length === 0 ? 'OK' : warnings.length + ' warning' + (warnings.length > 1 ? 's' : '');
+    document.getElementById('metWarning').textContent = status;
+    document.getElementById('metWarning').style.color = warnings.length === 0 ? '#22c55e' : '#f59e0b';
+
+    if (warnings.length > 0) {
+      document.getElementById('warningsCard').style.display = 'block';
+      var wHtml = '';
+      for (var i = 0; i < warnings.length; i++) wHtml += '<li style="margin-bottom:8px;">' + warnings[i] + '</li>';
+      document.getElementById('warningsList').innerHTML = wHtml;
+    } else {
+      document.getElementById('warningsCard').style.display = 'none';
+    }
+
+    var tbody = document.getElementById('classBody');
+    tbody.innerHTML = '';
+    for (var i = 0; i < classData.length; i++) {
+      var d = classData[i];
+      var trainPctClass = d.total > 0 ? (d.train / d.total * 100).toFixed(1) : '0.0';
+      var testPctClass = d.total > 0 ? (d.test / d.total * 100).toFixed(1) : '0.0';
+      var row = '<tr style="border-bottom:1px solid #222;">';
+      row += '<td style="padding:8px;color:#ccc;font-weight:600;">' + d.name + '</td>';
+      row += '<td style="padding:8px;text-align:right;color:#ddd;">' + d.total.toLocaleString() + '</td>';
+      row += '<td style="padding:8px;text-align:right;color:#3b82f6;">' + d.train.toLocaleString() + '</td>';
+      row += '<td style="padding:8px;text-align:right;color:#a78bfa;">' + (strategy === 'kfold' ? 'N/A' : d.val.toLocaleString()) + '</td>';
+      row += '<td style="padding:8px;text-align:right;color:#22c55e;">' + d.test.toLocaleString() + '</td>';
+      row += '<td style="padding:8px;text-align:right;color:#aaa;">' + trainPctClass + '%</td>';
+      row += '<td style="padding:8px;text-align:right;color:#aaa;">' + testPctClass + '%</td>';
+      row += '</tr>';
+      tbody.innerHTML += row;
+    }
+
+    drawSplitChart(trainN, valN, testN, total, strategy);
+    drawStratChart(classData, strategy);
+    generateCode(total, trainPct, valPct, testP, strategy, isStratified, seed, nClasses);
+  }
+
+  function drawSplitChart(trainN, valN, testN, total, strategy) {
+    var svg = document.getElementById('splitSvg');
+    var pad = 50, w = 340, h = 220;
+    var html = '<rect width="400" height="300" fill="#141414"/>';
+    html += '<text x="200" y="25" text-anchor="middle" fill="#aaa" font-size="12" font-family="IBM Plex Sans,sans-serif">Split Sizes</text>';
+
+    var splits = [{name:'Train', val:trainN, color:'#3b82f6'}];
+    if (strategy === 'train_val_test') splits.push({name:'Validation', val:valN, color:'#a78bfa'});
+    if (strategy !== 'kfold') splits.push({name:'Test', val:testN, color:'#22c55e'});
+    else splits.push({name:'Fold (Test)', val:testN, color:'#22c55e'});
+
+    var barW = Math.min(80, (w - 40) / splits.length);
+    var maxVal = Math.max(trainN, valN, testN, 1);
+    for (var i = 0; i < splits.length; i++) {
+      var barH = (splits[i].val / maxVal) * (h - 40);
+      var bx = pad + 20 + i * (barW + 30);
+      var by = h + 20 - barH;
+      html += '<rect x="'+bx+'" y="'+by+'" width="'+barW+'" height="'+barH+'" fill="'+splits[i].color+'" rx="4" opacity="0.8"/>';
+      html += '<text x="'+(bx+barW/2)+'" y="'+(by-8)+'" text-anchor="middle" fill="#e0e0e0" font-size="13" font-weight="600" font-family="IBM Plex Mono,monospace">'+splits[i].val.toLocaleString()+'</text>';
+      html += '<text x="'+(bx+barW/2)+'" y="'+(h+38)+'" text-anchor="middle" fill="'+splits[i].color+'" font-size="11" font-family="IBM Plex Sans,sans-serif">'+splits[i].name+'</text>';
+      var pct = total > 0 ? (splits[i].val / total * 100).toFixed(1) : '0';
+      html += '<text x="'+(bx+barW/2)+'" y="'+(h+52)+'" text-anchor="middle" fill="#888" font-size="10" font-family="IBM Plex Mono,monospace">'+pct+'%</text>';
+    }
+
+    var stackY = h + 70;
+    var stackW = w - 20;
+    var sx = pad;
+    for (var i = 0; i < splits.length; i++) {
+      var segW = total > 0 ? (splits[i].val / total) * stackW : stackW / splits.length;
+      html += '<rect x="'+sx+'" y="'+stackY+'" width="'+segW+'" height="24" fill="'+splits[i].color+'" opacity="0.7" '+(i===0?'rx="4"':'')+(i===splits.length-1?' rx="4"':'')+'/>';
+      if (segW > 30) {
+        html += '<text x="'+(sx+segW/2)+'" y="'+(stackY+16)+'" text-anchor="middle" fill="#fff" font-size="10" font-weight="600" font-family="IBM Plex Sans,sans-serif">'+(total>0?(splits[i].val/total*100).toFixed(0)+'%':'')+'</text>';
+      }
+      sx += segW;
+    }
+    svg.innerHTML = html;
+  }
+
+  function drawStratChart(classData, strategy) {
+    var svg = document.getElementById('stratSvg');
+    var pad = 60, w = 340, h = 240;
+    var html = '<rect width="400" height="300" fill="#141414"/>';
+    html += '<text x="200" y="20" text-anchor="middle" fill="#aaa" font-size="12" font-family="IBM Plex Sans,sans-serif">Class Distribution per Split</text>';
+
+    var nClasses = classData.length;
+    var groupW = Math.min(100, (w - pad) / (strategy === 'train_val_test' ? 3 : 2));
+    var barW = Math.max(4, Math.min(16, (groupW - 10) / nClasses));
+    var colors = ['#3b82f6','#22c55e','#f59e0b','#ef4444','#a78bfa','#06b6d4','#f97316','#84cc16','#e879f9','#fbbf24'];
+
+    var splitNames = ['Train'];
+    if (strategy === 'train_val_test') splitNames.push('Val');
+    splitNames.push('Test');
+
+    var maxCount = 1;
+    for (var i = 0; i < classData.length; i++) {
+      if (classData[i].train > maxCount) maxCount = classData[i].train;
+    }
+
+    html += '<line x1="'+pad+'" y1="'+h+'" x2="'+w+'" y2="'+h+'" stroke="#555" stroke-width="1"/>';
+    html += '<line x1="'+pad+'" y1="35" x2="'+pad+'" y2="'+h+'" stroke="#555" stroke-width="1"/>';
+
+    for (var s = 0; s < splitNames.length; s++) {
+      var gx = pad + 10 + s * (groupW + 20);
+      html += '<text x="'+(gx+groupW/2)+'" y="'+(h+18)+'" text-anchor="middle" fill="#aaa" font-size="11" font-family="IBM Plex Sans,sans-serif">'+splitNames[s]+'</text>';
+
+      for (var c = 0; c < nClasses; c++) {
+        var val;
+        if (s === 0) val = classData[c].train;
+        else if (splitNames[s] === 'Val') val = classData[c].val;
+        else val = classData[c].test;
+
+        var barH = maxCount > 0 ? (val / maxCount) * (h - 50) : 0;
+        var bx = gx + c * (barW + 2);
+        var by = h - barH;
+        html += '<rect x="'+bx+'" y="'+by+'" width="'+barW+'" height="'+barH+'" fill="'+colors[c % colors.length]+'" rx="1" opacity="0.8"/>';
+      }
+    }
+
+    var legendY = h + 32;
+    for (var c = 0; c < Math.min(nClasses, 5); c++) {
+      var lx = pad + c * 65;
+      html += '<rect x="'+lx+'" y="'+legendY+'" width="10" height="10" fill="'+colors[c]+'" rx="2"/>';
+      html += '<text x="'+(lx+14)+'" y="'+(legendY+9)+'" fill="#aaa" font-size="9" font-family="IBM Plex Sans,sans-serif">C'+c+'</text>';
+    }
+
+    svg.innerHTML = html;
+  }
+
+  function generateCode(total, tPct, vPct, testPct, strategy, isStratified, seed, nClasses) {
+    var code = '';
+    if (strategy === 'kfold') {
+      var k = parseInt(document.getElementById('numFolds').value);
+      code = 'import numpy as np\nfrom sklearn.model_selection import ';
+      code += isStratified ? 'StratifiedKFold' : 'KFold';
+      code += '\n\n# Dataset: ' + total + ' samples, ' + nClasses + ' classes\nX = np.load("features.npy")  # shape: (' + total + ', n_features)\ny = np.load("labels.npy")    # shape: (' + total + ',)\n\n';
+      if (isStratified) {
+        code += 'kfold = StratifiedKFold(\n    n_splits=' + k + ',\n    shuffle=True,\n    random_state=' + seed + '\n)\n\n';
+        code += 'for fold, (train_idx, test_idx) in enumerate(kfold.split(X, y)):\n';
+      } else {
+        code += 'kfold = KFold(\n    n_splits=' + k + ',\n    shuffle=True,\n    random_state=' + seed + '\n)\n\n';
+        code += 'for fold, (train_idx, test_idx) in enumerate(kfold.split(X)):\n';
+      }
+      code += '    X_train, X_test = X[train_idx], X[test_idx]\n';
+      code += '    y_train, y_test = y[train_idx], y[test_idx]\n';
+      code += '    print(f"Fold {fold}: train={len(train_idx)}, test={len(test_idx)}")\n';
+      code += '    # Train and evaluate your model here\n';
+    } else if (strategy === 'train_test') {
+      code = 'import numpy as np\nfrom sklearn.model_selection import train_test_split\n\n';
+      code += '# Dataset: ' + total + ' samples, ' + nClasses + ' classes\nX = np.load("features.npy")  # shape: (' + total + ', n_features)\ny = np.load("labels.npy")    # shape: (' + total + ',)\n\n';
+      code += 'X_train, X_test, y_train, y_test = train_test_split(\n';
+      code += '    X, y,\n';
+      code += '    test_size=' + (testPct / 100).toFixed(2) + ',\n';
+      if (isStratified) code += '    stratify=y,\n';
+      code += '    random_state=' + seed + '\n)\n\n';
+      code += 'print(f"Train: {X_train.shape[0]}, Test: {X_test.shape[0]}")\n';
+      code += 'print(f"Train class dist: {np.bincount(y_train)}")\n';
+      code += 'print(f"Test  class dist: {np.bincount(y_test)}")';
+    } else {
+      code = 'import numpy as np\nfrom sklearn.model_selection import train_test_split\n\n';
+      code += '# Dataset: ' + total + ' samples, ' + nClasses + ' classes\nX = np.load("features.npy")  # shape: (' + total + ', n_features)\ny = np.load("labels.npy")    # shape: (' + total + ',)\n\n';
+      code += '# Step 1: Split off test set\n';
+      var testFrac = (testPct / 100).toFixed(2);
+      code += 'X_temp, X_test, y_temp, y_test = train_test_split(\n';
+      code += '    X, y,\n';
+      code += '    test_size=' + testFrac + ',\n';
+      if (isStratified) code += '    stratify=y,\n';
+      code += '    random_state=' + seed + '\n)\n\n';
+      code += '# Step 2: Split remaining into train and validation\n';
+      var valOfRemaining = (vPct / (tPct + vPct)).toFixed(4);
+      code += 'X_train, X_val, y_train, y_val = train_test_split(\n';
+      code += '    X_temp, y_temp,\n';
+      code += '    test_size=' + valOfRemaining + ',  # ' + vPct + '% of total\n';
+      if (isStratified) code += '    stratify=y_temp,\n';
+      code += '    random_state=' + seed + '\n)\n\n';
+      code += 'print(f"Train: {X_train.shape[0]} ({X_train.shape[0]/len(X)*100:.1f}%)")\n';
+      code += 'print(f"Val:   {X_val.shape[0]} ({X_val.shape[0]/len(X)*100:.1f}%)")\n';
+      code += 'print(f"Test:  {X_test.shape[0]} ({X_test.shape[0]/len(X)*100:.1f}%)")\n';
+      code += 'print(f"\\nTrain classes: {np.bincount(y_train)}")\n';
+      code += 'print(f"Val   classes: {np.bincount(y_val)}")\n';
+      code += 'print(f"Test  classes: {np.bincount(y_test)}")';
+    }
+    document.getElementById('codeOutput').textContent = code;
+  }
+
+  document.getElementById('trainSlider').addEventListener('input', function() {
+    trainPct = parseInt(this.value);
+    var strategy = document.getElementById('splitStrategy').value;
+    if (strategy === 'train_test') {
+      /* test auto-adjusts */
+    } else {
+      if (trainPct + valPct > 95) valPct = 95 - trainPct;
+      document.getElementById('valSlider').value = valPct;
+    }
+    updateSliderLabels();
+  });
+
+  document.getElementById('valSlider').addEventListener('input', function() {
+    valPct = parseInt(this.value);
+    if (trainPct + valPct > 95) {
+      trainPct = 95 - valPct;
+      document.getElementById('trainSlider').value = trainPct;
+    }
+    updateSliderLabels();
+  });
+
+  document.getElementById('splitStrategy').addEventListener('change', function() {
+    var v = this.value;
+    document.getElementById('valGroup').style.display = v === 'train_val_test' ? '' : 'none';
+    document.getElementById('kfoldGroup').style.display = v === 'kfold' ? '' : 'none';
+    document.getElementById('ratioSection').style.display = v === 'kfold' ? 'none' : '';
+    if (v === 'train_test') { trainPct = 80; document.getElementById('trainSlider').value = 80; }
+    updateSliderLabels();
+  });
+
+  document.getElementById('classDist').addEventListener('change', function() {
+    document.getElementById('customClassSection').style.display = this.value === 'custom' ? 'block' : 'none';
+    var nClasses = parseInt(document.getElementById('numClasses').value);
+    if (this.value === 'custom') {
+      var parts = [];
+      for (var i = 0; i < nClasses; i++) parts.push(Math.round(100 / nClasses));
+      document.getElementById('customProportions').value = parts.join(',');
+    }
+  });
+
+  document.getElementById('numClasses').addEventListener('change', function() {
+    var n = parseInt(this.value);
+    if (document.getElementById('classDist').value === 'custom') {
+      var parts = [];
+      for (var i = 0; i < n; i++) parts.push(Math.round(100 / n));
+      document.getElementById('customProportions').value = parts.join(',');
+    }
+  });
+
+  document.getElementById('computeBtn').addEventListener('click', compute);
+
+  document.getElementById('presetBtn1').addEventListener('click', function() {
+    document.getElementById('splitStrategy').value = 'train_test';
+    document.getElementById('splitStrategy').dispatchEvent(new Event('change'));
+    trainPct = 80; document.getElementById('trainSlider').value = 80;
+    updateSliderLabels(); compute();
+  });
+  document.getElementById('presetBtn2').addEventListener('click', function() {
+    document.getElementById('splitStrategy').value = 'train_val_test';
+    document.getElementById('splitStrategy').dispatchEvent(new Event('change'));
+    trainPct = 70; valPct = 15;
+    document.getElementById('trainSlider').value = 70;
+    document.getElementById('valSlider').value = 15;
+    updateSliderLabels(); compute();
+  });
+  document.getElementById('presetBtn3').addEventListener('click', function() {
+    document.getElementById('splitStrategy').value = 'train_val_test';
+    document.getElementById('splitStrategy').dispatchEvent(new Event('change'));
+    trainPct = 60; valPct = 20;
+    document.getElementById('trainSlider').value = 60;
+    document.getElementById('valSlider').value = 20;
+    updateSliderLabels(); compute();
+  });
+
+  document.getElementById('resetBtn').addEventListener('click', function() {
+    document.getElementById('totalSamples').value = 10000;
+    document.getElementById('numClasses').value = '2';
+    document.getElementById('classDist').value = 'balanced';
+    document.getElementById('customClassSection').style.display = 'none';
+    document.getElementById('splitStrategy').value = 'train_val_test';
+    document.getElementById('splitStrategy').dispatchEvent(new Event('change'));
+    trainPct = 70; valPct = 15;
+    document.getElementById('trainSlider').value = 70;
+    document.getElementById('valSlider').value = 15;
+    document.getElementById('stratified').value = 'yes';
+    document.getElementById('randomSeed').value = 42;
+    updateSliderLabels();
+    document.getElementById('resultsSection').style.display = 'none';
+  });
+
+  document.getElementById('copyCodeBtn').addEventListener('click', function() {
+    var code = document.getElementById('codeOutput').textContent;
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(code).then(function() {
+        document.getElementById('copyCodeBtn').textContent = 'Copied!';
+        setTimeout(function() { document.getElementById('copyCodeBtn').textContent = 'Copy Code'; }, 1500);
+      });
+    }
+  });
+
+  updateSliderLabels();
+  compute();
+})();
+</script>
+</body>
+</html>
