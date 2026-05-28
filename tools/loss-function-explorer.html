@@ -1,0 +1,657 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Loss Function Explorer — Compare MSE, Cross-Entropy, Huber &amp; More | ml0x</title>
+<meta name="description" content="Interactive loss function explorer. Compare MSE, MAE, Huber, Cross-Entropy, Hinge, Focal, Log-Cosh, and Quantile loss on canvas-drawn plots. Slider controls for parameters. See how each loss responds to predictions vs targets. Runs in your browser.">
+<meta name="keywords" content="loss function explorer, MSE loss, cross entropy loss, Huber loss, MAE loss, focal loss, hinge loss, quantile loss, loss comparison, machine learning loss functions, deep learning training">
+<link rel="canonical" href="https://ml0x.com/tools/loss-function-explorer.html">
+<link rel="alternate" hreflang="en" href="https://ml0x.com/tools/loss-function-explorer.html">
+<link rel="alternate" hreflang="x-default" href="https://ml0x.com/tools/loss-function-explorer.html">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Loss Function Explorer — Compare MSE, Cross-Entropy, Huber &amp; More">
+<meta property="og:description" content="Interactive canvas plots for 8+ loss functions. Slider controls for Huber delta, Focal gamma, and Quantile tau. Compare loss curves side by side.">
+<meta property="og:url" content="https://ml0x.com/tools/loss-function-explorer.html">
+<meta property="og:site_name" content="ML0X">
+<meta property="og:locale" content="en_US">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Loss Function Explorer — Compare MSE, Cross-Entropy, Huber &amp; More">
+<meta name="twitter:description" content="Compare 8+ ML loss functions on interactive canvas plots with parameter sliders. MSE, MAE, Huber, Cross-Entropy, Hinge, Focal, Log-Cosh, Quantile. Browser-only.">
+<meta name="author" content="Michael Lip">
+<meta name="robots" content="index, follow">
+<link rel="stylesheet" href="/assets/style.css">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebApplication",
+  "name": "Loss Function Explorer",
+  "description": "Interactive comparison tool for 8+ machine learning loss functions including MSE, MAE, Huber, Cross-Entropy, Hinge, Focal, Log-Cosh, and Quantile loss. Canvas-drawn plots with parameter sliders.",
+  "url": "https://ml0x.com/tools/loss-function-explorer.html",
+  "applicationCategory": "EducationalApplication",
+  "operatingSystem": "Any",
+  "offers": {"@type": "Offer", "price": "0", "priceCurrency": "USD"},
+  "author": {"@type": "Person", "name": "Michael Lip", "url": "https://zovo.one"},
+  "publisher": {"@type": "Organization", "name": "ML0X", "url": "https://ml0x.com"},
+  "datePublished": "2026-05-28",
+  "dateModified": "2026-05-28"
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Article",
+  "headline": "Loss Function Explorer — Compare MSE, Cross-Entropy, Huber and More",
+  "description": "Comprehensive interactive guide to machine learning loss functions with visual comparison of 8+ loss types including MSE, MAE, Huber, Cross-Entropy, Hinge, Focal, Log-Cosh, and Quantile loss.",
+  "url": "https://ml0x.com/tools/loss-function-explorer.html",
+  "author": {"@type": "Person", "name": "Michael Lip", "url": "https://zovo.one"},
+  "publisher": {"@type": "Organization", "name": "ML0X", "url": "https://ml0x.com"},
+  "datePublished": "2026-05-28",
+  "dateModified": "2026-05-28"
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {"@type": "ListItem", "position": 1, "name": "Home", "item": "https://ml0x.com/"},
+    {"@type": "ListItem", "position": 2, "name": "Tools", "item": "https://ml0x.com/tools/"},
+    {"@type": "ListItem", "position": 3, "name": "Loss Function Explorer"}
+  ]
+}
+</script>
+<style>
+.loss-toggle-grid {
+  display: flex; flex-wrap: wrap; gap: 8px; margin: 12px 0;
+}
+.loss-toggle {
+  display: flex; align-items: center; gap: 6px;
+  background: #141414; border: 1px solid #1e1e1e; border-radius: 4px;
+  padding: 5px 10px; cursor: pointer; font-size: 0.82rem; color: #888;
+  user-select: none; transition: border-color 0.15s, color 0.15s;
+}
+.loss-toggle.active { color: #e8e8e8; }
+.loss-toggle .dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+.param-row { display: flex; gap: 24px; flex-wrap: wrap; margin: 12px 0; align-items: center; }
+.param-item { display: flex; flex-direction: column; gap: 4px; min-width: 160px; }
+.param-item label { font-size: 0.78rem; color: #888; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600; }
+.param-item input[type="range"] { width: 160px; appearance: none; height: 5px; background: #1e1e1e; border-radius: 3px; outline: none; }
+.param-item input[type="range"]::-webkit-slider-thumb { appearance: none; width: 16px; height: 16px; background: #22c55e; border-radius: 50%; cursor: pointer; }
+.param-val { font-family: 'IBM Plex Mono', monospace; font-size: 0.85rem; color: #22c55e; }
+.probe-row { display: flex; gap: 16px; align-items: center; flex-wrap: wrap; margin: 12px 0; }
+.probe-row label { font-size: 0.8rem; color: #888; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600; }
+.probe-val { font-family: 'IBM Plex Mono', monospace; font-size: 0.85rem; color: #22c55e; min-width: 40px; }
+.probe-container { display: flex; flex-direction: column; gap: 4px; }
+.loss-table { width: 100%; border-collapse: collapse; font-size: 0.82rem; margin-top: 8px; }
+.loss-table th { text-align: left; padding: 8px 10px; border-bottom: 1px solid #1e1e1e; color: #888; font-size: 0.75rem; text-transform: uppercase; }
+.loss-table td { padding: 7px 10px; border-bottom: 1px solid #141414; color: #aaa; }
+.loss-table tr:hover td { background: #141414; }
+.loss-table .loss-name { font-weight: 600; }
+.tab-bar { display: flex; gap: 4px; margin-bottom: 16px; flex-wrap: wrap; }
+.tab-btn { padding: 6px 16px; background: #141414; border: 1px solid #1e1e1e; border-radius: 4px; color: #888; font-size: 0.82rem; cursor: pointer; font-family: inherit; transition: all 0.15s; }
+.tab-btn.active { background: #22c55e; color: #0a0a0a; border-color: #22c55e; font-weight: 700; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="container header-inner">
+    <a href="/" class="logo">ml0x</a>
+    <nav>
+      <a href="/">Home</a>
+      <a href="/research/">Research</a>
+      <a href="/tools/">Tools</a>
+      <a href="/guides/">Guides</a>
+      <a href="/answers/">Answers</a>
+      <div class="nav-right">
+        <a href="https://zovo.one/pricing?utm_source=ml0x.com&utm_medium=satellite&utm_campaign=nav-link" class="nav-pro" target="_blank">Go Pro &#10022;</a>
+        <a href="https://zovo.one/tools" class="nav-zovo">Zovo Tools</a>
+      </div>
+    </nav>
+  </div>
+</header>
+
+<main class="container">
+  <div class="breadcrumb">
+    <a href="/">Home</a> <span>&rsaquo;</span> <a href="/tools/">Tools</a> <span>&rsaquo;</span> Loss Function Explorer
+  </div>
+
+  <div class="hero">
+    <h1>Loss Function <span>Explorer</span></h1>
+    <p>Compare MSE, MAE, Huber, Cross-Entropy, Hinge, Focal, Log-Cosh, and Quantile loss on interactive canvas plots. Adjust Huber delta, Focal gamma, and Quantile tau with sliders to see how parameter choices reshape each curve. Drag the probe slider to read off loss values at any prediction point. All computation runs locally in your browser.</p>
+  </div>
+
+  <div class="tool-card">
+    <h3>View Mode</h3>
+    <div class="tab-bar">
+      <button class="tab-btn active" data-tab="comparison">Comparison Plot</button>
+      <button class="tab-btn" data-tab="detail">Single Function Detail</button>
+      <button class="tab-btn" data-tab="table">Value Table</button>
+    </div>
+
+    <div id="panelComparison">
+      <div class="loss-toggle-grid" id="toggleGrid"></div>
+      <canvas id="compCanvas" width="700" height="400" style="display:block;max-width:100%;margin-top:8px;"></canvas>
+      <div style="font-size:0.78rem;color:#555;margin-top:6px;">x-axis: residual error (prediction &minus; target) &nbsp;|&nbsp; y-axis: loss value</div>
+    </div>
+
+    <div id="panelDetail" style="display:none;">
+      <div class="control-row" style="margin-bottom:12px;">
+        <div class="control-group">
+          <label>Loss Function</label>
+          <select id="detailSelect"></select>
+        </div>
+      </div>
+      <canvas id="detailCanvas" width="700" height="380" style="display:block;max-width:100%;"></canvas>
+    </div>
+
+    <div id="panelTable" style="display:none;">
+      <div class="probe-row">
+        <div class="probe-container">
+          <label>Probe: residual error</label>
+          <div style="display:flex;align-items:center;gap:10px;">
+            <input type="range" id="probeSlider" min="-4" max="4" step="0.05" value="1.5" style="width:200px;appearance:none;height:5px;background:#1e1e1e;border-radius:3px;outline:none;">
+            <span class="probe-val" id="probeVal">1.50</span>
+          </div>
+        </div>
+      </div>
+      <div style="overflow-x:auto;">
+        <table class="loss-table">
+          <thead>
+            <tr>
+              <th>Loss Function</th>
+              <th>Formula</th>
+              <th>Loss at residual</th>
+              <th>Gradient at residual</th>
+              <th>Use Case</th>
+            </tr>
+          </thead>
+          <tbody id="tableBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <div class="tool-card" style="margin-top:16px;">
+    <h3>Parameters</h3>
+    <div class="param-row">
+      <div class="param-item">
+        <label>Huber &delta; (transition point)</label>
+        <input type="range" id="huberDelta" min="0.1" max="3.0" step="0.05" value="1.0">
+        <span class="param-val" id="huberDeltaVal">1.00</span>
+      </div>
+      <div class="param-item">
+        <label>Focal &gamma; (focusing parameter)</label>
+        <input type="range" id="focalGamma" min="0" max="5" step="0.1" value="2.0">
+        <span class="param-val" id="focalGammaVal">2.0</span>
+      </div>
+      <div class="param-item">
+        <label>Quantile &tau; (quantile level)</label>
+        <input type="range" id="quantileTau" min="0.05" max="0.95" step="0.05" value="0.5">
+        <span class="param-val" id="quantileTauVal">0.50</span>
+      </div>
+      <div class="param-item">
+        <label>X-axis range</label>
+        <input type="range" id="xRange" min="2" max="6" step="0.5" value="4">
+        <span class="param-val" id="xRangeVal">&pm;4.0</span>
+      </div>
+    </div>
+  </div>
+
+  <section class="explainer-section">
+    <h2>Why Loss Functions Matter</h2>
+    <p>The loss function (also called cost function or objective function) is the mathematical expression that quantifies how wrong a model's predictions are. It is the single number that gradient descent minimizes. The choice of loss function is not just a technical detail — it encodes your assumptions about the data distribution, your tolerance for outliers, and what kind of errors matter most for your application. A poorly chosen loss function can cause a model to converge to a solution that is technically optimal by the metric but practically useless.</p>
+    <p>Every loss function makes implicit statistical assumptions. MSE is the maximum likelihood estimator for a Gaussian noise model. MAE corresponds to a Laplacian noise model. Cross-entropy is the negative log-likelihood for a Bernoulli or categorical distribution. Understanding these connections helps you choose the right loss for your data-generating process and explains why certain losses are more robust to specific types of noise or outliers.</p>
+
+    <h2>Regression Losses</h2>
+    <p><strong>Mean Squared Error (MSE)</strong> squares the residual, heavily penalizing large errors. It is differentiable everywhere and corresponds to Gaussian noise assumption. The gradient is proportional to the residual, making it straightforward to optimize but sensitive to outliers — a single large error can dominate the total loss and pull the model far from the true solution.</p>
+    <p><strong>Mean Absolute Error (MAE)</strong> takes the absolute value of the residual. It is robust to outliers because large errors are not squared, but it has a non-differentiable kink at zero and a constant gradient magnitude everywhere (subgradient is &pm;1), which can cause oscillation near the optimum and slow convergence with standard gradient descent.</p>
+    <p><strong>Huber Loss</strong> combines the best of both: it behaves like MSE for small residuals (within delta) and like MAE for large residuals. This makes it robust to outliers while retaining smooth, well-scaled gradients near zero. The delta parameter controls the transition point. Setting delta very small approaches MAE; setting it very large approaches MSE. Huber loss is the default in many robust regression settings.</p>
+    <p><strong>Log-Cosh Loss</strong> is log(cosh(residual)), which approximates MSE for small errors and MAE for large errors, but is twice differentiable everywhere — an advantage over Huber loss for second-order optimization methods. It is numerically stable and less sensitive to outliers than MSE.</p>
+    <p><strong>Quantile Loss</strong> enables quantile regression: instead of predicting the conditional mean, you predict a specific quantile of the target distribution. Tau=0.5 gives the median (equivalent to MAE). Tau=0.9 penalizes underestimates more heavily, producing a 90th percentile prediction. This is essential for prediction intervals and applications where asymmetric error costs matter (e.g., overestimating demand is cheaper than underestimating it).</p>
+
+    <h2>Classification Losses</h2>
+    <p><strong>Binary Cross-Entropy</strong> is the negative log-likelihood for binary classification. It is derived from the Bernoulli distribution and is the canonical loss for sigmoid output layers. Larger penalties are assigned to confident wrong predictions (when the model is very certain but wrong). Unlike MSE applied to probability outputs, cross-entropy provides strong gradients even when the model is confidently wrong, making training more stable.</p>
+    <p><strong>Hinge Loss</strong> is used for SVMs and max-margin classifiers. It penalizes predictions that are on the wrong side of the margin (score below 1 for positive class). Once a prediction is correct by a sufficient margin (score &ge; 1), the loss is zero — the model does not try to push correct predictions further. This creates sparse support vectors and a different inductive bias than probabilistic classifiers.</p>
+    <p><strong>Focal Loss</strong> was introduced by Lin et al. (2017) for object detection to address extreme class imbalance. It adds a modulating factor (1 - p_t)^gamma that down-weights easy examples. When gamma=0, focal loss equals binary cross-entropy. As gamma increases, easy correctly classified examples contribute less to the total loss, forcing the model to focus on hard, misclassified examples. It is now widely used beyond detection for any task with severe class imbalance.</p>
+
+    <h2>Choosing the Right Loss Function</h2>
+    <p>For regression with clean data: start with MSE. With significant outliers: use Huber or MAE. When you need prediction intervals or asymmetric error costs: use quantile loss. For binary classification: use binary cross-entropy. For multi-class classification: use categorical cross-entropy. For imbalanced classification: try focal loss. For SVMs or large-margin classifiers: hinge loss. When you need second-order optimization: prefer smooth losses like Log-Cosh over MAE.</p>
+    <p>Always validate your choice empirically. Run experiments with 2-3 candidate loss functions on a held-out validation set and choose based on the metric that matters for your application — not the training loss itself. A model trained with MSE that achieves better F1 score than one trained with cross-entropy would be the correct choice if F1 is your deployment metric.</p>
+
+    <h2>Related Tools</h2>
+    <div class="related-grid">
+      <a href="/tools/neural-network-playground.html" class="related-card">
+        <div class="related-title">Neural Network Playground</div>
+        <div class="related-desc">Build and train neural networks with live decision boundary visualization.</div>
+      </a>
+      <a href="/tools/attention-mechanism-visualizer.html" class="related-card">
+        <div class="related-title">Attention Mechanism Visualizer</div>
+        <div class="related-desc">See how transformer self-attention and cross-attention assigns weights to tokens.</div>
+      </a>
+      <a href="/tools/learning-rate-finder.html" class="related-card">
+        <div class="related-title">Learning Rate Finder</div>
+        <div class="related-desc">Simulate an LR range test and auto-detect the optimal learning rate.</div>
+      </a>
+    </div>
+  </section>
+
+  <section class="faq-section">
+    <h2>Frequently Asked Questions</h2>
+    <details>
+      <summary>Why is MSE more sensitive to outliers than MAE?</summary>
+      <p>MSE squares the residual error, so an outlier with error=10 contributes 100 to the loss while an inlier with error=1 contributes only 1. The ratio is 100:1. With MAE, the same outlier contributes 10 vs 1 for the inlier — a ratio of 10:1. Squaring amplifies large errors quadratically, causing the optimizer to disproportionately focus on fitting outliers. In datasets with heavy-tailed noise or label errors, this can severely degrade model quality.</p>
+    </details>
+    <details>
+      <summary>What does the Huber delta parameter control?</summary>
+      <p>The Huber delta parameter sets the boundary between the MSE regime and the MAE regime. For residuals smaller than delta in absolute value, Huber loss behaves quadratically (like MSE). For residuals larger than delta, it behaves linearly (like MAE). A smaller delta makes the loss more MAE-like and robust to outliers. A larger delta makes it more MSE-like and sensitive to all errors. Typical values range from 0.5 to 2.0, tuned on a validation set.</p>
+    </details>
+    <details>
+      <summary>When should I use Focal loss over standard cross-entropy?</summary>
+      <p>Use focal loss when you have significant class imbalance — particularly when the negative class vastly outnumbers the positive class, as in object detection (many background regions, few objects). Standard cross-entropy can be dominated by easy negative examples, causing the model to predict the majority class. Focal loss down-weights those easy examples via the (1-p_t)^gamma factor, forcing the model to focus on hard, informative examples. A good starting point is gamma=2, alpha=0.25.</p>
+    </details>
+    <details>
+      <summary>How does quantile loss enable prediction intervals?</summary>
+      <p>By training two models with quantile loss at tau=0.1 and tau=0.9, you get predictions for the 10th and 90th percentiles of the target distribution. The region between them forms an 80% prediction interval. Unlike confidence intervals for the mean, these intervals account for the full spread of the target distribution at any given input. This is more informative than point predictions for decision-making under uncertainty, especially when the variance of the target is input-dependent (heteroscedastic noise).</p>
+    </details>
+    <details>
+      <summary>Why does cross-entropy work better than MSE for classification?</summary>
+      <p>When using MSE on sigmoid/softmax outputs for classification, the gradient becomes very small when the model is confidently wrong (because sigmoid saturates near 0 or 1). This creates a vanishing gradient problem that slows learning. Cross-entropy avoids this: its gradient with respect to the pre-activation logit simplifies to (prediction - target), which remains large even when the model is confidently wrong. Cross-entropy is also the statistically motivated loss for probabilistic classifiers under maximum likelihood estimation.</p>
+    </details>
+  </section>
+
+  <section class="explainer-section">
+    <h2>About the Author</h2>
+    <p><strong>Michael Lip</strong> builds open-source ML tools and developer utilities at <a href="https://zovo.one">zovo.one</a>. ml0x is part of the Zovo Tools network, a collection of free, privacy-first tools for developers and data scientists. No tracking, no accounts required, no data leaves your browser.</p>
+  </section>
+
+  <p class="last-updated">Last updated: May 28, 2026</p>
+</main>
+
+<footer class="site-footer">
+  <div class="footer-inner">
+    <div class="footer-brand">Zovo Tools</div>
+    <div class="footer-tagline">Free developer tools by a solo dev. No tracking.</div>
+    <a href="https://zovo.one/pricing?utm_source=ml0x.com&utm_medium=satellite&utm_campaign=footer-link" class="footer-cta" target="_blank">Zovo Lifetime — $99 once, free forever &rarr;</a>
+    <div class="footer-copy">&copy; 2026 <a href="https://zovo.one">Zovo</a> &middot; 47/500 founding spots</div>
+  </div>
+</footer>
+
+<nav class="zovo-network" aria-label="Zovo Tools Network">
+  <div class="zovo-network-inner">
+    <h3 class="zovo-network-title">Explore More Tools</h3>
+    <div class="zovo-network-links">
+      <a href="https://abwex.com">ABWex — A/B Testing</a>
+      <a href="https://claudflow.com">ClaudFlow — Workflows</a>
+      <a href="https://claudhq.com">ClaudHQ — AI Code Tools &amp; Fixes</a>
+      <a href="https://claudkit.com">ClaudKit — API</a>
+      <a href="https://enhio.com">Enhio — Text Tools</a>
+      <a href="https://epochpilot.com">EpochPilot — Timestamps</a>
+      <a href="https://gen8x.com">Gen8X — Color Tools</a>
+      <a href="https://gpt0x.com">GPT0X — AI Models</a>
+      <a href="https://heytensor.com">HeyTensor — ML Tools</a>
+      <a href="https://invokebot.com">InvokeBot — Webhooks</a>
+      <a href="https://kappafy.com">Kappafy — JSON</a>
+      <a href="https://kappakit.com">KappaKit — Dev Toolkit</a>
+      <a href="https://kickllm.com">KickLLM — LLM Costs</a>
+      <a href="https://krzen.com">Krzen — Image Tools</a>
+      <a href="https://lochbot.com">LochBot — Security</a>
+      <a href="https://lockml.com">LockML — ML Compare</a>
+      <a href="https://ml3x.com">ML3X — Matrix Math</a>
+    </div>
+  </div>
+</nav>
+
+<script>
+(function() {
+  // ── Loss function definitions ──────────────────────────────────────────
+  var LOSSES = [
+    {
+      id: 'mse', name: 'MSE', color: '#3b82f6', active: true,
+      formula: '(y_pred - y_true)²',
+      useCase: 'Regression, Gaussian noise',
+      fn: function(r, p) { return r * r; },
+      grad: function(r, p) { return 2 * r; }
+    },
+    {
+      id: 'mae', name: 'MAE', color: '#f59e0b', active: true,
+      formula: '|y_pred - y_true|',
+      useCase: 'Robust regression, Laplacian noise',
+      fn: function(r, p) { return Math.abs(r); },
+      grad: function(r, p) { return r >= 0 ? 1 : -1; }
+    },
+    {
+      id: 'huber', name: 'Huber', color: '#22c55e', active: true,
+      formula: 'MSE if |r|≤δ, else δ(|r|-δ/2)',
+      useCase: 'Outlier-robust regression',
+      fn: function(r, p) {
+        var d = p.huberDelta, a = Math.abs(r);
+        return a <= d ? 0.5 * r * r : d * (a - 0.5 * d);
+      },
+      grad: function(r, p) {
+        var d = p.huberDelta, a = Math.abs(r);
+        return a <= d ? r : d * (r >= 0 ? 1 : -1);
+      }
+    },
+    {
+      id: 'logcosh', name: 'Log-Cosh', color: '#a78bfa', active: true,
+      formula: 'log(cosh(y_pred - y_true))',
+      useCase: 'Smooth robust regression',
+      fn: function(r, p) { return Math.log(Math.cosh(r)); },
+      grad: function(r, p) { return Math.tanh(r); }
+    },
+    {
+      id: 'quantile', name: 'Quantile', color: '#fb923c', active: false,
+      formula: 'τ·r if r≥0, else (τ-1)·r',
+      useCase: 'Quantile regression, prediction intervals',
+      fn: function(r, p) {
+        var tau = p.quantileTau;
+        return r >= 0 ? tau * r : (tau - 1) * r;
+      },
+      grad: function(r, p) {
+        return r >= 0 ? p.quantileTau : p.quantileTau - 1;
+      }
+    },
+    {
+      id: 'xent', name: 'Cross-Entropy', color: '#ef4444', active: true,
+      formula: '-[y·log(p) + (1-y)·log(1-p)]',
+      useCase: 'Binary/multi-class classification',
+      fn: function(r, p) {
+        // r interpreted as logit offset, convert to binary CE plot vs pred prob
+        var prob = 1 / (1 + Math.exp(-r));
+        prob = Math.max(1e-7, Math.min(1 - 1e-7, prob));
+        // loss for true label=1
+        return -Math.log(prob);
+      },
+      grad: function(r, p) {
+        var prob = 1 / (1 + Math.exp(-r));
+        return prob - 1; // dL/d_logit for true=1
+      }
+    },
+    {
+      id: 'hinge', name: 'Hinge', color: '#38bdf8', active: false,
+      formula: 'max(0, 1 - y·score)',
+      useCase: 'SVM, max-margin classifiers',
+      fn: function(r, p) { return Math.max(0, 1 - r); },
+      grad: function(r, p) { return r < 1 ? -1 : 0; }
+    },
+    {
+      id: 'focal', name: 'Focal', color: '#f472b6', active: false,
+      formula: '-(1-p_t)^γ · log(p_t)',
+      useCase: 'Class imbalance, object detection',
+      fn: function(r, p) {
+        var prob = 1 / (1 + Math.exp(-r));
+        prob = Math.max(1e-7, Math.min(1 - 1e-7, prob));
+        return -Math.pow(1 - prob, p.focalGamma) * Math.log(prob);
+      },
+      grad: function(r, p) {
+        var prob = 1 / (1 + Math.exp(-r));
+        prob = Math.max(1e-7, Math.min(1 - 1e-7, prob));
+        var gamma = p.focalGamma;
+        var pt = prob;
+        return Math.pow(1 - pt, gamma) * (gamma * pt * Math.log(pt) - (1 - pt));
+      }
+    }
+  ];
+
+  var params = { huberDelta: 1.0, focalGamma: 2.0, quantileTau: 0.5, xRange: 4.0 };
+  var currentTab = 'comparison';
+
+  // ── Build toggle grid ──────────────────────────────────────────────────
+  var grid = document.getElementById('toggleGrid');
+  LOSSES.forEach(function(loss) {
+    var btn = document.createElement('div');
+    btn.className = 'loss-toggle' + (loss.active ? ' active' : '');
+    btn.dataset.id = loss.id;
+    btn.style.borderColor = loss.active ? loss.color : '#1e1e1e';
+    btn.innerHTML = '<span class="dot" style="background:' + loss.color + ';opacity:' + (loss.active ? '1' : '0.3') + ';"></span>' + loss.name;
+    btn.addEventListener('click', function() {
+      loss.active = !loss.active;
+      btn.classList.toggle('active', loss.active);
+      btn.style.borderColor = loss.active ? loss.color : '#1e1e1e';
+      btn.querySelector('.dot').style.opacity = loss.active ? '1' : '0.3';
+      redraw();
+    });
+    grid.appendChild(btn);
+  });
+
+  // ── Build detail select ────────────────────────────────────────────────
+  var detailSel = document.getElementById('detailSelect');
+  LOSSES.forEach(function(loss) {
+    var opt = document.createElement('option');
+    opt.value = loss.id;
+    opt.textContent = loss.name;
+    detailSel.appendChild(opt);
+  });
+  detailSel.addEventListener('change', drawDetail);
+
+  // ── Canvas helpers ─────────────────────────────────────────────────────
+  function makeAxes(ctx, W, H, pad, xR, yMax, xLabel, yLabel) {
+    ctx.fillStyle = '#0a0a0a';
+    ctx.fillRect(0, 0, W, H);
+
+    var gW = W - pad.l - pad.r, gH = H - pad.t - pad.b;
+    function sx(v) { return pad.l + (v + xR) / (2 * xR) * gW; }
+    function sy(v) { return pad.t + (1 - v / yMax) * gH; }
+
+    // Grid lines
+    ctx.strokeStyle = '#1a1a1a';
+    ctx.lineWidth = 0.5;
+    for (var xi = -Math.floor(xR); xi <= Math.floor(xR); xi++) {
+      var x = sx(xi);
+      ctx.beginPath(); ctx.moveTo(x, pad.t); ctx.lineTo(x, pad.t + gH); ctx.stroke();
+      ctx.fillStyle = '#444'; ctx.font = '10px IBM Plex Mono,monospace'; ctx.textAlign = 'center';
+      ctx.fillText(xi, x, pad.t + gH + 14);
+    }
+    var yStep = yMax <= 2 ? 0.5 : yMax <= 5 ? 1 : 2;
+    for (var yi = 0; yi <= yMax; yi += yStep) {
+      var y = sy(yi);
+      ctx.beginPath(); ctx.moveTo(pad.l, y); ctx.lineTo(pad.l + gW, y); ctx.stroke();
+      ctx.fillStyle = '#444'; ctx.font = '10px IBM Plex Mono,monospace'; ctx.textAlign = 'right';
+      ctx.fillText(yi.toFixed(yi < 1 ? 1 : 0), pad.l - 6, y + 3);
+    }
+
+    // Axes
+    ctx.strokeStyle = '#333'; ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(pad.l, pad.t); ctx.lineTo(pad.l, pad.t + gH); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(pad.l, pad.t + gH); ctx.lineTo(pad.l + gW, pad.t + gH); ctx.stroke();
+
+    // Zero line
+    ctx.strokeStyle = '#2a2a2a'; ctx.lineWidth = 1; ctx.setLineDash([4, 4]);
+    var x0 = sx(0);
+    ctx.beginPath(); ctx.moveTo(x0, pad.t); ctx.lineTo(x0, pad.t + gH); ctx.stroke();
+    ctx.setLineDash([]);
+
+    // Labels
+    ctx.fillStyle = '#555'; ctx.font = '11px IBM Plex Sans,sans-serif'; ctx.textAlign = 'center';
+    ctx.fillText(xLabel, pad.l + gW / 2, H - 4);
+    ctx.save(); ctx.translate(12, pad.t + gH / 2); ctx.rotate(-Math.PI / 2);
+    ctx.fillText(yLabel, 0, 0); ctx.restore();
+
+    return { sx: sx, sy: sy, gW: gW, gH: gH };
+  }
+
+  function plotLine(ctx, fn, sx, sy, xR, steps, color, lineWidth, dash) {
+    ctx.strokeStyle = color; ctx.lineWidth = lineWidth || 2;
+    if (dash) ctx.setLineDash(dash); else ctx.setLineDash([]);
+    ctx.beginPath();
+    var started = false;
+    for (var i = 0; i <= steps; i++) {
+      var r = -xR + i * (2 * xR) / steps;
+      var y = fn(r, params);
+      if (!isFinite(y)) { started = false; continue; }
+      var px = sx(r), py = sy(Math.max(0, y));
+      if (!started) { ctx.moveTo(px, py); started = true; }
+      else ctx.lineTo(px, py);
+    }
+    ctx.stroke();
+    ctx.setLineDash([]);
+  }
+
+  function drawComparison() {
+    var canvas = document.getElementById('compCanvas');
+    var ctx = canvas.getContext('2d');
+    var W = canvas.width, H = canvas.height;
+    var pad = { l: 52, r: 20, t: 16, b: 40 };
+    var xR = params.xRange;
+    var active = LOSSES.filter(function(l) { return l.active; });
+
+    // Compute y max
+    var yMax = 0;
+    active.forEach(function(loss) {
+      for (var i = -100; i <= 100; i++) {
+        var r = i * xR / 100;
+        var v = loss.fn(r, params);
+        if (isFinite(v) && v > yMax) yMax = v;
+      }
+    });
+    yMax = Math.min(yMax * 1.1, xR * xR * 1.2);
+    yMax = Math.max(yMax, 0.5);
+
+    var axes = makeAxes(ctx, W, H, pad, xR, yMax, 'Residual error (prediction − target)', 'Loss value');
+
+    active.forEach(function(loss, idx) {
+      plotLine(ctx, loss.fn, axes.sx, axes.sy, xR, 400, loss.color, 2, idx > 3 ? [6, 3] : null);
+    });
+
+    // Legend
+    var legX = pad.l + 8, legY = pad.t + 8;
+    active.forEach(function(loss, idx) {
+      ctx.fillStyle = 'rgba(10,10,10,0.7)';
+      ctx.fillRect(legX - 2, legY + idx * 18 - 10, 90, 14);
+      ctx.strokeStyle = loss.color; ctx.lineWidth = 2; ctx.setLineDash([]);
+      ctx.beginPath(); ctx.moveTo(legX, legY + idx * 18 - 3); ctx.lineTo(legX + 18, legY + idx * 18 - 3); ctx.stroke();
+      ctx.fillStyle = loss.color; ctx.font = '600 11px IBM Plex Sans,sans-serif'; ctx.textAlign = 'left';
+      ctx.fillText(loss.name, legX + 22, legY + idx * 18);
+    });
+  }
+
+  function drawDetail() {
+    var canvas = document.getElementById('detailCanvas');
+    var ctx = canvas.getContext('2d');
+    var W = canvas.width, H = canvas.height;
+    var pad = { l: 56, r: 120, t: 24, b: 44 };
+    var xR = params.xRange;
+    var loss = LOSSES.find(function(l) { return l.id === detailSel.value; }) || LOSSES[0];
+
+    var yMax = 0;
+    for (var i = -100; i <= 100; i++) {
+      var r = i * xR / 100;
+      var v = loss.fn(r, params);
+      if (isFinite(v) && v > yMax) yMax = v;
+    }
+    yMax = Math.min(yMax * 1.15, xR * xR * 1.3);
+    yMax = Math.max(yMax, 1);
+
+    var axes = makeAxes(ctx, W, H, pad, xR, yMax, 'Residual (prediction − target)', 'Loss');
+
+    // Loss curve
+    plotLine(ctx, loss.fn, axes.sx, axes.sy, xR, 600, loss.color, 2.5);
+
+    // Gradient curve (scaled)
+    var gradMax = 0;
+    for (var i = -100; i <= 100; i++) {
+      var r = i * xR / 100;
+      var g = Math.abs(loss.grad(r, params));
+      if (isFinite(g) && g > gradMax) gradMax = g;
+    }
+    var gradScale = yMax * 0.6 / Math.max(gradMax, 0.01);
+    plotLine(ctx, function(r, p) {
+      var g = loss.grad(r, p);
+      return isFinite(g) ? g * gradScale : null;
+    }, axes.sx, axes.sy, xR, 600, loss.color, 1.5, [5, 3]);
+
+    // Probe marker
+    var probe = parseFloat(document.getElementById('probeSlider').value);
+    var lossVal = loss.fn(probe, params);
+    if (isFinite(lossVal)) {
+      var px = axes.sx(probe), py = axes.sy(Math.min(lossVal, yMax));
+      ctx.beginPath(); ctx.arc(px, py, 6, 0, Math.PI * 2);
+      ctx.fillStyle = '#22c55e'; ctx.fill();
+      ctx.strokeStyle = '#0a0a0a'; ctx.lineWidth = 2; ctx.stroke();
+
+      ctx.fillStyle = '#22c55e'; ctx.font = '600 11px IBM Plex Sans,sans-serif'; ctx.textAlign = 'left';
+      ctx.fillText('r=' + probe.toFixed(2) + '  L=' + lossVal.toFixed(4), px + 10, py - 6);
+    }
+
+    // Formula annotation
+    ctx.fillStyle = '#555'; ctx.font = '12px IBM Plex Mono,monospace'; ctx.textAlign = 'left';
+    ctx.fillText(loss.formula, pad.l + axes.gW + 6, pad.t + 20);
+    ctx.fillStyle = '#3b82f6'; ctx.font = '600 13px IBM Plex Sans,sans-serif';
+    ctx.fillText(loss.name, pad.l + axes.gW + 6, pad.t + 8);
+    ctx.fillStyle = '#333'; ctx.font = '11px IBM Plex Sans,sans-serif';
+    ctx.fillText('— loss', pad.l + axes.gW + 6, pad.t + 50);
+    ctx.fillStyle = '#333'; ctx.setLineDash([5, 3]);
+    ctx.strokeStyle = loss.color; ctx.lineWidth = 1.5;
+    ctx.beginPath(); ctx.moveTo(pad.l + axes.gW + 6, pad.t + 62); ctx.lineTo(pad.l + axes.gW + 22, pad.t + 62); ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.fillStyle = '#333'; ctx.font = '11px IBM Plex Sans,sans-serif'; ctx.textAlign = 'left';
+    ctx.fillText('— grad (scaled)', pad.l + axes.gW + 26, pad.t + 65);
+  }
+
+  function drawTable() {
+    var probe = parseFloat(document.getElementById('probeSlider').value);
+    document.getElementById('probeVal').textContent = probe.toFixed(2);
+    var tbody = document.getElementById('tableBody');
+    tbody.innerHTML = '';
+    LOSSES.forEach(function(loss) {
+      var lv = loss.fn(probe, params);
+      var gv = loss.grad(probe, params);
+      var tr = document.createElement('tr');
+      tr.innerHTML =
+        '<td class="loss-name" style="color:' + loss.color + '">' + loss.name + '</td>' +
+        '<td style="font-family:IBM Plex Mono,monospace;font-size:0.78rem;color:#666;">' + loss.formula + '</td>' +
+        '<td style="font-family:IBM Plex Mono,monospace;">' + (isFinite(lv) ? lv.toFixed(6) : 'N/A') + '</td>' +
+        '<td style="font-family:IBM Plex Mono,monospace;">' + (isFinite(gv) ? gv.toFixed(6) : 'N/A') + '</td>' +
+        '<td style="color:#555;font-size:0.8rem;">' + loss.useCase + '</td>';
+      tbody.appendChild(tr);
+    });
+  }
+
+  function redraw() {
+    if (currentTab === 'comparison') drawComparison();
+    else if (currentTab === 'detail') drawDetail();
+    else drawTable();
+  }
+
+  // ── Tabs ───────────────────────────────────────────────────────────────
+  document.querySelectorAll('.tab-btn').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      document.querySelectorAll('.tab-btn').forEach(function(b) { b.classList.remove('active'); });
+      btn.classList.add('active');
+      currentTab = btn.dataset.tab;
+      document.getElementById('panelComparison').style.display = currentTab === 'comparison' ? '' : 'none';
+      document.getElementById('panelDetail').style.display = currentTab === 'detail' ? '' : 'none';
+      document.getElementById('panelTable').style.display = currentTab === 'table' ? '' : 'none';
+      redraw();
+    });
+  });
+
+  // ── Param sliders ──────────────────────────────────────────────────────
+  function bindSlider(id, valId, key, fmt) {
+    var el = document.getElementById(id);
+    var valEl = document.getElementById(valId);
+    el.addEventListener('input', function() {
+      params[key] = parseFloat(this.value);
+      valEl.textContent = fmt ? fmt(params[key]) : params[key].toFixed(2);
+      redraw();
+    });
+  }
+  bindSlider('huberDelta', 'huberDeltaVal', 'huberDelta');
+  bindSlider('focalGamma', 'focalGammaVal', 'focalGamma', function(v) { return v.toFixed(1); });
+  bindSlider('quantileTau', 'quantileTauVal', 'quantileTau');
+  bindSlider('xRange', 'xRangeVal', 'xRange', function(v) { return '\u00b1' + v.toFixed(1); });
+
+  document.getElementById('probeSlider').addEventListener('input', function() {
+    document.getElementById('probeVal').textContent = parseFloat(this.value).toFixed(2);
+    if (currentTab === 'detail') drawDetail();
+    else if (currentTab === 'table') drawTable();
+  });
+
+  // Initial draw
+  redraw();
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,632 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Attention Mechanism Visualizer — See How Transformers Focus | ml0x</title>
+<meta name="description" content="Interactive attention mechanism visualizer. Enter a sentence and see self-attention weights as a heatmap matrix. Toggle between self-attention and cross-attention. Animated token-by-token processing with color-coded weight display. Runs in your browser.">
+<meta name="keywords" content="attention mechanism visualizer, transformer attention, self-attention heatmap, cross-attention, attention weights, transformer visualization, NLP visualizer, BERT attention, GPT attention, multi-head attention">
+<link rel="canonical" href="https://ml0x.com/tools/attention-mechanism-visualizer.html">
+<link rel="alternate" hreflang="en" href="https://ml0x.com/tools/attention-mechanism-visualizer.html">
+<link rel="alternate" hreflang="x-default" href="https://ml0x.com/tools/attention-mechanism-visualizer.html">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Attention Mechanism Visualizer — See How Transformers Focus">
+<meta property="og:description" content="Enter a sentence and watch transformer attention weights form as an interactive heatmap. Toggle self-attention and cross-attention, animate token-by-token processing.">
+<meta property="og:url" content="https://ml0x.com/tools/attention-mechanism-visualizer.html">
+<meta property="og:site_name" content="ML0X">
+<meta property="og:locale" content="en_US">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Attention Mechanism Visualizer — See How Transformers Focus">
+<meta name="twitter:description" content="Interactive transformer attention heatmap. See self-attention and cross-attention weights for any sentence. Runs entirely in your browser.">
+<meta name="author" content="Michael Lip">
+<meta name="robots" content="index, follow">
+<link rel="stylesheet" href="/assets/style.css">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebApplication",
+  "name": "Attention Mechanism Visualizer",
+  "description": "Interactive visualization of transformer attention weights. Enter any sentence to see self-attention and cross-attention heatmaps with animated token processing.",
+  "url": "https://ml0x.com/tools/attention-mechanism-visualizer.html",
+  "applicationCategory": "EducationalApplication",
+  "operatingSystem": "Any",
+  "offers": {"@type": "Offer", "price": "0", "priceCurrency": "USD"},
+  "author": {"@type": "Person", "name": "Michael Lip", "url": "https://zovo.one"},
+  "publisher": {"@type": "Organization", "name": "ML0X", "url": "https://ml0x.com"},
+  "datePublished": "2026-05-28",
+  "dateModified": "2026-05-28"
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Article",
+  "headline": "Attention Mechanism Visualizer — See How Transformers Focus",
+  "description": "Interactive tool to visualize how transformer self-attention and cross-attention mechanisms assign weights to tokens in a sentence.",
+  "url": "https://ml0x.com/tools/attention-mechanism-visualizer.html",
+  "author": {"@type": "Person", "name": "Michael Lip", "url": "https://zovo.one"},
+  "publisher": {"@type": "Organization", "name": "ML0X", "url": "https://ml0x.com"},
+  "datePublished": "2026-05-28",
+  "dateModified": "2026-05-28"
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {"@type": "ListItem", "position": 1, "name": "Home", "item": "https://ml0x.com/"},
+    {"@type": "ListItem", "position": 2, "name": "Tools", "item": "https://ml0x.com/tools/"},
+    {"@type": "ListItem", "position": 3, "name": "Attention Mechanism Visualizer"}
+  ]
+}
+</script>
+</head>
+<body>
+
+<header>
+  <div class="container header-inner">
+    <a href="/" class="logo">ml0x</a>
+    <nav>
+      <a href="/">Home</a>
+      <a href="/research/">Research</a>
+      <a href="/tools/">Tools</a>
+      <a href="/guides/">Guides</a>
+      <a href="/answers/">Answers</a>
+      <div class="nav-right">
+        <a href="https://zovo.one/pricing?utm_source=ml0x.com&utm_medium=satellite&utm_campaign=nav-link" class="nav-pro" target="_blank">Go Pro &#10022;</a>
+        <a href="https://zovo.one/tools" class="nav-zovo">Zovo Tools</a>
+      </div>
+    </nav>
+  </div>
+</header>
+
+<main class="container">
+  <div class="breadcrumb">
+    <a href="/">Home</a> <span>&rsaquo;</span> <a href="/tools/">Tools</a> <span>&rsaquo;</span> Attention Mechanism Visualizer
+  </div>
+
+  <div class="hero">
+    <h1>Attention Mechanism <span>Visualizer</span></h1>
+    <p>Enter a sentence and watch how a transformer assigns attention weights between every pair of tokens. Explore self-attention (how each token attends to all others in the same sequence) and cross-attention (encoder-decoder interaction). The heatmap updates in real time. All computation runs locally in your browser with zero server calls.</p>
+  </div>
+
+  <div class="tool-card">
+    <h3>Input &amp; Configuration</h3>
+    <div class="control-row">
+      <div class="control-group" style="flex:1;min-width:280px;">
+        <label>Input Sentence</label>
+        <input type="text" id="inputSentence" value="The cat sat on the mat" style="width:100%;min-width:280px;" maxlength="80">
+      </div>
+      <div class="control-group">
+        <label>Attention Type</label>
+        <select id="attnType">
+          <option value="self">Self-Attention</option>
+          <option value="cross">Cross-Attention</option>
+        </select>
+      </div>
+      <div class="control-group">
+        <label>Attention Head</label>
+        <select id="headSelect">
+          <option value="0">Head 1 — Syntactic</option>
+          <option value="1">Head 2 — Semantic</option>
+          <option value="2">Head 3 — Positional</option>
+          <option value="3">Head 4 — Co-reference</option>
+        </select>
+      </div>
+      <div class="control-group">
+        <label>Temperature</label>
+        <select id="temperature">
+          <option value="0.5">0.5 — Sharp</option>
+          <option value="1.0" selected>1.0 — Normal</option>
+          <option value="2.0">2.0 — Diffuse</option>
+        </select>
+      </div>
+    </div>
+    <div class="control-row" style="margin-top:4px;">
+      <button class="btn" id="visualizeBtn">Visualize Attention</button>
+      <button class="btn btn-secondary" id="animateBtn">Animate Token-by-Token</button>
+      <button class="btn btn-secondary" id="randomBtn">Random Sentence</button>
+    </div>
+  </div>
+
+  <div id="crossSentenceRow" style="display:none;" class="tool-card">
+    <h3>Cross-Attention: Target Sequence</h3>
+    <div class="control-row">
+      <div class="control-group" style="flex:1;min-width:280px;">
+        <label>Target / Decoder Sentence</label>
+        <input type="text" id="targetSentence" value="The feline rested there" style="width:100%;min-width:280px;" maxlength="80">
+      </div>
+    </div>
+  </div>
+
+  <div class="stat-grid" id="statsRow">
+    <div class="stat-card"><div class="value" id="statTokens">--</div><div class="label">Tokens</div></div>
+    <div class="stat-card"><div class="value" id="statEntropy">--</div><div class="label">Avg Attention Entropy</div></div>
+    <div class="stat-card"><div class="value" id="statMaxAttn">--</div><div class="label">Max Attention Weight</div></div>
+    <div class="stat-card"><div class="value" id="statFocused">--</div><div class="label">Most Attended Token</div></div>
+  </div>
+
+  <div class="tool-card" style="margin-top:16px;">
+    <h3>Attention Heatmap</h3>
+    <div id="heatmapStatus" style="color:#888;font-size:0.85rem;margin-bottom:8px;">Click "Visualize Attention" to generate the heatmap.</div>
+    <div style="overflow-x:auto;">
+      <canvas id="heatmapCanvas" width="700" height="700" style="display:block;max-width:100%;"></canvas>
+    </div>
+    <div style="display:flex;gap:20px;margin-top:12px;flex-wrap:wrap;font-size:0.82rem;color:#888;">
+      <span>Row = Query token (attends FROM)</span>
+      <span>Col = Key token (attends TO)</span>
+      <span style="display:flex;align-items:center;gap:6px;">
+        <span style="display:inline-block;width:60px;height:10px;background:linear-gradient(to right,#0a0a0a,#22c55e);border-radius:2px;"></span>
+        0 &rarr; 1
+      </span>
+    </div>
+  </div>
+
+  <div class="tool-card" style="margin-top:16px;" id="arcCard">
+    <h3>Top Attention Arcs (Selected Token)</h3>
+    <div id="arcStatus" style="color:#888;font-size:0.85rem;margin-bottom:8px;">Click a token in the heatmap row labels to inspect its outgoing attention.</div>
+    <canvas id="arcCanvas" width="700" height="160" style="display:block;max-width:100%;"></canvas>
+  </div>
+
+  <section class="explainer-section">
+    <h2>What Is the Attention Mechanism?</h2>
+    <p>The attention mechanism, introduced in the landmark paper "Attention Is All You Need" (Vaswani et al., 2017), is the core building block of transformer models. It allows every position in a sequence to directly attend to every other position in a single operation, overcoming the sequential bottleneck of recurrent architectures. The mechanism computes a weighted sum of value vectors, where the weights are determined by the compatibility between query and key vectors.</p>
+    <p>The fundamental computation is: Attention(Q, K, V) = softmax(QK^T / sqrt(d_k)) * V. Here Q (queries), K (keys), and V (values) are linear projections of the input. The dot product QK^T measures how much each query should attend to each key. Dividing by sqrt(d_k) prevents the dot products from growing too large (which would push softmax into saturation). The softmax converts scores into a probability distribution, and the result is a weighted sum of values.</p>
+
+    <h2>Self-Attention vs Cross-Attention</h2>
+    <p>In <strong>self-attention</strong>, the queries, keys, and values all come from the same sequence. This allows the model to build rich contextual representations by letting each token gather information from all other tokens. For example, in the sentence "The bank by the river was steep," the word "bank" can attend strongly to "river" to resolve its meaning. Self-attention is used in both the encoder and decoder of standard transformers, and exclusively throughout encoder-only models like BERT.</p>
+    <p>In <strong>cross-attention</strong>, queries come from one sequence (typically the decoder) while keys and values come from another (typically the encoder output). This is how a translation model connects source and target languages: each position in the translation can selectively attend to relevant positions in the source sentence. The cross-attention heatmap reveals which source tokens the model focuses on when generating each target token.</p>
+
+    <h2>Multi-Head Attention</h2>
+    <p>Rather than performing a single attention function, transformers use multi-head attention: running h parallel attention operations with different learned projections, then concatenating the results. Different heads tend to specialize. In practice, some heads capture syntactic dependencies (subject-verb agreement), others capture semantic relationships (coreference, synonymy), others focus on positional proximity, and some develop more abstract patterns. This visualizer simulates four such heads with different characteristic behaviors.</p>
+
+    <h2>Reading the Heatmap</h2>
+    <p>Each cell (i, j) in the heatmap shows how much token i attends to token j. Brighter green indicates higher attention weight. A bright diagonal means each token attends strongly to itself (common in early layers). Off-diagonal bright cells reveal long-range dependencies. A nearly uniform row means the token is "confused" or distributing attention evenly (high entropy). A very peaked row means the token attends strongly to one specific other token (low entropy, high focus).</p>
+    <p>The attention entropy metric in the stats row measures how concentrated or diffuse the attention distribution is on average. Lower entropy means sharper, more focused attention. Higher entropy means the model is looking broadly at many tokens simultaneously. Temperature controls softmax sharpness: lower temperature produces sharper (more peaked) attention distributions.</p>
+
+    <h2>Practical Implications of Attention Patterns</h2>
+    <p>Analyzing attention weights can reveal what a model has learned. Probing studies have shown that specific BERT heads capture syntactic structure like dependency parsing arcs, that some heads track sentence boundaries, and that certain heads specialize in tracking which pronouns refer to which entities. However, attention weights are not a direct explanation of model predictions — high attention to a token does not necessarily mean that token causally influenced the output. Gradient-based attribution methods provide more reliable explanations, but attention visualizations remain valuable for building intuition about transformer behavior.</p>
+    <p>For practitioners, understanding attention patterns helps with debugging (why is the model confused here?), architecture decisions (how many heads are needed?), and pruning (which heads can be removed without hurting performance?). Research has found that many attention heads in large pretrained transformers are redundant and can be pruned with minimal accuracy loss.</p>
+
+    <h2>Related Tools</h2>
+    <div class="related-grid">
+      <a href="/tools/neural-network-playground.html" class="related-card">
+        <div class="related-title">Neural Network Playground</div>
+        <div class="related-desc">Build and train neural networks with live decision boundary visualization.</div>
+      </a>
+      <a href="/tools/loss-function-explorer.html" class="related-card">
+        <div class="related-title">Loss Function Explorer</div>
+        <div class="related-desc">Compare MSE, Cross-Entropy, Huber, Focal, and more with interactive plots.</div>
+      </a>
+      <a href="/tools/learning-rate-finder.html" class="related-card">
+        <div class="related-title">Learning Rate Finder</div>
+        <div class="related-desc">Simulate an LR range test and find the optimal learning rate for your model.</div>
+      </a>
+    </div>
+  </section>
+
+  <section class="faq-section">
+    <h2>Frequently Asked Questions</h2>
+    <details>
+      <summary>What does the attention heatmap actually show?</summary>
+      <p>Each row represents a query token (the token that is attending) and each column represents a key token (the token being attended to). The brightness of cell (i, j) shows how much of its attention token i allocates to token j. Each row sums to 1.0 because the softmax output is a probability distribution. A bright cell means strong focus; a dim cell means little to no attention.</p>
+    </details>
+    <details>
+      <summary>Why do some heads show diagonal patterns?</summary>
+      <p>A bright diagonal means each token attends primarily to itself. This is common in early transformer layers and in certain specialized heads. It can indicate that the token's representation at that layer does not strongly depend on context. In contrast, off-diagonal bright cells indicate that a token is drawing information from distant positions in the sequence, which is what makes transformers powerful for capturing long-range dependencies.</p>
+    </details>
+    <details>
+      <summary>What is attention entropy and why does it matter?</summary>
+      <p>Attention entropy measures how spread out (uniform) or concentrated (peaked) the attention distribution is for a given query token. High entropy means the token is attending roughly equally to many other tokens — it is not focusing on any specific context. Low entropy means the token is strongly focused on one or a few specific tokens. Tasks requiring precise reference resolution (like coreference) typically show lower entropy heads, while tasks requiring broad context integration show higher entropy.</p>
+    </details>
+    <details>
+      <summary>How does temperature affect attention?</summary>
+      <p>Temperature scales the logits before softmax. Lower temperature (e.g., 0.5) sharpens the distribution — the highest-scoring key gets an even higher probability and others get suppressed, producing more focused attention. Higher temperature (e.g., 2.0) flattens the distribution — attention spreads more evenly across tokens. In real transformers, the 1/sqrt(d_k) scaling factor acts as a fixed temperature. The temperature slider here lets you explore how this parameter shapes attention behavior.</p>
+    </details>
+    <details>
+      <summary>Can I use attention weights to explain model predictions?</summary>
+      <p>Attention weights are often misinterpreted as explanations. They show where the model looks, but not what it uses. Research (Jain &amp; Wallace, 2019; Wiegreffe &amp; Pinter, 2019) has debated whether attention is explanation. The consensus is: attention can provide useful intuition but is not a reliable causal explanation on its own. Gradient-based methods like Integrated Gradients or SHAP provide more principled attribution. Use attention visualizations for exploration and hypothesis generation, not for definitive explanations.</p>
+    </details>
+  </section>
+
+  <section class="explainer-section">
+    <h2>About the Author</h2>
+    <p><strong>Michael Lip</strong> builds open-source ML tools and developer utilities at <a href="https://zovo.one">zovo.one</a>. ml0x is part of the Zovo Tools network, a collection of free, privacy-first tools for developers and data scientists. No tracking, no accounts required, no data leaves your browser.</p>
+  </section>
+
+  <p class="last-updated">Last updated: May 28, 2026</p>
+</main>
+
+<footer class="site-footer">
+  <div class="footer-inner">
+    <div class="footer-brand">Zovo Tools</div>
+    <div class="footer-tagline">Free developer tools by a solo dev. No tracking.</div>
+    <a href="https://zovo.one/pricing?utm_source=ml0x.com&utm_medium=satellite&utm_campaign=footer-link" class="footer-cta" target="_blank">Zovo Lifetime — $99 once, free forever &rarr;</a>
+    <div class="footer-copy">&copy; 2026 <a href="https://zovo.one">Zovo</a> &middot; 47/500 founding spots</div>
+  </div>
+</footer>
+
+<nav class="zovo-network" aria-label="Zovo Tools Network">
+  <div class="zovo-network-inner">
+    <h3 class="zovo-network-title">Explore More Tools</h3>
+    <div class="zovo-network-links">
+      <a href="https://abwex.com">ABWex — A/B Testing</a>
+      <a href="https://claudflow.com">ClaudFlow — Workflows</a>
+      <a href="https://claudhq.com">ClaudHQ — AI Code Tools &amp; Fixes</a>
+      <a href="https://claudkit.com">ClaudKit — API</a>
+      <a href="https://enhio.com">Enhio — Text Tools</a>
+      <a href="https://epochpilot.com">EpochPilot — Timestamps</a>
+      <a href="https://gen8x.com">Gen8X — Color Tools</a>
+      <a href="https://gpt0x.com">GPT0X — AI Models</a>
+      <a href="https://heytensor.com">HeyTensor — ML Tools</a>
+      <a href="https://invokebot.com">InvokeBot — Webhooks</a>
+      <a href="https://kappafy.com">Kappafy — JSON</a>
+      <a href="https://kappakit.com">KappaKit — Dev Toolkit</a>
+      <a href="https://kickllm.com">KickLLM — LLM Costs</a>
+      <a href="https://krzen.com">Krzen — Image Tools</a>
+      <a href="https://lochbot.com">LochBot — Security</a>
+      <a href="https://lockml.com">LockML — ML Compare</a>
+      <a href="https://ml3x.com">ML3X — Matrix Math</a>
+    </div>
+  </div>
+</nav>
+
+<script>
+(function() {
+  var RANDOM_SENTENCES = [
+    "The cat sat on the mat",
+    "Transformers learn contextual word representations",
+    "She saw the man with the telescope",
+    "The bank by the river was steep",
+    "Dogs that chase cats run fast",
+    "The scientist discovered a new protein",
+    "Machine learning models require large datasets",
+    "The red ball rolled under the table"
+  ];
+
+  var HEAD_PATTERNS = [
+    // Head 0: Syntactic — attends to adjacent tokens, subject-verb
+    function(i, j, n) {
+      var dist = Math.abs(i - j);
+      return 0.55 * Math.exp(-dist * 0.9) + 0.15 * (i === 0 ? (j < 3 ? 0.3 : 0.05) : 0.05) + 0.1 * Math.random();
+    },
+    // Head 1: Semantic — attends to semantically grouped tokens (spread)
+    function(i, j, n) {
+      var spread = 0.4 * Math.exp(-Math.abs(i - j) * 0.3) + 0.3 * (j === Math.floor(n / 2) ? 1 : 0.1);
+      return spread + 0.15 * Math.random();
+    },
+    // Head 2: Positional — strong diagonal + first/last token anchoring
+    function(i, j, n) {
+      var diag = 0.7 * Math.exp(-Math.abs(i - j) * 2.5);
+      var anchor = 0.25 * (j === 0 || j === n - 1 ? 1 : 0.05);
+      return diag + anchor + 0.08 * Math.random();
+    },
+    // Head 3: Co-reference — long-range, attends across sentence halves
+    function(i, j, n) {
+      var half = Math.floor(n / 2);
+      var cross = (i < half && j >= half) || (i >= half && j < half) ? 0.6 : 0.2;
+      return cross * (0.5 + 0.5 * Math.random()) + 0.1 * Math.random();
+    }
+  ];
+
+  function tokenize(sentence) {
+    return sentence.trim().split(/\s+/).filter(function(t) { return t.length > 0; });
+  }
+
+  function softmax(arr, temp) {
+    var maxV = Math.max.apply(null, arr);
+    var exps = arr.map(function(v) { return Math.exp((v - maxV) / temp); });
+    var sum = exps.reduce(function(a, b) { return a + b; }, 0);
+    return exps.map(function(e) { return e / sum; });
+  }
+
+  function computeAttention(qTokens, kTokens, headIdx, temp) {
+    var qn = qTokens.length, kn = kTokens.length;
+    var matrix = [];
+    var patternFn = HEAD_PATTERNS[headIdx];
+    for (var i = 0; i < qn; i++) {
+      var raw = [];
+      for (var j = 0; j < kn; j++) {
+        raw.push(patternFn(i, j, Math.max(qn, kn)));
+      }
+      matrix.push(softmax(raw, temp));
+    }
+    return matrix;
+  }
+
+  function entropy(row) {
+    var h = 0;
+    for (var j = 0; j < row.length; j++) {
+      if (row[j] > 1e-9) h -= row[j] * Math.log2(row[j]);
+    }
+    return h;
+  }
+
+  function lerpColor(t) {
+    // 0 = #0a0a0a (bg), 1 = #22c55e (accent green)
+    var r = Math.round(10 + t * (34 - 10));
+    var g = Math.round(10 + t * (197 - 10));
+    var b = Math.round(10 + t * (94 - 10));
+    return 'rgb(' + r + ',' + g + ',' + b + ')';
+  }
+
+  var currentMatrix = null;
+  var currentQTokens = [];
+  var currentKTokens = [];
+  var selectedRow = -1;
+  var animFrameId = null;
+
+  function drawHeatmap(matrix, qTokens, kTokens, highlightRow) {
+    var canvas = document.getElementById('heatmapCanvas');
+    var ctx = canvas.getContext('2d');
+    var qn = qTokens.length, kn = kTokens.length;
+
+    var labelW = 100, labelH = 90, cellSize = Math.min(Math.floor((640 - labelW) / kn), Math.floor((640 - labelH) / qn));
+    cellSize = Math.max(cellSize, 28);
+    var gridW = kn * cellSize, gridH = qn * cellSize;
+    var totalW = labelW + gridW + 20, totalH = labelH + gridH + 20;
+
+    canvas.width = totalW;
+    canvas.height = totalH;
+    ctx.clearRect(0, 0, totalW, totalH);
+    ctx.fillStyle = '#0a0a0a';
+    ctx.fillRect(0, 0, totalW, totalH);
+
+    // Column headers (key tokens)
+    ctx.save();
+    ctx.font = '600 12px IBM Plex Sans, sans-serif';
+    ctx.fillStyle = '#888';
+    ctx.textAlign = 'center';
+    for (var j = 0; j < kn; j++) {
+      var cx = labelW + j * cellSize + cellSize / 2;
+      ctx.save();
+      ctx.translate(cx, labelH - 8);
+      ctx.rotate(-Math.PI / 4);
+      ctx.fillStyle = '#aaa';
+      ctx.font = '600 11px IBM Plex Sans, sans-serif';
+      ctx.textAlign = 'left';
+      ctx.fillText(kTokens[j], 0, 0);
+      ctx.restore();
+    }
+    ctx.restore();
+
+    // Row labels (query tokens) and cells
+    for (var i = 0; i < qn; i++) {
+      var cy = labelH + i * cellSize + cellSize / 2;
+      var isHighlight = (i === highlightRow);
+
+      // Row label
+      ctx.font = (isHighlight ? '700' : '600') + ' 11px IBM Plex Sans, sans-serif';
+      ctx.fillStyle = isHighlight ? '#22c55e' : '#aaa';
+      ctx.textAlign = 'right';
+      ctx.fillText(qTokens[i], labelW - 8, cy + 4);
+
+      // Hover highlight strip
+      if (isHighlight) {
+        ctx.fillStyle = 'rgba(34,197,94,0.06)';
+        ctx.fillRect(labelW, labelH + i * cellSize, gridW, cellSize);
+      }
+
+      for (var j = 0; j < kn; j++) {
+        var val = matrix[i][j];
+        var cx2 = labelW + j * cellSize;
+        var cy2 = labelH + i * cellSize;
+        ctx.fillStyle = lerpColor(Math.pow(val, 0.65));
+        ctx.fillRect(cx2 + 1, cy2 + 1, cellSize - 2, cellSize - 2);
+
+        // Weight text for larger cells
+        if (cellSize >= 44) {
+          ctx.font = '10px IBM Plex Mono, monospace';
+          ctx.fillStyle = val > 0.4 ? '#0a0a0a' : '#555';
+          ctx.textAlign = 'center';
+          ctx.fillText(val.toFixed(2), cx2 + cellSize / 2, cy2 + cellSize / 2 + 4);
+        }
+      }
+    }
+
+    // Grid lines
+    ctx.strokeStyle = '#1e1e1e';
+    ctx.lineWidth = 0.5;
+    for (var i = 0; i <= qn; i++) {
+      ctx.beginPath();
+      ctx.moveTo(labelW, labelH + i * cellSize);
+      ctx.lineTo(labelW + gridW, labelH + i * cellSize);
+      ctx.stroke();
+    }
+    for (var j = 0; j <= kn; j++) {
+      ctx.beginPath();
+      ctx.moveTo(labelW + j * cellSize, labelH);
+      ctx.lineTo(labelW + j * cellSize, labelH + gridH);
+      ctx.stroke();
+    }
+
+    // Axis labels
+    ctx.font = '11px IBM Plex Sans, sans-serif';
+    ctx.fillStyle = '#555';
+    ctx.textAlign = 'center';
+    ctx.fillText('Key tokens (attends TO)', labelW + gridW / 2, totalH - 4);
+    ctx.save();
+    ctx.translate(10, labelH + gridH / 2);
+    ctx.rotate(-Math.PI / 2);
+    ctx.fillText('Query tokens (attends FROM)', 0, 0);
+    ctx.restore();
+  }
+
+  function drawArcs(matrix, qTokens, rowIdx) {
+    var canvas = document.getElementById('arcCanvas');
+    var ctx = canvas.getContext('2d');
+    var n = qTokens.length;
+    var W = canvas.width, H = canvas.height;
+
+    ctx.clearRect(0, 0, W, H);
+    ctx.fillStyle = '#0a0a0a';
+    ctx.fillRect(0, 0, W, H);
+
+    if (rowIdx < 0 || rowIdx >= matrix.length) {
+      ctx.font = '13px IBM Plex Sans, sans-serif';
+      ctx.fillStyle = '#555';
+      ctx.textAlign = 'center';
+      ctx.fillText('Click a row label in the heatmap to inspect token attention arcs', W / 2, H / 2);
+      return;
+    }
+
+    var row = matrix[rowIdx];
+    var tokenPad = 40, tokenY = H - 28;
+    var spacing = (W - tokenPad * 2) / Math.max(n - 1, 1);
+
+    // Draw arcs
+    for (var j = 0; j < n; j++) {
+      var x1 = tokenPad + rowIdx * spacing;
+      var x2 = tokenPad + j * spacing;
+      var w = row[j];
+      if (w < 0.01) continue;
+      var arcH = Math.min(40 + w * 110, H - 40);
+      var alpha = 0.2 + w * 0.8;
+      var green = Math.round(94 + w * 109);
+      ctx.beginPath();
+      ctx.moveTo(x1, tokenY - 14);
+      ctx.quadraticCurveTo((x1 + x2) / 2, tokenY - arcH, x2, tokenY - 14);
+      ctx.strokeStyle = 'rgba(34,' + Math.round(197 * w + 80 * (1 - w)) + ',' + green + ',' + alpha + ')';
+      ctx.lineWidth = Math.max(1, w * 5);
+      ctx.stroke();
+    }
+
+    // Draw tokens
+    for (var j = 0; j < n; j++) {
+      var tx = tokenPad + j * spacing;
+      var isQuery = (j === rowIdx);
+      var w = row[j];
+
+      ctx.beginPath();
+      ctx.arc(tx, tokenY - 14, isQuery ? 9 : 6 + w * 6, 0, Math.PI * 2);
+      ctx.fillStyle = isQuery ? '#22c55e' : lerpColor(w);
+      ctx.fill();
+      ctx.strokeStyle = isQuery ? '#22c55e' : '#1e1e1e';
+      ctx.lineWidth = 1.5;
+      ctx.stroke();
+
+      ctx.font = (isQuery ? '700' : '500') + ' 11px IBM Plex Sans, sans-serif';
+      ctx.fillStyle = isQuery ? '#22c55e' : '#aaa';
+      ctx.textAlign = 'center';
+      ctx.fillText(qTokens[j], tx, tokenY + 10);
+
+      if (!isQuery && w >= 0.05) {
+        ctx.font = '10px IBM Plex Mono, monospace';
+        ctx.fillStyle = '#555';
+        ctx.fillText(w.toFixed(2), tx, tokenY - 24);
+      }
+    }
+
+    document.getElementById('arcStatus').textContent =
+      'Showing outgoing attention from "' + qTokens[rowIdx] + '" (row ' + (rowIdx + 1) + ').';
+  }
+
+  function visualize(animate) {
+    var sentence = document.getElementById('inputSentence').value.trim();
+    var attnType = document.getElementById('attnType').value;
+    var headIdx = parseInt(document.getElementById('headSelect').value);
+    var temp = parseFloat(document.getElementById('temperature').value);
+
+    var qTokens = tokenize(sentence);
+    var kTokens = qTokens;
+    if (attnType === 'cross') {
+      var target = document.getElementById('targetSentence').value.trim();
+      kTokens = tokenize(target.length > 0 ? target : sentence);
+    }
+
+    if (qTokens.length === 0) return;
+    if (qTokens.length > 14) qTokens = qTokens.slice(0, 14);
+    if (kTokens.length > 14) kTokens = kTokens.slice(0, 14);
+
+    currentQTokens = qTokens;
+    currentKTokens = kTokens;
+    currentMatrix = computeAttention(qTokens, kTokens, headIdx, temp);
+
+    // Stats
+    var maxAttn = 0, maxToken = qTokens[0];
+    var totalEntropy = 0;
+    for (var i = 0; i < currentMatrix.length; i++) {
+      totalEntropy += entropy(currentMatrix[i]);
+      for (var j = 0; j < currentMatrix[i].length; j++) {
+        if (currentMatrix[i][j] > maxAttn) {
+          maxAttn = currentMatrix[i][j];
+          maxToken = kTokens[j];
+        }
+      }
+    }
+    document.getElementById('statTokens').textContent = qTokens.length + (attnType === 'cross' ? ' x ' + kTokens.length : '');
+    document.getElementById('statEntropy').textContent = (totalEntropy / currentMatrix.length).toFixed(3);
+    document.getElementById('statMaxAttn').textContent = maxAttn.toFixed(3);
+    document.getElementById('statFocused').textContent = '"' + maxToken + '"';
+    document.getElementById('heatmapStatus').textContent =
+      (attnType === 'self' ? 'Self-attention' : 'Cross-attention') +
+      ', Head ' + (headIdx + 1) + ', Temp=' + temp +
+      '. Click a row label to inspect arcs.';
+
+    if (animate) {
+      animateRows(0);
+    } else {
+      if (animFrameId) cancelAnimationFrame(animFrameId);
+      drawHeatmap(currentMatrix, qTokens, kTokens, selectedRow);
+      drawArcs(currentMatrix, qTokens, selectedRow);
+    }
+  }
+
+  function animateRows(idx) {
+    if (!currentMatrix) return;
+    if (idx >= currentMatrix.length) {
+      drawHeatmap(currentMatrix, currentQTokens, currentKTokens, selectedRow);
+      drawArcs(currentMatrix, currentQTokens, selectedRow);
+      return;
+    }
+    // Draw partial matrix up to row idx
+    var partial = currentMatrix.slice(0, idx + 1);
+    drawHeatmap(partial, currentQTokens.slice(0, idx + 1), currentKTokens, idx);
+    animFrameId = setTimeout(function() { animateRows(idx + 1); }, 120);
+  }
+
+  // Canvas click — select row
+  document.getElementById('heatmapCanvas').addEventListener('click', function(e) {
+    if (!currentMatrix) return;
+    var canvas = this;
+    var rect = canvas.getBoundingClientRect();
+    var scaleX = canvas.width / rect.width;
+    var scaleY = canvas.height / rect.height;
+    var x = (e.clientX - rect.left) * scaleX;
+    var y = (e.clientY - rect.top) * scaleY;
+
+    var qn = currentQTokens.length, kn = currentKTokens.length;
+    var labelW = 100, labelH = 90;
+    var cellSize = Math.min(Math.floor((640 - labelW) / kn), Math.floor((640 - labelH) / qn));
+    cellSize = Math.max(cellSize, 28);
+
+    if (x < labelW && y > labelH) {
+      var row = Math.floor((y - labelH) / cellSize);
+      if (row >= 0 && row < qn) {
+        selectedRow = row;
+        drawHeatmap(currentMatrix, currentQTokens, currentKTokens, selectedRow);
+        drawArcs(currentMatrix, currentQTokens, selectedRow);
+      }
+    }
+  });
+
+  document.getElementById('attnType').addEventListener('change', function() {
+    document.getElementById('crossSentenceRow').style.display =
+      this.value === 'cross' ? 'block' : 'none';
+  });
+
+  document.getElementById('visualizeBtn').addEventListener('click', function() { visualize(false); });
+  document.getElementById('animateBtn').addEventListener('click', function() { visualize(true); });
+  document.getElementById('randomBtn').addEventListener('click', function() {
+    var s = RANDOM_SENTENCES[Math.floor(Math.random() * RANDOM_SENTENCES.length)];
+    document.getElementById('inputSentence').value = s;
+    visualize(true);
+  });
+
+  // Auto-run on load
+  visualize(false);
+})();
+</script>
+</body>
+</html>
