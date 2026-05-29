@@ -1,166 +1,123 @@
-<?xml version='1.0' encoding='UTF-8'?>
+<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
+    <loc>https://ml0x.com/about.html</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://ml0x.com/answers/batch-size-optimizer.html</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  <url>
+    <loc>https://ml0x.com/answers/hyperparameter-tuning-guide.html</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  <url>
+    <loc>https://ml0x.com/answers/ml-algorithm-comparison.html</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  <url>
+    <loc>https://ml0x.com/answers/ml-metrics-explained.html</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  <url>
+    <loc>https://ml0x.com/answers/supervised-vs-unsupervised.html</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  <url>
+    <loc>https://ml0x.com/guides/cross-validation-explained.html</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://ml0x.com/guides/data-augmentation-gallery.html</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://ml0x.com/guides/gradient-descent-explained.html</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://ml0x.com/guides/overfitting-underfitting-guide.html</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
     <loc>https://ml0x.com/</loc>
-    <lastmod>2026-05-12</lastmod>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
   </url>
   <url>
-    <loc>https://ml0x.com/about.html</loc>
-    <lastmod>2026-05-12</lastmod>
+    <loc>https://ml0x.com/research/feature-engineering-checklist.html</loc>
     <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://ml0x.com/research/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
   </url>
   <url>
     <loc>https://ml0x.com/research/ml-cheatsheet.html</loc>
-    <lastmod>2026-05-16</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-  </url>
-  <!-- Sprint 5 Wave 1 -->
-  <url>
-    <loc>https://ml0x.com/guides/gradient-descent-explained.html</loc>
-    <lastmod>2026-05-25</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://ml0x.com/tools/neural-network-playground.html</loc>
-    <lastmod>2026-05-25</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://ml0x.com/guides/overfitting-underfitting-guide.html</loc>
-    <lastmod>2026-05-25</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-  </url>
-  <url>
-    <loc>https://ml0x.com/answers/ml-algorithm-comparison.html</loc>
-    <lastmod>2026-05-25</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.5</priority>
-  </url>
-  <url>
-    <loc>https://ml0x.com/research/feature-engineering-checklist.html</loc>
-    <lastmod>2026-05-25</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-  </url>
-  <!-- Sprint 6 Wave 1 -->
-  <url>
-    <loc>https://ml0x.com/answers/supervised-vs-unsupervised.html</loc>
-    <lastmod>2026-05-25</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.5</priority>
-  </url>
-  <url>
-    <loc>https://ml0x.com/tools/confusion-matrix-calculator.html</loc>
-    <lastmod>2026-05-25</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://ml0x.com/guides/cross-validation-explained.html</loc>
-    <lastmod>2026-05-25</lastmod>
+    <loc>https://ml0x.com/research/ml-pipeline-builder.html</loc>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://ml0x.com/research/regularization-techniques.html</loc>
-    <lastmod>2026-05-25</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
-  <url>
-    <loc>https://ml0x.com/answers/ml-metrics-explained.html</loc>
-    <lastmod>2026-05-25</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.5</priority>
-  </url>
-  <!-- Sprint 7 Auto-Added -->
-  <url>
-    <loc>https://ml0x.com/answers/batch-size-optimizer.html</loc>
-    <lastmod>2026-05-20</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.5</priority>
-  </url>
-  <!-- Sprint 7 Auto-Added -->
-  <url>
-    <loc>https://ml0x.com/answers/hyperparameter-tuning-guide.html</loc>
-    <lastmod>2026-05-20</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.5</priority>
-  </url>
-  <!-- Sprint 7 Auto-Added -->
-  <url>
-    <loc>https://ml0x.com/guides/data-augmentation-gallery.html</loc>
-    <lastmod>2026-05-20</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-  </url>
-  <!-- Sprint 7 Auto-Added -->
-  <url>
-    <loc>https://ml0x.com/index.html</loc>
-    <lastmod>2026-05-20</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  <!-- Sprint 7 Auto-Added -->
-  <url>
-    <loc>https://ml0x.com/research/index.html</loc>
-    <lastmod>2026-05-20</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-  </url>
-  <!-- Sprint 7 Auto-Added -->
-  <url>
-    <loc>https://ml0x.com/research/ml-pipeline-builder.html</loc>
-    <lastmod>2026-05-20</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-  </url>
-  <!-- Sprint 7 Auto-Added -->
   <url>
     <loc>https://ml0x.com/research/transfer-learning-guide.html</loc>
-    <lastmod>2026-05-20</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
-  <!-- Sprint 7 Auto-Added -->
+  <url>
+    <loc>https://ml0x.com/tools/confusion-matrix-calculator.html</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
   <url>
     <loc>https://ml0x.com/tools/dataset-splitter.html</loc>
-    <lastmod>2026-05-20</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
-  <!-- Sprint 7 Auto-Added -->
   <url>
     <loc>https://ml0x.com/tools/learning-rate-finder.html</loc>
-    <lastmod>2026-05-20</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
-  <!-- Sprint 7 Auto-Added -->
   <url>
     <loc>https://ml0x.com/tools/model-complexity-calculator.html</loc>
-    <lastmod>2026-05-20</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <!-- Sprint 8 -->
-  <url>
-    <loc>https://ml0x.com/tools/attention-mechanism-visualizer.html</loc>
-    <lastmod>2026-05-28</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://ml0x.com/tools/loss-function-explorer.html</loc>
-    <lastmod>2026-05-28</lastmod>
+    <loc>https://ml0x.com/tools/neural-network-playground.html</loc>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://ml0x.com/answers/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://ml0x.com/guides/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
   </url>
 </urlset>
