@@ -1,0 +1,370 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Activation Function Visualizer — ReLU, GELU, Swish & 15 More</title>
+  <meta name="description" content="Interactive chart for 18 activation functions with derivatives, formulas, PyTorch code, pros/cons & comparison mode.">
+  <link rel="canonical" href="https://ml0x.com/activation-visualizer">
+  <!-- structured data: WebApplication + FAQPage + BreadcrumbList -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": ["WebApplication", "FAQPage"],
+    "name": "Activation Function Visualizer — ReLU, GELU, Swish & 15 More",
+    "description": "Interactive chart tool for 18 activation functions with derivatives, formulas, pros/cons, PyTorch code, and comparison mode.",
+    "applicationCategory": "Machine Learning",
+    "operatingSystem": "All",
+    "browserRequirements": "Requires JavaScript",
+    "mainEntity": [{
+      "@type": "Question",
+      "name": "What activation functions are included?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "ReLU, Leaky ReLU, PReLU, ELU, SELU, GELU, Swish/SiLU, Mish, Sigmoid, Tanh, Softplus, Softsign, Hard Sigmoid, Hard Swish, Maxout, CELU, GLU, Softmax."
+      }
+    }]
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      {"@type": "ListItem", "position": 1, "name": "ml0x.com", "item": "https://ml0x.com"},
+      {"@type": "ListItem", "position": 2, "name": "Activation Visualizer", "item": "https://ml0x.com/activation-visualizer"}
+    ]
+  }
+  </script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: #0a0c10; color: #e5e9f0; font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; padding: 1.5rem; }
+    h1 { font-size: 2.2rem; font-weight: 600; letter-spacing: -0.5px; margin-bottom: 0.3rem; }
+    .subhead { color: #8892b0; margin-bottom: 2rem; border-left: 4px solid #3b82f6; padding-left: 1rem; }
+    .container { max-width: 1600px; margin: 0 auto; }
+    .grid { display: grid; grid-template-columns: 1fr 360px; gap: 2rem; }
+    @media (max-width: 1000px) { .grid { grid-template-columns: 1fr; } }
+    .chart-panel { background: #11141c; border-radius: 24px; padding: 1.5rem; border: 1px solid #252a36; }
+    .chart-header { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.8rem; margin-bottom: 1rem; }
+    .chart-header h2 { font-size: 1.3rem; font-weight: 500; }
+    .controls { display: flex; gap: 0.5rem; flex-wrap: wrap; align-items: center; }
+    .btn { background: #1e2532; border: none; color: #bcc3d4; padding: 0.4rem 1rem; border-radius: 40px; font-size: 0.8rem; cursor: pointer; transition: 0.2s; border: 1px solid #2d3546; }
+    .btn:hover { background: #2a3346; color: white; border-color: #3b82f6; }
+    .btn.active { background: #1e3a5f; border-color: #3b82f6; color: #b4d0ff; }
+    .chart-area { position: relative; width: 100%; height: 460px; background: #0d1017; border-radius: 18px; }
+    #plotCanvas { width: 100%; height: 100%; display: block; border-radius: 18px; }
+    .info-box { background: #11141c; border-radius: 24px; padding: 1.5rem; border: 1px solid #252a36; max-height: 700px; overflow-y: auto; }
+    .info-box h3 { font-size: 1.2rem; margin-bottom: 0.75rem; display: flex; align-items: center; gap: 8px; }
+    .func-list { display: flex; flex-wrap: wrap; gap: 0.4rem 0.6rem; margin-bottom: 1.2rem; }
+    .func-tag { background: #1a1f2b; padding: 0.2rem 0.8rem; border-radius: 40px; font-size: 0.7rem; border: 1px solid #2a3245; cursor: pointer; transition: 0.1s; }
+    .func-tag.active { border-color: #3b82f6; background: #1a2a44; color: white; }
+    .func-tag:hover { border-color: #5b9aff; }
+    .detail-panel { margin-top: 0.5rem; }
+    .detail-item { background: #161c28; border-radius: 16px; padding: 1rem; margin-bottom: 0.6rem; border-left: 4px solid #3b82f6; }
+    .detail-item h4 { font-size: 1rem; font-weight: 600; }
+    .detail-item .meta { font-size: 0.75rem; color: #8892b0; margin: 0.2rem 0 0.4rem; }
+    .detail-item .formula { font-family: 'Courier New', monospace; background: #0d111a; padding: 0.3rem 0.6rem; border-radius: 12px; display: inline-block; margin: 0.2rem 0; }
+    .detail-item .pros { color: #8bc48a; }
+    .detail-item .cons { color: #e68a8a; }
+    .pytorch-code { background: #0b0e14; padding: 0.3rem 0.6rem; border-radius: 10px; font-size: 0.7rem; font-family: 'Courier New', monospace; color: #c9d1e6; }
+    .flex-between { display: flex; justify-content: space-between; align-items: center; }
+    .badge { background: #1e2a44; padding: 0.2rem 0.6rem; border-radius: 30px; font-size: 0.6rem; }
+    .hover-value { background: #1a1f2b; padding: 0.2rem 0.8rem; border-radius: 20px; font-size: 0.75rem; }
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: #11141c; }
+    ::-webkit-scrollbar-thumb { background: #2d3546; border-radius: 10px; }
+  </style>
+</head>
+<body>
+<div class="container">
+  <h1>🧠 Activation Function Visualizer</h1>
+  <div class="subhead">18 functions · derivatives · formulas · PyTorch · comparison mode</div>
+  <div class="grid">
+    <div class="chart-panel">
+      <div class="chart-header">
+        <h2>Interactive plot <span style="font-weight:400; font-size:0.8rem; color:#8892b0;">(hover for values)</span></h2>
+        <div class="controls">
+          <button class="btn active" id="modeFn">📈 Function</button>
+          <button class="btn" id="modeDer">📉 Derivative</button>
+          <button class="btn" id="compareBtn">🔀 Compare (2-4)</button>
+          <button class="btn" id="resetZoom">⟲ Reset zoom</button>
+        </div>
+      </div>
+      <div class="chart-area" id="chartArea">
+        <canvas id="plotCanvas"></canvas>
+      </div>
+      <div style="display:flex; justify-content:space-between; margin-top:0.5rem; font-size:0.7rem; color:#6a7488;">
+        <span>🧾 <span id="hoverX">x: —</span> <span id="hoverY">y: —</span></span>
+        <span>⚡ drag to zoom · click tag to toggle</span>
+      </div>
+    </div>
+    <div class="info-box" id="infoPanel">
+      <div style="display:flex; justify-content:space-between; align-items:center;">
+        <h3>📋 Function details</h3>
+        <span class="badge" id="activeCount">18 active</span>
+      </div>
+      <div class="func-list" id="funcList"></div>
+      <div class="detail-panel" id="detailPanel"></div>
+    </div>
+  </div>
+</div>
+<script>
+  (function() {
+    // ---------- 18 activation functions (fn, df, formula, derivative, pros, cons, use, torch) ----------
+    const FUNCS = [
+      { name:'ReLU', fn: x=>x>0?x:0, df: x=>x>0?1:0, formula:'max(0,x)', deriv:'1 if x>0 else 0', pros:'Sparse, fast', cons:'Dying ReLU', use:'CNNs, dense nets', torch:'torch.relu(x)' },
+      { name:'Leaky ReLU', fn: x=>x>0?x:0.01*x, df: x=>x>0?1:0.01, formula:'max(αx,x) α=0.01', deriv:'1 if x>0 else α', pros:'Fixes dying', cons:'α sensitive', use:'GANs, deep nets', torch:'F.leaky_relu(x,0.01)' },
+      { name:'PReLU', fn: x=>x>0?x:0.25*x, df: x=>x>0?1:0.25, formula:'max(αx,x) learnable α', deriv:'1 if x>0 else α', pros:'Learnable slope', cons:'extra params', use:'large models', torch:'nn.PReLU()' },
+      { name:'ELU', fn: x=>x>0?x:Math.exp(x)-1, df: x=>x>0?1:Math.exp(x), formula:'x if x>0 else e^x-1', deriv:'1 if x>0 else e^x', pros:'Smooth neg', cons:'exp compute', use:'RNNs, deep', torch:'F.elu(x)' },
+      { name:'SELU', fn: x=>{const s=1.0507,a=1.67326; return x>0?s*x:s*(a*Math.exp(x)-a);}, df: x=>{const s=1.0507,a=1.67326; return x>0?s:s*a*Math.exp(x);}, formula:'SELU: scaled ELU', deriv:'scale* (1 or α*exp)', pros:'Self-normalizing', cons:'only for SNN', use:'SNN architectures', torch:'F.selu(x)' },
+      { name:'GELU', fn: x=>0.5*x*(1+Math.tanh(Math.sqrt(2/Math.PI)*(x+0.044715*x*x*x))), df: x=>{const p=x+0.044715*x*x*x; const t=Math.tanh(Math.sqrt(2/Math.PI)*p); const sech=1/(Math.cosh(Math.sqrt(2/Math.PI)*p)); return 0.5*(1+t)+0.5*x*(Math.sqrt(2/Math.PI)*(1+0.134145*x*x)*sech*sech);}, formula:'x·Φ(x) approx', deriv:'complex', pros:'Smooth, BERT', cons:'costly', use:'Transformers', torch:'F.gelu(x)' },
+      { name:'Swish / SiLU', fn: x=>x/(1+Math.exp(-x)), df: x=>{const s=1/(1+Math.exp(-x)); return s+x*Math.exp(-x)/((1+Math.exp(-x))**2);}, formula:'x·sigmoid(x)', deriv:'σ + x·σ·(1-σ)', pros:'Self-gated', cons:'saturating', use:'EfficientNet', torch:'F.silu(x)' },
+      { name:'Mish', fn: x=>x*Math.tanh(Math.log(1+Math.exp(x))), df: x=>{const sp=Math.log(1+Math.exp(x)); const t=Math.tanh(sp); const sig=1/(1+Math.exp(-x)); return t + x*(1-t*t)*sig;}, formula:'x·tanh(softplus(x))', deriv:'complex', pros:'Smooth, slight edge', cons:'compute', use:'Vision, YOLOv4', torch:'F.mish(x)' },
+      { name:'Sigmoid', fn: x=>1/(1+Math.exp(-x)), df: x=>{const s=1/(1+Math.exp(-x)); return s*(1-s);}, formula:'σ(x)=1/(1+e^-x)', deriv:'σ(x)(1-σ(x))', pros:'Probabilistic', cons:'Vanishing', use:'Binary classification', torch:'torch.sigmoid(x)' },
+      { name:'Tanh', fn: x=>Math.tanh(x), df: x=>1-Math.tanh(x)**2, formula:'tanh(x)', deriv:'1-tanh²(x)', pros:'Zero centered', cons:'Vanishing', use:'RNNs, MLP', torch:'torch.tanh(x)' },
+      { name:'Softplus', fn: x=>Math.log(1+Math.exp(x)), df: x=>1/(1+Math.exp(-x)), formula:'ln(1+e^x)', deriv:'sigmoid(x)', pros:'Smooth relu', cons:'not zero sparse', use:'positive outputs', torch:'F.softplus(x)' },
+      { name:'Softsign', fn: x=>x/(1+Math.abs(x)), df: x=>1/((1+Math.abs(x))**2), formula:'x/(1+|x|)', deriv:'1/(1+|x|)^2', pros:'Smooth, bounded', cons:'less common', use:'regression', torch:'x/(1+torch.abs(x))' },
+      { name:'Hard Sigmoid', fn: x=>Math.max(0,Math.min(1, (x+1)/2)), df: x=>(x>-1&&x<1)?0.5:0, formula:'clip((x+1)/2,0,1)', deriv:'0.5 if -1<x<1 else 0', pros:'Fast', cons:'flat', use:'MobileNets', torch:'F.hardsigmoid(x)' },
+      { name:'Hard Swish', fn: x=>x*Math.max(0,Math.min(1,(x+3)/6)), df: x=>{const h=Math.max(0,Math.min(1,(x+3)/6)); const d=(x>-3&&x<3)?1/6:0; return h+x*d;}, formula:'x·HS(x)', deriv:'HS + x·HS\'', pros:'Efficient', cons:'piecewise', use:'Edge devices', torch:'F.hardswish(x)' },
+      { name:'Maxout', fn: x=>Math.max(0.2*x, 0.8*x), df: x=>x>0?0.8:0.2, formula:'max(w1·x+b1, w2·x+b2)', deriv:'w of max', pros:'Learnable piecewise', cons:'params 2x', use:'GANs, dropout', torch:'(simplified) max(0.2x,0.8x)' },
+      { name:'CELU', fn: x=>x>0?x:Math.exp(x)-1, df: x=>x>0?1:Math.exp(x), formula:'same as ELU (CELU variant)', deriv:'1 if x>0 else e^x', pros:'Continuously diff', cons:'similar to ELU', use:'deep nets', torch:'F.celu(x)' },
+      { name:'GLU', fn: x=>{const a=1/(1+Math.exp(-x)); return x*a;}, df: x=>{const a=1/(1+Math.exp(-x)); return a + x*a*(1-a);}, formula:'x·σ(x) (gated)', deriv:'σ + x·σ·(1-σ)', pros:'Gating', cons:'double params', use:'NLP, Transformers', torch:'F.glu(x)' },
+      { name:'Softmax', fn: x=>Math.exp(x)/(Math.exp(-2)+Math.exp(x)+Math.exp(2)), df: x=>{const s=Math.exp(x)/(Math.exp(-2)+Math.exp(x)+Math.exp(2)); return s*(1-s);}, formula:'e^x/Σ e^x', deriv:'s_i(δ_ij - s_j)', pros:'Probabilities', cons:'not per neuron', use:'Classification', torch:'F.softmax(x,dim=0)' }
+    ];
+
+    // UI state
+    let active = new Array(FUNCS.length).fill(true);
+    let mode = 'fn'; // 'fn' or 'der'
+    let compareMode = false;
+    let compareList = [];
+
+    // Canvas refs
+    const canvas = document.getElementById('plotCanvas');
+    const ctx = canvas.getContext('2d');
+    const chartArea = document.getElementById('chartArea');
+
+    // Zoom state
+    let xMin = -5, xMax = 5, yMin = -2, yMax = 6;
+    let isDragging = false, dragStart = {x:0,y:0};
+
+    function resizeCanvas() {
+      const rect = chartArea.getBoundingClientRect();
+      canvas.width = rect.width * window.devicePixelRatio;
+      canvas.height = rect.height * window.devicePixelRatio;
+      canvas.style.width = rect.width + 'px';
+      canvas.style.height = rect.height + 'px';
+      draw();
+    }
+    window.addEventListener('resize', resizeCanvas);
+
+    // ---- drawing ----
+    function draw() {
+      const w = canvas.width, h = canvas.height;
+      const dpr = window.devicePixelRatio || 1;
+      const rect = canvas.getBoundingClientRect();
+      const W = rect.width, H = rect.height;
+      ctx.clearRect(0,0,w,h);
+      ctx.scale(dpr, dpr);
+      // background
+      ctx.fillStyle = '#0d1017';
+      ctx.fillRect(0,0,W,H);
+      
+      // grid
+      ctx.strokeStyle = '#1f2636';
+      ctx.lineWidth = 0.5;
+      for (let x = Math.ceil(xMin); x <= xMax; x++) {
+        const px = (x - xMin)/(xMax - xMin)*W;
+        ctx.beginPath(); ctx.moveTo(px,0); ctx.lineTo(px,H); ctx.stroke();
+      }
+      for (let y = Math.ceil(yMin); y <= yMax; y++) {
+        const py = H - (y - yMin)/(yMax - yMin)*H;
+        ctx.beginPath(); ctx.moveTo(0,py); ctx.lineTo(W,py); ctx.stroke();
+      }
+      // axes
+      ctx.strokeStyle = '#3d4b66';
+      ctx.lineWidth = 1.2;
+      if (xMin < 0 && xMax > 0) {
+        const px = (0 - xMin)/(xMax - xMin)*W;
+        ctx.beginPath(); ctx.moveTo(px,0); ctx.lineTo(px,H); ctx.stroke();
+      }
+      if (yMin < 0 && yMax > 0) {
+        const py = H - (0 - yMin)/(yMax - yMin)*H;
+        ctx.beginPath(); ctx.moveTo(0,py); ctx.lineTo(W,py); ctx.stroke();
+      }
+
+      // draw functions
+      const colors = ['#3b82f6','#f97316','#22c55e','#ef4444','#a855f7','#ec4899','#14b8a6','#eab308','#8b5cf6','#f43f5e','#06b6d4','#84cc16','#d946ef','#0ea5e9','#f59e0b','#10b981','#6366f1','#db2777'];
+      const steps = 300;
+      for (let i=0; i<FUNCS.length; i++) {
+        if (!active[i]) continue;
+        const fn = (mode==='fn') ? FUNCS[i].fn : FUNCS[i].df;
+        ctx.strokeStyle = colors[i % colors.length];
+        ctx.lineWidth = 2.2;
+        ctx.beginPath();
+        let first = true;
+        for (let k=0; k<=steps; k++) {
+          const x = xMin + (xMax - xMin)*k/steps;
+          let y = fn(x);
+          if (y===undefined || isNaN(y)) continue;
+          // clip
+          if (y < yMin-0.5 || y > yMax+0.5) { first=true; continue; }
+          const px = (x - xMin)/(xMax - xMin)*W;
+          const py = H - (y - yMin)/(yMax - yMin)*H;
+          if (first) { ctx.moveTo(px,py); first=false; }
+          else ctx.lineTo(px,py);
+        }
+        ctx.stroke();
+      }
+
+      // hover tooltip (draw crosshair if mouse inside)
+      // crosshair drawn from mousemove event
+      ctx.setTransform(1,0,0,1,0,0);
+    }
+
+    // hover crosshair
+    let mouseX = -1, mouseY = -1;
+    canvas.addEventListener('mousemove', (e) => {
+      const rect = canvas.getBoundingClientRect();
+      const scaleX = canvas.width / rect.width;
+      const scaleY = canvas.height / rect.height;
+      const mx = (e.clientX - rect.left) * scaleX;
+      const my = (e.clientY - rect.top) * scaleY;
+      mouseX = mx; mouseY = my;
+      // update hover values
+      const xVal = xMin + (mx / canvas.width) * (xMax - xMin);
+      const yVal = yMin + (1 - my / canvas.height) * (yMax - yMin);
+      document.getElementById('hoverX').innerText = `x: ${xVal.toFixed(3)}`;
+      document.getElementById('hoverY').innerText = `y: ${yVal.toFixed(3)}`;
+      // redraw with crosshair
+      draw();
+      // draw crosshair
+      const dpr = window.devicePixelRatio || 1;
+      const W = canvas.width / dpr, H = canvas.height / dpr;
+      ctx.setTransform(1,0,0,1,0,0);
+      ctx.strokeStyle = '#5b7aaa';
+      ctx.lineWidth = 0.8;
+      ctx.setLineDash([4,4]);
+      ctx.beginPath(); ctx.moveTo(mouseX/dpr,0); ctx.lineTo(mouseX/dpr,H); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(0,mouseY/dpr); ctx.lineTo(W,mouseY/dpr); ctx.stroke();
+      ctx.setLineDash([]);
+    });
+    canvas.addEventListener('mouseleave', () => {
+      mouseX = -1; mouseY = -1;
+      document.getElementById('hoverX').innerText = 'x: —';
+      document.getElementById('hoverY').innerText = 'y: —';
+      draw();
+    });
+
+    // zoom via drag
+    canvas.addEventListener('mousedown', (e) => {
+      if (e.button === 0) {
+        const rect = canvas.getBoundingClientRect();
+        dragStart.x = (e.clientX - rect.left) / rect.width;
+        dragStart.y = 1 - (e.clientY - rect.top) / rect.height;
+        isDragging = true;
+      }
+    });
+    window.addEventListener('mousemove', (e) => {
+      if (isDragging) {
+        // show rubber band? we just do zoom on release
+      }
+    });
+    window.addEventListener('mouseup', (e) => {
+      if (isDragging) {
+        const rect = canvas.getBoundingClientRect();
+        const endX = (e.clientX - rect.left) / rect.width;
+        const endY = 1 - (e.clientY - rect.top) / rect.height;
+        if (Math.abs(endX - dragStart.x) > 0.02 && Math.abs(endY - dragStart.y) > 0.02) {
+          const x1 = xMin + dragStart.x * (xMax - xMin);
+          const x2 = xMin + endX * (xMax - xMin);
+          const y1 = yMin + dragStart.y * (yMax - yMin);
+          const y2 = yMin + endY * (yMax - yMin);
+          xMin = Math.min(x1,x2); xMax = Math.max(x1,x2);
+          yMin = Math.min(y1,y2); yMax = Math.max(y1,y2);
+          draw();
+        }
+        isDragging = false;
+      }
+    });
+
+    document.getElementById('resetZoom').addEventListener('click', () => {
+      xMin = -5; xMax = 5; yMin = -2; yMax = 6;
+      draw();
+    });
+
+    // mode toggle
+    document.getElementById('modeFn').addEventListener('click', () => { mode='fn'; document.getElementById('modeFn').classList.add('active'); document.getElementById('modeDer').classList.remove('active'); draw(); });
+    document.getElementById('modeDer').addEventListener('click', () => { mode='der'; document.getElementById('modeDer').classList.add('active'); document.getElementById('modeFn').classList.remove('active'); draw(); });
+
+    // compare mode (simple overlay any 2-4) we toggle all off then enable selected
+    document.getElementById('compareBtn').addEventListener('click', () => {
+      compareMode = !compareMode;
+      document.getElementById('compareBtn').classList.toggle('active');
+      if (compareMode) {
+        // prompt user: we set active false for all, then user clicks tags
+        active.fill(false);
+        compareList = [];
+        updateUI();
+        draw();
+      } else {
+        // restore all active
+        active.fill(true);
+        updateUI();
+        draw();
+      }
+    });
+
+    // build function list & detail panel
+    const funcListDiv = document.getElementById('funcList');
+    const detailPanel = document.getElementById('detailPanel');
+    function updateUI() {
+      funcListDiv.innerHTML = '';
+      detailPanel.innerHTML = '';
+      let count = 0;
+      FUNCS.forEach((f, idx) => {
+        const tag = document.createElement('span');
+        tag.className = 'func-tag' + (active[idx]?' active':'');
+        tag.textContent = f.name;
+        tag.addEventListener('click', () => {
+          if (compareMode) {
+            if (active[idx]) {
+              active[idx] = false;
+              const i = compareList.indexOf(idx);
+              if (i>-1) compareList.splice(i,1);
+            } else {
+              if (compareList.length >= 4) { alert('max 4 functions in compare mode'); return; }
+              active[idx] = true;
+              compareList.push(idx);
+            }
+            updateUI(); draw(); return;
+          }
+          active[idx] = !active[idx];
+          updateUI(); draw();
+        });
+        funcListDiv.appendChild(tag);
+        if (active[idx]) count++;
+        // detail panel (show only active)
+        if (active[idx]) {
+          const div = document.createElement('div');
+          div.className = 'detail-item';
+          const fn = FUNCS[idx];
+          div.innerHTML = `<h4>${fn.name}</h4>
+            <div class="meta">Formula: <span class="formula">${fn.formula}</span> · Deriv: ${fn.deriv}</div>
+            <div><span class="pros">✓ ${fn.pros}</span> · <span class="cons">✗ ${fn.cons}</span> · Use: ${fn.use}</div>
+            <div class="pytorch-code">🧪 ${fn.torch}</div>`;
+          detailPanel.appendChild(div);
+        }
+      });
+      document.getElementById('activeCount').textContent = count + ' active';
+    }
+    updateUI();
+    resizeCanvas();
+    draw();
+
+    // expose for debugging
+    window.FUNCS = FUNCS;
+  })();
+</script>
+</body>
+</html>
