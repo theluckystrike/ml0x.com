@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.5, user-scalable=yes">
+  <title>Gradient Clipping Calculator — Prevent Exploding Gradients</title>
+  <meta name="description" content="Interactive gradient clipping calculator: clip by value, norm, or global norm. Visual comparison, recommended thresholds, PyTorch/TF code snippets.">
+  <meta name="robots" content="index, follow">
+  <link rel="canonical" href="https://ml0x.com/tools/gradient-clipping-calculator">
+  <!-- JSON-LD FAQ -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "When should I use clip by value?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Clip by value (min/max) is useful when you want to bound each gradient element individually. It's simple but can distort gradient direction."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What is clip by norm?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Clip by norm scales the whole gradient if its L2 norm exceeds a threshold, preserving direction. Common for RNNs and Transformers."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What is global norm clipping?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Global norm clipping considers the total L2 norm of all parameters together, scaling all gradients if the combined norm exceeds the threshold."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What are recommended thresholds?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "RNN: 1.0, Transformer: 1.0, CNN: 5.0. Adjust based on empirical stability."
+        }
+      }
+    ]
+  }
+  </script>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    body {
+      background: #0f172a;
+      color: #e2e8f0;
+      font-family: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+      padding: 1.5rem 1rem;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .container {
+      max-width: 1100px;
+      width: 100%;
+    }
+    header {
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+    h1 {
+      font-size: 2rem;
+      font-weight: 600;
+      letter-spacing: -0.02em;
+      background: linear-gradient(135deg, #38bdf8, #818cf8);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 0.25rem;
+    }
+    .subhead {
+      color: #94a3b8;
+      font-size: 1rem;
+    }
+    .card {
+      background: #1e293b;
+      border-radius: 1.25rem;
+      padding: 1.5rem;
+      margin-bottom: 1.8rem;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.5);
+      border: 1px solid #334155;
+    }
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.5rem;
+    }
+    @media (max-width: 640px) {
+      .grid-2 {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+      }
+      h1 { font-size: 1.6rem; }
+    }
+    label {
+      display: block;
+      font-size: 0.9rem;
+      font-weight: 500;
+      margin-bottom: 0.4rem;
+      color: #cbd5e1;
+    }
+    input, select {
+      width: 100%;
+      padding: 0.7rem 0.9rem;
+      background: #0f172a;
+      border: 1px solid #334155;
+      border-radius: 0.75rem;
+      color: #f1f5f9;
+      font-size: 0.95rem;
+      transition: border 0.2s;
+    }
+    input:focus, select:focus {
+      outline: none;
+      border-color: #38bdf8;
+      box-shadow: 0 0 0 2px rgba(56,189,248,0.25);
+    }
+    .input-group {
+      margin-bottom: 1.2rem;
+    }
+    .flex-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.8rem;
+      align-items: center;
+    }
+    .btn {
+      background: #38bdf8;
+      color: #0f172a;
+      font-weight: 600;
+      padding: 0.7rem 1.6rem;
+      border: none;
+      border-radius: 2rem;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: all 0.2s;
+      box-shadow: 0 2px 8px rgba(56,189,248,0.3);
+    }
+    .btn:hover {
+      background: #7dd3fc;
+      transform: scale(1.02);
+    }
+    .btn-outline {
+      background: transparent;
+      border: 1px solid #38bdf8;
+      color: #38bdf8;
+      box-shadow: none;
+    }
+    .btn-outline:hover {
+      background: #1e293b;
+    }
+    .stats-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1rem 1.8rem;
+      background: #0f172a;
+      padding: 1rem 1.2rem;
+      border-radius: 1rem;
+      margin: 1rem 0;
+      border: 1px solid #2d3a52;
+    }
+    .stat-item {
+      display: flex;
+      flex-direction: column;
+    }
+    .stat-label {
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      color: #94a3b8;
+    }
+    .stat-value {
+      font-size: 1.2rem;
+      font-weight: 600;
+      font-variant-numeric: tabular-nums;
+    }
+    .bar-chart {
+      margin: 1.2rem 0 0.5rem;
+    }
+    .bar-row {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      margin-bottom: 0.5rem;
+      flex-wrap: wrap;
+    }
+    .bar-label {
+      width: 3.2rem;
+      font-size: 0.8rem;
+      color: #94a3b8;
+      text-align: right;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .bar-container {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      gap: 0.3rem;
+      min-width: 120px;
+    }
+    .bar-original {
+      height: 1.2rem;
+      background: #475569;
+      border-radius: 999px;
+      transition: width 0.2s;
+      min-width: 4px;
+    }
+    .bar-clipped {
+      height: 1.2rem;
+      background: #38bdf8;
+      border-radius: 999px;
+      transition: width 0.2s;
+      min-width: 4px;
+    }
+    .bar-legend {
+      display: flex;
+      gap: 1.2rem;
+      justify-content: flex-end;
+      font-size: 0.8rem;
+      margin-bottom: 0.3rem;
+    }
+    .legend-dot {
+      display: inline-block;
+      width: 10px;
+      height: 10px;
+      border-radius: 4px;
+      margin-right: 0.3rem;
+    }
+    .code-snippet {
+      background: #0f172a;
+      padding: 1rem;
+      border-radius: 0.8rem;
+      font-family: 'Fira Code', 'JetBrains Mono', monospace;
+      font-size: 0.8rem;
+      overflow-x: auto;
+      white-space: pre-wrap;
+      word-break: break-word;
+      border: 1px solid #2d3a52;
+      color: #e2e8f0;
+      margin-top: 0.8rem;
+    }
+    .threshold-badge {
+      display: inline-block;
+      background: #1e293b;
+      padding: 0.2rem 0.8rem;
+      border-radius: 999px;
+      font-size: 0.75rem;
+      border: 1px solid #334155;
+      margin: 0.2rem 0.2rem;
+    }
+    .footer {
+      text-align: center;
+      margin-top: 2.5rem;
+      color: #64748b;
+      font-size: 0.9rem;
+      border-top: 1px solid #1e293b;
+      padding-top: 1.5rem;
+    }
+    .inline-code {
+      background: #1e293b;
+      padding: 0.1rem 0.4rem;
+      border-radius: 6px;
+      font-family: monospace;
+      font-size: 0.85rem;
+    }
+    .note {
+      color: #94a3b8;
+      font-size: 0.85rem;
+      margin-top: 0.3rem;
+    }
+    .flex-between {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+  </style>
+</head>
+<body>
+<div class="container">
+  <header>
+    <h1>⚡ Gradient Clipping Calculator</h1>
+    <div class="subhead">Prevent exploding gradients · interactive analysis</div>
+  </header>
+
+  <div class="card">
+    <div class="grid-2">
+      <div>
+        <div class="input-group">
+          <label for="gradInput">Gradient values per parameter (comma‑separated)</label>
+          <input type="text" id="gradInput" value="2.5, -1.2, 0.8, -3.4, 5.1, -0.7, 2.0, -4.0" placeholder="e.g. 2.5, -1.2, 0.8, -3.4">
+        </div>
+        <div class="input-group">
+          <label for="methodSelect">Clipping method</label>
+          <select id="methodSelect">
+            <option value="clip_by_value">Clip by value (min/max)</option>
+            <option value="clip_by_norm" selected>Clip by norm (max L2 norm)</option>
+            <option value="clip_by_global_norm">Clip by global norm</option>
+          </select>
+        </div>
+        <div class="input-group">
+          <label for="thresholdInput">Clipping threshold</label>
+          <input type="number" id="thresholdInput" value="1.0" step="0.1" min="0.1" lang="en">
+        </div>
+        <div class="flex-row">
+          <button class="btn" id="computeBtn">Compute clipping</button>
+          <button class="btn btn-outline" id="resetBtn">Reset defaults</button>
+        </div>
+        <div style="margin-top: 0.8rem;">
+          <span style="font-weight: 500; color:#94a3b8;">Recommended thresholds: </span>
+          <span class="threshold-badge">RNN 1.0</span>
+          <span class="threshold-badge">Transformer 1.0</span>
+          <span class="threshold-badge">CNN 5.0</span>
+        </div>
+      </div>
+      <div>
+        <div class="stats-grid" id="statsPanel">
+          <div class="stat-item"><span class="stat-label">Original global norm</span><span class="stat-value" id="origGlobalNorm">—</span></div>
+          <div class="stat-item"><span class="stat-label">Clipped global norm</span><span class="stat-value" id="clippedGlobalNorm">—</span></div>
+          <div class="stat-item"><span class="stat-label">Scaling factor</span><span class="stat-value" id="scalingFactor">—</span></div>
+          <div class="stat-item"><span class="stat-label">Method</span><span class="stat-value" id="methodDisplay">clip_by_norm</span></div>
+        </div>
+        <div class="bar-legend">
+          <span><span class="legend-dot" style="background:#475569;"></span>Original</span>
+          <span><span class="legend-dot" style="background:#38bdf8;"></span>Clipped</span>
+        </div>
+        <div id="barChartContainer" class="bar-chart">
+          <div style="color:#64748b; font-size:0.9rem; padding:0.5rem 0;">Enter gradients and click compute.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- when to use & code snippets -->
+  <div class="grid-2" style="margin-bottom:1.8rem;">
+    <div class="card">
+      <h3 style="font-weight:500; margin-bottom:0.8rem; color:#38bdf8;">📘 When to use each method</h3>
+      <ul style="list-style: none; line-height:1.6;">
+        <li><strong style="color:#e2e8f0;">Clip by value</strong> – bound each element individually. Use when you want to avoid extreme single values; may distort direction.</li>
+        <li><strong style="color:#e2e8f0;">Clip by norm</strong> – scale whole gradient if L2 norm > threshold. Preserves direction. Default for RNN, Transformer.</li>
+        <li><strong style="color:#e2e8f0;">Global norm</strong> – treat all parameters as one vector. Use for multi‑layer / shared parameters.</li>
+      </ul>
+      <div style="margin-top:0.8rem; background:#0f172a; padding:0.6rem 1rem; border-radius:0.8rem;">
+        <span style="color:#94a3b8;">🔹 RNN: 1.0 &nbsp;|&nbsp; Transformer: 1.0 &nbsp;|&nbsp; CNN: 5.0</span>
+      </div>
+    </div>
+    <div class="card">
+      <h3 style="font-weight:500; margin-bottom:0.8rem; color:#38bdf8;">🧩 PyTorch / TF snippets</h3>
+      <div class="code-snippet" id="codeSnippet">
+        <span style="color:#38bdf8;"># PyTorch (clip by norm)</span>
+        torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=1.0)
+        <br><br>
+        <span style="color:#38bdf8;"># TensorFlow (clip by global norm)</span>
+        tf.clip_by_global_norm(gradients, clip_norm=1.0)
+      </div>
+      <p class="note">Snippet updates with selected method & threshold.</p>
+    </div>
+  </div>
+
+  <div class="footer">
+    © 2025 ml0x.com
+  </div>
+</div>
+
+<script>
+  (function() {
+    const gradInput = document.getElementById('gradInput');
+    const methodSelect = document.getElementById('methodSelect');
+    const thresholdInput = document.getElementById('thresholdInput');
+    const computeBtn = document.getElementById('computeBtn');
+    const resetBtn = document.getElementById('resetBtn');
+
+    const origGlobalNormEl = document.getElementById('origGlobalNorm');
+    const clippedGlobalNormEl = document.getElementById('clippedGlobalNorm');
+    const scalingFactorEl = document.getElementById('scalingFactor');
+    const methodDisplayEl = document.getElementById('methodDisplay');
+    const barChartContainer = document.getElementById('barChartContainer');
+    const codeSnippet = document.getElementById('codeSnippet');
+
+    // helpers
+    function parseGrads(str) {
+      return str.split(',').map(s => parseFloat(s.trim())).filter(v => !isNaN(v));
+    }
+
+    function l2Norm(arr) {
+      return Math.sqrt(arr.reduce((sum, v) => sum + v*v, 0));
+    }
+
+    function compute() {
+      const raw = gradInput.value;
+      const grads = parseGrads(raw);
+      if (grads.length === 0) {
+        barChartContainer.innerHTML = `<div style="color:#ef4444; padding:0.5rem 0;">⚠️ Please enter valid comma-separated numbers.</div>`;
+        origGlobalNormEl.textContent = '—';
+        clippedGlobalNormEl.textContent = '—';
+        scalingFactorEl.textContent = '—';
+        methodDisplayEl.textContent = '—';
+        codeSnippet.textContent = '# waiting for valid input';
+        return;
+      }
+
+      const method = methodSelect.value;
+      const threshold = parseFloat(thresholdInput.value);
+      if (isNaN(threshold) || threshold <= 0) {
+        barChartContainer.innerHTML = `<div style="color:#ef4444;">⚠️ Threshold must be positive.</div>`;
+        return;
+      }
+
+      // compute original per-param norms
+      const perParamNorms = grads.map(g => Math.abs(g));
+      const globalNorm = l2Norm(grads);
+
+      let clippedGrads = [];
+      let scalingFactor = 1.0;
+      let clippedGlobal = 0;
+
+      if (method === 'clip_by_value') {
+        // clip each element to [-threshold, threshold]
+        clippedGrads = grads.map(g => Math.min(Math.max(g, -threshold), threshold));
+        clippedGlobal = l2Norm(clippedGrads);
+        // scaling factor is not uniform; we compute effective scaling per element? show average factor? 
+        // For display: we compute factor as ratio of norms (global clipped / original global) if original >0
+        scalingFactor = globalNorm > 1e-12 ? (clippedGlobal / globalNorm) : 1.0;
+      } else if (method === 'clip_by_norm') {
+        const norm = l2Norm(grads);
+        if (norm > threshold && norm > 1e-12) {
+          scalingFactor = threshold / norm;
+          clippedGrads = grads.map(g => g * scalingFactor);
+        } else {
+          clippedGrads = grads.slice();
+          scalingFactor = 1.0;
+        }
+        clippedGlobal = l2Norm(clippedGrads);
+      } else if (method === 'clip_by_global_norm') {
+        // global norm: treat all grads as single vector, scale if norm > threshold
+        const norm = l2Norm(grads);
+        if (norm > threshold && norm > 1e-12) {
+          scalingFactor = threshold / norm;
+          clippedGrads = grads.map(g => g * scalingFactor);
+        } else {
+          clippedGrads = grads.slice();
+          scalingFactor = 1.0;
+        }
+        clippedGlobal = l2Norm(clippedGrads);
+      }
+
+      // update stats
+      origGlobalNormEl.textContent = globalNorm.toFixed(4);
+      clippedGlobalNormEl.textContent = clippedGlobal.toFixed(4);
+      scalingFactorEl.textContent = scalingFactor.toFixed(4);
+      methodDisplayEl.textContent = method.replace(/_/g,' ');
+
+      // bar chart: per-parameter original vs clipped magnitude
+      const maxNorm = Math.max(...perParamNorms, ...clippedGrads.map(g => Math.abs(g)), 0.001);
+      let barsHtml = '';
+      for (let i = 0; i < grads.length; i++) {
+        const origVal = perParamNorms[i];
+        const clipVal = Math.abs(clippedGrads[i]);
+        const origPct = (origVal / maxNorm) * 100;
+        const clipPct = (clipVal / maxNorm) * 100;
+        const label = `p${i+1}`;
+        barsHtml += `
+          <div class="bar-row">
+            <span class="bar-label">${label}</span>
+            <div class="bar-container">
+              <div class="bar-original" style="width:${Math.max(origPct, 2)}%;"></div>
+              <div class="bar-clipped" style="width:${Math.max(clipPct, 2)}%;"></div>
+            </div>
+            <span style="font-size:0.7rem; min-width:3.2rem; text-align:right; color:#94a3b8;">${origVal.toFixed(2)} → ${clipVal.toFixed(2)}</span>
+          </div>
+        `;
+      }
+      barChartContainer.innerHTML = barsHtml;
+
+      // update code snippet
+      let snippet = '';
+      if (method === 'clip_by_value') {
+        snippet = `# PyTorch (clip by value)\ntorch.nn.utils.clip_grad_value_(model.parameters(), clip_value=${threshold.toFixed(1)})\n\n# TensorFlow\ntf.clip_by_value(gradients, -${threshold.toFixed(1)}, ${threshold.toFixed(1)})`;
+      } else if (method === 'clip_by_norm') {
+        snippet = `# PyTorch (clip grad norm)\ntorch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=${threshold.toFixed(1)})\n\n# TensorFlow (clip by norm)\ntf.clip_by_norm(gradients, clip_norm=${threshold.toFixed(1)})`;
+      } else if (method === 'clip_by_global_norm') {
+        snippet = `# PyTorch (global norm)\ntorch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=${threshold.toFixed(1)})\n\n# TensorFlow (global norm)\ntf.clip_by_global_norm(gradients, clip_norm=${threshold.toFixed(1)})`;
+      }
+      codeSnippet.textContent = snippet;
+    }
+
+    function resetDefaults() {
+      gradInput.value = '2.5, -1.2, 0.8, -3.4, 5.1, -0.7, 2.0, -4.0';
+      methodSelect.value = 'clip_by_norm';
+      thresholdInput.value = '1.0';
+      compute();
+    }
+
+    // event listeners
+    computeBtn.addEventListener('click', compute);
+    resetBtn.addEventListener('click', resetDefaults);
+    // initial compute
+    compute();
+
+    // extra: auto compute on change? but keep button as primary
+    // but we add for threshold/method change? easier: user click compute.
+    // but also recompute on enter? we add for better UX
+    gradInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') compute(); });
+    thresholdInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') compute(); });
+    methodSelect.addEventListener('change', compute);
+    thresholdInput.addEventListener('input', function() {
+      // optional: but we keep compute button primary. we can auto compute after short delay? 
+      // we'll just rely on button, but also on change for method.
+    });
+    // also compute on threshold change? we add for convenience
+    thresholdInput.addEventListener('change', compute);
+  })();
+</script>
+</body>
+</html>
