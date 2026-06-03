@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.5, user-scalable=yes">
+  <title>Batch Normalization Calculator — Step-by-Step BN Computation</title>
+  <meta name="description" content="Interactive batch normalization calculator: compute mean, variance, normalize, scale & shift. Visualize distributions with canvas histogram. For ml0x.com.">
+  <meta name="keywords" content="batch normalization, BN, deep learning, normalization calculator, step-by-step, mean, variance, scale, shift, histogram">
+  <link rel="canonical" href="https://ml0x.com/tools/batch-normalization-calculator">
+  <!-- JSON-LD FAQ -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "What is batch normalization?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Batch normalization normalizes layer activations by re-centering and re-scaling using batch mean and variance, then applies learnable scale (gamma) and shift (beta)."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "How do you compute batch normalization step by step?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "1) Compute batch mean. 2) Compute batch variance. 3) Normalize: (x - mean) / sqrt(var + eps). 4) Scale and shift: gamma * normalized + beta."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What is epsilon in batch normalization?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Epsilon is a small constant added to variance for numerical stability, typically 1e-5."
+        }
+      }
+    ]
+  }
+  </script>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    body {
+      background: #0f172a;
+      color: #e2e8f0;
+      font-family: system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      padding: 1.5rem 1rem;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .container {
+      max-width: 1000px;
+      width: 100%;
+    }
+    h1 {
+      font-size: 2rem;
+      font-weight: 600;
+      letter-spacing: -0.02em;
+      margin-bottom: 0.25rem;
+      color: #f1f5f9;
+    }
+    .subhead {
+      color: #94a3b8;
+      margin-bottom: 2rem;
+      border-left: 3px solid #38bdf8;
+      padding-left: 0.75rem;
+      font-size: 0.95rem;
+    }
+    .card {
+      background: #1e293b;
+      border-radius: 20px;
+      padding: 1.5rem 1.2rem;
+      margin-bottom: 2rem;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.5);
+    }
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.2rem;
+    }
+    .input-group {
+      display: flex;
+      flex-direction: column;
+      gap: 0.3rem;
+      margin-bottom: 1rem;
+    }
+    label {
+      font-size: 0.85rem;
+      font-weight: 500;
+      color: #cbd5e1;
+      letter-spacing: 0.3px;
+    }
+    input, textarea {
+      background: #0f172a;
+      border: 1px solid #334155;
+      border-radius: 12px;
+      padding: 0.7rem 1rem;
+      color: #f1f5f9;
+      font-size: 0.95rem;
+      transition: border 0.2s;
+      width: 100%;
+    }
+    input:focus, textarea:focus {
+      outline: none;
+      border-color: #38bdf8;
+      box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.2);
+    }
+    textarea {
+      min-height: 80px;
+      resize: vertical;
+      font-family: 'SF Mono', 'Fira Code', monospace;
+    }
+    .param-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+    .param-item {
+      flex: 1 0 100px;
+    }
+    button {
+      background: #38bdf8;
+      border: none;
+      color: #0f172a;
+      font-weight: 600;
+      padding: 0.8rem 1.8rem;
+      border-radius: 40px;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: all 0.15s;
+      box-shadow: 0 4px 12px rgba(56,189,248,0.3);
+      margin-top: 0.5rem;
+    }
+    button:hover {
+      background: #7dd3fc;
+      transform: scale(1.02);
+      box-shadow: 0 6px 16px rgba(56,189,248,0.5);
+    }
+    button:active {
+      transform: scale(0.97);
+    }
+    .results {
+      background: #0f172a;
+      border-radius: 16px;
+      padding: 1.2rem 1.2rem 0.8rem;
+      margin-top: 1.5rem;
+      border: 1px solid #2d3a4e;
+    }
+    .step {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      border-bottom: 1px solid #1e2a3a;
+      padding: 0.6rem 0;
+    }
+    .step:last-child {
+      border-bottom: none;
+    }
+    .step-label {
+      font-weight: 500;
+      color: #94a3b8;
+    }
+    .step-value {
+      font-family: 'SF Mono', monospace;
+      background: #1e293b;
+      padding: 0.2rem 0.8rem;
+      border-radius: 20px;
+      color: #e2e8f0;
+      word-break: break-all;
+    }
+    .histogram-container {
+      margin: 1.5rem 0 0.5rem;
+    }
+    canvas {
+      width: 100%;
+      height: auto;
+      background: #0f172a;
+      border-radius: 16px;
+      display: block;
+      border: 1px solid #2a3a4e;
+    }
+    .inference-note {
+      background: #1a2538;
+      padding: 1rem 1.2rem;
+      border-radius: 16px;
+      margin-top: 1.5rem;
+      font-size: 0.9rem;
+      border-left: 4px solid #38bdf8;
+    }
+    .inference-note strong {
+      color: #7dd3fc;
+    }
+    footer {
+      margin-top: 2.5rem;
+      text-align: center;
+      color: #475569;
+      font-size: 0.9rem;
+      border-top: 1px solid #1e293b;
+      padding-top: 1.5rem;
+      width: 100%;
+    }
+    @media (max-width: 640px) {
+      .grid-2 {
+        grid-template-columns: 1fr;
+        gap: 0.8rem;
+      }
+      h1 {
+        font-size: 1.6rem;
+      }
+      .card {
+        padding: 1rem;
+      }
+    }
+  </style>
+
+    <meta property="og:title" content="Batch Normalization Calculator — Step-by-Step BN Computation">
+    <meta property="og:description" content="Interactive batch normalization calculator: compute mean, variance, normalize, scale & shift. Visualize distributions with canvas histogram. For ml0x.com.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://ml0x.com/tools/batch-normalization-calculator">
+</head>
+<body>
+<div class="container">
+  <h1>⚡ Batch Normalization</h1>
+  <div class="subhead">Step-by-step · mean · variance · normalize · scale & shift</div>
+
+  <div class="card">
+    <div class="grid-2">
+      <div class="input-group">
+        <label for="batchInput">Batch values (comma‑separated, e.g. 1.2, -0.5, 0.8, 2.1, -1.3)</label>
+        <textarea id="batchInput" placeholder="e.g. 1.2, -0.5, 0.8, 2.1, -1.3">1.2, -0.5, 0.8, 2.1, -1.3</textarea>
+      </div>
+      <div class="param-row">
+        <div class="param-item">
+          <label for="epsilon">ε (epsilon)</label>
+          <input type="number" id="epsilon" step="any" value="1e-5" lang="en">
+        </div>
+        <div class="param-item">
+          <label for="gamma">γ (gamma)</label>
+          <input type="number" id="gamma" step="any" value="1.0">
+        </div>
+        <div class="param-item">
+          <label for="beta">β (beta)</label>
+          <input type="number" id="beta" step="any" value="0.0">
+        </div>
+      </div>
+    </div>
+    <button id="computeBtn">Compute Normalization</button>
+
+    <!-- Results -->
+    <div class="results" id="resultsPanel">
+      <div class="step"><span class="step-label">📊 Batch mean (μ)</span><span class="step-value" id="meanVal">—</span></div>
+      <div class="step"><span class="step-label">📊 Batch variance (σ²)</span><span class="step-value" id="varVal">—</span></div>
+      <div class="step"><span class="step-label">⚙️ Normalized (x - μ)/√(σ²+ε)</span><span class="step-value" id="normalizedVal">—</span></div>
+      <div class="step"><span class="step-label">🎯 Scaled & shifted (γ·norm+β)</span><span class="step-value" id="outputVal">—</span></div>
+      <div class="step"><span class="step-label">📋 Input values</span><span class="step-value" id="inputDisplay">—</span></div>
+    </div>
+
+    <!-- Histogram canvas -->
+    <div class="histogram-container">
+      <canvas id="histogramCanvas" width="600" height="200"></canvas>
+    </div>
+
+    <!-- Inference mode explanation -->
+    <div class="inference-note">
+      <strong>🔁 Inference mode</strong> — During training, running mean & variance are updated via exponential moving average.
+      At inference, the <strong>running mean</strong> and <strong>running variance</strong> replace batch statistics.
+      This ensures consistent normalization regardless of batch size.
+    </div>
+  </div>
+
+  <footer>© 2025 ml0x.com</footer>
+</div>
+
+<script>
+  (function() {
+    const batchInput = document.getElementById('batchInput');
+    const epsilonInput = document.getElementById('epsilon');
+    const gammaInput = document.getElementById('gamma');
+    const betaInput = document.getElementById('beta');
+    const computeBtn = document.getElementById('computeBtn');
+
+    const meanVal = document.getElementById('meanVal');
+    const varVal = document.getElementById('varVal');
+    const normalizedVal = document.getElementById('normalizedVal');
+    const outputVal = document.getElementById('outputVal');
+    const inputDisplay = document.getElementById('inputDisplay');
+    const canvas = document.getElementById('histogramCanvas');
+    const ctx = canvas.getContext('2d');
+
+    // fixed canvas resolution
+    function resizeCanvas() {
+      const rect = canvas.parentElement.getBoundingClientRect();
+      const w = Math.min(600, rect.width - 8);
+      const ratio = 200 / 600;
+      canvas.width = 600;
+      canvas.height = 200;
+      canvas.style.width = '100%';
+      canvas.style.height = 'auto';
+    }
+    window.addEventListener('resize', resizeCanvas);
+    resizeCanvas();
+
+    function parseBatch(text) {
+      const parts = text.split(',').map(s => s.trim()).filter(s => s !== '');
+      const nums = parts.map(s => parseFloat(s));
+      if (nums.length === 0 || nums.some(n => isNaN(n))) {
+        return null;
+      }
+      return nums;
+    }
+
+    function computeHistogram(data, bins = 8) {
+      if (data.length === 0) return [];
+      const min = Math.min(...data);
+      const max = Math.max(...data);
+      if (max === min) {
+        // all same value
+        return [{ binStart: min, count: data.length }];
+      }
+      const binWidth = (max - min) / bins;
+      const hist = Array(bins).fill(0).map((_, i) => ({
+        binStart: min + i * binWidth,
+        count: 0
+      }));
+      for (let val of data) {
+        let idx = Math.floor((val - min) / binWidth);
+        if (idx === bins) idx = bins - 1; // edge case for max
+        hist[idx].count += 1;
+      }
+      return hist;
+    }
+
+    function drawHistogram(before, after) {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      const w = canvas.width, h = canvas.height;
+      const padding = 30;
+      const chartW = w - 2 * padding;
+      const chartH = h - 2 * padding;
+
+      // combine ranges for consistent scale
+      const all = [...before, ...after];
+      if (all.length === 0) {
+        ctx.fillStyle = '#475569';
+        ctx.font = '14px system-ui';
+        ctx.textAlign = 'center';
+        ctx.fillText('no data', w/2, h/2);
+        return;
+      }
+      const min = Math.min(...all);
+      const max = Math.max(...all);
+      const range = max - min || 1;
+      const bins = 8;
+      const binWidth = range / bins;
+
+      // compute histograms
+      const histBefore = computeHistogram(before, bins);
+      const histAfter = computeHistogram(after, bins);
+
+      // max count for scaling
+      let maxCount = 1;
+      for (let b of histBefore) if (b.count > maxCount) maxCount = b.count;
+      for (let a of histAfter) if (a.count > maxCount) maxCount = a.count;
+      maxCount = Math.max(maxCount, 1);
+
+      // draw axes
+      ctx.strokeStyle = '#334155';
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(padding, padding);
+      ctx.lineTo(padding, h - padding);
+      ctx.lineTo(w - padding, h - padding);
+      ctx.stroke();
+
+      // draw bars (before: blue, after: cyan)
+      const barWidth = chartW / bins * 0.35;
+      const gap = chartW / bins;
+
+      for (let i = 0; i < bins; i++) {
+        const x = padding + i * gap;
+        const bCount = histBefore[i] ? histBefore[i].count : 0;
+        const aCount = histAfter[i] ? histAfter[i].count : 0;
+
+        const bHeight = (bCount / maxCount) * chartH;
+        const aHeight = (aCount / maxCount) * chartH;
+
+        // before (blue)
+        ctx.fillStyle = '#3b82f6';
+        ctx.fillRect(x, h - padding - bHeight, barWidth, bHeight);
+
+        // after (cyan)
+        ctx.fillStyle = '#38bdf8';
+        ctx.fillRect(x + barWidth + 2, h - padding - aHeight, barWidth, aHeight);
+      }
+
+      // legend
+      ctx.fillStyle = '#94a3b8';
+      ctx.font = '11px system-ui';
+      ctx.textAlign = 'left';
+      ctx.fillRect(padding + 10, 10, 12, 8);
+      ctx.fillStyle = '#3b82f6';
+      ctx.fillRect(padding + 10, 10, 12, 8);
+      ctx.fillStyle = '#e2e8f0';
+      ctx.fillText('before', padding + 26, 18);
+
+      ctx.fillStyle = '#38bdf8';
+      ctx.fillRect(padding + 80, 10, 12, 8);
+      ctx.fillStyle = '#e2e8f0';
+      ctx.fillText('after', padding + 96, 18);
+    }
+
+    function compute() {
+      const raw = batchInput.value;
+      const batch = parseBatch(raw);
+      if (!batch || batch.length === 0) {
+        meanVal.textContent = 'invalid input';
+        varVal.textContent = '—';
+        normalizedVal.textContent = '—';
+        outputVal.textContent = '—';
+        inputDisplay.textContent = '—';
+        drawHistogram([], []);
+        return;
+      }
+
+      const eps = parseFloat(epsilonInput.value) || 1e-5;
+      const gamma = parseFloat(gammaInput.value) || 1.0;
+      const beta = parseFloat(betaInput.value) || 0.0;
+
+      // step a: mean
+      const n = batch.length;
+      const mean = batch.reduce((s, v) => s + v, 0) / n;
+
+      // step b: variance (population)
+      const variance = batch.reduce((s, v) => s + (v - mean) ** 2, 0) / n;
+
+      // step c: normalized
+      const std = Math.sqrt(variance + eps);
+      const normalized = batch.map(v => (v - mean) / std);
+
+      // step d: scale & shift
+      const output = normalized.map(v => gamma * v + beta);
+
+      // display
+      meanVal.textContent = mean.toFixed(6);
+      varVal.textContent = variance.toFixed(6);
+      normalizedVal.textContent = normalized.map(v => v.toFixed(5)).join(', ');
+      outputVal.textContent = output.map(v => v.toFixed(5)).join(', ');
+      inputDisplay.textContent = batch.map(v => v.toFixed(4)).join(', ');
+
+      // draw histogram
+      drawHistogram(batch, output);
+    }
+
+    computeBtn.addEventListener('click', compute);
+    // initial compute
+    compute();
+
+    // also compute on enter? but keep simple
+  })();
+</script>
+</body>
+</html>

@@ -1,0 +1,733 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.5, user-scalable=yes">
+  <title>Model Ensemble Calculator — Combine Predictions for</title>
+  <meta name="description" content="Interactive ensemble learning tool: combine up to 10 models via averaging, voting, stacking. Compute Fleiss' kappa, agreement, diversity-based accuracy...">
+  <meta name="keywords" content="ensemble, model averaging, weighted voting, Fleiss kappa, diversity, accuracy, ML">
+  <link rel="canonical" href="https://ml0x.com/tools/ensemble-calculator">
+  <!-- JSON-LD FAQ -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "When does ensemble help most?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Ensembles help most when models are diverse (low agreement) and individually better than random. High diversity + moderate accuracy yields largest gains."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What is Fleiss' kappa?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Fleiss' kappa measures inter‑rater agreement for multiple raters (models). Values >0 indicate agreement beyond chance; <0 indicates systematic disagreement."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "How is expected accuracy improvement estimated?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Based on average model accuracy and pairwise diversity (1 – agreement). Improvement ≈ (diversity) * (1 – avgAccuracy) * scaling factor."
+        }
+      }
+    ]
+  }
+  </script>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    body {
+      background: #0f172a;
+      color: #e2e8f0;
+      font-family: system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.5;
+      padding: 1.5rem 1rem;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .container {
+      max-width: 1200px;
+      width: 100%;
+    }
+    header {
+      margin-bottom: 2rem;
+      text-align: center;
+    }
+    h1 {
+      font-size: 2rem;
+      font-weight: 600;
+      letter-spacing: -0.02em;
+      color: #f1f5f9;
+    }
+    h1 span {
+      color: #38bdf8;
+    }
+    .subhead {
+      color: #94a3b8;
+      margin-top: 0.25rem;
+      font-size: 1rem;
+    }
+    h2, h3 {
+      font-weight: 500;
+      color: #e2e8f0;
+    }
+    h2 {
+      font-size: 1.4rem;
+      border-bottom: 1px solid #1e293b;
+      padding-bottom: 0.3rem;
+      margin: 1.5rem 0 1rem;
+    }
+    .card {
+      background: #1e293b;
+      border-radius: 1rem;
+      padding: 1.5rem;
+      margin-bottom: 1.5rem;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.5);
+    }
+    .flex-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1.5rem;
+      align-items: flex-start;
+    }
+    .flex-col {
+      flex: 1 1 280px;
+      min-width: 200px;
+    }
+    label {
+      display: block;
+      font-size: 0.85rem;
+      font-weight: 500;
+      color: #94a3b8;
+      margin-bottom: 0.25rem;
+    }
+    input, select, button {
+      background: #0f172a;
+      border: 1px solid #334155;
+      color: #e2e8f0;
+      padding: 0.6rem 0.8rem;
+      border-radius: 0.6rem;
+      font-size: 0.95rem;
+      width: 100%;
+      transition: border 0.2s;
+    }
+    input:focus, select:focus {
+      outline: none;
+      border-color: #38bdf8;
+    }
+    button {
+      background: #38bdf8;
+      color: #0f172a;
+      font-weight: 600;
+      border: none;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.1s;
+    }
+    button:hover {
+      background: #7dd3fc;
+    }
+    button:active {
+      transform: scale(0.97);
+    }
+    .btn-secondary {
+      background: #334155;
+      color: #e2e8f0;
+    }
+    .btn-secondary:hover {
+      background: #475569;
+    }
+    .btn-danger {
+      background: #b91c1c;
+      color: white;
+    }
+    .btn-danger:hover {
+      background: #dc2626;
+    }
+    .model-entry {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.6rem;
+      align-items: center;
+      margin-bottom: 0.8rem;
+      padding: 0.6rem 0.8rem;
+      background: #0f172a;
+      border-radius: 0.8rem;
+    }
+    .model-entry input {
+      width: auto;
+      flex: 1 1 100px;
+    }
+    .model-entry .model-name {
+      flex: 2 1 120px;
+    }
+    .model-entry .model-acc {
+      flex: 1 1 80px;
+    }
+    .model-entry .model-weight {
+      flex: 1 1 70px;
+    }
+    .model-entry .remove-btn {
+      flex: 0 0 40px;
+      background: #b91c1c;
+      color: white;
+      border: none;
+      padding: 0.4rem 0.6rem;
+      border-radius: 0.5rem;
+      font-size: 0.8rem;
+      cursor: pointer;
+    }
+    .model-entry .remove-btn:hover {
+      background: #ef4444;
+    }
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+    }
+    .stat-box {
+      background: #0f172a;
+      border-radius: 0.8rem;
+      padding: 0.8rem 1rem;
+      text-align: center;
+    }
+    .stat-value {
+      font-size: 1.8rem;
+      font-weight: 700;
+      color: #38bdf8;
+      line-height: 1.2;
+    }
+    .stat-label {
+      font-size: 0.75rem;
+      color: #94a3b8;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+    }
+    .agreement-badge {
+      display: inline-block;
+      background: #1e293b;
+      padding: 0.2rem 0.6rem;
+      border-radius: 1rem;
+      font-size: 0.75rem;
+      margin: 0.1rem;
+    }
+    .disagree {
+      background: #7f1d1d;
+      color: #fca5a5;
+    }
+    .agree {
+      background: #14532d;
+      color: #86efac;
+    }
+    .sample-pred-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.3rem 0.6rem;
+      align-items: center;
+      padding: 0.3rem 0;
+      border-bottom: 1px solid #1e293b;
+    }
+    .sample-pred-row span {
+      background: #0f172a;
+      padding: 0.2rem 0.6rem;
+      border-radius: 0.5rem;
+      font-size: 0.8rem;
+    }
+    #diminishingChart {
+      background: #0f172a;
+      border-radius: 0.8rem;
+      padding: 0.5rem;
+      width: 100%;
+      max-height: 180px;
+    }
+    footer {
+      margin-top: 3rem;
+      text-align: center;
+      color: #475569;
+      font-size: 0.85rem;
+      border-top: 1px solid #1e293b;
+      padding-top: 1.5rem;
+    }
+    @media (max-width: 640px) {
+      h1 { font-size: 1.6rem; }
+      .flex-row { flex-direction: column; }
+      .grid-2 { grid-template-columns: 1fr; }
+    }
+  </style>
+
+    <meta property="og:title" content="Model Ensemble Calculator — Combine Predictions for">
+    <meta property="og:description" content="Interactive ensemble learning tool: combine up to 10 models via averaging, voting, stacking. Compute Fleiss' kappa, agreement, diversity-based accuracy...">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://ml0x.com/tools/ensemble-calculator">
+</head>
+<body>
+<div class="container">
+  <header>
+    <h1>⚡ <span>Ensemble</span> Calculator</h1>
+    <div class="subhead">Combine up to 10 models · averaging · voting · stacking concept · Fleiss’ κ</div>
+  </header>
+
+  <!-- Model management -->
+  <div class="card">
+    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem;">
+      <h2 style="margin:0; border:none;">🤖 Models</h2>
+      <div style="display: flex; gap: 0.5rem;">
+        <button id="addModelBtn" class="btn-secondary" style="width:auto;">+ Add model</button>
+        <button id="resetModelsBtn" class="btn-danger" style="width:auto;">Reset</button>
+      </div>
+    </div>
+    <div id="modelList" style="margin-top: 1rem;"></div>
+    <div style="margin-top: 0.8rem; font-size:0.85rem; color:#94a3b8;">Max 10 models. Accuracy 0–1 (e.g., 0.85).</div>
+  </div>
+
+  <!-- Ensemble method & sample predictions -->
+  <div class="flex-row">
+    <div class="card flex-col" style="flex:2;">
+      <h2>⚙️ Method &amp; weights</h2>
+      <label for="methodSelect">Ensemble method</label>
+      <select id="methodSelect">
+        <option value="average">Simple averaging (probabilities)</option>
+        <option value="weighted" selected>Weighted averaging (enter weights)</option>
+        <option value="majority">Majority voting (class labels)</option>
+        <option value="stacking">Stacking (concept demo)</option>
+      </select>
+      <div id="weightHint" style="margin-top:0.5rem; font-size:0.8rem; color:#94a3b8;">Weights will be normalized automatically.</div>
+      
+      <h3 style="margin-top:1.5rem;">📊 Sample predictions</h3>
+      <div id="sampleInputs">
+        <div class="sample-pred-row" id="sampleRowTemplate" style="display:none;"></div>
+      </div>
+      <div style="display: flex; gap:0.5rem; margin-top:0.5rem;">
+        <button id="addSampleBtn" class="btn-secondary" style="width:auto;">+ Add sample</button>
+        <button id="computeBtn" style="width:auto; background:#38bdf8;">Compute ensemble</button>
+      </div>
+      <div style="margin-top:0.5rem; font-size:0.8rem; color:#94a3b8;">Enter class labels (e.g., A/B) or probabilities (0–1). For voting use discrete labels.</div>
+    </div>
+
+    <!-- Results panel -->
+    <div class="card flex-col" style="flex:1.5;">
+      <h2>📈 Results</h2>
+      <div class="grid-2">
+        <div class="stat-box"><div class="stat-value" id="ensemblePred">—</div><div class="stat-label">Ensemble prediction</div></div>
+        <div class="stat-box"><div class="stat-value" id="accImprove">—</div><div class="stat-label">Expected accuracy gain</div></div>
+        <div class="stat-box"><div class="stat-value" id="agreeRate">—</div><div class="stat-label">Agreement rate</div></div>
+        <div class="stat-box"><div class="stat-value" id="fleissKappa">—</div><div class="stat-label">Fleiss' κ</div></div>
+      </div>
+      <div style="margin-top:1rem;">
+        <h3 style="font-size:0.9rem;">🤝 Model agreement per sample</h3>
+        <div id="agreementDetail" style="max-height:180px; overflow-y:auto; font-size:0.8rem;"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Diversity & diminishing returns -->
+  <div class="flex-row">
+    <div class="card flex-col" style="flex:1;">
+      <h2>🧩 Diversity &amp; returns</h2>
+      <p style="font-size:0.9rem;">When ensembles help most: <strong style="color:#38bdf8;">diverse models</strong> (low agreement) with moderate accuracy. Below: simulated diminishing returns as more models are added (based on avg diversity).</p>
+      <canvas id="diminishingChart" width="300" height="120" style="width:100%; height:120px;"></canvas>
+    </div>
+    <div class="card flex-col" style="flex:1;">
+      <h2>📋 Method comparison</h2>
+      <div style="font-size:0.9rem; line-height:1.6;">
+        <div><span style="color:#38bdf8;">● Simple avg</span> — equal weight, good for probabilities.</div>
+        <div><span style="color:#38bdf8;">● Weighted</span> — use accuracy or custom weights.</div>
+        <div><span style="color:#38bdf8;">● Majority</span> — hard voting, robust to outliers.</div>
+        <div><span style="color:#38bdf8;">● Stacking</span> — meta‑learner combines outputs (concept).</div>
+        <div style="margin-top:0.5rem; background:#0f172a; padding:0.4rem 0.8rem; border-radius:0.6rem;">
+          <span style="color:#94a3b8;">💡 Stacking concept: uses weighted average as meta‑prediction (demo).</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <footer>© 2025 ml0x.com — Model Ensemble Calculator</footer>
+</div>
+
+<script>
+  (function() {
+    // ----- STATE -----
+    let models = []; // { id, name, accuracy, weight }
+    let samples = []; // array of arrays (each sample: array of model predictions)
+    let nextModelId = 1;
+    let nextSampleId = 0;
+
+    // DOM refs
+    const modelListEl = document.getElementById('modelList');
+    const sampleInputsEl = document.getElementById('sampleInputs');
+    const methodSelect = document.getElementById('methodSelect');
+    const weightHint = document.getElementById('weightHint');
+    const addModelBtn = document.getElementById('addModelBtn');
+    const resetModelsBtn = document.getElementById('resetModelsBtn');
+    const addSampleBtn = document.getElementById('addSampleBtn');
+    const computeBtn = document.getElementById('computeBtn');
+
+    const ensemblePredEl = document.getElementById('ensemblePred');
+    const accImproveEl = document.getElementById('accImprove');
+    const agreeRateEl = document.getElementById('agreeRate');
+    const fleissKappaEl = document.getElementById('fleissKappa');
+    const agreementDetailEl = document.getElementById('agreementDetail');
+    const canvas = document.getElementById('diminishingChart');
+    const ctx = canvas.getContext('2d');
+
+    // ----- HELPERS -----
+    function clamp(v, min, max) { return Math.min(max, Math.max(min, v)); }
+
+    // ----- RENDER MODELS -----
+    function renderModels() {
+      let html = '';
+      models.forEach((m, idx) => {
+        html += `
+          <div class="model-entry" data-id="${m.id}">
+            <input class="model-name" type="text" value="${m.name}" placeholder="Model name" data-idx="${idx}">
+            <input class="model-acc" type="number" step="0.01" min="0" max="1" value="${m.accuracy}" placeholder="Acc" data-idx="${idx}">
+            <input class="model-weight" type="number" step="0.1" min="0" max="10" value="${m.weight}" placeholder="Weight" data-idx="${idx}">
+            <button class="remove-btn" data-id="${m.id}">✕</button>
+          </div>
+        `;
+      });
+      modelListEl.innerHTML = html;
+
+      // attach events
+      document.querySelectorAll('.model-name').forEach(inp => {
+        inp.addEventListener('change', function() {
+          const idx = parseInt(this.dataset.idx);
+          if (models[idx]) models[idx].name = this.value.trim() || `M${idx+1}`;
+        });
+      });
+      document.querySelectorAll('.model-acc').forEach(inp => {
+        inp.addEventListener('change', function() {
+          const idx = parseInt(this.dataset.idx);
+          if (models[idx]) {
+            let val = parseFloat(this.value);
+            if (isNaN(val)) val = 0.5;
+            models[idx].accuracy = clamp(val, 0, 1);
+            this.value = models[idx].accuracy;
+          }
+        });
+      });
+      document.querySelectorAll('.model-weight').forEach(inp => {
+        inp.addEventListener('change', function() {
+          const idx = parseInt(this.dataset.idx);
+          if (models[idx]) {
+            let val = parseFloat(this.value);
+            if (isNaN(val) || val < 0) val = 1;
+            models[idx].weight = val;
+            this.value = models[idx].weight;
+          }
+        });
+      });
+      document.querySelectorAll('.remove-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+          const id = parseInt(this.dataset.id);
+          models = models.filter(m => m.id !== id);
+          // remove corresponding sample entries
+          if (samples.length > 0 && models.length > 0) {
+            // keep only first N predictions per sample
+            samples = samples.map(s => s.slice(0, models.length));
+          } else if (models.length === 0) {
+            samples = [];
+          }
+          renderModels();
+          renderSampleInputs();
+          computeEnsemble();
+        });
+      });
+      // sync sample inputs if model count changed
+      if (samples.length > 0 && models.length > 0) {
+        samples = samples.map(s => {
+          if (s.length > models.length) return s.slice(0, models.length);
+          while (s.length < models.length) s.push('');
+          return s;
+        });
+      } else if (models.length === 0) samples = [];
+      renderSampleInputs();
+    }
+
+    // ----- SAMPLE INPUTS -----
+    function renderSampleInputs() {
+      if (models.length === 0) {
+        sampleInputsEl.innerHTML = `<div style="color:#94a3b8; padding:0.5rem;">Add at least one model to enter predictions.</div>`;
+        return;
+      }
+      let html = '';
+      samples.forEach((sample, sIdx) => {
+        html += `<div class="sample-pred-row" style="display:flex; flex-wrap:wrap; gap:0.3rem; align-items:center; border-bottom:1px solid #1e293b; padding:0.3rem 0;">`;
+        html += `<span style="font-weight:500; min-width:2rem;">#${sIdx+1}</span>`;
+        models.forEach((m, mIdx) => {
+          const val = sample[mIdx] !== undefined ? sample[mIdx] : '';
+          html += `<input type="text" style="width:70px; padding:0.2rem 0.4rem; font-size:0.8rem;" value="${val}" placeholder="${m.name}" data-sample="${sIdx}" data-model="${mIdx}">`;
+        });
+        html += `<button class="remove-sample-btn" data-sample="${sIdx}" style="background:#b91c1c; color:white; border:none; border-radius:0.4rem; padding:0.2rem 0.5rem; font-size:0.7rem; cursor:pointer;">✕</button>`;
+        html += `</div>`;
+      });
+      sampleInputsEl.innerHTML = html;
+
+      // attach sample input events
+      document.querySelectorAll('#sampleInputs input[type="text"]').forEach(inp => {
+        inp.addEventListener('change', function() {
+          const sIdx = parseInt(this.dataset.sample);
+          const mIdx = parseInt(this.dataset.model);
+          if (!samples[sIdx]) samples[sIdx] = new Array(models.length).fill('');
+          samples[sIdx][mIdx] = this.value;
+        });
+      });
+      document.querySelectorAll('.remove-sample-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+          const sIdx = parseInt(this.dataset.sample);
+          samples.splice(sIdx, 1);
+          renderSampleInputs();
+          computeEnsemble();
+        });
+      });
+    }
+
+    // ----- COMPUTE ENSEMBLE -----
+    function computeEnsemble() {
+      if (models.length === 0 || samples.length === 0) {
+        ensemblePredEl.textContent = '—';
+        accImproveEl.textContent = '—';
+        agreeRateEl.textContent = '—';
+        fleissKappaEl.textContent = '—';
+        agreementDetailEl.innerHTML = '<span style="color:#94a3b8;">No data</span>';
+        drawDiminishingChart([]);
+        return;
+      }
+
+      const method = methodSelect.value;
+      const numModels = models.length;
+      const numSamples = samples.length;
+
+      // parse predictions: for each sample, array of strings
+      const preds = samples.map(s => s.map(v => (v || '').trim()));
+
+      // compute agreement per sample (pairwise)
+      let totalPairs = 0;
+      let agreeCount = 0;
+      const sampleAgreements = [];
+      for (let s = 0; s < numSamples; s++) {
+        let pairAgree = 0, pairTotal = 0;
+        for (let i = 0; i < numModels; i++) {
+          for (let j = i+1; j < numModels; j++) {
+            if (preds[s][i] !== '' && preds[s][j] !== '') {
+              pairTotal++;
+              if (preds[s][i] === preds[s][j]) pairAgree++;
+            }
+          }
+        }
+        totalPairs += pairTotal;
+        agreeCount += pairAgree;
+        sampleAgreements.push({ total: pairTotal, agree: pairAgree });
+      }
+      const agreementRate = totalPairs > 0 ? agreeCount / totalPairs : 0;
+
+      // Fleiss' kappa (multi-rater)
+      let fleissKappa = 0;
+      if (numSamples > 0 && numModels > 1) {
+        // gather unique labels across all samples
+        const labelSet = new Set();
+        preds.forEach(s => s.forEach(v => { if (v !== '') labelSet.add(v); }));
+        const labels = Array.from(labelSet);
+        const N = numSamples;
+        const n = numModels;
+        // matrix: samples x labels
+        let totalAgree = 0;
+        let p_i = 0;
+        for (let s = 0; s < N; s++) {
+          let rowSum = 0;
+          for (let l of labels) {
+            let count = preds[s].filter(v => v === l).length;
+            rowSum += count * count;
+          }
+          totalAgree += rowSum;
+        }
+        const Pbar = (totalAgree - N * n) / (N * n * (n - 1));
+        // Pe: sum over labels of (proportion)^2
+        let totalAssign = N * n;
+        let Pe = 0;
+        for (let l of labels) {
+          let count = 0;
+          preds.forEach(s => { count += s.filter(v => v === l).length; });
+          const p = count / totalAssign;
+          Pe += p * p;
+        }
+        if (Pe < 1) {
+          fleissKappa = (Pbar - Pe) / (1 - Pe);
+        } else {
+          fleissKappa = 0;
+        }
+        fleissKappa = clamp(fleissKappa, -1, 1);
+      }
+
+      // Ensemble prediction (per sample) based on method
+      let ensembleResults = [];
+      for (let s = 0; s < numSamples; s++) {
+        const vals = preds[s];
+        if (method === 'majority') {
+          // voting
+          const freq = {};
+          vals.forEach(v => { if (v !== '') freq[v] = (freq[v] || 0) + 1; });
+          let maxCount = 0, best = '';
+          for (let [k, cnt] of Object.entries(freq)) {
+            if (cnt > maxCount) { maxCount = cnt; best = k; }
+          }
+          ensembleResults.push(best || '—');
+        } else {
+          // averaging / weighted / stacking (weighted avg as stacking concept)
+          let weights = models.map(m => m.weight);
+          if (method === 'average') weights = weights.map(() => 1);
+          // normalize weights
+          const sumW = weights.reduce((a,b)=>a+b,0);
+          const normW = sumW > 0 ? weights.map(w => w/sumW) : weights.map(() => 1/numModels);
+          // try to parse as numbers (probabilities) else fallback to majority
+          let numeric = true;
+          const numVals = vals.map(v => parseFloat(v));
+          if (numVals.some(isNaN)) numeric = false;
+          if (numeric) {
+            let weightedSum = 0;
+            for (let i=0; i<numModels; i++) {
+              if (vals[i] !== '') weightedSum += normW[i] * numVals[i];
+            }
+            ensembleResults.push(weightedSum.toFixed(4));
+          } else {
+            // fallback to majority
+            const freq = {};
+            vals.forEach(v => { if (v !== '') freq[v] = (freq[v] || 0) + 1; });
+            let maxCount = 0, best = '';
+            for (let [k, cnt] of Object.entries(freq)) {
+              if (cnt > maxCount) { maxCount = cnt; best = k; }
+            }
+            ensembleResults.push(best || '—');
+          }
+        }
+      }
+
+      // Expected accuracy improvement (diversity-based)
+      const avgAcc = models.reduce((sum, m) => sum + m.accuracy, 0) / numModels;
+      const diversity = 1 - agreementRate;
+      const accImprove = diversity * (1 - avgAcc) * 0.5; // heuristic
+      const accImproveClamped = clamp(accImprove, 0, 0.5);
+
+      // Update UI
+      ensemblePredEl.textContent = ensembleResults.length > 0 ? ensembleResults[0] : '—';
+      if (ensembleResults.length > 1) ensemblePredEl.textContent += ` … (${ensembleResults.length} samples)`;
+      accImproveEl.textContent = (accImproveClamped * 100).toFixed(1) + '%';
+      agreeRateEl.textContent = (agreementRate * 100).toFixed(1) + '%';
+      fleissKappaEl.textContent = fleissKappa.toFixed(3);
+
+      // Agreement detail per sample
+      let detailHtml = '';
+      for (let s = 0; s < numSamples; s++) {
+        const ag = sampleAgreements[s];
+        const rate = ag.total > 0 ? (ag.agree / ag.total * 100).toFixed(0) : '—';
+        detailHtml += `<div style="display:flex; gap:0.5rem; align-items:center;"><span style="min-width:2rem;">#${s+1}</span><span>agree ${rate}%</span><span>${ag.agree}/${ag.total} pairs</span></div>`;
+      }
+      agreementDetailEl.innerHTML = detailHtml || '<span style="color:#94a3b8;">No pairs</span>';
+
+      // Diminishing returns chart
+      drawDiminishingChart(models.map(m => m.accuracy));
+    }
+
+    // ----- CHART: diminishing returns -----
+    function drawDiminishingChart(accs) {
+      if (!ctx) return;
+      const w = canvas.width, h = canvas.height;
+      ctx.clearRect(0, 0, w, h);
+      if (accs.length === 0) {
+        ctx.fillStyle = '#475569';
+        ctx.font = '12px sans-serif';
+        ctx.fillText('No models', 10, 20);
+        return;
+      }
+      const n = accs.length;
+      const maxAcc = Math.max(...accs, 0.5);
+      const steps = 10;
+      ctx.strokeStyle = '#38bdf8';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      for (let i = 1; i <= steps; i++) {
+        const x = (i / steps) * w;
+        // simulate diminishing: accuracy gain flattens
+        const div = 1 + (i-1) * 0.3;
+        const y = h - ( (maxAcc * 0.8) / div ) * h * 0.8 - 5;
+        if (i===1) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
+      }
+      ctx.stroke();
+      ctx.fillStyle = '#94a3b8';
+      ctx.font = '9px sans-serif';
+      ctx.fillText('returns diminish', 4, 14);
+    }
+
+    // ----- EVENT LISTENERS -----
+    addModelBtn.addEventListener('click', function() {
+      if (models.length >= 10) { alert('Maximum 10 models.'); return; }
+      const newModel = {
+        id: nextModelId++,
+        name: `M${models.length+1}`,
+        accuracy: 0.7 + Math.random()*0.2,
+        weight: 1.0,
+      };
+      models.push(newModel);
+      // extend samples
+      samples = samples.map(s => { s.push(''); return s; });
+      renderModels();
+      renderSampleInputs();
+      computeEnsemble();
+    });
+
+    resetModelsBtn.addEventListener('click', function() {
+      models = [];
+      samples = [];
+      nextModelId = 1;
+      renderModels();
+      renderSampleInputs();
+      computeEnsemble();
+    });
+
+    addSampleBtn.addEventListener('click', function() {
+      if (models.length === 0) { alert('Add at least one model first.'); return; }
+      const newSample = new Array(models.length).fill('');
+      samples.push(newSample);
+      renderSampleInputs();
+      computeEnsemble();
+    });
+
+    computeBtn.addEventListener('click', computeEnsemble);
+    methodSelect.addEventListener('change', function() {
+      if (this.value === 'weighted') weightHint.textContent = 'Weights will be normalized automatically.';
+      else if (this.value === 'average') weightHint.textContent = 'Equal weights for all models.';
+      else if (this.value === 'majority') weightHint.textContent = 'Hard voting (class labels).';
+      else weightHint.textContent = 'Stacking concept: weighted average as meta-prediction.';
+      computeEnsemble();
+    });
+
+    // initial demo models
+    models = [
+      { id: nextModelId++, name: 'Model A', accuracy: 0.82, weight: 1.0 },
+      { id: nextModelId++, name: 'Model B', accuracy: 0.79, weight: 1.2 },
+      { id: nextModelId++, name: 'Model C', accuracy: 0.85, weight: 0.9 },
+    ];
+    samples = [
+      ['A', 'A', 'B'],
+      ['B', 'B', 'B'],
+      ['A', 'B', 'A'],
+    ];
+    renderModels();
+    renderSampleInputs();
+    computeEnsemble();
+  })();
+</script>
+</body>
+</html>

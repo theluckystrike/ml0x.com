@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.5, user-scalable=yes">
+  <title>Dropout Rate Optimizer — Find the Right Regularization</title>
+  <meta name="description" content="Interactive tool to optimize dropout rate for dense, convolutional, and recurrent layers. Visualize dropped neurons, compute effective capacity, and...">
+  <meta name="robots" content="index, follow">
+  <link rel="canonical" href="https://ml0x.com/tools/dropout-optimizer">
+  <!-- JSON-LD FAQ -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "What is the recommended dropout rate for dense layers?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "For dense (fully connected) layers, a dropout rate of 0.5 is commonly used as a strong regularizer."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What dropout rate should I use for convolutional layers?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Convolutional layers typically use a lower dropout rate between 0.2 and 0.3 to preserve spatial features."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Is dropout recommended for recurrent / LSTM layers?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Yes, but with caution. A dropout rate around 0.2 is often used for recurrent layers to avoid overfitting without disrupting sequence learning."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What is Monte Carlo Dropout?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Monte Carlo Dropout applies dropout at inference time to approximate Bayesian uncertainty. By running multiple forward passes with different dropout masks, you can estimate prediction variance."
+        }
+      }
+    ]
+  }
+  </script>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    body {
+      background: #0f172a;
+      color: #e2e8f0;
+      font-family: system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.5;
+      padding: 1.5rem 1rem;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .container {
+      max-width: 1200px;
+      width: 100%;
+    }
+    header {
+      margin-bottom: 2rem;
+      text-align: center;
+    }
+    header h1 {
+      font-size: 2rem;
+      font-weight: 600;
+      letter-spacing: -0.02em;
+      background: linear-gradient(135deg, #38bdf8, #818cf8);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    header p {
+      color: #94a3b8;
+      margin-top: 0.25rem;
+    }
+    .tool-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.5rem;
+      margin: 2rem 0;
+    }
+    @media (max-width: 700px) {
+      .tool-grid {
+        grid-template-columns: 1fr;
+        gap: 1.2rem;
+      }
+    }
+    .card {
+      background: #1e293b;
+      border-radius: 1.25rem;
+      padding: 1.5rem;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.5);
+      border: 1px solid #334155;
+    }
+    .card h2 {
+      font-size: 1.2rem;
+      font-weight: 500;
+      margin-bottom: 1rem;
+      border-left: 4px solid #38bdf8;
+      padding-left: 0.75rem;
+    }
+    .param-group {
+      margin-bottom: 1.2rem;
+    }
+    .param-group label {
+      display: block;
+      font-size: 0.9rem;
+      color: #cbd5e1;
+      margin-bottom: 0.3rem;
+      font-weight: 450;
+    }
+    .param-group select, .param-group input {
+      width: 100%;
+      padding: 0.6rem 0.8rem;
+      background: #0f172a;
+      border: 1px solid #334155;
+      border-radius: 0.75rem;
+      color: #f1f5f9;
+      font-size: 1rem;
+      transition: border 0.2s;
+    }
+    .param-group select:focus, .param-group input:focus {
+      outline: none;
+      border-color: #38bdf8;
+    }
+    .slider-container {
+      display: flex;
+      align-items: center;
+      gap: 0.8rem;
+      flex-wrap: wrap;
+    }
+    .slider-container input[type="range"] {
+      flex: 1;
+      min-width: 140px;
+      height: 6px;
+      -webkit-appearance: none;
+      background: #334155;
+      border-radius: 10px;
+    }
+    .slider-container input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 18px;
+      height: 18px;
+      background: #38bdf8;
+      border-radius: 50%;
+      cursor: pointer;
+      box-shadow: 0 0 8px #38bdf8;
+    }
+    .slider-value {
+      background: #0f172a;
+      padding: 0.2rem 0.9rem;
+      border-radius: 40px;
+      font-weight: 500;
+      font-size: 1rem;
+      border: 1px solid #38bdf8;
+      min-width: 3.2rem;
+      text-align: center;
+    }
+    .stats {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.8rem;
+      margin-top: 1rem;
+    }
+    .stat-item {
+      background: #0f172a;
+      padding: 0.6rem 0.8rem;
+      border-radius: 0.9rem;
+      border-left: 3px solid #38bdf8;
+    }
+    .stat-item .label {
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+      color: #94a3b8;
+    }
+    .stat-item .value {
+      font-size: 1.2rem;
+      font-weight: 500;
+    }
+    .recommend-box {
+      background: #0f172a;
+      padding: 0.8rem 1rem;
+      border-radius: 1rem;
+      margin: 1rem 0 0.5rem;
+      border: 1px dashed #38bdf8;
+      font-size: 0.95rem;
+    }
+    .recommend-box strong {
+      color: #38bdf8;
+    }
+    .neuron-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      justify-content: center;
+      margin: 1rem 0 0.5rem;
+      min-height: 100px;
+    }
+    .neuron {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: #38bdf8;
+      transition: background 0.1s, opacity 0.15s;
+      box-shadow: 0 2px 6px rgba(56, 189, 248, 0.3);
+    }
+    .neuron.dropped {
+      background: #475569;
+      opacity: 0.3;
+      box-shadow: none;
+    }
+    .grid-caption {
+      font-size: 0.8rem;
+      color: #94a3b8;
+      text-align: center;
+    }
+    .mc-explanation {
+      background: #1e293b;
+      border-radius: 1rem;
+      padding: 1.2rem 1.5rem;
+      margin: 2rem 0 1.5rem;
+      border: 1px solid #334155;
+    }
+    .mc-explanation h3 {
+      color: #38bdf8;
+      font-weight: 500;
+      margin-bottom: 0.5rem;
+    }
+    .mc-explanation p {
+      color: #cbd5e1;
+      font-size: 0.95rem;
+    }
+    footer {
+      margin-top: 3rem;
+      text-align: center;
+      color: #64748b;
+      font-size: 0.9rem;
+      border-top: 1px solid #1e293b;
+      padding-top: 1.5rem;
+    }
+    .inline-flex {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .badge {
+      background: #0f172a;
+      padding: 0.2rem 0.8rem;
+      border-radius: 30px;
+      font-size: 0.8rem;
+      border: 1px solid #334155;
+    }
+  </style>
+
+    <meta property="og:title" content="Dropout Rate Optimizer — Find the Right Regularization">
+    <meta property="og:description" content="Interactive tool to optimize dropout rate for dense, convolutional, and recurrent layers. Visualize dropped neurons, compute effective capacity, and...">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://ml0x.com/tools/dropout-optimizer">
+</head>
+<body>
+<div class="container">
+  <header>
+    <h1>⚡ Dropout Rate Optimizer</h1>
+    <p>Fine‑tune regularization for dense, conv &amp; recurrent layers</p>
+  </header>
+
+  <div class="tool-grid">
+    <!-- left: controls -->
+    <div class="card">
+      <h2>⚙️ Layer settings</h2>
+      <div class="param-group">
+        <label for="layerType">Layer type</label>
+        <select id="layerType">
+          <option value="dense">Dense / Fully connected</option>
+          <option value="conv">Convolutional (Conv2D)</option>
+          <option value="recurrent">Recurrent / LSTM</option>
+        </select>
+      </div>
+      <div class="param-group">
+        <label for="neurons">Neurons / Filters</label>
+        <input type="number" id="neurons" min="4" max="512" value="64" step="1">
+      </div>
+      <div class="param-group">
+        <label for="trainSize">Training set size (samples)</label>
+        <input type="number" id="trainSize" min="100" max="1000000" value="5000" step="100">
+      </div>
+      <div class="param-group">
+        <label>Dropout rate <span id="dropoutLabel">0.50</span></label>
+        <div class="slider-container">
+          <input type="range" id="dropoutSlider" min="0" max="0.9" step="0.01" value="0.5">
+          <span class="slider-value" id="dropoutValue">0.50</span>
+        </div>
+      </div>
+      <div class="recommend-box" id="recommendationBox">
+        <span>💡 Recommended for <span id="layerNameDisplay">dense</span>: <strong id="recommendedRange">0.5</strong></span>
+      </div>
+    </div>
+
+    <!-- right: stats + grid -->
+    <div class="card">
+      <h2>📊 Effective capacity</h2>
+      <div class="stats">
+        <div class="stat-item"><span class="label">Effective neurons</span><span class="value" id="effectiveNeurons">32</span></div>
+        <div class="stat-item"><span class="label">Training time multiplier</span><span class="value" id="timeMultiplier">1.00x</span></div>
+        <div class="stat-item"><span class="label">Regularization strength</span><span class="value" id="regStrength">Medium</span></div>
+        <div class="stat-item"><span class="label">Dropout rate</span><span class="value" id="dropoutStat">0.50</span></div>
+      </div>
+      <div style="margin-top: 1rem;">
+        <div class="inline-flex" style="justify-content: space-between;">
+          <span style="font-size:0.9rem;">🧠 Neuron mask <span id="neuronCountLabel">64</span></span>
+          <span class="badge" id="droppedCountBadge">0 dropped</span>
+        </div>
+        <div class="neuron-grid" id="neuronGrid"></div>
+        <div class="grid-caption">● active &nbsp; ○ dropped (grayed)</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Monte Carlo explanation -->
+  <div class="mc-explanation">
+    <h3>🔁 Monte Carlo Dropout — uncertainty estimation</h3>
+    <p>Monte Carlo Dropout keeps dropout active during inference. By running multiple forward passes with different dropout masks, you obtain a distribution of predictions. The variance across passes reflects model uncertainty — useful for out‑of‑distribution detection and confidence calibration. This tool simulates the effect of dropout on layer capacity; real MC Dropout requires multiple stochastic passes.</p>
+  </div>
+
+  <footer>© 2025 ml0x.com</footer>
+</div>
+
+<script>
+  (function() {
+    // DOM refs
+    const layerType = document.getElementById('layerType');
+    const neuronsInput = document.getElementById('neurons');
+    const trainSizeInput = document.getElementById('trainSize');
+    const dropoutSlider = document.getElementById('dropoutSlider');
+    const dropoutValue = document.getElementById('dropoutValue');
+    const dropoutLabel = document.getElementById('dropoutLabel');
+    const effectiveNeurons = document.getElementById('effectiveNeurons');
+    const timeMultiplier = document.getElementById('timeMultiplier');
+    const regStrength = document.getElementById('regStrength');
+    const dropoutStat = document.getElementById('dropoutStat');
+    const neuronGrid = document.getElementById('neuronGrid');
+    const neuronCountLabel = document.getElementById('neuronCountLabel');
+    const droppedCountBadge = document.getElementById('droppedCountBadge');
+    const recommendationBox = document.getElementById('recommendedRange');
+    const layerNameDisplay = document.getElementById('layerNameDisplay');
+
+    // helpers
+    function getLayerType() { return layerType.value; }
+    function getNeurons() { return Math.max(4, parseInt(neuronsInput.value, 10) || 64); }
+    function getTrainSize() { return Math.max(100, parseInt(trainSizeInput.value, 10) || 5000); }
+    function getDropout() { return parseFloat(dropoutSlider.value); }
+
+    // recommended rate
+    function getRecommended(layer) {
+      if (layer === 'dense') return '0.5';
+      if (layer === 'conv') return '0.2 – 0.3';
+      if (layer === 'recurrent') return '0.2';
+      return '0.5';
+    }
+
+    // regularization strength label
+    function regLabel(dropout) {
+      if (dropout < 0.1) return 'Very weak';
+      if (dropout < 0.25) return 'Weak';
+      if (dropout < 0.45) return 'Moderate';
+      if (dropout < 0.65) return 'Medium';
+      if (dropout < 0.8) return 'Strong';
+      return 'Very strong';
+    }
+
+    // time multiplier: approximate (1/(1-dropout)) but capped
+    function computeTimeMult(dropout) {
+      if (dropout >= 0.95) return 8.0;
+      if (dropout === 0) return 1.0;
+      const raw = 1 / (1 - dropout);
+      return Math.min(8, Math.round(raw * 100) / 100);
+    }
+
+    // update all
+    function update() {
+      const layer = getLayerType();
+      const N = getNeurons();
+      const train = getTrainSize();
+      const dropout = getDropout();
+
+      // display dropout
+      const pct = dropout.toFixed(2);
+      dropoutValue.textContent = pct;
+      dropoutLabel.textContent = pct;
+
+      // effective neurons
+      const effective = Math.round(N * (1 - dropout));
+      effectiveNeurons.textContent = effective;
+
+      // time multiplier
+      const mult = computeTimeMult(dropout);
+      timeMultiplier.textContent = mult.toFixed(2) + 'x';
+
+      // regularization
+      regStrength.textContent = regLabel(dropout);
+
+      // dropout stat
+      dropoutStat.textContent = pct;
+
+      // recommendation
+      const rec = getRecommended(layer);
+      recommendationBox.textContent = rec;
+      layerNameDisplay.textContent = layer === 'dense' ? 'dense' : layer === 'conv' ? 'convolutional' : 'recurrent/LSTM';
+
+      // rebuild neuron grid
+      renderNeurons(N, dropout);
+    }
+
+    function renderNeurons(total, dropout) {
+      neuronGrid.innerHTML = '';
+      neuronCountLabel.textContent = total;
+      const fragment = document.createDocumentFragment();
+      let droppedCount = 0;
+      // deterministic pseudo-random based on index + seed for consistency
+      // but we want fresh random each time (real-time)
+      for (let i = 0; i < total; i++) {
+        const neuron = document.createElement('div');
+        neuron.className = 'neuron';
+        // random drop
+        const rand = Math.random();
+        if (rand < dropout) {
+          neuron.classList.add('dropped');
+          droppedCount++;
+        }
+        fragment.appendChild(neuron);
+      }
+      neuronGrid.appendChild(fragment);
+      droppedCountBadge.textContent = droppedCount + ' dropped';
+    }
+
+    // event listeners
+    layerType.addEventListener('change', update);
+    neuronsInput.addEventListener('input', update);
+    trainSizeInput.addEventListener('input', update);
+    dropoutSlider.addEventListener('input', update);
+
+    // initial render
+    update();
+
+    // also update on window resize? not needed
+
+    // ensure neurons update on any change (extra safety)
+    // but also re-render on random change? we want real-time random each time slider moves.
+    // That's already done in update() -> renderNeurons.
+  })();
+</script>
+</body>
+</html>
