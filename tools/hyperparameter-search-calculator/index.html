@@ -1,0 +1,571 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hyperparameter Search Calculator</title>
+    <meta name="description" content="Compare grid vs random search vs Bayesian optimization. Calculate search space coverage and find optimal strategy.">
+    <link rel="canonical" href="https://ml0x.com/tools/hyperparameter-search-calculator">
+    <meta property="og:title" content="Hyperparameter Search Calculator">
+    <meta property="og:description" content="Optimize hyperparameter search strategy with coverage analysis and efficiency metrics.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://ml0x.com/tools/hyperparameter-search-calculator">
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "WebApplication",
+        "name": "Hyperparameter Search Calculator",
+        "url": "https://ml0x.com/tools/hyperparameter-search-calculator",
+        "description": "Compare hyperparameter search strategies and optimize your search space",
+        "applicationCategory": "UtilityApplication"
+    }
+    </script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            background: #0a0a0a;
+            color: #ffffff;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            line-height: 1.6;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        h1 {
+            color: #06b6d4;
+            margin-bottom: 10px;
+            font-size: 28px;
+        }
+        .subtitle {
+            color: #999;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+        .layout {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+        @media (max-width: 968px) {
+            .layout {
+                grid-template-columns: 1fr;
+            }
+        }
+        .panel {
+            background: #1a1a1a;
+            border: 1px solid #333;
+            border-radius: 8px;
+            padding: 20px;
+        }
+        .section-title {
+            color: #06b6d4;
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 15px;
+            border-bottom: 1px solid #333;
+            padding-bottom: 10px;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            font-size: 13px;
+            margin-bottom: 5px;
+            color: #ccc;
+        }
+        input, select {
+            width: 100%;
+            padding: 10px;
+            background: #0a0a0a;
+            border: 1px solid #333;
+            border-radius: 4px;
+            color: #fff;
+            font-size: 13px;
+        }
+        input:focus, select:focus {
+            outline: none;
+            border-color: #06b6d4;
+            box-shadow: 0 0 0 2px rgba(6, 182, 212, 0.1);
+        }
+        button {
+            background: #06b6d4;
+            color: #000;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 13px;
+            transition: all 0.2s;
+        }
+        button:hover {
+            background: #00d4ff;
+            transform: translateY(-1px);
+        }
+        .button-group {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+        .button-secondary {
+            background: #333;
+            color: #fff;
+        }
+        .button-secondary:hover {
+            background: #444;
+        }
+        canvas {
+            width: 100%;
+            height: 350px;
+            background: #0a0a0a;
+            border: 1px solid #333;
+            border-radius: 4px;
+            margin-bottom: 15px;
+        }
+        .metric-card {
+            background: #0a0a0a;
+            border: 1px solid #333;
+            padding: 15px;
+            border-radius: 4px;
+            margin-bottom: 15px;
+        }
+        .metric-label {
+            font-size: 12px;
+            color: #999;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 5px;
+        }
+        .metric-value {
+            font-size: 20px;
+            color: #06b6d4;
+            font-weight: 600;
+        }
+        .param-list {
+            background: #0a0a0a;
+            border: 1px solid #333;
+            border-radius: 4px;
+            padding: 15px;
+            max-height: 250px;
+            overflow-y: auto;
+        }
+        .param-item {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr auto;
+            gap: 10px;
+            margin-bottom: 10px;
+            padding: 10px;
+            background: #1a1a1a;
+            border-radius: 4px;
+            font-size: 12px;
+        }
+        .param-item input {
+            padding: 5px;
+            margin: 0;
+        }
+        .param-item button {
+            padding: 5px 10px;
+            background: #d4063c;
+        }
+        .comparison-table {
+            width: 100%;
+            font-size: 12px;
+            margin-top: 15px;
+            border-collapse: collapse;
+        }
+        .comparison-table th, .comparison-table td {
+            padding: 10px;
+            text-align: right;
+            border-bottom: 1px solid #333;
+        }
+        .comparison-table th {
+            background: #0a0a0a;
+            color: #06b6d4;
+            text-align: left;
+        }
+        .comparison-table td:first-child {
+            text-align: left;
+            color: #ccc;
+        }
+        .recommendation {
+            background: #0a0a0a;
+            border: 1px solid #06b6d4;
+            padding: 15px;
+            border-radius: 4px;
+            margin-top: 15px;
+            font-size: 13px;
+        }
+        .recommendation-title {
+            color: #06b6d4;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+        .slider {
+            width: 100%;
+            height: 4px;
+            border-radius: 2px;
+            background: #333;
+            outline: none;
+            -webkit-appearance: none;
+        }
+        .slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: #06b6d4;
+            cursor: pointer;
+        }
+        .slider::-moz-range-thumb {
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: #06b6d4;
+            cursor: pointer;
+            border: none;
+        }
+        footer {
+            text-align: center;
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid #333;
+            color: #666;
+            font-size: 12px;
+        }
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Hyperparameter Search Calculator</h1>
+        <p class="subtitle">Compare grid, random, and Bayesian search strategies</p>
+
+        <div class="layout">
+            <div class="panel">
+                <div class="section-title">Search Configuration</div>
+
+                <div class="form-group">
+                    <label for="budget">Total Trials Budget</label>
+                    <input type="number" id="budget" value="100" min="10" max="10000">
+                </div>
+
+                <div class="form-group">
+                    <label for="timePerTrial">Time per Trial (minutes)</label>
+                    <input type="number" id="timePerTrial" value="10" min="1" max="1000">
+                </div>
+
+                <div class="form-group">
+                    <label for="workers">Parallel Workers</label>
+                    <input type="number" id="workers" value="4" min="1" max="64">
+                </div>
+
+                <div class="form-group">
+                    <label for="cloudCostPerHour">Cloud Cost ($/hour)</label>
+                    <input type="number" id="cloudCostPerHour" value="1.0" step="0.1" min="0" max="100">
+                </div>
+
+                <div style="margin-top: 20px; margin-bottom: 15px;">
+                    <div style="font-size: 13px; color: #999; margin-bottom: 10px;">Hyperparameters (max 10):</div>
+                    <div class="param-list" id="paramList"></div>
+                    <button style="margin-top: 10px; width: 100%;" onclick="addParameter()">Add Parameter</button>
+                </div>
+
+                <div class="button-group">
+                    <button onclick="calculateSearch()">Calculate</button>
+                    <button class="button-secondary" onclick="resetCalculator()">Reset</button>
+                </div>
+
+                <button class="button-secondary" style="width: 100%; margin-top: 10px;" onclick="loadPreset('xgb')">XGBoost Preset</button>
+            </div>
+
+            <div class="panel">
+                <div class="section-title">Search Strategy Comparison</div>
+                <canvas id="comparisonChart"></canvas>
+
+                <table class="comparison-table">
+                    <thead>
+                        <tr>
+                            <th>Strategy</th>
+                            <th>Total Combos</th>
+                            <th>Coverage %</th>
+                            <th>Time (hrs)</th>
+                            <th>Cost ($)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Grid Search</td>
+                            <td id="gridCombos">-</td>
+                            <td id="gridCoverage">-</td>
+                            <td id="gridTime">-</td>
+                            <td id="gridCost">-</td>
+                        </tr>
+                        <tr>
+                            <td>Random Search</td>
+                            <td id="randomCombos">-</td>
+                            <td id="randomCoverage">-</td>
+                            <td id="randomTime">-</td>
+                            <td id="randomCost">-</td>
+                        </tr>
+                        <tr>
+                            <td>Bayesian Opt</td>
+                            <td id="bayesCombos">-</td>
+                            <td id="bayesCoverage">-</td>
+                            <td id="bayesTime">-</td>
+                            <td id="bayesCost">-</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="panel">
+            <div class="section-title">Trials Calculator</div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                <div class="form-group">
+                    <label>Target: Find top <input type="number" id="topPercent" value="1" min="0.1" max="10" step="0.1"> %</label>
+                </div>
+                <div class="form-group">
+                    <label>With confidence <input type="number" id="confidence" value="95" min="50" max="99.9" step="0.1"> %</label>
+                </div>
+            </div>
+            <button onclick="calculateTrialsNeeded()" style="width: 100%;">Calculate Trials Needed</button>
+            <div class="metric-card" style="margin-top: 15px;">
+                <div class="metric-label">Estimated Trials</div>
+                <div class="metric-value" id="trialsNeeded">-</div>
+            </div>
+        </div>
+
+        <div class="panel">
+            <div class="section-title">Recommendation</div>
+            <div class="recommendation" id="recommendation">
+                <div class="recommendation-title">Run calculation to get strategy recommendation</div>
+            </div>
+        </div>
+
+        <footer>© 2026 ml0x.com</footer>
+    </div>
+
+    <script>
+        let parameters = [
+            { name: 'learning_rate', type: 'continuous', min: 0.001, max: 0.1, scale: 'log', gridPoints: 5 },
+            { name: 'max_depth', type: 'discrete', min: 3, max: 10, scale: 'linear', gridPoints: 8 }
+        ];
+
+        function renderParameterList() {
+            const container = document.getElementById('paramList');
+            container.innerHTML = parameters.map((p, i) => `
+                <div class="param-item">
+                    <input type="text" placeholder="Name" value="${p.name}" onchange="updateParam(${i}, 'name', this.value)">
+                    <select onchange="updateParam(${i}, 'type', this.value)">
+                        <option value="continuous" ${p.type === 'continuous' ? 'selected' : ''}>Continuous</option>
+                        <option value="discrete" ${p.type === 'discrete' ? 'selected' : ''}>Discrete</option>
+                        <option value="categorical" ${p.type === 'categorical' ? 'selected' : ''}>Categorical</option>
+                    </select>
+                    <input type="number" placeholder="Min" value="${p.min}" onchange="updateParam(${i}, 'min', parseFloat(this.value))" step="any">
+                    <button onclick="removeParameter(${i})">Remove</button>
+                </div>
+            `).join('');
+        }
+
+        function addParameter() {
+            if (parameters.length < 10) {
+                parameters.push({
+                    name: `param_${parameters.length + 1}`,
+                    type: 'continuous',
+                    min: 0.001,
+                    max: 1,
+                    scale: 'linear',
+                    gridPoints: 5
+                });
+                renderParameterList();
+            }
+        }
+
+        function removeParameter(index) {
+            parameters.splice(index, 1);
+            renderParameterList();
+        }
+
+        function updateParam(index, field, value) {
+            parameters[index][field] = value;
+        }
+
+        function loadPreset(preset) {
+            if (preset === 'xgb') {
+                parameters = [
+                    { name: 'max_depth', type: 'discrete', min: 3, max: 10, scale: 'linear', gridPoints: 8 },
+                    { name: 'learning_rate', type: 'continuous', min: 0.001, max: 0.3, scale: 'log', gridPoints: 5 },
+                    { name: 'subsample', type: 'continuous', min: 0.5, max: 1.0, scale: 'linear', gridPoints: 6 },
+                    { name: 'colsample_bytree', type: 'continuous', min: 0.5, max: 1.0, scale: 'linear', gridPoints: 6 },
+                    { name: 'min_child_weight', type: 'discrete', min: 1, max: 7, scale: 'linear', gridPoints: 7 }
+                ];
+                document.getElementById('budget').value = 200;
+                document.getElementById('timePerTrial').value = 5;
+                document.getElementById('workers').value = 8;
+                renderParameterList();
+                calculateSearch();
+            }
+        }
+
+        function calculateSearch() {
+            const budget = parseInt(document.getElementById('budget').value);
+            const timePerTrial = parseFloat(document.getElementById('timePerTrial').value);
+            const workers = parseInt(document.getElementById('workers').value);
+            const cloudCostPerHour = parseFloat(document.getElementById('cloudCostPerHour').value);
+
+            // Grid search
+            let gridCombos = 1;
+            for (let p of parameters) {
+                if (p.type === 'continuous') {
+                    gridCombos *= Math.min(p.gridPoints || 5, Math.floor(p.max - p.min + 1));
+                } else if (p.type === 'discrete') {
+                    gridCombos *= (Math.floor(p.max - p.min) + 1);
+                } else {
+                    gridCombos *= 5; // categorical default
+                }
+            }
+
+            const gridTrials = Math.min(gridCombos, budget);
+            const gridTimeHours = (gridTrials * timePerTrial) / (60 * workers);
+            const gridCost = gridTimeHours * cloudCostPerHour;
+            const gridCoverage = (gridTrials / gridCombos) * 100;
+
+            // Random search
+            const randomCoverage = (1 - Math.pow(1 - 1 / gridCombos, budget)) * 100;
+            const randomTimeHours = (budget * timePerTrial) / (60 * workers);
+            const randomCost = randomTimeHours * cloudCostPerHour;
+
+            // Bayesian optimization
+            const bayesCoverage = Math.min(randomCoverage * 1.5, 100);
+            const bayesTrials = Math.ceil(budget * 0.8);
+            const bayesTimeHours = (bayesTrials * timePerTrial) / (60 * workers);
+            const bayesCost = bayesTimeHours * cloudCostPerHour;
+
+            // Update display
+            document.getElementById('gridCombos').textContent = gridCombos.toLocaleString();
+            document.getElementById('gridCoverage').textContent = gridCoverage.toFixed(2) + '%';
+            document.getElementById('gridTime').textContent = gridTimeHours.toFixed(1);
+            document.getElementById('gridCost').textContent = '$' + gridCost.toFixed(2);
+
+            document.getElementById('randomCombos').textContent = gridCombos.toLocaleString();
+            document.getElementById('randomCoverage').textContent = randomCoverage.toFixed(2) + '%';
+            document.getElementById('randomTime').textContent = randomTimeHours.toFixed(1);
+            document.getElementById('randomCost').textContent = '$' + randomCost.toFixed(2);
+
+            document.getElementById('bayesCombos').textContent = gridCombos.toLocaleString();
+            document.getElementById('bayesCoverage').textContent = bayesCoverage.toFixed(2) + '%';
+            document.getElementById('bayesTime').textContent = bayesTimeHours.toFixed(1);
+            document.getElementById('bayesCost').textContent = '$' + bayesCost.toFixed(2);
+
+            // Chart
+            drawComparison([gridTimeHours, randomTimeHours, bayesTimeHours], 'Time (hours)');
+
+            // Recommendation
+            generateRecommendation(gridCombos, budget, gridTimeHours, randomTimeHours, bayesTimeHours);
+        }
+
+        function drawComparison(data, label) {
+            const canvas = document.getElementById('comparisonChart');
+            const ctx = canvas.getContext('2d');
+            const rect = canvas.getBoundingClientRect();
+            canvas.width = rect.width * window.devicePixelRatio;
+            canvas.height = rect.height * window.devicePixelRatio;
+            ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
+
+            const width = rect.width;
+            const height = rect.height;
+            const padding = 50;
+            const barWidth = (width - 2 * padding) / 3 / 1.5;
+            const gap = (width - 2 * padding) / 3;
+
+            ctx.fillStyle = '#0a0a0a';
+            ctx.fillRect(0, 0, width, height);
+
+            const maxVal = Math.max(...data);
+            const strategies = ['Grid Search', 'Random Search', 'Bayesian Opt'];
+
+            for (let i = 0; i < 3; i++) {
+                const x = padding + i * gap + gap / 2 - barWidth / 2;
+                const barHeight = (height - 2 * padding) * (data[i] / maxVal);
+                const y = height - padding - barHeight;
+
+                ctx.fillStyle = '#06b6d4';
+                ctx.fillRect(x, y, barWidth, barHeight);
+
+                ctx.fillStyle = '#ccc';
+                ctx.font = '12px sans-serif';
+                ctx.textAlign = 'center';
+                ctx.fillText(strategies[i], x + barWidth / 2, height - 20);
+
+                ctx.fillStyle = '#06b6d4';
+                ctx.textAlign = 'center';
+                ctx.fillText(data[i].toFixed(1), x + barWidth / 2, y - 5);
+            }
+
+            // Labels
+            ctx.fillStyle = '#ccc';
+            ctx.font = '13px sans-serif';
+            ctx.textAlign = 'center';
+            ctx.fillText(label, width / 2, height - 5);
+        }
+
+        function generateRecommendation(gridCombos, budget, gridTime, randomTime, bayesTime) {
+            let recommendation = '<div class="recommendation-title">Recommended Strategy: ';
+
+            if (gridCombos <= budget * 2) {
+                recommendation += 'Grid Search</div>';
+                recommendation += '<p>Your search space is small enough for exhaustive grid search. Use this for hyperparameter optimization.</p>';
+            } else if (budget < 50) {
+                recommendation += 'Bayesian Optimization</div>';
+                recommendation += '<p>Limited budget requires intelligent sampling. Bayesian optimization is ideal with few trials.</p>';
+            } else {
+                recommendation += 'Random Search</div>';
+                recommendation += '<p>Large search space with moderate budget. Random search provides good coverage with simple implementation.</p>';
+            }
+
+            document.getElementById('recommendation').innerHTML = recommendation;
+        }
+
+        function calculateTrialsNeeded() {
+            const topPercent = parseFloat(document.getElementById('topPercent').value) / 100;
+            const confidence = parseFloat(document.getElementById('confidence').value) / 100;
+
+            // Using formula: n = log(1-confidence) / log(1-topPercent)
+            const trials = Math.ceil(Math.log(1 - confidence) / Math.log(1 - topPercent));
+
+            document.getElementById('trialsNeeded').textContent = trials.toLocaleString() + ' trials';
+        }
+
+        function resetCalculator() {
+            parameters = [
+                { name: 'learning_rate', type: 'continuous', min: 0.001, max: 0.1, scale: 'log', gridPoints: 5 },
+                { name: 'max_depth', type: 'discrete', min: 3, max: 10, scale: 'linear', gridPoints: 8 }
+            ];
+            document.getElementById('budget').value = 100;
+            document.getElementById('timePerTrial').value = 10;
+            document.getElementById('workers').value = 4;
+            document.getElementById('cloudCostPerHour').value = 1.0;
+            document.getElementById('topPercent').value = 1;
+            document.getElementById('confidence').value = 95;
+            renderParameterList();
+            calculateSearch();
+        }
+
+        // Initialize
+        renderParameterList();
+        calculateSearch();
+    </script>
+</body>
+</html>

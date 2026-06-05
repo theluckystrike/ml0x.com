@@ -1,0 +1,630 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ROC Curve Generator</title>
+    <meta name="description" content="Plot ROC curves and calculate AUC from prediction data. Compare model performance with sensitivity/specificity analysis.">
+    <link rel="canonical" href="https://ml0x.com/tools/roc-curve-generator">
+    <meta property="og:title" content="ROC Curve Generator">
+    <meta property="og:description" content="Generate ROC curves and calculate AUC for binary classification models.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://ml0x.com/tools/roc-curve-generator">
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "WebApplication",
+        "name": "ROC Curve Generator",
+        "url": "https://ml0x.com/tools/roc-curve-generator",
+        "description": "Generate ROC curves and calculate AUC from prediction data",
+        "applicationCategory": "UtilityApplication"
+    }
+    </script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            background: #0a0a0a;
+            color: #ffffff;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            line-height: 1.6;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        h1 {
+            color: #06b6d4;
+            margin-bottom: 10px;
+            font-size: 28px;
+        }
+        .subtitle {
+            color: #999;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+        .layout {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+        @media (max-width: 968px) {
+            .layout {
+                grid-template-columns: 1fr;
+            }
+        }
+        .panel {
+            background: #1a1a1a;
+            border: 1px solid #333;
+            border-radius: 8px;
+            padding: 20px;
+        }
+        .section-title {
+            color: #06b6d4;
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 15px;
+            border-bottom: 1px solid #333;
+            padding-bottom: 10px;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            font-size: 13px;
+            margin-bottom: 5px;
+            color: #ccc;
+        }
+        input, select, textarea {
+            width: 100%;
+            padding: 10px;
+            background: #0a0a0a;
+            border: 1px solid #333;
+            border-radius: 4px;
+            color: #fff;
+            font-size: 13px;
+        }
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: #06b6d4;
+            box-shadow: 0 0 0 2px rgba(6, 182, 212, 0.1);
+        }
+        button {
+            background: #06b6d4;
+            color: #000;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 13px;
+            transition: all 0.2s;
+        }
+        button:hover {
+            background: #00d4ff;
+            transform: translateY(-1px);
+        }
+        .button-group {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+        .button-secondary {
+            background: #333;
+            color: #fff;
+        }
+        .button-secondary:hover {
+            background: #444;
+        }
+        canvas {
+            width: 100%;
+            height: 400px;
+            background: #0a0a0a;
+            border: 1px solid #333;
+            border-radius: 4px;
+            margin-bottom: 15px;
+        }
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-top: 20px;
+        }
+        .metric-card {
+            background: #0a0a0a;
+            border: 1px solid #333;
+            padding: 15px;
+            border-radius: 4px;
+        }
+        .metric-label {
+            font-size: 12px;
+            color: #999;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 5px;
+        }
+        .metric-value {
+            font-size: 20px;
+            color: #06b6d4;
+            font-weight: 600;
+        }
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+            border-bottom: 1px solid #333;
+        }
+        .tab-button {
+            background: none;
+            color: #999;
+            border: none;
+            padding: 10px 15px;
+            cursor: pointer;
+            font-size: 13px;
+            border-bottom: 2px solid transparent;
+            transition: all 0.2s;
+        }
+        .tab-button.active {
+            color: #06b6d4;
+            border-bottom-color: #06b6d4;
+        }
+        .tab-content {
+            display: none;
+        }
+        .tab-content.active {
+            display: block;
+        }
+        textarea {
+            height: 100px;
+            resize: vertical;
+        }
+        .slider {
+            width: 100%;
+            height: 4px;
+            border-radius: 2px;
+            background: #333;
+            outline: none;
+            -webkit-appearance: none;
+        }
+        .slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: #06b6d4;
+            cursor: pointer;
+        }
+        .slider::-moz-range-thumb {
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: #06b6d4;
+            cursor: pointer;
+            border: none;
+        }
+        .preset-button {
+            background: #333;
+            color: #06b6d4;
+            padding: 8px 12px;
+            margin: 5px 5px 5px 0;
+            border: 1px solid #06b6d4;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.2s;
+        }
+        .preset-button:hover {
+            background: #06b6d4;
+            color: #000;
+        }
+        .threshold-info {
+            background: #0a0a0a;
+            border: 1px solid #333;
+            padding: 12px;
+            border-radius: 4px;
+            margin-top: 10px;
+            font-size: 12px;
+        }
+        footer {
+            text-align: center;
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid #333;
+            color: #666;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>ROC Curve Generator</h1>
+        <p class="subtitle">Plot ROC curves and calculate AUC from prediction probabilities</p>
+
+        <div class="layout">
+            <div class="panel">
+                <div class="section-title">Data Input</div>
+
+                <div class="tabs">
+                    <button class="tab-button active" onclick="switchTab('manual')">Manual Data</button>
+                    <button class="tab-button" onclick="switchTab('generate')">Generate Data</button>
+                </div>
+
+                <div id="manual" class="tab-content active">
+                    <div class="form-group">
+                        <label for="dataInput">Paste Predictions (prob,label)</label>
+                        <textarea id="dataInput" placeholder="0.9,1&#10;0.8,1&#10;0.7,0&#10;0.4,0&#10;0.2,0"></textarea>
+                    </div>
+                </div>
+
+                <div id="generate" class="tab-content">
+                    <div class="form-group">
+                        <label for="modelQuality">Model Quality</label>
+                        <select id="modelQuality">
+                            <option value="perfect">Perfect</option>
+                            <option value="good">Good</option>
+                            <option value="fair">Fair</option>
+                            <option value="poor">Poor</option>
+                            <option value="random">Random</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="sampleSize">Sample Size</label>
+                        <input type="number" id="sampleSize" value="200" min="10" max="5000">
+                    </div>
+                </div>
+
+                <div class="button-group">
+                    <button onclick="calculateROC()">Calculate ROC</button>
+                    <button class="button-secondary" onclick="resetROC()">Reset</button>
+                </div>
+
+                <div style="margin-top: 20px;">
+                    <div style="font-size: 13px; color: #999; margin-bottom: 10px;">Quick Presets:</div>
+                    <button class="preset-button" onclick="generatePreset('medical')">Medical Test</button>
+                    <button class="preset-button" onclick="generatePreset('spam')">Spam Filter</button>
+                </div>
+            </div>
+
+            <div class="panel">
+                <div class="section-title">ROC Curve</div>
+                <canvas id="rocCanvas"></canvas>
+
+                <div style="margin-top: 15px;">
+                    <label for="thresholdSlider">Optimal Threshold: <span id="thresholdDisplay">0.5</span></label>
+                    <input type="range" id="thresholdSlider" class="slider" min="0" max="1" step="0.01" value="0.5" oninput="updateThreshold()">
+                </div>
+
+                <div class="threshold-info" id="thresholdInfo">
+                    <div style="color: #06b6d4; font-weight: 600; margin-bottom: 5px;">Optimal Threshold (Youden)</div>
+                    <div>TPR: <span id="thresholdTpr">-</span></div>
+                    <div>FPR: <span id="thresholdFpr">-</span></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="panel">
+            <div class="section-title">ROC Metrics</div>
+            <div class="metrics-grid">
+                <div class="metric-card">
+                    <div class="metric-label">AUC Score</div>
+                    <div class="metric-value" id="aucValue">0.0000</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-label">Gini Coefficient</div>
+                    <div class="metric-value" id="giniValue">0.0000</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-label">Optimal Threshold</div>
+                    <div class="metric-value" id="optimalThreshold">0.5000</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-label">Max TPR - FPR</div>
+                    <div class="metric-value" id="maxYouden">0.0000</div>
+                </div>
+            </div>
+
+            <div style="margin-top: 20px; padding: 15px; background: #0a0a0a; border-radius: 4px; border: 1px solid #333; font-size: 13px;">
+                <div style="color: #06b6d4; font-weight: 600; margin-bottom: 10px;">Interpretation</div>
+                <div id="rocInterpretation">Load data to see interpretation</div>
+            </div>
+        </div>
+
+        <footer>© 2026 ml0x.com</footer>
+    </div>
+
+    <script>
+        let predictions = [];
+        let rocPoints = [];
+        let auc = 0;
+
+        function switchTab(tab) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.tab-button').forEach(el => el.classList.remove('active'));
+            document.getElementById(tab).classList.add('active');
+            event.target.classList.add('active');
+        }
+
+        function generatePreset(preset) {
+            const quality = preset === 'medical' ? 'good' : 'fair';
+            document.getElementById('modelQuality').value = quality;
+            document.getElementById('sampleSize').value = preset === 'medical' ? 300 : 250;
+            generateAndCalculate();
+        }
+
+        function generateAndCalculate() {
+            const quality = document.getElementById('modelQuality').value;
+            const sampleSize = parseInt(document.getElementById('sampleSize').value);
+
+            predictions = [];
+
+            for (let i = 0; i < sampleSize; i++) {
+                let prob;
+                if (quality === 'perfect') {
+                    prob = i < sampleSize / 2 ? 0.95 + Math.random() * 0.05 : Math.random() * 0.05;
+                } else if (quality === 'good') {
+                    prob = i < sampleSize / 2 ? 0.6 + Math.random() * 0.4 : Math.random() * 0.4;
+                } else if (quality === 'fair') {
+                    prob = i < sampleSize / 2 ? 0.5 + Math.random() * 0.5 : Math.random() * 0.5;
+                } else if (quality === 'poor') {
+                    prob = i < sampleSize / 2 ? Math.random() * 0.5 : 0.5 + Math.random() * 0.5;
+                } else {
+                    prob = Math.random();
+                }
+                const label = i < sampleSize / 2 ? 1 : 0;
+                predictions.push({ prob: Math.min(1, Math.max(0, prob)), label });
+            }
+
+            calculateROC();
+        }
+
+        function calculateROC() {
+            const activeTab = document.querySelector('.tab-content.active');
+
+            if (activeTab.id === 'generate') {
+                generateAndCalculate();
+                return;
+            }
+
+            const input = document.getElementById('dataInput').value.trim();
+            if (!input) {
+                alert('Please paste data');
+                return;
+            }
+
+            predictions = [];
+            const lines = input.split('\n');
+            for (let line of lines) {
+                const [prob, label] = line.split(',').map(s => parseFloat(s.trim()));
+                if (!isNaN(prob) && !isNaN(label)) {
+                    predictions.push({ prob: Math.min(1, Math.max(0, prob)), label: label === 1 ? 1 : 0 });
+                }
+            }
+
+            if (predictions.length === 0) return;
+
+            computeROC();
+            drawROC();
+            displayMetrics();
+        }
+
+        function computeROC() {
+            const sorted = [...predictions].sort((a, b) => b.prob - a.prob);
+
+            const thresholds = [1.0, ...sorted.map(p => p.prob), 0.0];
+            const uniqueThresholds = [...new Set(thresholds)];
+
+            rocPoints = [];
+            let p = predictions.filter(p => p.label === 1).length;
+            let n = predictions.filter(p => p.label === 0).length;
+
+            for (let threshold of uniqueThresholds) {
+                let tp = 0, fp = 0;
+                for (let pred of predictions) {
+                    if (pred.prob >= threshold) {
+                        if (pred.label === 1) tp++;
+                        else fp++;
+                    }
+                }
+                const tpr = p > 0 ? tp / p : 0;
+                const fpr = n > 0 ? fp / n : 0;
+                rocPoints.push({ tpr, fpr, threshold });
+            }
+
+            rocPoints.sort((a, b) => a.fpr - b.fpr);
+
+            // Calculate AUC using trapezoidal rule
+            auc = 0;
+            for (let i = 1; i < rocPoints.length; i++) {
+                const x1 = rocPoints[i - 1].fpr;
+                const x2 = rocPoints[i].fpr;
+                const y1 = rocPoints[i - 1].tpr;
+                const y2 = rocPoints[i].tpr;
+                auc += (x2 - x1) * (y1 + y2) / 2;
+            }
+
+            // Find optimal threshold (max Youden's J)
+            let maxYouden = -1;
+            let optimalThreshold = 0.5;
+            for (let point of rocPoints) {
+                const youden = point.tpr - point.fpr;
+                if (youden > maxYouden) {
+                    maxYouden = youden;
+                    optimalThreshold = point.threshold;
+                }
+            }
+
+            document.getElementById('optimalThreshold').textContent = optimalThreshold.toFixed(4);
+            document.getElementById('maxYouden').textContent = maxYouden.toFixed(4);
+            document.getElementById('thresholdSlider').value = optimalThreshold;
+            document.getElementById('thresholdDisplay').textContent = optimalThreshold.toFixed(3);
+
+            updateThreshold();
+        }
+
+        function drawROC() {
+            const canvas = document.getElementById('rocCanvas');
+            const ctx = canvas.getContext('2d');
+            const rect = canvas.getBoundingClientRect();
+            canvas.width = rect.width * window.devicePixelRatio;
+            canvas.height = rect.height * window.devicePixelRatio;
+            ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
+
+            const width = rect.width;
+            const height = rect.height;
+            const padding = 50;
+
+            ctx.fillStyle = '#0a0a0a';
+            ctx.fillRect(0, 0, width, height);
+
+            // Grid
+            ctx.strokeStyle = '#333';
+            ctx.lineWidth = 0.5;
+            for (let i = 0; i <= 10; i++) {
+                const x = padding + (width - 2 * padding) * i / 10;
+                ctx.beginPath();
+                ctx.moveTo(x, padding);
+                ctx.lineTo(x, height - padding);
+                ctx.stroke();
+
+                const y = padding + (height - 2 * padding) * i / 10;
+                ctx.beginPath();
+                ctx.moveTo(padding, y);
+                ctx.lineTo(width - padding, y);
+                ctx.stroke();
+            }
+
+            // Diagonal reference line
+            ctx.strokeStyle = '#555';
+            ctx.lineWidth = 2;
+            ctx.setLineDash([5, 5]);
+            ctx.beginPath();
+            ctx.moveTo(padding, height - padding);
+            ctx.lineTo(width - padding, padding);
+            ctx.stroke();
+            ctx.setLineDash([]);
+
+            // AUC shaded region
+            ctx.fillStyle = 'rgba(6, 182, 212, 0.1)';
+            ctx.beginPath();
+            ctx.moveTo(padding, height - padding);
+            for (let point of rocPoints) {
+                const x = padding + (width - 2 * padding) * point.fpr;
+                const y = height - padding - (height - 2 * padding) * point.tpr;
+                ctx.lineTo(x, y);
+            }
+            ctx.lineTo(width - padding, padding);
+            ctx.closePath();
+            ctx.fill();
+
+            // ROC curve
+            ctx.strokeStyle = '#06b6d4';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            for (let i = 0; i < rocPoints.length; i++) {
+                const point = rocPoints[i];
+                const x = padding + (width - 2 * padding) * point.fpr;
+                const y = height - padding - (height - 2 * padding) * point.tpr;
+                if (i === 0) ctx.moveTo(x, y);
+                else ctx.lineTo(x, y);
+            }
+            ctx.stroke();
+
+            // Optimal threshold point
+            const optimalThreshold = parseFloat(document.getElementById('optimalThreshold').textContent);
+            const optimalPoint = rocPoints.find(p => Math.abs(p.threshold - optimalThreshold) < 0.01);
+            if (optimalPoint) {
+                const x = padding + (width - 2 * padding) * optimalPoint.fpr;
+                const y = height - padding - (height - 2 * padding) * optimalPoint.tpr;
+                ctx.fillStyle = '#06b6d4';
+                ctx.beginPath();
+                ctx.arc(x, y, 6, 0, 2 * Math.PI);
+                ctx.fill();
+            }
+
+            // Axes
+            ctx.strokeStyle = '#fff';
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.moveTo(padding, height - padding);
+            ctx.lineTo(width - padding, height - padding);
+            ctx.stroke();
+
+            ctx.beginPath();
+            ctx.moveTo(padding, padding);
+            ctx.lineTo(padding, height - padding);
+            ctx.stroke();
+
+            // Labels
+            ctx.fillStyle = '#ccc';
+            ctx.font = '12px sans-serif';
+            ctx.textAlign = 'center';
+            ctx.fillText('False Positive Rate', width / 2, height - 15);
+            ctx.save();
+            ctx.translate(15, height / 2);
+            ctx.rotate(-Math.PI / 2);
+            ctx.fillText('True Positive Rate', 0, 0);
+            ctx.restore();
+
+            // Axis ticks
+            for (let i = 0; i <= 10; i++) {
+                const x = padding + (width - 2 * padding) * i / 10;
+                ctx.fillText((i / 10).toFixed(1), x, height - 30);
+                const y = padding + (height - 2 * padding) * i / 10;
+                ctx.textAlign = 'right';
+                ctx.fillText((1 - i / 10).toFixed(1), padding - 10, y + 4);
+            }
+        }
+
+        function displayMetrics() {
+            document.getElementById('aucValue').textContent = auc.toFixed(4);
+            document.getElementById('giniValue').textContent = (2 * auc - 1).toFixed(4);
+
+            let interpretation = '';
+            if (auc >= 0.9) {
+                interpretation = 'Excellent discrimination. Model is highly effective at distinguishing between classes.';
+            } else if (auc >= 0.8) {
+                interpretation = 'Good discrimination. Model performs well across most operating points.';
+            } else if (auc >= 0.7) {
+                interpretation = 'Fair discrimination. Model is useful but has moderate classification errors.';
+            } else if (auc >= 0.6) {
+                interpretation = 'Poor discrimination. Model has limited predictive power.';
+            } else {
+                interpretation = 'Very poor discrimination. Model barely outperforms random chance.';
+            }
+
+            document.getElementById('rocInterpretation').textContent = interpretation;
+        }
+
+        function updateThreshold() {
+            const threshold = parseFloat(document.getElementById('thresholdSlider').value);
+            const point = rocPoints.find(p => Math.abs(p.threshold - threshold) < 0.001);
+
+            if (point) {
+                document.getElementById('thresholdTpr').textContent = point.tpr.toFixed(4);
+                document.getElementById('thresholdFpr').textContent = point.fpr.toFixed(4);
+                document.getElementById('thresholdDisplay').textContent = threshold.toFixed(3);
+            }
+        }
+
+        function resetROC() {
+            document.getElementById('dataInput').value = '';
+            document.getElementById('modelQuality').value = 'good';
+            document.getElementById('sampleSize').value = 200;
+            predictions = [];
+            rocPoints = [];
+            document.getElementById('aucValue').textContent = '0.0000';
+            document.getElementById('giniValue').textContent = '0.0000';
+        }
+
+        // Initialize
+        generateAndCalculate();
+    </script>
+</body>
+</html>

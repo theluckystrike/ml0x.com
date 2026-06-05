@@ -1,0 +1,660 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Confusion Matrix Analyzer</title>
+    <meta name="description" content="Calculate precision, recall, F1-score, MCC, Cohen's Kappa from confusion matrices. Analyze binary and multi-class classification metrics.">
+    <link rel="canonical" href="https://ml0x.com/tools/confusion-matrix-analyzer">
+    <meta property="og:title" content="Confusion Matrix Analyzer">
+    <meta property="og:description" content="Analyze classification performance with comprehensive confusion matrix metrics.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://ml0x.com/tools/confusion-matrix-analyzer">
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "WebApplication",
+        "name": "Confusion Matrix Analyzer",
+        "url": "https://ml0x.com/tools/confusion-matrix-analyzer",
+        "description": "Calculate and analyze classification metrics from confusion matrices",
+        "applicationCategory": "UtilityApplication"
+    }
+    </script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            background: #0a0a0a;
+            color: #ffffff;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            line-height: 1.6;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        h1 {
+            color: #06b6d4;
+            margin-bottom: 10px;
+            font-size: 28px;
+        }
+        .subtitle {
+            color: #999;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+        .layout {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+        @media (max-width: 968px) {
+            .layout {
+                grid-template-columns: 1fr;
+            }
+        }
+        .panel {
+            background: #1a1a1a;
+            border: 1px solid #333;
+            border-radius: 8px;
+            padding: 20px;
+        }
+        .section-title {
+            color: #06b6d4;
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 15px;
+            border-bottom: 1px solid #333;
+            padding-bottom: 10px;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            font-size: 13px;
+            margin-bottom: 5px;
+            color: #ccc;
+        }
+        input, select {
+            width: 100%;
+            padding: 10px;
+            background: #0a0a0a;
+            border: 1px solid #333;
+            border-radius: 4px;
+            color: #fff;
+            font-size: 13px;
+        }
+        input:focus, select:focus {
+            outline: none;
+            border-color: #06b6d4;
+            box-shadow: 0 0 0 2px rgba(6, 182, 212, 0.1);
+        }
+        button {
+            background: #06b6d4;
+            color: #000;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 13px;
+            transition: all 0.2s;
+        }
+        button:hover {
+            background: #00d4ff;
+            transform: translateY(-1px);
+        }
+        .button-group {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+        .button-secondary {
+            background: #333;
+            color: #fff;
+        }
+        .button-secondary:hover {
+            background: #444;
+        }
+        canvas {
+            width: 100%;
+            height: 350px;
+            background: #0a0a0a;
+            border: 1px solid #333;
+            border-radius: 4px;
+            margin-bottom: 15px;
+        }
+        .matrix-input {
+            display: grid;
+            gap: 10px;
+        }
+        .matrix-row {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+        }
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+            border-bottom: 1px solid #333;
+        }
+        .tab-button {
+            background: none;
+            color: #999;
+            border: none;
+            padding: 10px 15px;
+            cursor: pointer;
+            font-size: 13px;
+            border-bottom: 2px solid transparent;
+            transition: all 0.2s;
+        }
+        .tab-button.active {
+            color: #06b6d4;
+            border-bottom-color: #06b6d4;
+        }
+        .tab-content {
+            display: none;
+        }
+        .tab-content.active {
+            display: block;
+        }
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-top: 20px;
+        }
+        .metric-card {
+            background: #0a0a0a;
+            border: 1px solid #333;
+            padding: 15px;
+            border-radius: 4px;
+        }
+        .metric-label {
+            font-size: 12px;
+            color: #999;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 5px;
+        }
+        .metric-value {
+            font-size: 20px;
+            color: #06b6d4;
+            font-weight: 600;
+        }
+        .preset-button {
+            background: #333;
+            color: #06b6d4;
+            padding: 8px 12px;
+            margin: 5px 5px 5px 0;
+            border: 1px solid #06b6d4;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.2s;
+        }
+        .preset-button:hover {
+            background: #06b6d4;
+            color: #000;
+        }
+        .slider-container {
+            margin-top: 15px;
+        }
+        .slider {
+            width: 100%;
+            height: 4px;
+            border-radius: 2px;
+            background: #333;
+            outline: none;
+            -webkit-appearance: none;
+        }
+        .slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: #06b6d4;
+            cursor: pointer;
+        }
+        .slider::-moz-range-thumb {
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: #06b6d4;
+            cursor: pointer;
+            border: none;
+        }
+        .results-table {
+            width: 100%;
+            font-size: 12px;
+            margin-top: 15px;
+            border-collapse: collapse;
+        }
+        .results-table th, .results-table td {
+            padding: 8px;
+            text-align: right;
+            border-bottom: 1px solid #333;
+        }
+        .results-table th {
+            background: #0a0a0a;
+            color: #06b6d4;
+            text-align: left;
+        }
+        .results-table td:first-child {
+            text-align: left;
+            color: #ccc;
+        }
+        footer {
+            text-align: center;
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid #333;
+            color: #666;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Confusion Matrix Analyzer</h1>
+        <p class="subtitle">Calculate metrics from binary and multi-class confusion matrices</p>
+
+        <div class="layout">
+            <div class="panel">
+                <div class="section-title">Input Configuration</div>
+
+                <div class="tabs">
+                    <button class="tab-button active" onclick="switchTab('binary')">Binary</button>
+                    <button class="tab-button" onclick="switchTab('multiclass')">Multi-class</button>
+                </div>
+
+                <div id="binary" class="tab-content active">
+                    <div class="form-group">
+                        <label>True Positives (TP)</label>
+                        <input type="number" id="tp" value="85" min="0">
+                    </div>
+                    <div class="form-group">
+                        <label>False Positives (FP)</label>
+                        <input type="number" id="fp" value="12" min="0">
+                    </div>
+                    <div class="form-group">
+                        <label>True Negatives (TN)</label>
+                        <input type="number" id="tn" value="88" min="0">
+                    </div>
+                    <div class="form-group">
+                        <label>False Negatives (FN)</label>
+                        <input type="number" id="fn" value="15" min="0">
+                    </div>
+                </div>
+
+                <div id="multiclass" class="tab-content">
+                    <div class="form-group">
+                        <label for="numClasses">Number of Classes</label>
+                        <input type="number" id="numClasses" value="3" min="2" max="10">
+                        <button style="margin-top: 5px;" onclick="setupMulticlassMatrix()">Setup Matrix</button>
+                    </div>
+                    <div id="multiclassInputs"></div>
+                </div>
+
+                <div class="button-group" style="margin-top: 20px;">
+                    <button onclick="calculateMetrics()">Calculate</button>
+                    <button class="button-secondary" onclick="resetAnalyzer()">Reset</button>
+                </div>
+
+                <div style="margin-top: 20px;">
+                    <div style="font-size: 13px; color: #999; margin-bottom: 10px;">Quick Presets:</div>
+                    <button class="preset-button" onclick="loadPreset('spam')">Spam Detection</button>
+                    <button class="preset-button" onclick="loadPreset('medical')">Medical Diagnosis</button>
+                    <button class="preset-button" onclick="loadPreset('perfect')">Perfect Model</button>
+                </div>
+            </div>
+
+            <div class="panel">
+                <div class="section-title">Confusion Matrix Heatmap</div>
+                <canvas id="matrixCanvas"></canvas>
+
+                <div style="margin-top: 20px;">
+                    <div style="font-size: 13px; color: #999; margin-bottom: 10px;">Binary Classification What-If:</div>
+                    <div class="slider-container">
+                        <label for="thresholdSlider">Threshold: <span id="thresholdValue">0.5</span></label>
+                        <input type="range" id="thresholdSlider" class="slider" min="0" max="1" step="0.01" value="0.5" oninput="updateThreshold()">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="panel">
+            <div class="section-title">Classification Metrics</div>
+            <table class="results-table">
+                <thead>
+                    <tr>
+                        <th>Metric</th>
+                        <th>Value</th>
+                        <th>Definition</th>
+                    </tr>
+                </thead>
+                <tbody id="metricsTable">
+                    <tr>
+                        <td>Accuracy</td>
+                        <td id="accuracy">-</td>
+                        <td>(TP+TN)/(TP+TN+FP+FN)</td>
+                    </tr>
+                    <tr>
+                        <td>Precision</td>
+                        <td id="precision">-</td>
+                        <td>TP/(TP+FP)</td>
+                    </tr>
+                    <tr>
+                        <td>Recall (Sensitivity)</td>
+                        <td id="recall">-</td>
+                        <td>TP/(TP+FN)</td>
+                    </tr>
+                    <tr>
+                        <td>F1-Score</td>
+                        <td id="f1">-</td>
+                        <td>2*(Precision*Recall)/(Precision+Recall)</td>
+                    </tr>
+                    <tr>
+                        <td>Specificity</td>
+                        <td id="specificity">-</td>
+                        <td>TN/(TN+FP)</td>
+                    </tr>
+                    <tr>
+                        <td>FPR</td>
+                        <td id="fpr">-</td>
+                        <td>FP/(FP+TN)</td>
+                    </tr>
+                    <tr>
+                        <td>FNR</td>
+                        <td id="fnr">-</td>
+                        <td>FN/(FN+TP)</td>
+                    </tr>
+                    <tr>
+                        <td>Matthews Correlation Coefficient</td>
+                        <td id="mcc">-</td>
+                        <td>Balanced metric even for imbalanced datasets</td>
+                    </tr>
+                    <tr>
+                        <td>Cohen's Kappa</td>
+                        <td id="kappa">-</td>
+                        <td>Agreement beyond chance</td>
+                    </tr>
+                    <tr>
+                        <td>Balanced Accuracy</td>
+                        <td id="balancedAccuracy">-</td>
+                        <td>(Sensitivity + Specificity) / 2</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <footer>© 2026 ml0x.com</footer>
+    </div>
+
+    <script>
+        let matrixData = { tp: 85, fp: 12, tn: 88, fn: 15 };
+        let multiclassMatrix = [];
+        let multiclassLabels = [];
+
+        function switchTab(tab) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.tab-button').forEach(el => el.classList.remove('active'));
+            document.getElementById(tab).classList.add('active');
+            event.target.classList.add('active');
+        }
+
+        function setupMulticlassMatrix() {
+            const numClasses = parseInt(document.getElementById('numClasses').value);
+            const container = document.getElementById('multiclassInputs');
+            container.innerHTML = '';
+
+            multiclassLabels = [];
+            multiclassMatrix = Array(numClasses).fill(0).map(() => Array(numClasses).fill(0));
+
+            for (let i = 0; i < numClasses; i++) {
+                const row = document.createElement('div');
+                row.className = 'matrix-row';
+                row.innerHTML = `<label style="grid-column: 1/-1;">Class ${i} Predictions:</label>`;
+
+                for (let j = 0; j < numClasses; j++) {
+                    const input = document.createElement('input');
+                    input.type = 'number';
+                    input.value = Math.floor(Math.random() * 50);
+                    input.min = '0';
+                    input.dataset.row = i;
+                    input.dataset.col = j;
+                    input.placeholder = `Predicted as Class ${j}`;
+                    row.appendChild(input);
+                }
+
+                container.appendChild(row);
+            }
+        }
+
+        function loadPreset(preset) {
+            if (preset === 'spam') {
+                matrixData = { tp: 280, fp: 8, tn: 4712, fn: 0 };
+            } else if (preset === 'medical') {
+                matrixData = { tp: 45, fp: 5, tn: 145, fn: 5 };
+            } else if (preset === 'perfect') {
+                matrixData = { tp: 100, fp: 0, tn: 100, fn: 0 };
+            }
+            updateBinaryInputs();
+            calculateMetrics();
+        }
+
+        function updateBinaryInputs() {
+            document.getElementById('tp').value = matrixData.tp;
+            document.getElementById('fp').value = matrixData.fp;
+            document.getElementById('tn').value = matrixData.tn;
+            document.getElementById('fn').value = matrixData.fn;
+        }
+
+        function updateThreshold() {
+            const threshold = parseFloat(document.getElementById('thresholdSlider').value);
+            document.getElementById('thresholdValue').textContent = threshold.toFixed(2);
+            const tpAdjust = matrixData.tp * (2 - threshold);
+            const fpAdjust = matrixData.fp * (1 - threshold);
+            const tnAdjust = matrixData.tn * (1 - threshold);
+            const fnAdjust = matrixData.fn * (2 - threshold);
+        }
+
+        function calculateMetrics() {
+            const activeTab = document.querySelector('.tab-button.active').textContent;
+
+            if (activeTab === 'Binary') {
+                calculateBinaryMetrics();
+            } else {
+                calculateMulticlassMetrics();
+            }
+        }
+
+        function calculateBinaryMetrics() {
+            matrixData.tp = parseFloat(document.getElementById('tp').value);
+            matrixData.fp = parseFloat(document.getElementById('fp').value);
+            matrixData.tn = parseFloat(document.getElementById('tn').value);
+            matrixData.fn = parseFloat(document.getElementById('fn').value);
+
+            const { tp, fp, tn, fn } = matrixData;
+            const total = tp + fp + tn + fn;
+
+            const accuracy = (tp + tn) / total;
+            const precision = tp / (tp + fp) || 0;
+            const recall = tp / (tp + fn) || 0;
+            const f1 = 2 * (precision * recall) / (precision + recall) || 0;
+            const specificity = tn / (tn + fp) || 0;
+            const fpr = fp / (fp + tn) || 0;
+            const fnr = fn / (fn + tp) || 0;
+
+            const pe = ((tp + fn) / total) * ((tp + fp) / total) + ((tn + fp) / total) * ((tn + fn) / total);
+            const kappa = (accuracy - pe) / (1 - pe);
+
+            const mcc = (tp * tn - fp * fn) / Math.sqrt((tp + fp) * (tp + fn) * (tn + fp) * (tn + fn));
+            const balancedAccuracy = (recall + specificity) / 2;
+
+            document.getElementById('accuracy').textContent = accuracy.toFixed(4);
+            document.getElementById('precision').textContent = precision.toFixed(4);
+            document.getElementById('recall').textContent = recall.toFixed(4);
+            document.getElementById('f1').textContent = f1.toFixed(4);
+            document.getElementById('specificity').textContent = specificity.toFixed(4);
+            document.getElementById('fpr').textContent = fpr.toFixed(4);
+            document.getElementById('fnr').textContent = fnr.toFixed(4);
+            document.getElementById('mcc').textContent = (isNaN(mcc) ? 0 : mcc).toFixed(4);
+            document.getElementById('kappa').textContent = kappa.toFixed(4);
+            document.getElementById('balancedAccuracy').textContent = balancedAccuracy.toFixed(4);
+
+            drawBinaryMatrix();
+        }
+
+        function calculateMulticlassMetrics() {
+            const inputs = document.querySelectorAll('#multiclassInputs input[type="number"]');
+            const numClasses = parseInt(document.getElementById('numClasses').value);
+            multiclassMatrix = Array(numClasses).fill(0).map(() => Array(numClasses).fill(0));
+
+            inputs.forEach(input => {
+                const row = parseInt(input.dataset.row);
+                const col = parseInt(input.dataset.col);
+                multiclassMatrix[row][col] = parseFloat(input.value);
+            });
+
+            const total = multiclassMatrix.flat().reduce((a, b) => a + b, 0);
+            const accuracy = multiclassMatrix.reduce((sum, row, i) => sum + row[i], 0) / total;
+
+            document.getElementById('accuracy').textContent = accuracy.toFixed(4);
+            document.getElementById('precision').textContent = 'Multi-class';
+            document.getElementById('recall').textContent = 'Multi-class';
+            document.getElementById('f1').textContent = 'Multi-class';
+            document.getElementById('specificity').textContent = 'N/A';
+            document.getElementById('fpr').textContent = 'N/A';
+            document.getElementById('fnr').textContent = 'N/A';
+            document.getElementById('mcc').textContent = 'Calc';
+            document.getElementById('kappa').textContent = 'Calc';
+            document.getElementById('balancedAccuracy').textContent = 'Calc';
+
+            drawMulticlassMatrix();
+        }
+
+        function drawBinaryMatrix() {
+            const canvas = document.getElementById('matrixCanvas');
+            const ctx = canvas.getContext('2d');
+            const rect = canvas.getBoundingClientRect();
+            canvas.width = rect.width * window.devicePixelRatio;
+            canvas.height = rect.height * window.devicePixelRatio;
+            ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
+
+            const width = rect.width;
+            const height = rect.height;
+            const cellSize = Math.min((width - 100) / 2, (height - 100) / 2);
+            const startX = (width - 2 * cellSize) / 2;
+            const startY = (height - 2 * cellSize) / 2;
+
+            const { tp, fp, tn, fn } = matrixData;
+            const matrix = [[tp, fp], [fn, tn]];
+            const maxVal = Math.max(tp, fp, tn, fn);
+
+            // Draw cells
+            for (let i = 0; i < 2; i++) {
+                for (let j = 0; j < 2; j++) {
+                    const x = startX + j * cellSize;
+                    const y = startY + i * cellSize;
+                    const value = matrix[i][j];
+                    const intensity = value / maxVal;
+
+                    ctx.fillStyle = `rgba(6, 182, 212, ${intensity * 0.8})`;
+                    ctx.fillRect(x, y, cellSize, cellSize);
+
+                    ctx.strokeStyle = '#333';
+                    ctx.lineWidth = 1;
+                    ctx.strokeRect(x, y, cellSize, cellSize);
+
+                    ctx.fillStyle = '#fff';
+                    ctx.font = 'bold 24px sans-serif';
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+                    ctx.fillText(value, x + cellSize / 2, y + cellSize / 2 - 15);
+
+                    ctx.font = '12px sans-serif';
+                    const label = (i === 0 && j === 0) ? 'TP' : (i === 0 && j === 1) ? 'FP' : (i === 1 && j === 0) ? 'FN' : 'TN';
+                    ctx.fillText(label, x + cellSize / 2, y + cellSize / 2 + 15);
+                }
+            }
+
+            // Labels
+            ctx.fillStyle = '#ccc';
+            ctx.font = '13px sans-serif';
+            ctx.textAlign = 'center';
+            ctx.fillText('Predicted Positive', startX + cellSize, startY - 15);
+            ctx.fillText('Predicted Negative', startX + cellSize * 2, startY - 15);
+            ctx.save();
+            ctx.translate(startX - 15, startY + cellSize);
+            ctx.rotate(-Math.PI / 2);
+            ctx.fillText('Actual Positive', 0, 0);
+            ctx.restore();
+            ctx.save();
+            ctx.translate(startX - 15, startY + cellSize * 2);
+            ctx.rotate(-Math.PI / 2);
+            ctx.fillText('Actual Negative', 0, 0);
+            ctx.restore();
+        }
+
+        function drawMulticlassMatrix() {
+            const canvas = document.getElementById('matrixCanvas');
+            const ctx = canvas.getContext('2d');
+            const rect = canvas.getBoundingClientRect();
+            canvas.width = rect.width * window.devicePixelRatio;
+            canvas.height = rect.height * window.devicePixelRatio;
+            ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
+
+            const width = rect.width;
+            const height = rect.height;
+            const numClasses = multiclassMatrix.length;
+            const cellSize = Math.min((width - 80) / numClasses, (height - 80) / numClasses);
+            const startX = (width - numClasses * cellSize) / 2;
+            const startY = (height - numClasses * cellSize) / 2;
+
+            const maxVal = Math.max(...multiclassMatrix.flat());
+
+            for (let i = 0; i < numClasses; i++) {
+                for (let j = 0; j < numClasses; j++) {
+                    const x = startX + j * cellSize;
+                    const y = startY + i * cellSize;
+                    const value = multiclassMatrix[i][j];
+                    const intensity = value / maxVal;
+
+                    ctx.fillStyle = `rgba(6, 182, 212, ${intensity * 0.8})`;
+                    ctx.fillRect(x, y, cellSize, cellSize);
+
+                    ctx.strokeStyle = '#333';
+                    ctx.lineWidth = 1;
+                    ctx.strokeRect(x, y, cellSize, cellSize);
+
+                    ctx.fillStyle = '#fff';
+                    ctx.font = '13px sans-serif';
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+                    ctx.fillText(value, x + cellSize / 2, y + cellSize / 2);
+                }
+            }
+        }
+
+        function resetAnalyzer() {
+            matrixData = { tp: 85, fp: 12, tn: 88, fn: 15 };
+            updateBinaryInputs();
+            document.getElementById('thresholdSlider').value = 0.5;
+            document.getElementById('thresholdValue').textContent = '0.5';
+            calculateMetrics();
+        }
+
+        // Initialize
+        calculateMetrics();
+    </script>
+</body>
+</html>

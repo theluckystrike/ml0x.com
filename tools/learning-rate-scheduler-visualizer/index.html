@@ -1,0 +1,639 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Learning Rate Scheduler Visualizer</title>
+    <meta name="description" content="Visualize cosine annealing, step decay, warmup schedules for neural networks. Compare strategies and generate PyTorch code.">
+    <link rel="canonical" href="https://ml0x.com/tools/learning-rate-scheduler-visualizer">
+    <meta property="og:title" content="Learning Rate Scheduler Visualizer">
+    <meta property="og:description" content="Visualize and compare learning rate schedules for PyTorch training.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://ml0x.com/tools/learning-rate-scheduler-visualizer">
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "WebApplication",
+        "name": "Learning Rate Scheduler Visualizer",
+        "url": "https://ml0x.com/tools/learning-rate-scheduler-visualizer",
+        "description": "Visualize and compare learning rate schedules for neural network training",
+        "applicationCategory": "UtilityApplication"
+    }
+    </script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            background: #0a0a0a;
+            color: #ffffff;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            line-height: 1.6;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        h1 {
+            color: #06b6d4;
+            margin-bottom: 10px;
+            font-size: 28px;
+        }
+        .subtitle {
+            color: #999;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+        .layout {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+        @media (max-width: 968px) {
+            .layout {
+                grid-template-columns: 1fr;
+            }
+        }
+        .panel {
+            background: #1a1a1a;
+            border: 1px solid #333;
+            border-radius: 8px;
+            padding: 20px;
+        }
+        .section-title {
+            color: #06b6d4;
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 15px;
+            border-bottom: 1px solid #333;
+            padding-bottom: 10px;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            font-size: 13px;
+            margin-bottom: 5px;
+            color: #ccc;
+        }
+        input, select {
+            width: 100%;
+            padding: 10px;
+            background: #0a0a0a;
+            border: 1px solid #333;
+            border-radius: 4px;
+            color: #fff;
+            font-size: 13px;
+        }
+        input:focus, select:focus {
+            outline: none;
+            border-color: #06b6d4;
+            box-shadow: 0 0 0 2px rgba(6, 182, 212, 0.1);
+        }
+        button {
+            background: #06b6d4;
+            color: #000;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 13px;
+            transition: all 0.2s;
+        }
+        button:hover {
+            background: #00d4ff;
+            transform: translateY(-1px);
+        }
+        .button-group {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+        .button-secondary {
+            background: #333;
+            color: #fff;
+        }
+        .button-secondary:hover {
+            background: #444;
+        }
+        canvas {
+            width: 100%;
+            height: 400px;
+            background: #0a0a0a;
+            border: 1px solid #333;
+            border-radius: 4px;
+        }
+        .metrics {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 15px;
+            margin-top: 20px;
+        }
+        @media (max-width: 768px) {
+            .metrics {
+                grid-template-columns: 1fr;
+            }
+        }
+        .metric-card {
+            background: #0a0a0a;
+            border: 1px solid #333;
+            padding: 15px;
+            border-radius: 4px;
+            text-align: center;
+        }
+        .metric-value {
+            font-size: 24px;
+            color: #06b6d4;
+            font-weight: 600;
+            margin: 5px 0;
+        }
+        .metric-label {
+            font-size: 12px;
+            color: #999;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .code-section {
+            background: #000;
+            border: 1px solid #333;
+            padding: 15px;
+            border-radius: 4px;
+            margin-top: 20px;
+            overflow-x: auto;
+        }
+        .code-section pre {
+            color: #06b6d4;
+            font-size: 12px;
+            line-height: 1.5;
+            font-family: 'Monaco', monospace;
+        }
+        .preset-button {
+            background: #333;
+            color: #06b6d4;
+            padding: 8px 12px;
+            margin: 5px;
+            border: 1px solid #06b6d4;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.2s;
+        }
+        .preset-button:hover {
+            background: #06b6d4;
+            color: #000;
+        }
+        .tooltip {
+            position: absolute;
+            background: #1a1a1a;
+            border: 1px solid #06b6d4;
+            padding: 8px 12px;
+            border-radius: 4px;
+            font-size: 12px;
+            color: #06b6d4;
+            pointer-events: none;
+            display: none;
+            z-index: 1000;
+        }
+        .chart-container {
+            position: relative;
+        }
+        footer {
+            text-align: center;
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid #333;
+            color: #666;
+            font-size: 12px;
+        }
+        .param-input {
+            display: none;
+            margin-top: 10px;
+            padding: 10px;
+            background: #0a0a0a;
+            border-left: 2px solid #06b6d4;
+        }
+        .param-input.active {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Learning Rate Scheduler Visualizer</h1>
+        <p class="subtitle">Visualize and compare neural network learning rate schedules</p>
+
+        <div class="layout">
+            <div class="panel">
+                <div class="section-title">Scheduler Configuration</div>
+
+                <div class="form-group">
+                    <label for="initialLr">Initial Learning Rate</label>
+                    <input type="number" id="initialLr" value="0.001" step="0.0001" min="0.00001" max="1">
+                </div>
+
+                <div class="form-group">
+                    <label for="totalSteps">Total Steps/Epochs</label>
+                    <input type="number" id="totalSteps" value="100" step="1" min="1" max="10000">
+                </div>
+
+                <div class="form-group">
+                    <label for="scheduleType">Schedule Type</label>
+                    <select id="scheduleType">
+                        <option value="cosine">Cosine Annealing</option>
+                        <option value="step">Step Decay</option>
+                        <option value="exponential">Exponential Decay</option>
+                        <option value="cosine-warm-restart">Cosine with Warm Restarts</option>
+                        <option value="warmup-cosine">Linear Warmup + Cosine Decay</option>
+                        <option value="polynomial">Polynomial Decay</option>
+                        <option value="onecycle">OneCycleLR</option>
+                        <option value="cyclic">Cyclic LR</option>
+                    </select>
+                </div>
+
+                <div id="scheduleParams"></div>
+
+                <div class="form-group">
+                    <label for="minLr">Minimum LR</label>
+                    <input type="number" id="minLr" value="0.00001" step="0.000001" min="0" max="0.1">
+                </div>
+
+                <div class="button-group">
+                    <button onclick="updateSchedule()">Update Schedule</button>
+                    <button class="button-secondary" onclick="resetSchedule()">Reset</button>
+                </div>
+
+                <div style="margin-top: 20px;">
+                    <div style="font-size: 13px; color: #999; margin-bottom: 10px;">Quick Presets:</div>
+                    <button class="preset-button" onclick="loadPreset('bert')">BERT Fine-tuning</button>
+                    <button class="preset-button" onclick="loadPreset('resnet')">ResNet Training</button>
+                    <button class="preset-button" onclick="loadPreset('gpt')">GPT Pre-training</button>
+                </div>
+            </div>
+
+            <div class="panel">
+                <div class="section-title">Schedule Visualization</div>
+                <div class="chart-container">
+                    <canvas id="scheduleCanvas"></canvas>
+                    <div class="tooltip" id="tooltip"></div>
+                </div>
+                <div class="metrics">
+                    <div class="metric-card">
+                        <div class="metric-label">Max LR</div>
+                        <div class="metric-value" id="maxLrValue">0</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-label">Min LR</div>
+                        <div class="metric-value" id="minLrValue">0</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-label">Avg LR</div>
+                        <div class="metric-value" id="avgLrValue">0</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="panel">
+            <div class="section-title">PyTorch Code Generation</div>
+            <div class="code-section">
+                <pre id="codeOutput">import torch.optim as optim
+from torch.optim.lr_scheduler import CosineAnnealingLR
+
+optimizer = optim.SGD(model.parameters(), lr=0.001)
+scheduler = CosineAnnealingLR(optimizer, T_max=100, eta_min=0.00001)
+
+for epoch in range(100):
+    # training loop
+    scheduler.step()</pre>
+            </div>
+        </div>
+
+        <footer>© 2026 ml0x.com</footer>
+    </div>
+
+    <script>
+        let scheduleData = [];
+
+        const scheduleConfigs = {
+            cosine: {
+                params: [{ name: 'T_max', label: 'T_max (cycles)', value: 100 }]
+            },
+            step: {
+                params: [
+                    { name: 'step_size', label: 'Step Size', value: 30 },
+                    { name: 'gamma', label: 'Gamma (decay factor)', value: 0.1 }
+                ]
+            },
+            exponential: {
+                params: [{ name: 'gamma', label: 'Gamma', value: 0.95 }]
+            },
+            'cosine-warm-restart': {
+                params: [
+                    { name: 'T_0', label: 'T_0 (period)', value: 30 },
+                    { name: 'T_mult', label: 'T_mult', value: 2 }
+                ]
+            },
+            'warmup-cosine': {
+                params: [
+                    { name: 'warmup_steps', label: 'Warmup Steps', value: 10 },
+                    { name: 'T_max', label: 'T_max', value: 90 }
+                ]
+            },
+            polynomial: {
+                params: [{ name: 'power', label: 'Power', value: 2 }]
+            },
+            onecycle: {
+                params: [
+                    { name: 'max_lr', label: 'Max LR', value: 0.01 },
+                    { name: 'pct_start', label: 'Pct Start', value: 0.3 }
+                ]
+            },
+            cyclic: {
+                params: [
+                    { name: 'base_lr', label: 'Base LR', value: 0.0001 },
+                    { name: 'max_lr', label: 'Max LR', value: 0.01 },
+                    { name: 'step_size', label: 'Step Size', value: 20 }
+                ]
+            }
+        };
+
+        function updateParamInputs() {
+            const type = document.getElementById('scheduleType').value;
+            const config = scheduleConfigs[type];
+            const container = document.getElementById('scheduleParams');
+            container.innerHTML = '';
+
+            if (config.params) {
+                config.params.forEach(param => {
+                    const div = document.createElement('div');
+                    div.className = 'form-group';
+                    div.innerHTML = `
+                        <label for="${param.name}">${param.label}</label>
+                        <input type="number" id="${param.name}" value="${param.value}" step="any" min="0">
+                    `;
+                    container.appendChild(div);
+                });
+            }
+        }
+
+        function computeSchedule() {
+            const initialLr = parseFloat(document.getElementById('initialLr').value);
+            const totalSteps = parseInt(document.getElementById('totalSteps').value);
+            const scheduleType = document.getElementById('scheduleType').value;
+            const minLr = parseFloat(document.getElementById('minLr').value);
+
+            scheduleData = [];
+
+            for (let step = 0; step < totalSteps; step++) {
+                let lr = initialLr;
+                const progress = step / totalSteps;
+
+                if (scheduleType === 'cosine') {
+                    const T_max = parseInt(document.getElementById('T_max').value);
+                    const cycle = step % T_max;
+                    lr = minLr + (initialLr - minLr) * (1 + Math.cos(Math.PI * cycle / T_max)) / 2;
+                } else if (scheduleType === 'step') {
+                    const stepSize = parseInt(document.getElementById('step_size').value);
+                    const gamma = parseFloat(document.getElementById('gamma').value);
+                    const stepNum = Math.floor(step / stepSize);
+                    lr = initialLr * Math.pow(gamma, stepNum);
+                } else if (scheduleType === 'exponential') {
+                    const gamma = parseFloat(document.getElementById('gamma').value);
+                    lr = initialLr * Math.pow(gamma, step);
+                } else if (scheduleType === 'cosine-warm-restart') {
+                    const T_0 = parseInt(document.getElementById('T_0').value);
+                    const T_mult = parseFloat(document.getElementById('T_mult').value);
+                    let T_cur = step;
+                    let T_i = T_0;
+                    let cycle = 0;
+                    while (T_cur >= T_i) {
+                        T_cur -= T_i;
+                        T_i *= T_mult;
+                        cycle++;
+                    }
+                    lr = minLr + (initialLr - minLr) * (1 + Math.cos(Math.PI * T_cur / T_i)) / 2;
+                } else if (scheduleType === 'warmup-cosine') {
+                    const warmupSteps = parseInt(document.getElementById('warmup_steps').value);
+                    const T_max = parseInt(document.getElementById('T_max').value);
+                    if (step < warmupSteps) {
+                        lr = initialLr * (step / warmupSteps);
+                    } else {
+                        const cosineStep = step - warmupSteps;
+                        lr = minLr + (initialLr - minLr) * (1 + Math.cos(Math.PI * cosineStep / T_max)) / 2;
+                    }
+                } else if (scheduleType === 'polynomial') {
+                    const power = parseFloat(document.getElementById('power').value);
+                    lr = initialLr * Math.pow(1 - progress, power);
+                    lr = Math.max(lr, minLr);
+                } else if (scheduleType === 'onecycle') {
+                    const maxLr = parseFloat(document.getElementById('max_lr').value);
+                    const pctStart = parseFloat(document.getElementById('pct_start').value);
+                    const pctEnd = 0.85;
+
+                    if (progress <= pctStart) {
+                        lr = initialLr + (maxLr - initialLr) * (progress / pctStart);
+                    } else if (progress <= pctEnd) {
+                        lr = maxLr + (initialLr - maxLr) * ((progress - pctStart) / (pctEnd - pctStart));
+                    } else {
+                        lr = initialLr * (1 - (progress - pctEnd) / (1 - pctEnd));
+                    }
+                } else if (scheduleType === 'cyclic') {
+                    const baseLr = parseFloat(document.getElementById('base_lr').value);
+                    const maxLr = parseFloat(document.getElementById('max_lr').value);
+                    const stepSize = parseInt(document.getElementById('step_size').value);
+                    const cycle = Math.floor(step / stepSize);
+                    const posInCycle = step - cycle * stepSize;
+                    lr = baseLr + (maxLr - baseLr) * Math.abs(1 - 2 * posInCycle / stepSize);
+                }
+
+                scheduleData.push({ step, lr: Math.max(lr, minLr) });
+            }
+        }
+
+        function drawChart() {
+            const canvas = document.getElementById('scheduleCanvas');
+            const ctx = canvas.getContext('2d');
+            const rect = canvas.getBoundingClientRect();
+            canvas.width = rect.width * window.devicePixelRatio;
+            canvas.height = rect.height * window.devicePixelRatio;
+            ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
+
+            const width = rect.width;
+            const height = rect.height;
+            const padding = 50;
+
+            ctx.fillStyle = '#0a0a0a';
+            ctx.fillRect(0, 0, width, height);
+
+            if (scheduleData.length === 0) return;
+
+            const maxLr = Math.max(...scheduleData.map(d => d.lr));
+            const minLr = Math.min(...scheduleData.map(d => d.lr));
+            const maxStep = scheduleData[scheduleData.length - 1].step;
+
+            // Grid
+            ctx.strokeStyle = '#333';
+            ctx.lineWidth = 0.5;
+            for (let i = 0; i <= 10; i++) {
+                const x = padding + (width - 2 * padding) * i / 10;
+                ctx.beginPath();
+                ctx.moveTo(x, padding);
+                ctx.lineTo(x, height - padding);
+                ctx.stroke();
+
+                const y = padding + (height - 2 * padding) * i / 10;
+                ctx.beginPath();
+                ctx.moveTo(padding, y);
+                ctx.lineTo(width - padding, y);
+                ctx.stroke();
+            }
+
+            // Axes
+            ctx.strokeStyle = '#fff';
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.moveTo(padding, height - padding);
+            ctx.lineTo(width - padding, height - padding);
+            ctx.stroke();
+
+            ctx.beginPath();
+            ctx.moveTo(padding, padding);
+            ctx.lineTo(padding, height - padding);
+            ctx.stroke();
+
+            // Labels
+            ctx.fillStyle = '#ccc';
+            ctx.font = '12px sans-serif';
+            ctx.textAlign = 'center';
+            ctx.fillText('Step', width / 2, height - 15);
+            ctx.save();
+            ctx.translate(15, height / 2);
+            ctx.rotate(-Math.PI / 2);
+            ctx.fillText('Learning Rate', 0, 0);
+            ctx.restore();
+
+            // Plot curve
+            ctx.strokeStyle = '#06b6d4';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+
+            for (let i = 0; i < scheduleData.length; i++) {
+                const data = scheduleData[i];
+                const x = padding + (width - 2 * padding) * data.step / maxStep;
+                const y = height - padding - (height - 2 * padding) * (data.lr - minLr) / (maxLr - minLr);
+
+                if (i === 0) ctx.moveTo(x, y);
+                else ctx.lineTo(x, y);
+            }
+            ctx.stroke();
+
+            // Update metrics
+            const allLrs = scheduleData.map(d => d.lr);
+            const maxLrVal = Math.max(...allLrs);
+            const minLrVal = Math.min(...allLrs);
+            const avgLrVal = allLrs.reduce((a, b) => a + b) / allLrs.length;
+
+            document.getElementById('maxLrValue').textContent = maxLrVal.toExponential(2);
+            document.getElementById('minLrValue').textContent = minLrVal.toExponential(2);
+            document.getElementById('avgLrValue').textContent = avgLrVal.toExponential(2);
+        }
+
+        function updateSchedule() {
+            computeSchedule();
+            drawChart();
+            generateCode();
+        }
+
+        function generateCode() {
+            const type = document.getElementById('scheduleType').value;
+            const initialLr = parseFloat(document.getElementById('initialLr').value);
+            const totalSteps = parseInt(document.getElementById('totalSteps').value);
+            const minLr = parseFloat(document.getElementById('minLr').value);
+
+            let code = `import torch.optim as optim
+from torch.optim.lr_scheduler import `;
+
+            if (type === 'cosine') {
+                const T_max = parseInt(document.getElementById('T_max').value);
+                code += `CosineAnnealingLR\n\noptimizer = optim.SGD(model.parameters(), lr=${initialLr})
+scheduler = CosineAnnealingLR(optimizer, T_max=${T_max}, eta_min=${minLr})`;
+            } else if (type === 'step') {
+                const stepSize = parseInt(document.getElementById('step_size').value);
+                const gamma = parseFloat(document.getElementById('gamma').value);
+                code += `StepLR\n\noptimizer = optim.SGD(model.parameters(), lr=${initialLr})
+scheduler = StepLR(optimizer, step_size=${stepSize}, gamma=${gamma})`;
+            } else if (type === 'exponential') {
+                const gamma = parseFloat(document.getElementById('gamma').value);
+                code += `ExponentialLR\n\noptimizer = optim.SGD(model.parameters(), lr=${initialLr})
+scheduler = ExponentialLR(optimizer, gamma=${gamma})`;
+            } else if (type === 'onecycle') {
+                const maxLr = parseFloat(document.getElementById('max_lr').value);
+                code += `OneCycleLR\n\noptimizer = optim.SGD(model.parameters(), lr=${initialLr})
+scheduler = OneCycleLR(optimizer, max_lr=${maxLr}, total_steps=${totalSteps})`;
+            } else {
+                code += `CustomLR\n\noptimizer = optim.SGD(model.parameters(), lr=${initialLr})
+# Use custom schedule computation`;
+            }
+
+            code += `\n\nfor epoch in range(${totalSteps}):
+    # training loop
+    scheduler.step()`;
+
+            document.getElementById('codeOutput').textContent = code;
+        }
+
+        function loadPreset(preset) {
+            if (preset === 'bert') {
+                document.getElementById('initialLr').value = 2e-5;
+                document.getElementById('totalSteps').value = 100;
+                document.getElementById('scheduleType').value = 'warmup-cosine';
+                updateParamInputs();
+                setTimeout(() => {
+                    document.getElementById('warmup_steps').value = 10;
+                    document.getElementById('T_max').value = 90;
+                    updateSchedule();
+                }, 100);
+            } else if (preset === 'resnet') {
+                document.getElementById('initialLr').value = 0.1;
+                document.getElementById('totalSteps').value = 200;
+                document.getElementById('scheduleType').value = 'step';
+                updateParamInputs();
+                setTimeout(() => {
+                    document.getElementById('step_size').value = 30;
+                    document.getElementById('gamma').value = 0.1;
+                    updateSchedule();
+                }, 100);
+            } else if (preset === 'gpt') {
+                document.getElementById('initialLr').value = 0.001;
+                document.getElementById('totalSteps').value = 500;
+                document.getElementById('scheduleType').value = 'cosine';
+                updateParamInputs();
+                setTimeout(() => {
+                    document.getElementById('T_max').value = 500;
+                    updateSchedule();
+                }, 100);
+            }
+        }
+
+        function resetSchedule() {
+            document.getElementById('initialLr').value = 0.001;
+            document.getElementById('totalSteps').value = 100;
+            document.getElementById('minLr').value = 0.00001;
+            document.getElementById('scheduleType').value = 'cosine';
+            updateParamInputs();
+            updateSchedule();
+        }
+
+        // Initialize
+        document.getElementById('scheduleType').addEventListener('change', updateParamInputs);
+        updateParamInputs();
+        updateSchedule();
+    </script>
+</body>
+</html>
