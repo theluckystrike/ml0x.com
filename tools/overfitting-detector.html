@@ -1,0 +1,696 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Overfitting Detector — Free ML Tool</title>
+    <meta name="description" content="Free overfitting detection tool. Input train/val loss curves, detect overfitting point, get regularization suggestions.">
+    <meta name="keywords" content="overfitting detection, validation loss, regularization, machine learning">
+    <meta name="author" content="ml0x.com">
+    <link rel="canonical" href="https://ml0x.com/tools/overfitting-detector">
+    <meta property="og:title" content="Overfitting Detector — Free ML Tool">
+    <meta property="og:description" content="Free overfitting detection tool. Input train/val loss curves, detect overfitting point, get regularization suggestions.">
+    <meta property="og:url" content="https://ml0x.com/tools/overfitting-detector">
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="ml0x.com">
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "WebApplication",
+        "name": "Overfitting Detector",
+        "description": "Free tool to detect overfitting in machine learning models. Input training and validation loss curves and get regularization recommendations.",
+        "url": "https://ml0x.com/tools/overfitting-detector",
+        "applicationCategory": "UtilityApplication",
+        "offers": {
+            "@type": "Offer",
+            "price": "0"
+        }
+    }
+    </script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: #0a0e27;
+            color: #e0e6ed;
+            line-height: 1.6;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        header {
+            margin-bottom: 40px;
+            border-bottom: 2px solid #00d4aa;
+            padding-bottom: 20px;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            color: #00d4aa;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            font-size: 1.1rem;
+            color: #a0a6b3;
+        }
+
+        .content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+
+        .panel {
+            background: #0f1633;
+            border: 1px solid #1a2847;
+            border-radius: 8px;
+            padding: 25px;
+        }
+
+        .panel h2 {
+            font-size: 1.3rem;
+            color: #00d4aa;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            font-size: 0.95rem;
+            font-weight: 500;
+            margin-bottom: 8px;
+            color: #c0c6d3;
+        }
+
+        input[type="text"],
+        input[type="number"],
+        textarea,
+        select {
+            width: 100%;
+            padding: 10px 12px;
+            background: #0a0e27;
+            border: 1px solid #1a2847;
+            border-radius: 4px;
+            color: #e0e6ed;
+            font-size: 0.95rem;
+            font-family: inherit;
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 100px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.85rem;
+        }
+
+        input:focus,
+        textarea:focus,
+        select:focus {
+            outline: none;
+            border-color: #00d4aa;
+            box-shadow: 0 0 0 3px rgba(0, 212, 170, 0.1);
+        }
+
+        .input-hint {
+            font-size: 0.85rem;
+            color: #707a89;
+            margin-top: 4px;
+        }
+
+        button {
+            width: 100%;
+            padding: 12px 20px;
+            background: linear-gradient(135deg, #00d4aa 0%, #00a892 100%);
+            color: #0a0e27;
+            border: none;
+            border-radius: 4px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 10px;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(0, 212, 170, 0.3);
+        }
+
+        .analysis-card {
+            background: #0a0e27;
+            border-left: 4px solid #00d4aa;
+            border-radius: 2px;
+            padding: 15px;
+            margin-bottom: 15px;
+        }
+
+        .card-title {
+            color: #00d4aa;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .card-value {
+            color: #e0e6ed;
+            font-size: 1rem;
+        }
+
+        .metric-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        .metric-item {
+            background: #0a0e27;
+            border: 1px solid #1a2847;
+            border-radius: 4px;
+            padding: 12px;
+        }
+
+        .metric-label {
+            color: #a0a6b3;
+            font-size: 0.85rem;
+        }
+
+        .metric-value {
+            color: #00d4aa;
+            font-size: 1.2rem;
+            font-weight: 700;
+            margin-top: 4px;
+        }
+
+        .alert {
+            padding: 12px;
+            border-radius: 4px;
+            margin-bottom: 15px;
+            font-size: 0.95rem;
+        }
+
+        .alert-severe {
+            background: rgba(211, 47, 47, 0.15);
+            border-left: 4px solid #d32f2f;
+            color: #ff6b6b;
+        }
+
+        .alert-warning {
+            background: rgba(255, 152, 0, 0.15);
+            border-left: 4px solid #ff9800;
+            color: #ffb74d;
+        }
+
+        .alert-info {
+            background: rgba(0, 212, 170, 0.15);
+            border-left: 4px solid #00d4aa;
+            color: #00d4aa;
+        }
+
+        .recommendation {
+            background: #0a0e27;
+            border: 1px solid #1a2847;
+            border-radius: 4px;
+            padding: 12px;
+            margin-bottom: 10px;
+        }
+
+        .rec-title {
+            color: #00d4aa;
+            font-weight: 600;
+            font-size: 0.9rem;
+            margin-bottom: 4px;
+        }
+
+        .rec-desc {
+            color: #a0a6b3;
+            font-size: 0.85rem;
+        }
+
+        .chart-container {
+            position: relative;
+            margin-top: 20px;
+            padding: 15px;
+            background: #0a0e27;
+            border: 1px solid #1a2847;
+            border-radius: 4px;
+        }
+
+        canvas {
+            width: 100% !important;
+            height: auto !important;
+        }
+
+        .visualization-panel {
+            grid-column: 1 / -1;
+        }
+
+        .demo-button {
+            padding: 8px 12px;
+            background: #1a2847;
+            color: #00d4aa;
+            border: 1px solid #1a2847;
+            border-radius: 4px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            cursor: pointer;
+            margin-bottom: 15px;
+        }
+
+        .demo-button:hover {
+            background: #00d4aa;
+            color: #0a0e27;
+        }
+
+        @media (max-width: 768px) {
+            .content {
+                grid-template-columns: 1fr;
+            }
+
+            h1 {
+                font-size: 2rem;
+            }
+
+            .visualization-panel {
+                grid-column: 1;
+            }
+
+            .metric-row {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        footer {
+            border-top: 1px solid #1a2847;
+            padding-top: 20px;
+            text-align: center;
+            color: #707a89;
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Overfitting Detector</h1>
+            <p class="subtitle">Detect overfitting patterns and get regularization recommendations</p>
+        </header>
+
+        <div class="content">
+            <div class="panel">
+                <h2>📊 Input Loss Curves</h2>
+
+                <button class="demo-button" onclick="loadDemoData()">Load Demo Data</button>
+
+                <div class="input-group">
+                    <label for="trainLosses">Training Loss (comma-separated)</label>
+                    <textarea id="trainLosses" placeholder="e.g.: 2.5,2.3,2.1,1.9,1.8,1.75,1.73,1.71,1.70,1.70">2.5,2.3,2.1,1.9,1.8,1.75,1.73,1.71,1.70,1.70</textarea>
+                    <div class="input-hint">Enter loss values for each epoch</div>
+                </div>
+
+                <div class="input-group">
+                    <label for="valLosses">Validation Loss (comma-separated)</label>
+                    <textarea id="valLosses" placeholder="e.g.: 2.6,2.4,2.2,2.0,1.95,1.94,1.98,2.05,2.15,2.28">2.6,2.4,2.2,2.0,1.95,1.94,1.98,2.05,2.15,2.28</textarea>
+                    <div class="input-hint">Enter corresponding validation loss values</div>
+                </div>
+
+                <button onclick="analyzeOverfitting()">Analyze Overfitting</button>
+            </div>
+
+            <div class="panel">
+                <h2>🔍 Overfitting Analysis</h2>
+
+                <div id="alertContainer"></div>
+
+                <div class="metric-row">
+                    <div class="metric-item">
+                        <div class="metric-label">Overfitting Severity</div>
+                        <div class="metric-value" id="severity">—</div>
+                    </div>
+                    <div class="metric-item">
+                        <div class="metric-label">Overfitting Point (Epoch)</div>
+                        <div class="metric-value" id="overfitEpoch">—</div>
+                    </div>
+                </div>
+
+                <div class="metric-row">
+                    <div class="metric-item">
+                        <div class="metric-label">Train-Val Gap (Final)</div>
+                        <div class="metric-value" id="finalGap">—</div>
+                    </div>
+                    <div class="metric-item">
+                        <div class="metric-label">Gap at Best Epoch</div>
+                        <div class="metric-value" id="bestGap">—</div>
+                    </div>
+                </div>
+
+                <div class="metric-row">
+                    <div class="metric-item">
+                        <div class="metric-label">Trend (Val Loss)</div>
+                        <div class="metric-value" id="trend">—</div>
+                    </div>
+                    <div class="metric-item">
+                        <div class="metric-label">Best Validation Loss</div>
+                        <div class="metric-value" id="bestValLoss">—</div>
+                    </div>
+                </div>
+
+                <h3 style="color: #00d4aa; margin-top: 25px; margin-bottom: 15px;">Regularization Recommendations</h3>
+                <div id="recommendationsContainer">
+                    <div style="color: #707a89; text-align: center; padding: 20px;">Analyze curves to see recommendations</div>
+                </div>
+            </div>
+
+            <div class="panel visualization-panel">
+                <h2>📈 Loss Curves & Overfitting Detection</h2>
+                <div class="chart-container">
+                    <canvas id="lossChart" width="800" height="350"></canvas>
+                </div>
+
+                <div class="chart-container" style="margin-top: 20px;">
+                    <h3 style="color: #00d4aa; margin-bottom: 15px;">Loss Gap Over Time</h3>
+                    <canvas id="gapChart" width="800" height="250"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <footer>
+            <p>&copy; 2026 ml0x.com. All rights reserved.</p>
+        </footer>
+    </div>
+
+    <script>
+        function loadDemoData() {
+            document.getElementById('trainLosses').value = '2.5,2.3,2.1,1.9,1.8,1.75,1.73,1.71,1.70,1.70';
+            document.getElementById('valLosses').value = '2.6,2.4,2.2,2.0,1.95,1.94,1.98,2.05,2.15,2.28';
+            analyzeOverfitting();
+        }
+
+        function analyzeOverfitting() {
+            const trainStr = document.getElementById('trainLosses').value;
+            const valStr = document.getElementById('valLosses').value;
+
+            const trainLosses = trainStr.split(',').map(x => parseFloat(x.trim())).filter(x => !isNaN(x));
+            const valLosses = valStr.split(',').map(x => parseFloat(x.trim())).filter(x => !isNaN(x));
+
+            if (trainLosses.length === 0 || valLosses.length === 0) {
+                alert('Please enter valid loss values');
+                return;
+            }
+
+            // Calculate metrics
+            const finalTrainLoss = trainLosses[trainLosses.length - 1];
+            const finalValLoss = valLosses[valLosses.length - 1];
+            const bestValIdx = valLosses.indexOf(Math.min(...valLosses));
+            const bestValLoss = valLosses[bestValIdx];
+
+            // Calculate gaps
+            const gaps = valLosses.map((v, i) => v - trainLosses[i]);
+            const finalGap = gaps[gaps.length - 1];
+            const bestGap = gaps[bestValIdx];
+            const maxGap = Math.max(...gaps);
+            const maxGapIdx = gaps.indexOf(maxGap);
+
+            // Determine overfitting point (where validation loss starts consistently increasing)
+            let overfitEpoch = -1;
+            for (let i = bestValIdx + 1; i < valLosses.length; i++) {
+                if (valLosses[i] > valLosses[i - 1]) {
+                    overfitEpoch = i + 1;
+                    break;
+                }
+            }
+
+            // Severity classification
+            let severity, severityClass;
+            if (finalGap < 0.1) {
+                severity = 'None';
+                severityClass = 'alert-info';
+            } else if (finalGap < 0.3) {
+                severity = 'Mild';
+                severityClass = 'alert-info';
+            } else if (finalGap < 0.7) {
+                severity = 'Moderate';
+                severityClass = 'alert-warning';
+            } else {
+                severity = 'Severe';
+                severityClass = 'alert-severe';
+            }
+
+            // Trend
+            const recentGapTrend = gaps.slice(-3).reduce((a, b) => a + b) / 3;
+            const trend = recentGapTrend > finalGap / 2 ? '📈 Worsening' : '📉 Stable';
+
+            // Update UI
+            document.getElementById('severity').textContent = severity;
+            document.getElementById('overfitEpoch').textContent = overfitEpoch > 0 ? overfitEpoch : 'No clear sign';
+            document.getElementById('finalGap').textContent = finalGap.toFixed(4);
+            document.getElementById('bestGap').textContent = bestGap.toFixed(4);
+            document.getElementById('bestValLoss').textContent = bestValLoss.toFixed(4);
+            document.getElementById('trend').textContent = trend;
+
+            // Alert
+            const alertHTML = `
+                <div class="alert ${severityClass}">
+                    <strong>${severity} Overfitting Detected</strong> — Validation loss diverging from training loss at epoch ${overfitEpoch > 0 ? overfitEpoch : '?'}
+                </div>
+            `;
+            document.getElementById('alertContainer').innerHTML = alertHTML;
+
+            // Recommendations
+            const recommendations = generateRecommendations(severity, finalGap, overfitEpoch, trainLosses, valLosses);
+            const recHTML = recommendations.map(rec => `
+                <div class="recommendation">
+                    <div class="rec-title">${rec.title}</div>
+                    <div class="rec-desc">${rec.description}</div>
+                </div>
+            `).join('');
+
+            document.getElementById('recommendationsContainer').innerHTML = recHTML;
+
+            // Draw charts
+            drawLossChart(trainLosses, valLosses, bestValIdx);
+            drawGapChart(gaps, bestValIdx);
+        }
+
+        function generateRecommendations(severity, finalGap, overfitEpoch, trainLosses, valLosses) {
+            const recs = [];
+
+            if (severity === 'Severe') {
+                recs.push({
+                    title: '🔴 Apply L1/L2 Regularization',
+                    description: 'Add weight decay (λ=1e-4 to 1e-3) to penalize large weights.'
+                });
+                recs.push({
+                    title: '🔴 Increase Dropout',
+                    description: 'Add or increase dropout rate to 0.3-0.5 to randomly drop activations during training.'
+                });
+                recs.push({
+                    title: '🔴 Reduce Model Complexity',
+                    description: 'Decrease number of layers or hidden units to lower model capacity.'
+                });
+            } else if (severity === 'Moderate') {
+                recs.push({
+                    title: '🟠 Add Data Augmentation',
+                    description: 'Apply transforms (rotation, zoom, flip) to increase training data diversity.'
+                });
+                recs.push({
+                    title: '🟠 Apply Dropout (0.2-0.3)',
+                    description: 'Introduce dropout to reduce co-adaptation of features.'
+                });
+                recs.push({
+                    title: '🟠 Use Early Stopping',
+                    description: `Stop training at epoch ${overfitEpoch > 0 ? overfitEpoch : '?'} based on validation loss.`
+                });
+            } else if (severity === 'Mild') {
+                recs.push({
+                    title: '🟡 Monitor Validation Loss',
+                    description: 'Continue training but watch for signs of increasing divergence.'
+                });
+                recs.push({
+                    title: '🟡 Light L2 Regularization',
+                    description: 'Use weight decay (λ=1e-5 to 1e-4) for gentle regularization.'
+                });
+            } else {
+                recs.push({
+                    title: '🟢 Good Generalization',
+                    description: 'Train/validation curves are well-aligned. Continue current approach.'
+                });
+                recs.push({
+                    title: '🟢 Optimization Opportunity',
+                    description: 'Model has room for increased capacity or training duration.'
+                });
+            }
+
+            return recs;
+        }
+
+        function drawLossChart(trainLosses, valLosses, bestValIdx) {
+            const canvas = document.getElementById('lossChart');
+            const ctx = canvas.getContext('2d');
+            const width = canvas.width;
+            const height = canvas.height;
+            const padding = 50;
+
+            ctx.fillStyle = '#0a0e27';
+            ctx.fillRect(0, 0, width, height);
+
+            const minLoss = Math.min(...trainLosses, ...valLosses) * 0.95;
+            const maxLoss = Math.max(...trainLosses, ...valLosses) * 1.05;
+            const range = maxLoss - minLoss;
+
+            // Grid
+            ctx.strokeStyle = '#1a2847';
+            ctx.lineWidth = 1;
+            for (let i = 0; i <= 5; i++) {
+                const y = padding + (i / 5) * (height - 2 * padding);
+                ctx.beginPath();
+                ctx.moveTo(padding, y);
+                ctx.lineTo(width - padding, y);
+                ctx.stroke();
+            }
+
+            // Axes
+            ctx.strokeStyle = '#707a89';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(padding, height - padding);
+            ctx.lineTo(width - padding, height - padding);
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.moveTo(padding, padding);
+            ctx.lineTo(padding, height - padding);
+            ctx.stroke();
+
+            // Draw training loss
+            ctx.strokeStyle = '#00d4aa';
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            for (let i = 0; i < trainLosses.length; i++) {
+                const x = padding + (i / (trainLosses.length - 1)) * (width - 2 * padding);
+                const y = height - padding - ((trainLosses[i] - minLoss) / range) * (height - 2 * padding);
+                if (i === 0) ctx.moveTo(x, y);
+                else ctx.lineTo(x, y);
+            }
+            ctx.stroke();
+
+            // Draw validation loss
+            ctx.strokeStyle = '#ff9800';
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            for (let i = 0; i < valLosses.length; i++) {
+                const x = padding + (i / (valLosses.length - 1)) * (width - 2 * padding);
+                const y = height - padding - ((valLosses[i] - minLoss) / range) * (height - 2 * padding);
+                if (i === 0) ctx.moveTo(x, y);
+                else ctx.lineTo(x, y);
+            }
+            ctx.stroke();
+
+            // Mark best validation point
+            const bx = padding + (bestValIdx / (valLosses.length - 1)) * (width - 2 * padding);
+            const by = height - padding - ((valLosses[bestValIdx] - minLoss) / range) * (height - 2 * padding);
+            ctx.fillStyle = '#00ff88';
+            ctx.beginPath();
+            ctx.arc(bx, by, 6, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Legend
+            ctx.fillStyle = '#00d4aa';
+            ctx.font = '12px sans-serif';
+            ctx.fillText('─ Train Loss', width - 150, 30);
+            ctx.fillStyle = '#ff9800';
+            ctx.fillText('─ Validation Loss', width - 150, 50);
+
+            // Y-axis labels
+            ctx.fillStyle = '#a0a6b3';
+            ctx.font = '11px sans-serif';
+            ctx.textAlign = 'right';
+            for (let i = 0; i <= 5; i++) {
+                const loss = minLoss + (i / 5) * range;
+                const y = height - padding - (i / 5) * (height - 2 * padding);
+                ctx.fillText(loss.toFixed(2), padding - 10, y + 4);
+            }
+
+            // X-axis label
+            ctx.textAlign = 'center';
+            ctx.fillText('Epoch', width / 2, height - 15);
+        }
+
+        function drawGapChart(gaps, bestIdx) {
+            const canvas = document.getElementById('gapChart');
+            const ctx = canvas.getContext('2d');
+            const width = canvas.width;
+            const height = canvas.height;
+            const padding = 50;
+
+            ctx.fillStyle = '#0a0e27';
+            ctx.fillRect(0, 0, width, height);
+
+            const maxGap = Math.max(...gaps) * 1.1;
+
+            // Grid
+            ctx.strokeStyle = '#1a2847';
+            ctx.lineWidth = 1;
+            for (let i = 0; i <= 5; i++) {
+                const y = height - padding - (i / 5) * (height - 2 * padding);
+                ctx.beginPath();
+                ctx.moveTo(padding, y);
+                ctx.lineTo(width - padding, y);
+                ctx.stroke();
+            }
+
+            // Axes
+            ctx.strokeStyle = '#707a89';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(padding, height - padding);
+            ctx.lineTo(width - padding, height - padding);
+            ctx.stroke();
+
+            // Draw bars
+            gaps.forEach((gap, i) => {
+                const x = padding + (i / (gaps.length - 1)) * (width - 2 * padding);
+                const gapHeight = (gap / maxGap) * (height - 2 * padding);
+
+                if (i === bestIdx) ctx.fillStyle = '#00ff88';
+                else ctx.fillStyle = gap > 0.3 ? '#ff6b6b' : '#00d4aa';
+
+                ctx.fillRect(x - 8, height - padding - gapHeight, 16, gapHeight);
+            });
+
+            // Labels
+            ctx.fillStyle = '#a0a6b3';
+            ctx.font = '11px sans-serif';
+            ctx.textAlign = 'center';
+            ctx.fillText('Train-Val Loss Gap', width / 2, height - 15);
+
+            // Y-axis labels
+            ctx.textAlign = 'right';
+            for (let i = 0; i <= 5; i++) {
+                const gap = (i / 5) * maxGap;
+                const y = height - padding - (i / 5) * (height - 2 * padding);
+                ctx.fillText(gap.toFixed(2), padding - 10, y + 4);
+            }
+        }
+
+        window.addEventListener('load', () => {
+            loadDemoData();
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,560 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Feature Importance Calculator — Free ML Tool</title>
+    <meta name="description" content="Calculate permutation feature importance. Input features and weights, see ranked importance scores and interactive charts.">
+    <meta name="keywords" content="feature importance, machine learning, permutation importance, feature analysis">
+    <meta name="author" content="ml0x.com">
+    <link rel="canonical" href="https://ml0x.com/tools/feature-importance-calculator">
+    <meta property="og:title" content="Feature Importance Calculator — Free ML Tool">
+    <meta property="og:description" content="Calculate permutation feature importance. Input features and weights, see ranked importance scores and interactive charts.">
+    <meta property="og:url" content="https://ml0x.com/tools/feature-importance-calculator">
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="ml0x.com">
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "WebApplication",
+        "name": "Feature Importance Calculator",
+        "description": "Free tool to calculate permutation feature importance for machine learning models. Rank and visualize feature impact.",
+        "url": "https://ml0x.com/tools/feature-importance-calculator",
+        "applicationCategory": "UtilityApplication",
+        "offers": {
+            "@type": "Offer",
+            "price": "0"
+        }
+    }
+    </script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: #0a0e27;
+            color: #e0e6ed;
+            line-height: 1.6;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        header {
+            margin-bottom: 40px;
+            border-bottom: 2px solid #00d4aa;
+            padding-bottom: 20px;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            color: #00d4aa;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            font-size: 1.1rem;
+            color: #a0a6b3;
+        }
+
+        .content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+
+        .panel {
+            background: #0f1633;
+            border: 1px solid #1a2847;
+            border-radius: 8px;
+            padding: 25px;
+        }
+
+        .panel h2 {
+            font-size: 1.3rem;
+            color: #00d4aa;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .feature-input {
+            display: grid;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .feature-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr auto;
+            gap: 10px;
+            align-items: end;
+        }
+
+        label {
+            display: block;
+            font-size: 0.95rem;
+            font-weight: 500;
+            margin-bottom: 6px;
+            color: #c0c6d3;
+        }
+
+        input[type="text"],
+        input[type="number"],
+        select {
+            padding: 10px 12px;
+            background: #0a0e27;
+            border: 1px solid #1a2847;
+            border-radius: 4px;
+            color: #e0e6ed;
+            font-size: 0.95rem;
+        }
+
+        input[type="text"],
+        input[type="number"] {
+            width: 100%;
+        }
+
+        input:focus,
+        select:focus {
+            outline: none;
+            border-color: #00d4aa;
+            box-shadow: 0 0 0 3px rgba(0, 212, 170, 0.1);
+        }
+
+        button {
+            padding: 10px 15px;
+            background: linear-gradient(135deg, #00d4aa 0%, #00a892 100%);
+            color: #0a0e27;
+            border: none;
+            border-radius: 4px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(0, 212, 170, 0.3);
+        }
+
+        .btn-primary {
+            width: 100%;
+            padding: 12px 20px;
+            margin-top: 10px;
+            font-size: 1rem;
+        }
+
+        .btn-secondary {
+            padding: 8px 12px;
+            font-size: 0.85rem;
+        }
+
+        .btn-remove {
+            background: #d32f2f;
+            padding: 8px 12px;
+        }
+
+        .btn-remove:hover {
+            background: #b71c1c;
+        }
+
+        .importance-item {
+            display: grid;
+            grid-template-columns: 1fr 100px;
+            gap: 15px;
+            align-items: center;
+            padding: 15px;
+            background: #0a0e27;
+            border-left: 4px solid #00d4aa;
+            border-radius: 2px;
+            margin-bottom: 10px;
+        }
+
+        .feature-name {
+            font-weight: 600;
+            color: #e0e6ed;
+        }
+
+        .bar-container {
+            background: #1a2847;
+            border-radius: 3px;
+            height: 20px;
+            overflow: hidden;
+        }
+
+        .bar {
+            height: 100%;
+            background: linear-gradient(90deg, #00d4aa 0%, #00a892 100%);
+            transition: width 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            padding-right: 8px;
+            color: #0a0e27;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .importance-score {
+            text-align: right;
+        }
+
+        .score-value {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: #00d4aa;
+        }
+
+        .score-percent {
+            font-size: 0.85rem;
+            color: #a0a6b3;
+        }
+
+        .chart-container {
+            position: relative;
+            margin-top: 20px;
+            padding: 15px;
+            background: #0a0e27;
+            border: 1px solid #1a2847;
+            border-radius: 4px;
+        }
+
+        canvas {
+            width: 100% !important;
+            height: auto !important;
+            border-radius: 4px;
+        }
+
+        .visualization-panel {
+            grid-column: 1 / -1;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .stat-box {
+            background: #0a0e27;
+            border: 1px solid #1a2847;
+            border-radius: 4px;
+            padding: 15px;
+            text-align: center;
+        }
+
+        .stat-label {
+            color: #a0a6b3;
+            font-size: 0.9rem;
+            margin-bottom: 8px;
+        }
+
+        .stat-value {
+            color: #00d4aa;
+            font-size: 1.3rem;
+            font-weight: 700;
+        }
+
+        @media (max-width: 768px) {
+            .content {
+                grid-template-columns: 1fr;
+            }
+
+            .feature-row {
+                grid-template-columns: 1fr;
+            }
+
+            h1 {
+                font-size: 2rem;
+            }
+
+            .visualization-panel {
+                grid-column: 1;
+            }
+
+            .importance-item {
+                grid-template-columns: 1fr;
+            }
+
+            .stats {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        footer {
+            border-top: 1px solid #1a2847;
+            padding-top: 20px;
+            text-align: center;
+            color: #707a89;
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Feature Importance Calculator</h1>
+            <p class="subtitle">Calculate permutation importance and rank your features</p>
+        </header>
+
+        <div class="content">
+            <div class="panel">
+                <h2>🔧 Input Features</h2>
+                <div class="feature-input" id="featuresList">
+                    <div class="feature-row">
+                        <div>
+                            <label>Feature Name</label>
+                            <input type="text" class="feature-name-input" placeholder="e.g., age" value="age">
+                        </div>
+                        <div>
+                            <label>Weight/Coefficient</label>
+                            <input type="number" class="feature-weight-input" placeholder="1.0" value="0.85" step="0.01">
+                        </div>
+                        <button class="btn-secondary btn-remove" onclick="removeFeature(this)">Remove</button>
+                    </div>
+                    <div class="feature-row">
+                        <div>
+                            <label>Feature Name</label>
+                            <input type="text" class="feature-name-input" placeholder="e.g., salary" value="salary">
+                        </div>
+                        <div>
+                            <label>Weight/Coefficient</label>
+                            <input type="number" class="feature-weight-input" placeholder="1.0" value="0.72" step="0.01">
+                        </div>
+                        <button class="btn-secondary btn-remove" onclick="removeFeature(this)">Remove</button>
+                    </div>
+                    <div class="feature-row">
+                        <div>
+                            <label>Feature Name</label>
+                            <input type="text" class="feature-name-input" placeholder="e.g., experience" value="experience">
+                        </div>
+                        <div>
+                            <label>Weight/Coefficient</label>
+                            <input type="number" class="feature-weight-input" placeholder="1.0" value="0.68" step="0.01">
+                        </div>
+                        <button class="btn-secondary btn-remove" onclick="removeFeature(this)">Remove</button>
+                    </div>
+                </div>
+
+                <button class="btn-secondary" onclick="addFeature()" style="width: 100%; margin-bottom: 15px;">+ Add Feature</button>
+                <button class="btn-primary" onclick="calculateImportance()">Calculate Importance</button>
+            </div>
+
+            <div class="panel">
+                <h2>📊 Statistics</h2>
+                <div class="stats">
+                    <div class="stat-box">
+                        <div class="stat-label">Total Weight</div>
+                        <div class="stat-value" id="totalWeight">0</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-label">Feature Count</div>
+                        <div class="stat-value" id="featureCount">0</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-label">Top Feature Impact</div>
+                        <div class="stat-value" id="topFeature">—</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-label">Importance Concentration</div>
+                        <div class="stat-value" id="concentration">—</div>
+                    </div>
+                </div>
+
+                <h3 style="color: #00d4aa; margin-top: 25px; margin-bottom: 15px;">Ranked Features</h3>
+                <div id="importanceResults" style="max-height: 400px; overflow-y: auto;">
+                    <div style="color: #707a89; text-align: center; padding: 20px;">Run calculation to see results</div>
+                </div>
+            </div>
+
+            <div class="panel visualization-panel">
+                <h2>📈 Feature Importance Distribution</h2>
+                <div class="chart-container">
+                    <canvas id="importanceChart" width="800" height="350"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <footer>
+            <p>&copy; 2026 ml0x.com. All rights reserved.</p>
+        </footer>
+    </div>
+
+    <script>
+        function addFeature() {
+            const list = document.getElementById('featuresList');
+            const row = document.createElement('div');
+            row.className = 'feature-row';
+            row.innerHTML = `
+                <div>
+                    <label>Feature Name</label>
+                    <input type="text" class="feature-name-input" placeholder="e.g., feature_name" value="">
+                </div>
+                <div>
+                    <label>Weight/Coefficient</label>
+                    <input type="number" class="feature-weight-input" placeholder="1.0" value="0.5" step="0.01">
+                </div>
+                <button class="btn-secondary btn-remove" onclick="removeFeature(this)">Remove</button>
+            `;
+            list.appendChild(row);
+        }
+
+        function removeFeature(btn) {
+            btn.parentElement.remove();
+            calculateImportance();
+        }
+
+        function calculateImportance() {
+            const names = Array.from(document.querySelectorAll('.feature-name-input')).map(el => el.value || 'Unknown');
+            const weights = Array.from(document.querySelectorAll('.feature-weight-input')).map(el => parseFloat(el.value) || 0);
+
+            const absWeights = weights.map(w => Math.abs(w));
+            const totalWeight = absWeights.reduce((a, b) => a + b, 0);
+            const importance = absWeights.map(w => (w / totalWeight) * 100);
+
+            // Sort by importance
+            const sorted = names.map((name, idx) => ({
+                name,
+                weight: weights[idx],
+                absWeight: absWeights[idx],
+                importance: importance[idx]
+            })).sort((a, b) => b.importance - a.importance);
+
+            // Update stats
+            document.getElementById('totalWeight').textContent = totalWeight.toFixed(2);
+            document.getElementById('featureCount').textContent = names.length;
+
+            const topFeature = sorted[0];
+            document.getElementById('topFeature').textContent = topFeature.importance.toFixed(1) + '%';
+
+            // Concentration: Herfindahl index (0-1, higher = more concentrated)
+            const herfindahl = sorted.reduce((sum, f) => sum + Math.pow(f.importance / 100, 2), 0);
+            const concentration = ((herfindahl - 1 / names.length) / (1 - 1 / names.length) * 100).toFixed(0);
+            document.getElementById('concentration').textContent = concentration + '%';
+
+            // Display results
+            const resultsHTML = sorted.map(f => `
+                <div class="importance-item">
+                    <div>
+                        <div class="feature-name">${f.name}</div>
+                        <div class="bar-container">
+                            <div class="bar" style="width: ${f.importance}%;">
+                                ${f.importance.toFixed(1)}%
+                            </div>
+                        </div>
+                    </div>
+                    <div class="importance-score">
+                        <div class="score-value">${f.importance.toFixed(2)}</div>
+                        <div class="score-percent">Importance</div>
+                    </div>
+                </div>
+            `).join('');
+
+            document.getElementById('importanceResults').innerHTML = resultsHTML;
+            drawChart(sorted);
+        }
+
+        function drawChart(sortedFeatures) {
+            const canvas = document.getElementById('importanceChart');
+            const ctx = canvas.getContext('2d');
+            const width = canvas.width;
+            const height = canvas.height;
+            const padding = 60;
+
+            ctx.fillStyle = '#0a0e27';
+            ctx.fillRect(0, 0, width, height);
+
+            const maxImportance = Math.max(...sortedFeatures.map(f => f.importance), 1);
+            const barWidth = (width - 2 * padding) / sortedFeatures.length;
+
+            // Draw grid
+            ctx.strokeStyle = '#1a2847';
+            ctx.lineWidth = 1;
+            for (let i = 0; i <= 5; i++) {
+                const y = height - padding - (i / 5) * (height - 2 * padding);
+                ctx.beginPath();
+                ctx.moveTo(padding, y);
+                ctx.lineTo(width - padding, y);
+                ctx.stroke();
+            }
+
+            // Draw axes
+            ctx.strokeStyle = '#707a89';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(padding, height - padding);
+            ctx.lineTo(width - padding, height - padding);
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.moveTo(padding, padding);
+            ctx.lineTo(padding, height - padding);
+            ctx.stroke();
+
+            // Draw bars
+            sortedFeatures.forEach((feature, idx) => {
+                const x = padding + idx * barWidth + barWidth * 0.1;
+                const barHeight = (feature.importance / maxImportance) * (height - 2 * padding);
+                const y = height - padding - barHeight;
+
+                // Gradient
+                const gradient = ctx.createLinearGradient(x, y, x, height - padding);
+                gradient.addColorStop(0, '#00d4aa');
+                gradient.addColorStop(1, '#00a892');
+                ctx.fillStyle = gradient;
+                ctx.fillRect(x, y, barWidth * 0.8, barHeight);
+
+                // Label
+                ctx.fillStyle = '#a0a6b3';
+                ctx.font = '12px sans-serif';
+                ctx.textAlign = 'center';
+                ctx.save();
+                ctx.translate(x + barWidth * 0.4, height - padding + 15);
+                ctx.rotate(-Math.PI / 4);
+                ctx.fillText(feature.name, 0, 0);
+                ctx.restore();
+
+                // Value on bar
+                ctx.fillStyle = '#e0e6ed';
+                ctx.font = 'bold 11px sans-serif';
+                ctx.textAlign = 'center';
+                ctx.fillText(feature.importance.toFixed(1) + '%', x + barWidth * 0.4, y - 5);
+            });
+
+            // Y-axis labels
+            ctx.fillStyle = '#a0a6b3';
+            ctx.font = '12px sans-serif';
+            ctx.textAlign = 'right';
+            for (let i = 0; i <= 5; i++) {
+                const value = (i / 5) * maxImportance;
+                const y = height - padding - (i / 5) * (height - 2 * padding);
+                ctx.fillText(value.toFixed(0) + '%', padding - 10, y + 4);
+            }
+
+            // Y-axis label
+            ctx.save();
+            ctx.translate(15, height / 2);
+            ctx.rotate(-Math.PI / 2);
+            ctx.textAlign = 'center';
+            ctx.fillText('Importance (%)', 0, 0);
+            ctx.restore();
+        }
+
+        // Initialize
+        window.addEventListener('load', () => {
+            calculateImportance();
+        });
+    </script>
+</body>
+</html>

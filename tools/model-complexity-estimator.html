@@ -1,0 +1,585 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Model Complexity Estimator — Free ML Tool</title>
+    <meta name="description" content="Free ML tool to estimate model FLOPs, memory usage, and inference time. Compare neural network architectures instantly.">
+    <meta name="keywords" content="model complexity, FLOPs, memory usage, inference time, neural network">
+    <meta name="author" content="ml0x.com">
+    <link rel="canonical" href="https://ml0x.com/tools/model-complexity-estimator">
+    <meta property="og:title" content="Model Complexity Estimator — Free ML Tool">
+    <meta property="og:description" content="Free ML tool to estimate model FLOPs, memory usage, and inference time. Compare neural network architectures instantly.">
+    <meta property="og:url" content="https://ml0x.com/tools/model-complexity-estimator">
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="ml0x.com">
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "WebApplication",
+        "name": "Model Complexity Estimator",
+        "description": "Free tool to estimate neural network model complexity including FLOPs, memory usage, and inference time. Compare architectures.",
+        "url": "https://ml0x.com/tools/model-complexity-estimator",
+        "applicationCategory": "UtilityApplication",
+        "offers": {
+            "@type": "Offer",
+            "price": "0"
+        }
+    }
+    </script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: #0a0e27;
+            color: #e0e6ed;
+            line-height: 1.6;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        header {
+            margin-bottom: 40px;
+            border-bottom: 2px solid #00d4aa;
+            padding-bottom: 20px;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            color: #00d4aa;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            font-size: 1.1rem;
+            color: #a0a6b3;
+        }
+
+        .content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+
+        .panel {
+            background: #0f1633;
+            border: 1px solid #1a2847;
+            border-radius: 8px;
+            padding: 25px;
+        }
+
+        .panel h2 {
+            font-size: 1.3rem;
+            color: #00d4aa;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            font-size: 0.95rem;
+            font-weight: 500;
+            margin-bottom: 8px;
+            color: #c0c6d3;
+        }
+
+        input[type="number"],
+        select {
+            width: 100%;
+            padding: 10px 12px;
+            background: #0a0e27;
+            border: 1px solid #1a2847;
+            border-radius: 4px;
+            color: #e0e6ed;
+            font-size: 0.95rem;
+        }
+
+        input:focus,
+        select:focus {
+            outline: none;
+            border-color: #00d4aa;
+            box-shadow: 0 0 0 3px rgba(0, 212, 170, 0.1);
+        }
+
+        .input-hint {
+            font-size: 0.85rem;
+            color: #707a89;
+            margin-top: 4px;
+        }
+
+        button {
+            width: 100%;
+            padding: 12px 20px;
+            background: linear-gradient(135deg, #00d4aa 0%, #00a892 100%);
+            color: #0a0e27;
+            border: none;
+            border-radius: 4px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 10px;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(0, 212, 170, 0.3);
+        }
+
+        .metric-card {
+            background: #0a0e27;
+            border: 1px solid #1a2847;
+            border-radius: 4px;
+            padding: 15px;
+            margin-bottom: 15px;
+        }
+
+        .metric-label {
+            color: #a0a6b3;
+            font-size: 0.85rem;
+            margin-bottom: 6px;
+        }
+
+        .metric-value {
+            color: #00d4aa;
+            font-size: 1.3rem;
+            font-weight: 700;
+        }
+
+        .metric-unit {
+            color: #707a89;
+            font-size: 0.9rem;
+            margin-left: 5px;
+        }
+
+        .comparison-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+
+        .comparison-table th {
+            background: #0a0e27;
+            color: #00d4aa;
+            padding: 10px;
+            text-align: left;
+            font-weight: 600;
+            font-size: 0.9rem;
+            border-bottom: 2px solid #1a2847;
+        }
+
+        .comparison-table td {
+            padding: 10px;
+            border-bottom: 1px solid #1a2847;
+            color: #e0e6ed;
+            font-size: 0.9rem;
+        }
+
+        .comparison-table tr:hover {
+            background: rgba(0, 212, 170, 0.05);
+        }
+
+        .chart-container {
+            position: relative;
+            margin-top: 20px;
+            padding: 15px;
+            background: #0a0e27;
+            border: 1px solid #1a2847;
+            border-radius: 4px;
+        }
+
+        canvas {
+            width: 100% !important;
+            height: auto !important;
+        }
+
+        .visualization-panel {
+            grid-column: 1 / -1;
+        }
+
+        .preset-buttons {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .btn-preset {
+            padding: 8px 12px;
+            background: #1a2847;
+            color: #00d4aa;
+            border: 1px solid #00d4aa;
+            border-radius: 4px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-preset:hover {
+            background: #00d4aa;
+            color: #0a0e27;
+        }
+
+        @media (max-width: 768px) {
+            .content {
+                grid-template-columns: 1fr;
+            }
+
+            h1 {
+                font-size: 2rem;
+            }
+
+            .visualization-panel {
+                grid-column: 1;
+            }
+
+            .preset-buttons {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        footer {
+            border-top: 1px solid #1a2847;
+            padding-top: 20px;
+            text-align: center;
+            color: #707a89;
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Model Complexity Estimator</h1>
+            <p class="subtitle">Estimate FLOPs, memory usage, and inference time for neural networks</p>
+        </header>
+
+        <div class="content">
+            <div class="panel">
+                <h2>🏗️ Model Architecture</h2>
+
+                <div class="preset-buttons">
+                    <button class="btn-preset" onclick="loadPreset('resnet50')">ResNet-50</button>
+                    <button class="btn-preset" onclick="loadPreset('vgg16')">VGG-16</button>
+                    <button class="btn-preset" onclick="loadPreset('mobilenet')">MobileNet</button>
+                    <button class="btn-preset" onclick="loadPreset('bert')">BERT</button>
+                </div>
+
+                <div class="input-group">
+                    <label for="inputSize">Input Dimensions (HxW)</label>
+                    <input type="number" id="inputSize" value="224" min="32" step="32">
+                    <div class="input-hint">e.g., 224 for ImageNet models</div>
+                </div>
+
+                <div class="input-group">
+                    <label for="numLayers">Number of Layers</label>
+                    <input type="number" id="numLayers" value="50" min="1" step="1">
+                    <div class="input-hint">Total depth of network</div>
+                </div>
+
+                <div class="input-group">
+                    <label for="paramCount">Parameters (millions)</label>
+                    <input type="number" id="paramCount" value="25.5" min="0.1" step="0.1">
+                    <div class="input-hint">Model weight count in millions</div>
+                </div>
+
+                <div class="input-group">
+                    <label for="batchSize">Batch Size</label>
+                    <input type="number" id="batchSize" value="32" min="1" step="1">
+                    <div class="input-hint">For inference time estimation</div>
+                </div>
+
+                <div class="input-group">
+                    <label for="device">Inference Device</label>
+                    <select id="device" onchange="calculateComplexity()">
+                        <option value="gpu">GPU (NVIDIA A100)</option>
+                        <option value="tpu">TPU v3</option>
+                        <option value="cpu">CPU (Intel Xeon)</option>
+                        <option value="edge">Edge Device (Mobile)</option>
+                    </select>
+                </div>
+
+                <button onclick="calculateComplexity()">Estimate Complexity</button>
+            </div>
+
+            <div class="panel">
+                <h2>📊 Complexity Metrics</h2>
+
+                <div class="metric-card">
+                    <div class="metric-label">FLOPs (Forward Pass)</div>
+                    <div>
+                        <span class="metric-value" id="flopsValue">—</span>
+                        <span class="metric-unit" id="flopsUnit"></span>
+                    </div>
+                </div>
+
+                <div class="metric-card">
+                    <div class="metric-label">Memory Usage (Inference)</div>
+                    <div>
+                        <span class="metric-value" id="memoryValue">—</span>
+                        <span class="metric-unit" id="memoryUnit"></span>
+                    </div>
+                </div>
+
+                <div class="metric-card">
+                    <div class="metric-label">Inference Time (Single Sample)</div>
+                    <div>
+                        <span class="metric-value" id="inferenceValue">—</span>
+                        <span class="metric-unit" id="inferenceUnit"></span>
+                    </div>
+                </div>
+
+                <div class="metric-card">
+                    <div class="metric-label">Throughput (Samples/sec)</div>
+                    <div>
+                        <span class="metric-value" id="throughputValue">—</span>
+                        <span class="metric-unit">samples/sec</span>
+                    </div>
+                </div>
+
+                <div class="metric-card">
+                    <div class="metric-label">Parameter Memory</div>
+                    <div>
+                        <span class="metric-value" id="paramMemory">—</span>
+                        <span class="metric-unit">MB</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="panel visualization-panel">
+                <h2>📈 Architecture Comparison</h2>
+
+                <table class="comparison-table">
+                    <thead>
+                        <tr>
+                            <th>Metric</th>
+                            <th>Value</th>
+                            <th>Estimate</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Peak GPU Memory</td>
+                            <td id="peakMemory">—</td>
+                            <td id="peakMemoryNote"></td>
+                        </tr>
+                        <tr>
+                            <td>Total Parameters</td>
+                            <td id="totalParams">—</td>
+                            <td>Millions</td>
+                        </tr>
+                        <tr>
+                            <td>Depth</td>
+                            <td id="depthMetric">—</td>
+                            <td>Layers</td>
+                        </tr>
+                        <tr>
+                            <td>Compute Efficiency</td>
+                            <td id="efficiency">—</td>
+                            <td>FLOPs/Parameter</td>
+                        </tr>
+                        <tr>
+                            <td>Batch Throughput</td>
+                            <td id="batchThroughput">—</td>
+                            <td>Samples/sec</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <div class="chart-container" style="margin-top: 30px;">
+                    <h3 style="color: #00d4aa; margin-bottom: 15px;">FLOPs vs Memory Trade-off</h3>
+                    <canvas id="tradeoffChart" width="800" height="300"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <footer>
+            <p>&copy; 2026 ml0x.com. All rights reserved.</p>
+        </footer>
+    </div>
+
+    <script>
+        const presets = {
+            resnet50: { inputSize: 224, numLayers: 50, paramCount: 25.5, name: 'ResNet-50' },
+            vgg16: { inputSize: 224, numLayers: 16, paramCount: 138, name: 'VGG-16' },
+            mobilenet: { inputSize: 224, numLayers: 28, paramCount: 4.2, name: 'MobileNet' },
+            bert: { inputSize: 512, numLayers: 12, paramCount: 110, name: 'BERT-Base' }
+        };
+
+        function loadPreset(preset) {
+            const p = presets[preset];
+            document.getElementById('inputSize').value = p.inputSize;
+            document.getElementById('numLayers').value = p.numLayers;
+            document.getElementById('paramCount').value = p.paramCount;
+            calculateComplexity();
+        }
+
+        function calculateComplexity() {
+            const inputSize = parseInt(document.getElementById('inputSize').value);
+            const numLayers = parseInt(document.getElementById('numLayers').value);
+            const paramCount = parseFloat(document.getElementById('paramCount').value);
+            const batchSize = parseInt(document.getElementById('batchSize').value);
+            const device = document.getElementById('device').value;
+
+            // Estimate FLOPs (2 * input_h * input_w * params for CNN forward pass)
+            const flops = 2 * inputSize * inputSize * paramCount * 1e6;
+
+            // Memory estimate (4 bytes per parameter + activation memory)
+            const paramMemory = paramCount * 4; // MB
+            const activationMemory = (inputSize * inputSize * numLayers * 4) / 1024; // Rough estimate
+            const totalMemory = paramMemory + activationMemory;
+
+            // Device-specific inference times (GFLOPs/sec)
+            const deviceSpecs = {
+                gpu: { throughput: 312, name: 'NVIDIA A100' }, // 312 TFLOPs
+                tpu: { throughput: 420, name: 'TPU v3' },
+                cpu: { throughput: 2.5, name: 'Intel Xeon' },
+                edge: { throughput: 0.5, name: 'Mobile GPU' }
+            };
+
+            const spec = deviceSpecs[device];
+            const inferenceTime = (flops / (spec.throughput * 1e12)) * 1000; // milliseconds
+            const throughput = (batchSize / (inferenceTime / 1000)).toFixed(1);
+
+            // Update UI
+            if (flops >= 1e12) {
+                document.getElementById('flopsValue').textContent = (flops / 1e12).toFixed(2);
+                document.getElementById('flopsUnit').textContent = 'TFLOPs';
+            } else if (flops >= 1e9) {
+                document.getElementById('flopsValue').textContent = (flops / 1e9).toFixed(2);
+                document.getElementById('flopsUnit').textContent = 'GFLOPs';
+            } else {
+                document.getElementById('flopsValue').textContent = (flops / 1e6).toFixed(2);
+                document.getElementById('flopsUnit').textContent = 'MFLOPs';
+            }
+
+            document.getElementById('memoryValue').textContent = totalMemory.toFixed(1);
+            document.getElementById('memoryUnit').textContent = 'MB';
+
+            document.getElementById('inferenceValue').textContent = inferenceTime.toFixed(2);
+            document.getElementById('inferenceUnit').textContent = 'ms';
+
+            document.getElementById('throughputValue').textContent = throughput;
+            document.getElementById('paramMemory').textContent = paramMemory.toFixed(1);
+
+            // Table data
+            document.getElementById('peakMemory').textContent = (totalMemory + (batchSize * inputSize * inputSize * 4) / (1024 * 1024)).toFixed(1) + ' MB';
+            document.getElementById('totalParams').textContent = paramCount.toFixed(1) + 'M';
+            document.getElementById('depthMetric').textContent = numLayers;
+            document.getElementById('efficiency').textContent = (flops / (paramCount * 1e6)).toFixed(2);
+            document.getElementById('batchThroughput').textContent = throughput;
+
+            drawTradeoffChart(flops / 1e9, totalMemory, numLayers, paramCount);
+        }
+
+        function drawTradeoffChart(flops, memory, layers, params) {
+            const canvas = document.getElementById('tradeoffChart');
+            const ctx = canvas.getContext('2d');
+            const width = canvas.width;
+            const height = canvas.height;
+            const padding = 50;
+
+            ctx.fillStyle = '#0a0e27';
+            ctx.fillRect(0, 0, width, height);
+
+            // Example data points for comparison
+            const models = [
+                { name: 'MobileNet', flops: 0.6, memory: 15 },
+                { name: 'ResNet-50', flops: 8, memory: 100 },
+                { name: 'VGG-16', flops: 30, memory: 550 },
+                { name: 'BERT', flops: 110, memory: 440 },
+                { name: 'Current', flops: flops, memory: memory }
+            ];
+
+            const maxFlops = 120;
+            const maxMemory = 600;
+
+            // Draw grid
+            ctx.strokeStyle = '#1a2847';
+            ctx.lineWidth = 1;
+            for (let i = 0; i <= 5; i++) {
+                const x = padding + (i / 5) * (width - 2 * padding);
+                ctx.beginPath();
+                ctx.moveTo(x, padding);
+                ctx.lineTo(x, height - padding);
+                ctx.stroke();
+
+                const y = padding + (i / 5) * (height - 2 * padding);
+                ctx.beginPath();
+                ctx.moveTo(padding, y);
+                ctx.lineTo(width - padding, y);
+                ctx.stroke();
+            }
+
+            // Draw axes
+            ctx.strokeStyle = '#707a89';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(padding, height - padding);
+            ctx.lineTo(width - padding, height - padding);
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.moveTo(padding, padding);
+            ctx.lineTo(padding, height - padding);
+            ctx.stroke();
+
+            // Plot points
+            models.forEach((model, idx) => {
+                const x = padding + (model.flops / maxFlops) * (width - 2 * padding);
+                const y = height - padding - (model.memory / maxMemory) * (height - 2 * padding);
+
+                if (model.name === 'Current') {
+                    ctx.fillStyle = '#00d4aa';
+                    ctx.beginPath();
+                    ctx.arc(x, y, 8, 0, Math.PI * 2);
+                    ctx.fill();
+                } else {
+                    ctx.fillStyle = 'rgba(0, 212, 170, 0.5)';
+                    ctx.beginPath();
+                    ctx.arc(x, y, 5, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+
+                ctx.fillStyle = '#a0a6b3';
+                ctx.font = '11px sans-serif';
+                ctx.textAlign = 'center';
+                ctx.fillText(model.name, x, y - 15);
+            });
+
+            // Labels
+            ctx.fillStyle = '#a0a6b3';
+            ctx.font = '12px sans-serif';
+            ctx.textAlign = 'center';
+            ctx.fillText('GFLOPs', width / 2, height - 15);
+
+            ctx.save();
+            ctx.translate(15, height / 2);
+            ctx.rotate(-Math.PI / 2);
+            ctx.textAlign = 'center';
+            ctx.fillText('Memory (MB)', 0, 0);
+            ctx.restore();
+        }
+
+        window.addEventListener('load', () => {
+            calculateComplexity();
+        });
+    </script>
+</body>
+</html>
