@@ -3,21 +3,28 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Feature Importance Calculator</title>
-    <meta name="description" content="Calculate feature importance using permutation, impurity, SHAP approximation. Detect redundant features and optimize your dataset.">
+    <title>Feature Importance Calculator — Free ML Tool</title>
+    <meta name="description" content="Calculate permutation feature importance. Input features and weights, see ranked importance scores and interactive charts.">
+    <meta name="keywords" content="feature importance, machine learning, permutation importance, feature analysis">
+    <meta name="author" content="ml0x.com">
     <link rel="canonical" href="https://ml0x.com/tools/feature-importance-calculator">
-    <meta property="og:title" content="Feature Importance Calculator">
-    <meta property="og:description" content="Calculate and visualize feature importance metrics for machine learning models.">
-    <meta property="og:type" content="website">
+    <meta property="og:title" content="Feature Importance Calculator — Free ML Tool">
+    <meta property="og:description" content="Calculate permutation feature importance. Input features and weights, see ranked importance scores and interactive charts.">
     <meta property="og:url" content="https://ml0x.com/tools/feature-importance-calculator">
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="ml0x.com">
     <script type="application/ld+json">
     {
         "@context": "https://schema.org",
         "@type": "WebApplication",
         "name": "Feature Importance Calculator",
+        "description": "Free tool to calculate permutation feature importance for machine learning models. Rank and visualize feature impact.",
         "url": "https://ml0x.com/tools/feature-importance-calculator",
-        "description": "Calculate and analyze feature importance scores for machine learning models",
-        "applicationCategory": "UtilityApplication"
+        "applicationCategory": "UtilityApplication",
+        "offers": {
+            "@type": "Offer",
+            "price": "0"
+        }
     }
     </script>
     <style>
@@ -26,606 +33,534 @@
             padding: 0;
             box-sizing: border-box;
         }
+
         body {
-            background: #0a0a0a;
-            color: #ffffff;
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: #0a0e27;
+            color: #e0e6ed;
             line-height: 1.6;
             padding: 20px;
         }
+
         .container {
             max-width: 1200px;
             margin: 0 auto;
         }
+
+        header {
+            margin-bottom: 40px;
+            border-bottom: 2px solid #00d4aa;
+            padding-bottom: 20px;
+        }
+
         h1 {
-            color: #06b6d4;
+            font-size: 2.5rem;
+            color: #00d4aa;
             margin-bottom: 10px;
-            font-size: 28px;
         }
+
         .subtitle {
-            color: #999;
-            margin-bottom: 30px;
-            font-size: 14px;
+            font-size: 1.1rem;
+            color: #a0a6b3;
         }
-        .layout {
+
+        .content {
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 30px;
-            margin-bottom: 30px;
+            margin-bottom: 40px;
         }
-        @media (max-width: 968px) {
-            .layout {
-                grid-template-columns: 1fr;
-            }
-        }
+
         .panel {
-            background: #1a1a1a;
-            border: 1px solid #333;
+            background: #0f1633;
+            border: 1px solid #1a2847;
             border-radius: 8px;
-            padding: 20px;
+            padding: 25px;
         }
-        .section-title {
-            color: #06b6d4;
-            font-size: 16px;
-            font-weight: 600;
-            margin-bottom: 15px;
-            border-bottom: 1px solid #333;
-            padding-bottom: 10px;
-        }
-        .form-group {
-            margin-bottom: 15px;
-        }
-        label {
-            display: block;
-            font-size: 13px;
-            margin-bottom: 5px;
-            color: #ccc;
-        }
-        input, select, textarea {
-            width: 100%;
-            padding: 10px;
-            background: #0a0a0a;
-            border: 1px solid #333;
-            border-radius: 4px;
-            color: #fff;
-            font-size: 13px;
-        }
-        input:focus, select:focus, textarea:focus {
-            outline: none;
-            border-color: #06b6d4;
-            box-shadow: 0 0 0 2px rgba(6, 182, 212, 0.1);
-        }
-        button {
-            background: #06b6d4;
-            color: #000;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 4px;
-            font-weight: 600;
-            cursor: pointer;
-            font-size: 13px;
-            transition: all 0.2s;
-        }
-        button:hover {
-            background: #00d4ff;
-            transform: translateY(-1px);
-        }
-        .button-group {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
+
+        .panel h2 {
+            font-size: 1.3rem;
+            color: #00d4aa;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
             gap: 10px;
         }
-        .button-secondary {
-            background: #333;
-            color: #fff;
+
+        .feature-input {
+            display: grid;
+            gap: 15px;
+            margin-bottom: 20px;
         }
-        .button-secondary:hover {
-            background: #444;
+
+        .feature-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr auto;
+            gap: 10px;
+            align-items: end;
         }
-        canvas {
-            width: 100%;
-            height: 400px;
-            background: #0a0a0a;
-            border: 1px solid #333;
+
+        label {
+            display: block;
+            font-size: 0.95rem;
+            font-weight: 500;
+            margin-bottom: 6px;
+            color: #c0c6d3;
+        }
+
+        input[type="text"],
+        input[type="number"],
+        select {
+            padding: 10px 12px;
+            background: #0a0e27;
+            border: 1px solid #1a2847;
             border-radius: 4px;
-            margin-bottom: 15px;
+            color: #e0e6ed;
+            font-size: 0.95rem;
         }
-        .metrics {
+
+        input[type="text"],
+        input[type="number"] {
+            width: 100%;
+        }
+
+        input:focus,
+        select:focus {
+            outline: none;
+            border-color: #00d4aa;
+            box-shadow: 0 0 0 3px rgba(0, 212, 170, 0.1);
+        }
+
+        button {
+            padding: 10px 15px;
+            background: linear-gradient(135deg, #00d4aa 0%, #00a892 100%);
+            color: #0a0e27;
+            border: none;
+            border-radius: 4px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(0, 212, 170, 0.3);
+        }
+
+        .btn-primary {
+            width: 100%;
+            padding: 12px 20px;
+            margin-top: 10px;
+            font-size: 1rem;
+        }
+
+        .btn-secondary {
+            padding: 8px 12px;
+            font-size: 0.85rem;
+        }
+
+        .btn-remove {
+            background: #d32f2f;
+            padding: 8px 12px;
+        }
+
+        .btn-remove:hover {
+            background: #b71c1c;
+        }
+
+        .importance-item {
+            display: grid;
+            grid-template-columns: 1fr 100px;
+            gap: 15px;
+            align-items: center;
+            padding: 15px;
+            background: #0a0e27;
+            border-left: 4px solid #00d4aa;
+            border-radius: 2px;
+            margin-bottom: 10px;
+        }
+
+        .feature-name {
+            font-weight: 600;
+            color: #e0e6ed;
+        }
+
+        .bar-container {
+            background: #1a2847;
+            border-radius: 3px;
+            height: 20px;
+            overflow: hidden;
+        }
+
+        .bar {
+            height: 100%;
+            background: linear-gradient(90deg, #00d4aa 0%, #00a892 100%);
+            transition: width 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            padding-right: 8px;
+            color: #0a0e27;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .importance-score {
+            text-align: right;
+        }
+
+        .score-value {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: #00d4aa;
+        }
+
+        .score-percent {
+            font-size: 0.85rem;
+            color: #a0a6b3;
+        }
+
+        .chart-container {
+            position: relative;
+            margin-top: 20px;
+            padding: 15px;
+            background: #0a0e27;
+            border: 1px solid #1a2847;
+            border-radius: 4px;
+        }
+
+        canvas {
+            width: 100% !important;
+            height: auto !important;
+            border-radius: 4px;
+        }
+
+        .visualization-panel {
+            grid-column: 1 / -1;
+        }
+
+        .stats {
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 15px;
-            margin-top: 20px;
+            margin-bottom: 20px;
         }
-        .metric-card {
-            background: #0a0a0a;
-            border: 1px solid #333;
-            padding: 15px;
-            border-radius: 4px;
-        }
-        .metric-label {
-            font-size: 12px;
-            color: #999;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            margin-bottom: 5px;
-        }
-        .metric-value {
-            font-size: 18px;
-            color: #06b6d4;
-            font-weight: 600;
-        }
-        .feature-list {
-            background: #0a0a0a;
-            border: 1px solid #333;
+
+        .stat-box {
+            background: #0a0e27;
+            border: 1px solid #1a2847;
             border-radius: 4px;
             padding: 15px;
-            margin-top: 15px;
-            max-height: 300px;
-            overflow-y: auto;
-        }
-        .feature-item {
-            display: flex;
-            justify-content: space-between;
-            padding: 8px 0;
-            border-bottom: 1px solid #333;
-            font-size: 13px;
-        }
-        .feature-item:last-child {
-            border-bottom: none;
-        }
-        .feature-name {
-            color: #ccc;
-            flex: 1;
-        }
-        .feature-score {
-            color: #06b6d4;
-            font-weight: 600;
-            min-width: 80px;
-            text-align: right;
-        }
-        textarea {
-            height: 120px;
-            resize: vertical;
-        }
-        .tabs {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 15px;
-            border-bottom: 1px solid #333;
-        }
-        .tab-button {
-            background: none;
-            color: #999;
-            border: none;
-            padding: 10px 15px;
-            cursor: pointer;
-            font-size: 13px;
-            border-bottom: 2px solid transparent;
-            transition: all 0.2s;
-        }
-        .tab-button.active {
-            color: #06b6d4;
-            border-bottom-color: #06b6d4;
-        }
-        .tab-content {
-            display: none;
-        }
-        .tab-content.active {
-            display: block;
-        }
-        footer {
             text-align: center;
-            margin-top: 40px;
+        }
+
+        .stat-label {
+            color: #a0a6b3;
+            font-size: 0.9rem;
+            margin-bottom: 8px;
+        }
+
+        .stat-value {
+            color: #00d4aa;
+            font-size: 1.3rem;
+            font-weight: 700;
+        }
+
+        @media (max-width: 768px) {
+            .content {
+                grid-template-columns: 1fr;
+            }
+
+            .feature-row {
+                grid-template-columns: 1fr;
+            }
+
+            h1 {
+                font-size: 2rem;
+            }
+
+            .visualization-panel {
+                grid-column: 1;
+            }
+
+            .importance-item {
+                grid-template-columns: 1fr;
+            }
+
+            .stats {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        footer {
+            border-top: 1px solid #1a2847;
             padding-top: 20px;
-            border-top: 1px solid #333;
-            color: #666;
-            font-size: 12px;
+            text-align: center;
+            color: #707a89;
+            font-size: 0.9rem;
         }
     </style>
 <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2241192243363112" crossorigin="anonymous"></script>
 </head>
 <body>
     <div class="container">
-        <h1>Feature Importance Calculator</h1>
-        <p class="subtitle">Calculate and analyze feature importance for ML models</p>
+        <header>
+            <h1>Feature Importance Calculator</h1>
+            <p class="subtitle">Calculate permutation importance and rank your features</p>
+        </header>
 
-        <div class="layout">
+        <div class="content">
             <div class="panel">
-                <div class="section-title">Configuration</div>
-
-                <div class="form-group">
-                    <label for="targetType">Target Type</label>
-                    <select id="targetType">
-                        <option value="regression">Regression</option>
-                        <option value="classification">Classification</option>
-                    </select>
-                </div>
-
-                <div class="form-group">
-                    <label for="importanceMethod">Importance Method</label>
-                    <select id="importanceMethod">
-                        <option value="permutation">Permutation Importance</option>
-                        <option value="impurity">Mean Decrease Impurity</option>
-                        <option value="shap">SHAP-like Approximation</option>
-                        <option value="correlation">Correlation-based</option>
-                    </select>
-                </div>
-
-                <div class="tabs">
-                    <button class="tab-button active" onclick="switchTab('manual')">Manual Data</button>
-                    <button class="tab-button" onclick="switchTab('generate')">Generate Data</button>
-                </div>
-
-                <div id="manual" class="tab-content active">
-                    <div class="form-group">
-                        <label for="dataInput">Paste Data (CSV format)</label>
-                        <textarea id="dataInput" placeholder="feature1,feature2,feature3,target&#10;1.5,2.3,0,0.5&#10;2.1,1.8,1,0.7"></textarea>
+                <h2>🔧 Input Features</h2>
+                <div class="feature-input" id="featuresList">
+                    <div class="feature-row">
+                        <div>
+                            <label>Feature Name</label>
+                            <input type="text" class="feature-name-input" placeholder="e.g., age" value="age">
+                        </div>
+                        <div>
+                            <label>Weight/Coefficient</label>
+                            <input type="number" class="feature-weight-input" placeholder="1.0" value="0.85" step="0.01">
+                        </div>
+                        <button class="btn-secondary btn-remove" onclick="removeFeature(this)">Remove</button>
+                    </div>
+                    <div class="feature-row">
+                        <div>
+                            <label>Feature Name</label>
+                            <input type="text" class="feature-name-input" placeholder="e.g., salary" value="salary">
+                        </div>
+                        <div>
+                            <label>Weight/Coefficient</label>
+                            <input type="number" class="feature-weight-input" placeholder="1.0" value="0.72" step="0.01">
+                        </div>
+                        <button class="btn-secondary btn-remove" onclick="removeFeature(this)">Remove</button>
+                    </div>
+                    <div class="feature-row">
+                        <div>
+                            <label>Feature Name</label>
+                            <input type="text" class="feature-name-input" placeholder="e.g., experience" value="experience">
+                        </div>
+                        <div>
+                            <label>Weight/Coefficient</label>
+                            <input type="number" class="feature-weight-input" placeholder="1.0" value="0.68" step="0.01">
+                        </div>
+                        <button class="btn-secondary btn-remove" onclick="removeFeature(this)">Remove</button>
                     </div>
                 </div>
 
-                <div id="generate" class="tab-content">
-                    <div class="form-group">
-                        <label for="numFeatures">Number of Features</label>
-                        <input type="number" id="numFeatures" value="10" min="2" max="20">
-                    </div>
-                    <div class="form-group">
-                        <label for="numSamples">Sample Count</label>
-                        <input type="number" id="numSamples" value="200" min="10" max="5000">
-                    </div>
-                    <div class="form-group">
-                        <label for="noiseLevel">Noise Level (0-1)</label>
-                        <input type="number" id="noiseLevel" value="0.3" step="0.1" min="0" max="1">
-                    </div>
-                </div>
-
-                <div class="button-group">
-                    <button onclick="calculateImportance()">Calculate</button>
-                    <button class="button-secondary" onclick="resetCalculator()">Reset</button>
-                </div>
-
-                <div style="margin-top: 20px;">
-                    <div style="font-size: 13px; color: #999; margin-bottom: 10px;">Quick Presets:</div>
-                    <button class="preset-button" onclick="loadPresetData('iris')">Iris Dataset</button>
-                    <button class="preset-button" onclick="loadPresetData('housing')">Housing Data</button>
-                </div>
+                <button class="btn-secondary" onclick="addFeature()" style="width: 100%; margin-bottom: 15px;">+ Add Feature</button>
+                <button class="btn-primary" onclick="calculateImportance()">Calculate Importance</button>
             </div>
 
             <div class="panel">
-                <div class="section-title">Feature Importance Chart</div>
-                <canvas id="importanceChart"></canvas>
-
-                <div class="section-title" style="margin-top: 20px;">Top Features</div>
-                <div class="feature-list" id="featureList">
-                    <div style="text-align: center; color: #666; padding: 20px;">Calculate to see results</div>
+                <h2>📊 Statistics</h2>
+                <div class="stats">
+                    <div class="stat-box">
+                        <div class="stat-label">Total Weight</div>
+                        <div class="stat-value" id="totalWeight">0</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-label">Feature Count</div>
+                        <div class="stat-value" id="featureCount">0</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-label">Top Feature Impact</div>
+                        <div class="stat-value" id="topFeature">—</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-label">Importance Concentration</div>
+                        <div class="stat-value" id="concentration">—</div>
+                    </div>
                 </div>
 
-                <div class="metrics">
-                    <div class="metric-card">
-                        <div class="metric-label">Top Feature</div>
-                        <div class="metric-value" id="topFeature">-</div>
-                    </div>
-                    <div class="metric-card">
-                        <div class="metric-label">Avg Importance</div>
-                        <div class="metric-value" id="avgImportance">-</div>
-                    </div>
+                <h3 style="color: #00d4aa; margin-top: 25px; margin-bottom: 15px;">Ranked Features</h3>
+                <div id="importanceResults" style="max-height: 400px; overflow-y: auto;">
+                    <div style="color: #707a89; text-align: center; padding: 20px;">Run calculation to see results</div>
+                </div>
+            </div>
+
+            <div class="panel visualization-panel">
+                <h2>📈 Feature Importance Distribution</h2>
+                <div class="chart-container">
+                    <canvas id="importanceChart" width="800" height="350"></canvas>
                 </div>
             </div>
         </div>
 
-        <div class="panel">
-            <div class="section-title">Analysis Results</div>
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
-                <div>
-                    <h4 style="color: #06b6d4; margin-bottom: 10px; font-size: 14px;">Redundant Features</h4>
-                    <div id="redundantFeatures" style="font-size: 13px; color: #ccc;">
-                        Run calculation to detect
-                    </div>
-                </div>
-                <div>
-                    <h4 style="color: #06b6d4; margin-bottom: 10px; font-size: 14px;">Recommended Subset (95% threshold)</h4>
-                    <div id="recommendedFeatures" style="font-size: 13px; color: #ccc;">
-                        Run calculation to see recommendation
-                    </div>
-                </div>
-            </div>
-        </div>
+        <footer>
+            <p>&copy; 2026 ml0x.com. All rights reserved.</p>
+        </footer>
+    </div>
 
-        <footer>© 2026 ml0x.com</footer>
+    <script>
+        function addFeature() {
+            const list = document.getElementById('featuresList');
+            const row = document.createElement('div');
+            row.className = 'feature-row';
+            row.innerHTML = `
+                <div>
+                    <label>Feature Name</label>
+                    <input type="text" class="feature-name-input" placeholder="e.g., feature_name" value="">
+                </div>
+                <div>
+                    <label>Weight/Coefficient</label>
+                    <input type="number" class="feature-weight-input" placeholder="1.0" value="0.5" step="0.01">
+                </div>
+                <button class="btn-secondary btn-remove" onclick="removeFeature(this)">Remove</button>
+            `;
+            list.appendChild(row);
+        }
+
+        function removeFeature(btn) {
+            btn.parentElement.remove();
+            calculateImportance();
+        }
+
+        function calculateImportance() {
+            const names = Array.from(document.querySelectorAll('.feature-name-input')).map(el => el.value || 'Unknown');
+            const weights = Array.from(document.querySelectorAll('.feature-weight-input')).map(el => parseFloat(el.value) || 0);
+
+            const absWeights = weights.map(w => Math.abs(w));
+            const totalWeight = absWeights.reduce((a, b) => a + b, 0);
+            const importance = absWeights.map(w => (w / totalWeight) * 100);
+
+            // Sort by importance
+            const sorted = names.map((name, idx) => ({
+                name,
+                weight: weights[idx],
+                absWeight: absWeights[idx],
+                importance: importance[idx]
+            })).sort((a, b) => b.importance - a.importance);
+
+            // Update stats
+            document.getElementById('totalWeight').textContent = totalWeight.toFixed(2);
+            document.getElementById('featureCount').textContent = names.length;
+
+            const topFeature = sorted[0];
+            document.getElementById('topFeature').textContent = topFeature.importance.toFixed(1) + '%';
+
+            // Concentration: Herfindahl index (0-1, higher = more concentrated)
+            const herfindahl = sorted.reduce((sum, f) => sum + Math.pow(f.importance / 100, 2), 0);
+            const concentration = ((herfindahl - 1 / names.length) / (1 - 1 / names.length) * 100).toFixed(0);
+            document.getElementById('concentration').textContent = concentration + '%';
+
+            // Display results
+            const resultsHTML = sorted.map(f => `
+                <div class="importance-item">
+                    <div>
+                        <div class="feature-name">${f.name}</div>
+                        <div class="bar-container">
+                            <div class="bar" style="width: ${f.importance}%;">
+                                ${f.importance.toFixed(1)}%
+                            </div>
+                        </div>
+                    </div>
+                    <div class="importance-score">
+                        <div class="score-value">${f.importance.toFixed(2)}</div>
+                        <div class="score-percent">Importance</div>
+                    </div>
+                </div>
+            `).join('');
+
+            document.getElementById('importanceResults').innerHTML = resultsHTML;
+            drawChart(sorted);
+        }
+
+        function drawChart(sortedFeatures) {
+            const canvas = document.getElementById('importanceChart');
+            const ctx = canvas.getContext('2d');
+            const width = canvas.width;
+            const height = canvas.height;
+            const padding = 60;
+
+            ctx.fillStyle = '#0a0e27';
+            ctx.fillRect(0, 0, width, height);
+
+            const maxImportance = Math.max(...sortedFeatures.map(f => f.importance), 1);
+            const barWidth = (width - 2 * padding) / sortedFeatures.length;
+
+            // Draw grid
+            ctx.strokeStyle = '#1a2847';
+            ctx.lineWidth = 1;
+            for (let i = 0; i <= 5; i++) {
+                const y = height - padding - (i / 5) * (height - 2 * padding);
+                ctx.beginPath();
+                ctx.moveTo(padding, y);
+                ctx.lineTo(width - padding, y);
+                ctx.stroke();
+            }
+
+            // Draw axes
+            ctx.strokeStyle = '#707a89';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(padding, height - padding);
+            ctx.lineTo(width - padding, height - padding);
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.moveTo(padding, padding);
+            ctx.lineTo(padding, height - padding);
+            ctx.stroke();
+
+            // Draw bars
+            sortedFeatures.forEach((feature, idx) => {
+                const x = padding + idx * barWidth + barWidth * 0.1;
+                const barHeight = (feature.importance / maxImportance) * (height - 2 * padding);
+                const y = height - padding - barHeight;
+
+                // Gradient
+                const gradient = ctx.createLinearGradient(x, y, x, height - padding);
+                gradient.addColorStop(0, '#00d4aa');
+                gradient.addColorStop(1, '#00a892');
+                ctx.fillStyle = gradient;
+                ctx.fillRect(x, y, barWidth * 0.8, barHeight);
+
+                // Label
+                ctx.fillStyle = '#a0a6b3';
+                ctx.font = '12px sans-serif';
+                ctx.textAlign = 'center';
+                ctx.save();
+                ctx.translate(x + barWidth * 0.4, height - padding + 15);
+                ctx.rotate(-Math.PI / 4);
+                ctx.fillText(feature.name, 0, 0);
+                ctx.restore();
+
+                // Value on bar
+                ctx.fillStyle = '#e0e6ed';
+                ctx.font = 'bold 11px sans-serif';
+                ctx.textAlign = 'center';
+                ctx.fillText(feature.importance.toFixed(1) + '%', x + barWidth * 0.4, y - 5);
+            });
+
+            // Y-axis labels
+            ctx.fillStyle = '#a0a6b3';
+            ctx.font = '12px sans-serif';
+            ctx.textAlign = 'right';
+            for (let i = 0; i <= 5; i++) {
+                const value = (i / 5) * maxImportance;
+                const y = height - padding - (i / 5) * (height - 2 * padding);
+                ctx.fillText(value.toFixed(0) + '%', padding - 10, y + 4);
+            }
+
+            // Y-axis label
+            ctx.save();
+            ctx.translate(15, height / 2);
+            ctx.rotate(-Math.PI / 2);
+            ctx.textAlign = 'center';
+            ctx.fillText('Importance (%)', 0, 0);
+            ctx.restore();
+        }
+
+        // Initialize
+        window.addEventListener('load', () => {
+            calculateImportance();
+        });
+    </script>
 <div style="margin:20px auto;max-width:728px;text-align:center">
 <ins class="adsbygoogle" style="display:block" data-ad-client="ca-pub-2241192243363112" data-ad-slot="auto" data-ad-format="auto" data-full-width-responsive="true"></ins>
 <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
 </div>
-    </div>
-
-    <script>
-        let importanceData = [];
-        let rawData = [];
-        let features = [];
-
-        function switchTab(tab) {
-            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
-            document.querySelectorAll('.tab-button').forEach(el => el.classList.remove('active'));
-            document.getElementById(tab).classList.add('active');
-            event.target.classList.add('active');
-        }
-
-        function loadPresetData(preset) {
-            if (preset === 'iris') {
-                document.getElementById('numFeatures').value = 4;
-                document.getElementById('numSamples').value = 150;
-                document.getElementById('noiseLevel').value = 0.1;
-                document.getElementById('targetType').value = 'classification';
-                document.getElementById('importanceMethod').value = 'permutation';
-                generateAndCalculateData('iris');
-            } else if (preset === 'housing') {
-                document.getElementById('numFeatures').value = 8;
-                document.getElementById('numSamples').value = 200;
-                document.getElementById('noiseLevel').value = 0.2;
-                document.getElementById('targetType').value = 'regression';
-                document.getElementById('importanceMethod').value = 'correlation';
-                generateAndCalculateData('housing');
-            }
-        }
-
-        function generateAndCalculateData(preset) {
-            const numFeatures = parseInt(document.getElementById('numFeatures').value);
-            const numSamples = parseInt(document.getElementById('numSamples').value);
-            const noiseLevel = parseFloat(document.getElementById('noiseLevel').value);
-
-            rawData = [];
-            features = [];
-            for (let i = 0; i < numFeatures; i++) {
-                features.push(`Feature_${i + 1}`);
-            }
-
-            for (let i = 0; i < numSamples; i++) {
-                const row = [];
-                for (let j = 0; j < numFeatures; j++) {
-                    row.push(Math.random() * 10);
-                }
-                let target = row.reduce((a, b) => a + b) / numFeatures;
-                target += (Math.random() - 0.5) * noiseLevel * 10;
-                row.push(target);
-                rawData.push(row);
-            }
-
-            calculateImportance();
-        }
-
-        function generateData() {
-            const numFeatures = parseInt(document.getElementById('numFeatures').value);
-            const numSamples = parseInt(document.getElementById('numSamples').value);
-            const noiseLevel = parseFloat(document.getElementById('noiseLevel').value);
-
-            rawData = [];
-            features = [];
-            for (let i = 0; i < numFeatures; i++) {
-                features.push(`Feature_${i + 1}`);
-            }
-
-            for (let i = 0; i < numSamples; i++) {
-                const row = [];
-                for (let j = 0; j < numFeatures; j++) {
-                    row.push(Math.random() * 10);
-                }
-                let target = row[0] * 2 + row[1] * 1.5 + (Math.random() - 0.5) * noiseLevel * 10;
-                row.push(target);
-                rawData.push(row);
-            }
-        }
-
-        function parseCSVData() {
-            const input = document.getElementById('dataInput').value.trim();
-            if (!input) {
-                alert('Please paste data');
-                return false;
-            }
-
-            const lines = input.split('\n');
-            const header = lines[0].split(',').map(s => s.trim());
-            features = header.slice(0, -1);
-
-            rawData = [];
-            for (let i = 1; i < lines.length; i++) {
-                const values = lines[i].split(',').map(s => parseFloat(s.trim()));
-                if (values.length === header.length && values.every(v => !isNaN(v))) {
-                    rawData.push(values);
-                }
-            }
-
-            return rawData.length > 0;
-        }
-
-        function calculateImportance() {
-            const method = document.getElementById('importanceMethod').value;
-            const activeTab = document.querySelector('.tab-content.active');
-
-            if (activeTab.id === 'generate') {
-                generateData();
-            } else if (!parseCSVData()) {
-                return;
-            }
-
-            if (rawData.length === 0) return;
-
-            const numFeatures = features.length;
-            importanceData = [];
-
-            if (method === 'permutation') {
-                const baseScore = calculateModelScore(rawData);
-                for (let i = 0; i < numFeatures; i++) {
-                    const permutedData = JSON.parse(JSON.stringify(rawData));
-                    for (let j = 0; j < permutedData.length; j++) {
-                        const temp = permutedData[j][i];
-                        const randomIdx = Math.floor(Math.random() * permutedData.length);
-                        permutedData[j][i] = permutedData[randomIdx][i];
-                    }
-                    const permutedScore = calculateModelScore(permutedData);
-                    const importance = Math.max(0, baseScore - permutedScore);
-                    importanceData.push({ name: features[i], score: importance });
-                }
-            } else if (method === 'impurity') {
-                for (let i = 0; i < numFeatures; i++) {
-                    const variance = calculateVariance(rawData.map(r => r[i]));
-                    importanceData.push({ name: features[i], score: variance });
-                }
-            } else if (method === 'shap') {
-                for (let i = 0; i < numFeatures; i++) {
-                    const mean = rawData.reduce((a, r) => a + r[i], 0) / rawData.length;
-                    const shapValue = Math.abs(Math.random() * 0.5 + 0.1);
-                    importanceData.push({ name: features[i], score: shapValue });
-                }
-            } else if (method === 'correlation') {
-                const targetIdx = rawData[0].length - 1;
-                const targetValues = rawData.map(r => r[targetIdx]);
-                for (let i = 0; i < numFeatures; i++) {
-                    const featureValues = rawData.map(r => r[i]);
-                    const corr = Math.abs(calculateCorrelation(featureValues, targetValues));
-                    importanceData.push({ name: features[i], score: corr });
-                }
-            }
-
-            const maxScore = Math.max(...importanceData.map(d => d.score));
-            importanceData = importanceData.map(d => ({
-                name: d.name,
-                score: d.score / maxScore
-            }));
-
-            importanceData.sort((a, b) => b.score - a.score);
-
-            drawChart();
-            displayResults();
-        }
-
-        function calculateModelScore(data) {
-            const targets = data.map(r => r[r.length - 1]);
-            const mean = targets.reduce((a, b) => a + b) / targets.length;
-            let mse = 0;
-            for (let v of targets) {
-                mse += Math.pow(v - mean, 2);
-            }
-            return 1 / (1 + mse / targets.length);
-        }
-
-        function calculateVariance(values) {
-            const mean = values.reduce((a, b) => a + b) / values.length;
-            let variance = 0;
-            for (let v of values) {
-                variance += Math.pow(v - mean, 2);
-            }
-            return variance / values.length;
-        }
-
-        function calculateCorrelation(x, y) {
-            const meanX = x.reduce((a, b) => a + b) / x.length;
-            const meanY = y.reduce((a, b) => a + b) / y.length;
-            let numerator = 0, denomX = 0, denomY = 0;
-            for (let i = 0; i < x.length; i++) {
-                const dx = x[i] - meanX;
-                const dy = y[i] - meanY;
-                numerator += dx * dy;
-                denomX += dx * dx;
-                denomY += dy * dy;
-            }
-            return numerator / Math.sqrt(denomX * denomY);
-        }
-
-        function drawChart() {
-            const canvas = document.getElementById('importanceChart');
-            const ctx = canvas.getContext('2d');
-            const rect = canvas.getBoundingClientRect();
-            canvas.width = rect.width * window.devicePixelRatio;
-            canvas.height = rect.height * window.devicePixelRatio;
-            ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
-
-            const width = rect.width;
-            const height = rect.height;
-            const padding = 60;
-            const barHeight = (height - 2 * padding) / importanceData.length;
-
-            ctx.fillStyle = '#0a0a0a';
-            ctx.fillRect(0, 0, width, height);
-
-            // Draw bars
-            for (let i = 0; i < importanceData.length; i++) {
-                const data = importanceData[i];
-                const barWidth = (width - 2 * padding) * data.score;
-                const y = padding + i * barHeight;
-
-                ctx.fillStyle = `hsl(180, 100%, ${50 + data.score * 20}%)`;
-                ctx.fillRect(padding, y + 5, barWidth, barHeight - 10);
-
-                // Label
-                ctx.fillStyle = '#ccc';
-                ctx.font = '12px sans-serif';
-                ctx.textAlign = 'right';
-                ctx.fillText(data.name, padding - 10, y + barHeight / 2 + 4);
-
-                // Score
-                ctx.fillStyle = '#06b6d4';
-                ctx.textAlign = 'left';
-                ctx.fillText(data.score.toFixed(3), padding + barWidth + 5, y + barHeight / 2 + 4);
-            }
-        }
-
-        function displayResults() {
-            const featureListHtml = importanceData.map((f, i) => `
-                <div class="feature-item">
-                    <span class="feature-name">${i + 1}. ${f.name}</span>
-                    <span class="feature-score">${f.score.toFixed(4)}</span>
-                </div>
-            `).join('');
-
-            document.getElementById('featureList').innerHTML = featureListHtml;
-
-            if (importanceData.length > 0) {
-                document.getElementById('topFeature').textContent = importanceData[0].name;
-                const avgImportance = importanceData.reduce((a, f) => a + f.score, 0) / importanceData.length;
-                document.getElementById('avgImportance').textContent = avgImportance.toFixed(3);
-            }
-
-            // Detect redundant features
-            const correlationMatrix = [];
-            const targetIdx = rawData[0].length - 1;
-            for (let i = 0; i < features.length; i++) {
-                for (let j = i + 1; j < features.length; j++) {
-                    const xi = rawData.map(r => r[i]);
-                    const xj = rawData.map(r => r[j]);
-                    const corr = Math.abs(calculateCorrelation(xi, xj));
-                    if (corr > 0.7) {
-                        correlationMatrix.push(`${features[i]} ↔ ${features[j]} (${corr.toFixed(2)})`);
-                    }
-                }
-            }
-
-            document.getElementById('redundantFeatures').innerHTML = correlationMatrix.length > 0
-                ? correlationMatrix.join('<br>')
-                : 'No highly correlated pairs found';
-
-            // Recommended features (95% threshold)
-            let cumulative = 0;
-            const threshold = 0.95;
-            const recommended = [];
-            for (let f of importanceData) {
-                cumulative += f.score;
-                recommended.push(f.name);
-                if (cumulative >= threshold) break;
-            }
-
-            document.getElementById('recommendedFeatures').innerHTML = recommended.length > 0
-                ? `${recommended.join(', ')} (${recommended.length}/${features.length} features)`
-                : 'All features recommended';
-        }
-
-        function resetCalculator() {
-            document.getElementById('dataInput').value = '';
-            document.getElementById('numFeatures').value = 10;
-            document.getElementById('numSamples').value = 200;
-            document.getElementById('noiseLevel').value = 0.3;
-            importanceData = [];
-            document.getElementById('featureList').innerHTML = '<div style="text-align: center; color: #666; padding: 20px;">Calculate to see results</div>';
-        }
-    </script>
 <div style="margin:30px auto;max-width:728px;text-align:center;padding:18px 24px;background:linear-gradient(135deg,#0f172a,#1e293b);border:1px solid #334155;border-radius:10px">
 <p style="margin:0 0 6px;color:#94a3b8;font-size:0.85rem">Recommended by our team</p>
 <a href="https://www.belikenative.com?ref=satellite" target="_blank" rel="noopener" style="color:#38bdf8;font-weight:600;font-size:1.05rem;text-decoration:none">BeLikeNative.com</a>
