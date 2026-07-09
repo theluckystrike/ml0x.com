@@ -180,4 +180,7 @@
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
+<url><loc>https://ml0x.com/tools/optimizer-trajectory-visualizer</loc><lastmod>2026-07-09</lastmod></url>
+<url><loc>https://ml0x.com/tools/roc-pr-curve-threshold-calculator</loc><lastmod>2026-07-09</lastmod></url>
+<url><loc>https://ml0x.com/tools/transformer-flops-memory-calculator</loc><lastmod>2026-07-09</lastmod></url>
 </urlset>

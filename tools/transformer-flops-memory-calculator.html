@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Transformer FLOPs &amp; Memory Calculator</title>
+<meta name="description" content="Compute training/inference FLOPs, parameter count, activation memory and KV-cache size for a transformer from layers, d_model, heads, seq length and batch.">
+<link rel="canonical" href="https://ml0x.com/tools/transformer-flops-memory-calculator">
+<meta property="og:title" content="Transformer FLOPs &amp; Memory Calculator">
+<meta property="og:description" content="Compute training/inference FLOPs, parameter count, activation memory and KV-cache size for a transformer from layers, d_model, heads, seq length and batch.">
+<meta property="og:url" content="https://ml0x.com/tools/transformer-flops-memory-calculator">
+<meta property="og:type" content="website">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "WebApplication",
+      "name": "Transformer FLOPs & Memory Calculator",
+      "url": "https://ml0x.com/tools/transformer-flops-memory-calculator",
+      "description": "Compute training/inference FLOPs, parameter count, activation memory and KV-cache size for a transformer from layers, d_model, heads, seq length and batch.",
+      "applicationCategory": "UtilitiesApplication",
+      "operatingSystem": "Any",
+      "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
+      "author": { "@type": "Person", "name": "Michael Lip", "url": "https://zovo.one" }
+    },
+    {
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://ml0x.com/" },
+        { "@type": "ListItem", "position": 2, "name": "Tools", "item": "https://ml0x.com/tools/" },
+        { "@type": "ListItem", "position": 3, "name": "Transformer FLOPs & Memory Calculator", "item": "https://ml0x.com/tools/transformer-flops-memory-calculator" }
+      ]
+    }
+  ]
+}
+</script>
+<style>
+:root{
+  --bg:#0d1117; --panel:#161b22; --panel2:#1c2330; --line:#2a3441;
+  --text:#e6edf3; --muted:#9aa7b4; --accent:#7aa2f7; --accent2:#9ece6a;
+  --warn:#e0af68; --pink:#f7768e;
+}
+*{box-sizing:border-box}
+body{
+  margin:0; background:var(--bg); color:var(--text);
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  line-height:1.6; font-size:16px;
+}
+a{color:var(--accent); text-decoration:none}
+a:hover{text-decoration:underline}
+nav{
+  display:flex; gap:18px; padding:14px 20px; border-bottom:1px solid var(--line);
+  background:var(--panel); font-size:14px; position:sticky; top:0; z-index:5;
+}
+.wrap{max-width:1000px; margin:0 auto; padding:24px 20px 60px}
+h1{font-size:28px; line-height:1.25; margin:22px 0 8px}
+h2{font-size:20px; margin:34px 0 12px; border-bottom:1px solid var(--line); padding-bottom:6px}
+.lead{color:var(--muted); font-size:17px; margin:0 0 8px}
+#tool{
+  background:var(--panel); border:1px solid var(--line); border-radius:12px;
+  padding:22px; margin:24px 0; display:grid; grid-template-columns:1fr 1fr; gap:26px;
+}
+@media(max-width:760px){#tool{grid-template-columns:1fr}}
+.controls{display:flex; flex-direction:column; gap:14px}
+.field{display:flex; flex-direction:column; gap:5px}
+.field label{font-size:13px; color:var(--muted); font-weight:600; display:flex; justify-content:space-between}
+.field .val{color:var(--accent); font-variant-numeric:tabular-nums}
+input[type=range]{width:100%; accent-color:var(--accent)}
+input[type=number],select{
+  width:100%; background:var(--panel2); border:1px solid var(--line); color:var(--text);
+  padding:8px 10px; border-radius:8px; font-size:14px; font-variant-numeric:tabular-nums;
+}
+input[type=number]:focus,select:focus{outline:1px solid var(--accent)}
+.row2{display:grid; grid-template-columns:1fr 1fr; gap:10px}
+.presets{display:flex; flex-wrap:wrap; gap:8px; margin-bottom:4px}
+.presets button{
+  background:var(--panel2); border:1px solid var(--line); color:var(--text);
+  padding:6px 11px; border-radius:20px; font-size:12px; cursor:pointer;
+}
+.presets button:hover{border-color:var(--accent); color:var(--accent)}
+.out{display:flex; flex-direction:column; gap:14px}
+.card{background:var(--panel2); border:1px solid var(--line); border-radius:10px; padding:14px 16px}
+.card h3{margin:0 0 10px; font-size:13px; text-transform:uppercase; letter-spacing:.5px; color:var(--muted)}
+.stat{display:flex; justify-content:space-between; align-items:baseline; padding:4px 0; font-size:14px}
+.stat .k{color:var(--muted)}
+.stat .v{font-weight:700; font-variant-numeric:tabular-nums; font-size:15px}
+.big{font-size:26px; font-weight:800; color:var(--accent2); font-variant-numeric:tabular-nums}
+.big small{font-size:13px; color:var(--muted); font-weight:500}
+.split{display:grid; grid-template-columns:1fr 1fr; gap:12px}
+.bar{height:8px; border-radius:4px; background:var(--line); overflow:hidden; margin-top:6px; display:flex}
+.bar span{display:block; height:100%}
+.legend{display:flex; flex-wrap:wrap; gap:10px; font-size:11px; color:var(--muted); margin-top:8px}
+.legend i{display:inline-block; width:9px; height:9px; border-radius:2px; margin-right:4px; vertical-align:middle}
+.note{font-size:12px; color:var(--muted); margin-top:4px}
+code{background:var(--panel2); padding:2px 6px; border-radius:5px; font-size:13px; color:var(--accent2)}
+.prose{color:#c9d4df}
+.prose p{margin:12px 0}
+.formula{background:var(--panel); border:1px solid var(--line); border-left:3px solid var(--accent);
+  padding:12px 16px; border-radius:8px; font-family:ui-monospace,Menlo,Consolas,monospace; font-size:13px;
+  overflow-x:auto; color:var(--text); margin:14px 0}
+.related{display:flex; flex-wrap:wrap; gap:12px; margin-top:12px}
+.related a{background:var(--panel); border:1px solid var(--line); padding:10px 14px; border-radius:8px; font-size:14px}
+footer{border-top:1px solid var(--line); margin-top:44px; padding:24px 20px; color:var(--muted); font-size:14px}
+footer .fl{display:flex; gap:18px; flex-wrap:wrap; margin-bottom:10px}
+</style>
+</head>
+<body>
+<nav>
+  <a href="/">Home</a>
+  <a href="/tools/">Tools</a>
+</nav>
+<div class="wrap">
+  <h1>Estimate Transformer Compute &amp; VRAM Before You Train</h1>
+  <p class="lead">Plug in your architecture and get parameter count, training/inference FLOPs, KV-cache size, and a full VRAM breakdown for training &mdash; instantly, in the browser.</p>
+  <p class="prose">This calculator turns the standard transformer scaling formulas into a live estimator. Set the number of layers, model width, attention heads, sequence length, batch size and precision, then read off how big the model is, how much floating-point work a forward/backward pass costs, and whether it will fit in your GPU. Everything runs client-side &mdash; no data leaves your machine.</p>
+
+  <section id="tool">
+    <div class="controls">
+      <div class="presets" id="presets">
+        <button data-p="gpt2s">GPT-2 Small</button>
+        <button data-p="gpt2m">GPT-2 Medium</button>
+        <button data-p="gpt2l">GPT-2 Large</button>
+        <button data-p="llama7b">Llama-7B</button>
+        <button data-p="llama13b">Llama-13B</button>
+        <button data-p="gpt3">GPT-3 175B</button>
+      </div>
+
+      <div class="field">
+        <label>Layers (L) <span class="val" id="Lval">12</span></label>
+        <input type="range" id="L" min="1" max="120" step="1" value="12">
+      </div>
+      <div class="field">
+        <label>Model dimension (d_model) <span class="val" id="Dval">768</span></label>
+        <input type="range" id="D" min="128" max="16384" step="64" value="768">
+      </div>
+      <div class="row2">
+        <div class="field">
+          <label>Attention heads</label>
+          <input type="number" id="H" min="1" max="256" step="1" value="12">
+        </div>
+        <div class="field">
+          <label>Vocabulary size</label>
+          <input type="number" id="V" min="1000" max="500000" step="1000" value="50257">
+        </div>
+      </div>
+      <div class="row2">
+        <div class="field">
+          <label>Sequence length</label>
+          <input type="number" id="S" min="1" max="1048576" step="1" value="2048">
+        </div>
+        <div class="field">
+          <label>Batch size</label>
+          <input type="number" id="B" min="1" max="65536" step="1" value="8">
+        </div>
+      </div>
+      <div class="row2">
+        <div class="field">
+          <label>FFN multiplier</label>
+          <input type="number" id="FF" min="1" max="16" step="0.5" value="4">
+        </div>
+        <div class="field">
+          <label>Weight precision</label>
+          <select id="DT">
+            <option value="2">fp16 / bf16 (2 B)</option>
+            <option value="4">fp32 (4 B)</option>
+            <option value="1">int8 (1 B)</option>
+          </select>
+        </div>
+      </div>
+      <div class="row2">
+        <div class="field">
+          <label>Optimizer</label>
+          <select id="OPT">
+            <option value="2">Adam (m + v, 2&times;)</option>
+            <option value="1">SGD+momentum (1&times;)</option>
+            <option value="0">SGD (0&times;)</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Master precision</label>
+          <select id="MP">
+            <option value="4">fp32 states (4 B)</option>
+            <option value="2">fp16 states (2 B)</option>
+          </select>
+        </div>
+      </div>
+      <p class="note">Params use <code>12&middot;L&middot;d_model&sup2;</code> for blocks plus token &amp; positional embeddings. FLOPs follow the standard <code>~6N</code> training / <code>~2N</code> inference rule per token, with exact attention and FFN terms added.</p>
+    </div>
+
+    <div class="out">
+      <div class="card">
+        <h3>Model size</h3>
+        <div class="big" id="paramsBig">124.4 M <small>parameters</small></div>
+        <div class="stat"><span class="k">Transformer blocks</span><span class="v" id="pBlocks">85.0 M</span></div>
+        <div class="stat"><span class="k">Embeddings (tok + pos)</span><span class="v" id="pEmb">38.7 M</span></div>
+        <div class="stat"><span class="k">Weights on disk</span><span class="v" id="wDisk">237 MB</span></div>
+      </div>
+
+      <div class="card">
+        <h3>Compute per step</h3>
+        <div class="stat"><span class="k">Inference (fwd) FLOPs</span><span class="v" id="fInf">&mdash;</span></div>
+        <div class="stat"><span class="k">Training (fwd+bwd) FLOPs</span><span class="v" id="fTrain">&mdash;</span></div>
+        <div class="stat"><span class="k">&nbsp;&nbsp;&mdash; attention share</span><span class="v" id="fAttn">&mdash;</span></div>
+        <div class="stat"><span class="k">&nbsp;&nbsp;&mdash; FFN + proj share</span><span class="v" id="fFfn">&mdash;</span></div>
+        <p class="note">Per training step over batch&times;seq tokens. A100 (312 TFLOP/s bf16) reference time shown below.</p>
+        <div class="stat"><span class="k">A100 step time (@40% MFU)</span><span class="v" id="stepTime">&mdash;</span></div>
+      </div>
+
+      <div class="card">
+        <h3>Training VRAM breakdown</h3>
+        <div class="big" id="vramBig">&mdash; <small>total</small></div>
+        <div class="bar" id="vbar">
+          <span style="background:var(--accent)"></span>
+          <span style="background:var(--warn)"></span>
+          <span style="background:var(--accent2)"></span>
+          <span style="background:var(--pink)"></span>
+        </div>
+        <div class="legend">
+          <span><i style="background:var(--accent)"></i>Weights <b id="vW">&mdash;</b></span>
+          <span><i style="background:var(--warn)"></i>Gradients <b id="vG">&mdash;</b></span>
+          <span><i style="background:var(--accent2)"></i>Optimizer <b id="vO">&mdash;</b></span>
+          <span><i style="background:var(--pink)"></i>Activations <b id="vA">&mdash;</b></span>
+        </div>
+      </div>
+
+      <div class="split">
+        <div class="card">
+          <h3>KV-cache (inference)</h3>
+          <div class="big" id="kvBig" style="color:var(--accent)">&mdash;</div>
+          <div class="stat"><span class="k">per token</span><span class="v" id="kvTok">&mdash;</span></div>
+          <div class="stat"><span class="k">batch&times;seq</span><span class="v" id="kvCtx">&mdash;</span></div>
+        </div>
+        <div class="card">
+          <h3>Activation mem</h3>
+          <div class="big" id="actBig" style="color:var(--warn)">&mdash;</div>
+          <div class="stat"><span class="k">per layer</span><span class="v" id="actL">&mdash;</span></div>
+          <div class="stat"><span class="k">attn scores</span><span class="v" id="actAtt">&mdash;</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <h2>How the numbers are computed</h2>
+  <div class="prose">
+    <p>A decoder-only transformer is dominated by its repeated blocks. Each block holds four attention projection matrices (query, key, value, output) of size <code>d_model&sup2;</code> and a two-layer feed-forward network of size <code>2&middot;ffn&middot;d_model&sup2;</code>. With the usual <code>ffn = 4</code>, one block is <code>12&middot;d_model&sup2;</code> weights, so all blocks total <code>N_blocks = 12&middot;L&middot;d_model&sup2;</code>. Embeddings add <code>(vocab + seq)&middot;d_model</code> for the token and positional tables, which matter a lot for small models and almost nothing for large ones.</p>
+
+    <div class="formula">params        = 12 &middot; L &middot; d_model&sup2;  +  (vocab + seq) &middot; d_model
+fwd FLOPs     &asymp; 2 &middot; params &middot; tokens  +  attention term
+attn term     = 12 &middot; L &middot; seq&sup2; &middot; d_model &middot; batch   (QK&#7488; + score&middot;V, fwd+bwd)
+train FLOPs   &asymp; 6 &middot; params &middot; tokens  +  3 &middot; attn term
+KV-cache      = 2 &middot; L &middot; seq &middot; d_model &middot; bytes &middot; batch
+optimizer mem = params &middot; states &middot; master_bytes   (Adam &rArr; states = 2)</div>
+
+    <p>For compute we use the well-known accounting from the Kaplan and Chinchilla scaling papers: a forward pass costs about <code>2</code> FLOPs per parameter per token (one multiply, one add), and the backward pass roughly doubles that, giving the famous <code>6&middot;N</code> training rule. Attention over a length-<code>S</code> sequence adds a term that grows as <code>S&sup2;</code>, which is why long-context training gets expensive fast even when the parameter count is fixed. This tool separates that quadratic attention cost from the linear FFN/projection cost so you can see when context length &mdash; not model size &mdash; becomes your bottleneck.</p>
+
+    <p>Memory has four training buckets: the weights themselves, an equal-sized gradient tensor, the optimizer states (Adam keeps two extra copies at master precision), and activations saved for the backward pass. Activation memory scales with <code>batch &middot; seq &middot; d_model &middot; L</code> plus the <code>batch &middot; heads &middot; seq&sup2;</code> attention-score buffer, which is the term that explodes with long sequences and is exactly what FlashAttention and activation-checkpointing target. For inference, the relevant number is instead the KV-cache: <code>2&middot;L&middot;seq&middot;d_model</code> bytes per sequence in the batch, holding the keys and values that autoregressive decoding reuses. Slide the inputs above and every figure recomputes live.</p>
+  </div>
+
+  <h2>Related Tools</h2>
+  <div class="related">
+    <a href="/tools/llm-vram-requirement-calculator">LLM VRAM Requirement Calculator</a>
+    <a href="/tools/attention-flops-visualizer">Attention FLOPs Visualizer</a>
+    <a href="/tools/model-parameter-counter">Model Parameter Counter</a>
+  </div>
+</div>
+
+<footer>
+  <div class="fl">
+    <a href="/">Home</a>
+    <a href="/tools/">All Tools</a>
+    <a href="/tools/transformer-flops-memory-calculator">Transformer FLOPs Calculator</a>
+    <a href="https://zovo.one">About the author</a>
+  </div>
+  <div>&copy; 2026 ml0x.com &mdash; built for ML engineers by Michael Lip. Estimates use standard scaling laws; real workloads vary with fused kernels, sharding and precision.</div>
+</footer>
+
+<script>
+(function(){
+  "use strict";
+  var $ = function(id){ return document.getElementById(id); };
+
+  var presets = {
+    gpt2s:{L:12,D:768,H:12,V:50257,S:1024,B:8,FF:4},
+    gpt2m:{L:24,D:1024,H:16,V:50257,S:1024,B:8,FF:4},
+    gpt2l:{L:36,D:1280,H:20,V:50257,S:1024,B:8,FF:4},
+    llama7b:{L:32,D:4096,H:32,V:32000,S:2048,B:1,FF:2.6875},
+    llama13b:{L:40,D:5120,H:40,V:32000,S:2048,B:1,FF:2.6992},
+    gpt3:{L:96,D:12288,H:96,V:50257,S:2048,B:1,FF:4}
+  };
+
+  function humanNum(n){
+    if(!isFinite(n)) return "—";
+    var a=Math.abs(n);
+    if(a>=1e12) return (n/1e12).toFixed(2)+" T";
+    if(a>=1e9)  return (n/1e9).toFixed(2)+" B";
+    if(a>=1e6)  return (n/1e6).toFixed(1)+" M";
+    if(a>=1e3)  return (n/1e3).toFixed(1)+" K";
+    return String(Math.round(n));
+  }
+  function flops(n){
+    if(!isFinite(n)||n<=0) return "0 FLOP";
+    var u=["FLOP","kFLOP","MFLOP","GFLOP","TFLOP","PFLOP","EFLOP"], i=0;
+    while(n>=1000 && i<u.length-1){ n/=1000; i++; }
+    return n.toFixed(n<10?2:1)+" "+u[i];
+  }
+  function bytes(n){
+    if(!isFinite(n)||n<=0) return "0 B";
+    var u=["B","KB","MB","GB","TB","PB"], i=0;
+    while(n>=1024 && i<u.length-1){ n/=1024; i++; }
+    return n.toFixed(n<10&&i>0?2:(i>0?1:0))+" "+u[i];
+  }
+  function time(s){
+    if(!isFinite(s)||s<=0) return "—";
+    if(s<1e-3) return (s*1e6).toFixed(0)+" µs";
+    if(s<1)    return (s*1e3).toFixed(1)+" ms";
+    if(s<60)   return s.toFixed(2)+" s";
+    if(s<3600) return (s/60).toFixed(1)+" min";
+    return (s/3600).toFixed(2)+" h";
+  }
+
+  function num(id, dflt){
+    var v = parseFloat($(id).value);
+    return (isFinite(v)&&v>0) ? v : dflt;
+  }
+
+  function compute(){
+    var L  = Math.max(1, Math.round(num("L",12)));
+    var D  = Math.max(1, Math.round(num("D",768)));
+    var H  = Math.max(1, Math.round(num("H",12)));
+    var V  = Math.max(1, Math.round(num("V",50257)));
+    var S  = Math.max(1, Math.round(num("S",2048)));
+    var B  = Math.max(1, Math.round(num("B",8)));
+    var FF = Math.max(1, num("FF",4));
+    var DT = parseFloat($("DT").value);   // bytes/weight
+    var OPTmul = parseFloat($("OPT").value); // extra state copies
+    var MP = parseFloat($("MP").value);   // master bytes for grads+opt
+
+    $("Lval").textContent = L;
+    $("Dval").textContent = D;
+
+    // ---- Parameters ----
+    // per block: 4 attention proj (D*D) + FFN (2 * FF * D*D) + small biases/norms (~4*D) ignored vs D^2
+    var perBlock = (4 + 2*FF) * D * D;
+    var pBlocks = L * perBlock;
+    var pEmb = (V + S) * D;                 // token + positional embeddings
+    var params = pBlocks + pEmb;
+
+    // ---- FLOPs ----
+    var tokens = B * S;
+    // dense (params) term
+    var fwdDense = 2 * params * tokens;
+    // exact attention (QK^T scores + score*V): 2 * (2 * S^2 * D) per layer per seq, fwd
+    var attnFwd = L * B * (4 * S * S * D);
+    var fwdTotal = fwdDense + attnFwd;
+    var trainTotal = 3 * fwdTotal;          // fwd + bwd (bwd ~ 2x fwd)
+    var attnShare = 3 * attnFwd;
+    var ffnShare = trainTotal - attnShare;
+
+    // ---- Memory: weights / grads / optimizer / activations ----
+    var wBytes = params * DT;
+    var gBytes = params * MP;               // gradients at master precision
+    var oBytes = params * OPTmul * MP;      // Adam: 2 states
+    // activations (bf16-ish, coarse): main hidden buffers ~ (10..) * B*S*D per layer
+    var actPerLayer = 12 * B * S * D * 2;   // 2 bytes/elem, ~12 saved tensors of B*S*D
+    var attnScores = L * B * H * S * S * 2; // score matrix per head
+    var actBytes = L * actPerLayer + attnScores;
+    var vramTotal = wBytes + gBytes + oBytes + actBytes;
+
+    // ---- KV cache (inference) ----
+    var kvPerTok = 2 * L * D * DT;          // K and V per token
+    var kvTotal = kvPerTok * S * B;
+
+    // ---- A100 step time ----
+    var A100 = 312e12, MFU = 0.40;
+    var stepSec = trainTotal / (A100 * MFU);
+
+    // ===== Render =====
+    $("paramsBig").innerHTML = humanNum(params).replace(" ","&nbsp;") + " <small>parameters</small>";
+    $("pBlocks").textContent = humanNum(pBlocks);
+    $("pEmb").textContent = humanNum(pEmb);
+    $("wDisk").textContent = bytes(wBytes);
+
+    $("fInf").textContent = flops(fwdTotal);
+    $("fTrain").textContent = flops(trainTotal);
+    $("fAttn").textContent = flops(attnShare) + " (" + (100*attnShare/trainTotal).toFixed(0) + "%)";
+    $("fFfn").textContent = flops(ffnShare) + " (" + (100*ffnShare/trainTotal).toFixed(0) + "%)";
+    $("stepTime").textContent = time(stepSec);
+
+    $("vramBig").innerHTML = bytes(vramTotal) + " <small>total</small>";
+    $("vW").textContent = bytes(wBytes);
+    $("vG").textContent = bytes(gBytes);
+    $("vO").textContent = bytes(oBytes);
+    $("vA").textContent = bytes(actBytes);
+    var segs = $("vbar").children;
+    var parts = [wBytes,gBytes,oBytes,actBytes];
+    for(var i=0;i<4;i++){ segs[i].style.width = (100*parts[i]/vramTotal).toFixed(2)+"%"; }
+
+    $("kvBig").textContent = bytes(kvTotal);
+    $("kvTok").textContent = bytes(kvPerTok);
+    $("kvCtx").textContent = (B*S).toLocaleString() + " tokens";
+
+    $("actBig").textContent = bytes(actBytes);
+    $("actL").textContent = bytes(actPerLayer);
+    $("actAtt").textContent = bytes(attnScores);
+  }
+
+  // wire preset buttons
+  $("presets").addEventListener("click", function(e){
+    var b = e.target.closest("button"); if(!b) return;
+    var p = presets[b.getAttribute("data-p")]; if(!p) return;
+    $("L").value=p.L; $("D").value=p.D; $("H").value=p.H;
+    $("V").value=p.V; $("S").value=p.S; $("B").value=p.B; $("FF").value=p.FF;
+    compute();
+  });
+
+  // wire all inputs
+  ["L","D","H","V","S","B","FF","DT","OPT","MP"].forEach(function(id){
+    var el = $(id);
+    el.addEventListener("input", compute);
+    el.addEventListener("change", compute);
+  });
+
+  compute();
+})();
+</script>
+</body>
+</html>
