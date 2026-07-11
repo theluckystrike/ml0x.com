@@ -81,6 +81,9 @@ img,svg{max-width:100%;height:auto}
 .skip-link{position:absolute;left:-9999px;top:0;z-index:200;background:#1A1A1A;color:#fff;padding:10px 16px;border-radius:0 0 6px 0;font-family:'Inter',sans-serif;font-size:14px}
 .skip-link:focus{left:0}
 @media(max-width:767px){.footer-links-seo{padding-left:24px;padding-right:24px}}
+/* NASA Phase 7: the nav $99 CTA measured 30px tall on mobile; lift it to a >=44px tap target.
+   !important is required to beat the comp's inline padding. */
+@media(max-width:767px){nav > a[href*="zovo.one/pricing"]{padding-top:14px!important;padding-bottom:14px!important}}
 @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}*{animation-duration:.01ms!important;transition-duration:.01ms!important}}
 .h5b14ad9:hover{color: #1A1A1A}
 .h8507f75:hover{background: #333}
