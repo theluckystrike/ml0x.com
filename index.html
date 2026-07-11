@@ -3,1043 +3,433 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ml0x — Ship Like a 100-Person Team | Agentic Engineering Pipeline</title>
-<meta name="description" content="Open-source agentic engineering pipeline that turns one developer into a 100-person team. Built on Claude Code, Karpathy's context engineering, NASA-grade quality gates, and cost-optimized model routing.">
-<meta name="keywords" content="agentic engineering, claude code, 100x developer, AI developer tools, context engineering, karpathy, multi-agent pipeline, autonomous development">
+<title>ml0x, guardrails around your Claude Code agents</title>
+<meta name="description" content="ml0x wraps Claude Code with a 5-stage pipeline, budget caps that can't be bypassed, and quality gates that run before you see the output. Free and open source.">
+<meta name="robots" content="index, follow, max-image-preview:large">
 <link rel="canonical" href="https://ml0x.com/">
 <link rel="alternate" hreflang="en" href="https://ml0x.com/">
 <link rel="alternate" hreflang="x-default" href="https://ml0x.com/">
 <meta property="og:type" content="website">
-<meta property="og:title" content="ml0x — One Developer. 100-Person Output.">
-<meta property="og:description" content="Open-source agentic engineering pipeline. Claude Code + context engineering + NASA-grade quality gates. Ship like a 100-person team.">
+<meta property="og:title" content="ml0x, guardrails around your Claude Code agents">
+<meta property="og:description" content="ml0x wraps Claude Code with a 5-stage pipeline, budget caps that can't be bypassed, and quality gates that run before you see the output. Free and open source.">
 <meta property="og:url" content="https://ml0x.com/">
 <meta property="og:site_name" content="ml0x">
+<meta property="og:locale" content="en_US">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="ml0x — One Developer. 100-Person Output.">
-<meta name="twitter:description" content="Open-source agentic engineering pipeline. Claude Code + context engineering + NASA-grade quality gates.">
-<meta name="author" content="ml0x">
+<meta name="twitter:title" content="ml0x, guardrails around your Claude Code agents">
+<meta name="twitter:description" content="ml0x wraps Claude Code with a 5-stage pipeline, budget caps that can't be bypassed, and quality gates that run before you see the output. Free and open source.">
+<meta name="author" content="Michael Lip">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
   "@type": "SoftwareApplication",
-  "name": "ml0x — 100x Agentic Engineer Pipeline",
+  "name": "ml0x",
   "url": "https://ml0x.com/",
-  "description": "Open-source autonomous development pipeline that turns a single developer into a 100-person engineering team using Claude Code, context engineering, and NASA-grade quality gates.",
+  "description": "A 5-stage autonomous pipeline around Claude Code with budget limits, quality gates, and compounding memory.",
   "applicationCategory": "DeveloperApplication",
   "operatingSystem": "macOS, Linux",
-  "offers": {
-    "@type": "Offer",
-    "price": "0",
-    "priceCurrency": "USD"
-  },
-  "author": {
-    "@type": "Organization",
-    "name": "ml0x",
-    "url": "https://ml0x.com"
-  },
-  "datePublished": "2026-05-12",
-  "dateModified": "2026-05-25",
-  "featureList": [
-    "Autonomous 5-stage development pipeline",
-    "NASA Power of 10 quality enforcement",
-    "7-stage fail-fast quality gates",
-    "Cost-optimized model routing (85% savings)",
-    "Prompt caching (90% input savings)",
-    "Multi-agent parallel execution",
-    "Compounding memory system",
-    "Loop budgets preventing runaway costs",
-    "Copy-paste ready scripts and configs",
-    "150+ sourced research report"
-  ]
+  "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
+  "author": { "@type": "Person", "name": "Michael Lip", "url": "https://zovo.one" }
 }
 </script>
 <script type="application/ld+json">
-{"@context":"https://schema.org","@type":"WebSite","name":"ml0x","url":"https://ml0x.com/","sameAs":["https://github.com/theluckystrike/ml0x.com"],"author":{"@type":"Organization","name":"ml0x"}}
-</script>
-<script type="application/ld+json">
-{
-  "@context": "https://schema.org",
-  "@type": "FAQPage",
-  "mainEntity": [
-    {
-      "@type": "Question",
-      "name": "What is the ml0x 100x Agentic Engineer Pipeline?",
-      "acceptedAnswer": {
-        "@type": "Answer",
-        "text": "ml0x is an open-source framework that turns a single developer into a 100-person engineering team using autonomous AI agents. It combines Claude Code, Karpathy's context engineering principles, NASA-grade quality gates, cost-optimized model routing, and multi-agent pipelines into a copy-paste ready system you can set up in 15 minutes."
-      }
-    },
-    {
-      "@type": "Question",
-      "name": "How does the agentic pipeline reduce development costs?",
-      "acceptedAnswer": {
-        "@type": "Answer",
-        "text": "The pipeline uses three cost-reduction strategies: model routing (only 26% of calls need expensive frontier models, saving 48-85%), prompt caching (90% input savings by reusing cached context), and loop budgets (5-layer budget system prevents runaway costs like the documented $47K incident). Combined, these can reduce AI development costs by 85% or more."
-      }
-    },
-    {
-      "@type": "Question",
-      "name": "What are the 7-stage quality gates?",
-      "acceptedAnswer": {
-        "@type": "Answer",
-        "text": "The quality gate runs 7 checks in fail-fast order: Prettier (formatting), ESLint with NASA Power of 10 rules (linting), TypeScript compiler (type checking), Vitest (unit tests), Semgrep (security scanning), Gitleaks (secret detection), and npm audit (dependency security). Any failure halts the pipeline before bad code ships."
-      }
-    },
-    {
-      "@type": "Question",
-      "name": "Is the ml0x pipeline free and open source?",
-      "acceptedAnswer": {
-        "@type": "Answer",
-        "text": "Yes, ml0x is completely free and open source on GitHub. All scripts, configs, research reports, and documentation are included. Every claim is sourced from 150+ references including academic papers, production case studies, and official documentation. No signup required."
-      }
-    },
-    {
-      "@type": "Question",
-      "name": "How long does it take to set up?",
-      "acceptedAnswer": {
-        "@type": "Answer",
-        "text": "The basic setup takes about 15 minutes: clone the repo, copy CLAUDE.md to your project, install MCP servers, enable hooks and quality gates, and run your first autonomous pipeline. The framework supports incremental adoption — each component works independently, so you can add layers over 6 weeks at your own pace."
-      }
-    }
-  ]
-}
+{"@context":"https://schema.org","@type":"WebSite","name":"ml0x","url":"https://ml0x.com/","sameAs":["https://github.com/theluckystrike/100xagenticdev"]}
 </script>
 <style>
-/* ============================================
-   RESET & FOUNDATION
-   ============================================ */
-*{margin:0;padding:0;box-sizing:border-box}
-:root{
-  --bg:#050508;
-  --surface:#0c0c14;
-  --surface2:#111119;
-  --surface3:#16161f;
-  --border:rgba(255,255,255,0.06);
-  --border2:rgba(255,255,255,0.1);
-  --text:#e8e8ed;
-  --text2:#8888a0;
-  --text3:#55556a;
-  --accent:#7c6cf0;
-  --accent2:#00d4aa;
-  --accent3:#f06292;
-  --accent4:#42a5f5;
-  --glow-purple:rgba(124,108,240,0.15);
-  --glow-green:rgba(0,212,170,0.15);
-  --glow-pink:rgba(240,98,146,0.12);
-  --gradient:linear-gradient(135deg,#7c6cf0 0%,#00d4aa 100%);
-  --gradient2:linear-gradient(135deg,#7c6cf0 0%,#f06292 100%);
-  --radius:16px;
-  --radius-sm:10px;
-  --radius-xs:6px;
+body { margin: 0; background: #FAFAF9; -webkit-font-smoothing: antialiased; }
+a { color: inherit; text-decoration: none; }
+a:hover { color: inherit; }
+::selection { background: rgba(0,0,0,0.08); }
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+@keyframes blink { 0%,100% { opacity: 1; } 50% { opacity: 0; } }
+
+@media (max-width: 767px) {
+  [data-r="hero-grid"] { grid-template-columns: 1fr !important; gap: 48px !important; padding: 48px 24px 0 !important; min-height: auto !important; }
+  [data-r="hero-h1"] { font-size: 40px !important; letter-spacing: -2px !important; }
+  [data-r="stats-row"] { grid-template-columns: repeat(3, 1fr) !important; gap: 24px !important; }
+  [data-r="products-grid"] { grid-template-columns: repeat(2, 1fr) !important; }
+  [data-r="products-grid"] > a:last-child:nth-child(odd) { grid-column: span 2 !important; }
+  [data-r="features-grid"] { grid-template-columns: 1fr !important; }
+  [data-r="econ-grid"] { grid-template-columns: 1fr !important; gap: 40px !important; }
+  [data-r="nav-links"] { display: none !important; }
+  [data-r="footer-inner"] { flex-direction: column !important; gap: 16px !important; align-items: flex-start !important; }
+  [data-r="section"] { padding-left: 24px !important; padding-right: 24px !important; }
+  [data-r="pipeline-row"] { flex-wrap: wrap !important; gap: 6px !important; }
+  [data-r="pipeline-row"] > span { display: none !important; }
+  [data-r="upstream-chips"] { flex-direction: column !important; gap: 8px !important; }
 }
+@media (min-width: 768px) and (max-width: 1023px) {
+  [data-r="hero-grid"] { grid-template-columns: 1fr !important; gap: 48px !important; }
+  [data-r="hero-h1"] { font-size: 48px !important; }
+  [data-r="products-grid"] { grid-template-columns: repeat(2, 1fr) !important; }
+  [data-r="features-grid"] { grid-template-columns: repeat(2, 1fr) !important; }
+}
+/* foundation that the comp assumed the runtime injected */
 html{scroll-behavior:smooth}
-body{font-family:'Inter',-apple-system,BlinkMacSystemFont,'SF Pro Display',system-ui,sans-serif;background:var(--bg);color:var(--text);line-height:1.65;overflow-x:hidden;-webkit-font-smoothing:antialiased}
-a{color:var(--accent2);text-decoration:none;transition:opacity 0.2s}
-a:hover{opacity:0.8}
-::selection{background:rgba(124,108,240,0.3);color:#fff}
-
-/* ============================================
-   UTILITIES
-   ============================================ */
-.container{max-width:1140px;margin:0 auto;padding:0 2rem}
-.badge{display:inline-flex;align-items:center;gap:6px;padding:6px 14px;border-radius:100px;font-size:0.75rem;font-weight:600;letter-spacing:0.03em;text-transform:uppercase}
-.badge--purple{background:var(--glow-purple);color:var(--accent)}
-.badge--green{background:var(--glow-green);color:var(--accent2)}
-.badge--pink{background:var(--glow-pink);color:var(--accent3)}
-.mono{font-family:'SF Mono','Fira Code','JetBrains Mono','Cascadia Code',monospace}
-
-/* ============================================
-   SECTION TITLES
-   ============================================ */
-.section{padding:7rem 0}
-.section--alt{background:var(--surface)}
-.section-label{font-size:0.8rem;font-weight:700;letter-spacing:0.15em;text-transform:uppercase;color:var(--accent);margin-bottom:1rem}
-.section-title{font-size:clamp(2rem,4vw,3rem);font-weight:800;line-height:1.15;margin-bottom:1rem;letter-spacing:-0.02em}
-.section-title span{background:var(--gradient);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
-.section-desc{font-size:1.1rem;color:var(--text2);max-width:620px;line-height:1.7}
-
-/* ============================================
-   NAV
-   ============================================ */
-.nav{position:fixed;top:0;left:0;right:0;z-index:100;padding:1rem 0;transition:all 0.3s}
-.nav.scrolled{background:rgba(5,5,8,0.85);backdrop-filter:blur(20px);border-bottom:1px solid var(--border)}
-.nav .container{display:flex;align-items:center;justify-content:space-between}
-.nav-logo{font-size:1.2rem;font-weight:800;letter-spacing:-0.03em;font-family:'SF Mono','Fira Code','JetBrains Mono',monospace}
-.nav-logo .brand{background:var(--gradient);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
-.nav-links{display:flex;gap:2rem;align-items:center}
-.nav-links a{color:var(--text2);font-size:0.85rem;font-weight:500;transition:color 0.2s}
-.nav-links a:hover{color:var(--text);opacity:1}
-.nav-cta{background:var(--gradient);color:#fff;padding:8px 20px;border-radius:100px;font-size:0.85rem;font-weight:600}
-.nav-cta:hover{opacity:0.9;transform:translateY(-1px)}
-
-/* ============================================
-   HERO
-   ============================================ */
-.hero{min-height:100vh;display:flex;align-items:center;position:relative;overflow:hidden;padding:6rem 0 4rem}
-.hero::before{content:'';position:absolute;top:-40%;left:-20%;width:140%;height:140%;background:
-  radial-gradient(ellipse 600px 400px at 25% 30%,rgba(124,108,240,0.12) 0%,transparent 70%),
-  radial-gradient(ellipse 500px 350px at 75% 50%,rgba(0,212,170,0.08) 0%,transparent 70%),
-  radial-gradient(ellipse 400px 300px at 50% 80%,rgba(240,98,146,0.06) 0%,transparent 70%);
-  animation:heroPulse 12s ease-in-out infinite alternate;pointer-events:none}
-@keyframes heroPulse{0%{opacity:0.6;transform:scale(1) rotate(0deg)}100%{opacity:1;transform:scale(1.05) rotate(1deg)}}
-
-.hero-grid{display:grid;grid-template-columns:1fr;gap:3rem;position:relative;z-index:1}
-.hero-eyebrow{display:flex;align-items:center;gap:10px;margin-bottom:1.5rem}
-.hero h1{font-size:clamp(2.8rem,6.5vw,5.2rem);font-weight:800;line-height:1.05;letter-spacing:-0.03em;margin-bottom:1.5rem}
-.hero h1 .gradient{background:var(--gradient);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
-.hero-sub{font-size:1.2rem;color:var(--text2);max-width:560px;line-height:1.7;margin-bottom:2.5rem}
-.hero-actions{display:flex;gap:1rem;flex-wrap:wrap}
-.btn{display:inline-flex;align-items:center;gap:8px;padding:14px 28px;border-radius:100px;font-size:0.95rem;font-weight:600;transition:all 0.25s;cursor:pointer;border:none}
-.btn--primary{background:var(--gradient);color:#fff;box-shadow:0 4px 24px rgba(124,108,240,0.3)}
-.btn--primary:hover{transform:translateY(-2px);box-shadow:0 8px 32px rgba(124,108,240,0.4);opacity:1}
-.btn--ghost{background:transparent;color:var(--text);border:1px solid var(--border2);backdrop-filter:blur(4px)}
-.btn--ghost:hover{border-color:var(--accent);color:var(--accent);opacity:1}
-
-/* ============================================
-   PROOF BAR
-   ============================================ */
-.proof-bar{padding:3rem 0;border-top:1px solid var(--border);border-bottom:1px solid var(--border)}
-.proof-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:1rem}
-.proof-item{text-align:center;padding:0.5rem}
-.proof-num{font-size:2rem;font-weight:800;background:var(--gradient);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;line-height:1.2}
-.proof-label{font-size:0.72rem;color:var(--text3);text-transform:uppercase;letter-spacing:0.08em;margin-top:4px;font-weight:600}
-
-/* ============================================
-   PROBLEM / SOLUTION
-   ============================================ */
-.problem-grid{display:grid;grid-template-columns:1fr 1fr;gap:2rem;margin-top:3rem}
-.problem-card,.solution-card{padding:2rem;border-radius:var(--radius);position:relative;overflow:hidden}
-.problem-card{background:var(--surface);border:1px solid rgba(240,98,146,0.15)}
-.problem-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--accent3),transparent)}
-.solution-card{background:var(--surface);border:1px solid rgba(0,212,170,0.15)}
-.solution-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--accent2),transparent)}
-.problem-card h3,.solution-card h3{font-size:0.8rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:1.25rem}
-.problem-card h3{color:var(--accent3)}
-.solution-card h3{color:var(--accent2)}
-.problem-card ul,.solution-card ul{list-style:none;display:flex;flex-direction:column;gap:0.9rem}
-.problem-card li,.solution-card li{display:flex;gap:10px;font-size:0.92rem;color:var(--text2);line-height:1.5}
-.problem-card li::before{content:'';flex-shrink:0;width:6px;height:6px;border-radius:50%;margin-top:8px}
-.problem-card li::before{background:var(--accent3)}
-.solution-card li::before{content:'';flex-shrink:0;width:6px;height:6px;border-radius:50%;background:var(--accent2);margin-top:8px}
-
-/* ============================================
-   KEY INSIGHTS — BENTO GRID
-   ============================================ */
-.bento{display:grid;grid-template-columns:repeat(3,1fr);gap:1.25rem;margin-top:3rem}
-.bento-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:2rem;position:relative;overflow:hidden;transition:all 0.35s cubic-bezier(0.4,0,0.2,1)}
-.bento-card:hover{border-color:var(--border2);transform:translateY(-3px);box-shadow:0 12px 40px rgba(0,0,0,0.4)}
-.bento-card--wide{grid-column:span 2}
-.bento-card--tall{grid-row:span 2;display:flex;flex-direction:column}
-.bento-card--featured{border-color:rgba(124,108,240,0.2);background:linear-gradient(135deg,var(--surface) 0%,rgba(124,108,240,0.04) 100%)}
-
-.bento-icon{width:48px;height:48px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:1.4rem;margin-bottom:1.25rem;position:relative}
-.bento-icon--purple{background:var(--glow-purple)}
-.bento-icon--green{background:var(--glow-green)}
-.bento-icon--pink{background:var(--glow-pink)}
-.bento-icon--blue{background:rgba(66,165,245,0.12)}
-
-.bento-card h3{font-size:1.15rem;font-weight:700;margin-bottom:0.6rem;letter-spacing:-0.01em}
-.bento-card p{font-size:0.9rem;color:var(--text2);line-height:1.65}
-
-.bento-metric{display:inline-flex;align-items:center;gap:6px;margin-top:1rem;padding:6px 12px;border-radius:var(--radius-xs);font-size:0.8rem;font-weight:700}
-.bento-metric--purple{background:var(--glow-purple);color:var(--accent)}
-.bento-metric--green{background:var(--glow-green);color:var(--accent2)}
-.bento-metric--pink{background:var(--glow-pink);color:var(--accent3)}
-.bento-metric--blue{background:rgba(66,165,245,0.12);color:var(--accent4)}
-
-.bento-evidence{margin-top:1rem;padding:0.85rem 1rem;background:rgba(0,0,0,0.25);border-radius:var(--radius-sm);border-left:3px solid var(--accent);font-size:0.82rem;color:var(--text2);line-height:1.55}
-
-.bento-big{font-size:3.5rem;font-weight:800;line-height:1;margin-bottom:0.5rem;background:var(--gradient);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
-
-/* ============================================
-   HOW IT WORKS — PIPELINE
-   ============================================ */
-.pipeline{display:flex;align-items:stretch;gap:0;margin-top:3rem;position:relative}
-.pipeline::before{content:'';position:absolute;top:50%;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--accent),var(--accent2));opacity:0.2;z-index:0}
-.pipe-step{flex:1;position:relative;z-index:1;text-align:center;padding:0 0.5rem}
-.pipe-dot{width:44px;height:44px;border-radius:50%;background:var(--surface2);border:2px solid var(--accent);display:flex;align-items:center;justify-content:center;margin:0 auto 1rem;font-size:0.85rem;font-weight:700;color:var(--accent);position:relative}
-.pipe-dot::after{content:'';position:absolute;inset:-4px;border-radius:50%;background:var(--glow-purple);opacity:0;transition:opacity 0.3s}
-.pipe-step:hover .pipe-dot::after{opacity:1}
-.pipe-step h4{font-size:0.95rem;font-weight:700;margin-bottom:0.35rem}
-.pipe-step p{font-size:0.78rem;color:var(--text3);line-height:1.45}
-.pipe-model{font-size:0.7rem;color:var(--accent);font-weight:600;margin-top:0.4rem;font-family:'SF Mono',monospace}
-
-/* ============================================
-   KARPATHY RULES
-   ============================================ */
-.rules-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:1.25rem;margin-top:3rem}
-.rule{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:2rem;position:relative;transition:border-color 0.3s}
-.rule:hover{border-color:rgba(124,108,240,0.25)}
-.rule-number{position:absolute;top:1.5rem;right:1.75rem;font-size:4rem;font-weight:900;line-height:1;background:linear-gradient(180deg,rgba(124,108,240,0.08),transparent);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
-.rule h4{font-size:1.05rem;font-weight:700;margin-bottom:0.5rem;color:var(--accent);letter-spacing:-0.01em}
-.rule p{font-size:0.88rem;color:var(--text2);line-height:1.6;max-width:90%}
-.rule blockquote{margin-top:0.75rem;padding-left:1rem;border-left:2px solid var(--border2);font-size:0.82rem;color:var(--text3);font-style:italic}
-
-/* ============================================
-   COST TABLE
-   ============================================ */
-.cost-wrap{margin-top:3rem;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden}
-.cost-table{width:100%;border-collapse:collapse;font-size:0.9rem}
-.cost-table thead{background:var(--surface2)}
-.cost-table th{padding:1rem 1.25rem;text-align:left;font-size:0.72rem;text-transform:uppercase;letter-spacing:0.1em;color:var(--text3);font-weight:700;border-bottom:1px solid var(--border)}
-.cost-table td{padding:0.9rem 1.25rem;border-bottom:1px solid var(--border)}
-.cost-table tbody tr{transition:background 0.2s}
-.cost-table tbody tr:hover{background:rgba(124,108,240,0.03)}
-.cost-table tbody tr:last-child td{border-bottom:none}
-.cost-green{color:var(--accent2);font-weight:700}
-.cost-savings{display:inline-block;background:var(--glow-green);color:var(--accent2);padding:3px 10px;border-radius:100px;font-size:0.75rem;font-weight:700}
-.cost-promo{display:inline-block;background:var(--glow-pink);color:var(--accent3);padding:3px 10px;border-radius:100px;font-size:0.7rem;font-weight:700}
-
-/* ============================================
-   ARCHITECTURE
-   ============================================ */
-.arch{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:2.5rem;margin-top:3rem;overflow-x:auto}
-.arch pre{font-family:'SF Mono','Fira Code','JetBrains Mono',monospace;font-size:0.78rem;color:var(--accent2);line-height:1.6;white-space:pre}
-
-/* ============================================
-   ONBOARDING
-   ============================================ */
-.steps{margin-top:3rem;display:flex;flex-direction:column;gap:1.5rem}
-.step{display:grid;grid-template-columns:56px 1fr;gap:1.5rem;align-items:start}
-.step-num{width:56px;height:56px;border-radius:14px;background:var(--surface);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:1.1rem;font-weight:800;color:var(--accent);flex-shrink:0;position:relative}
-.step-num::after{content:'';position:absolute;bottom:-1.5rem;left:50%;width:1px;height:1.5rem;background:var(--border)}
-.step:last-child .step-num::after{display:none}
-.step-content h4{font-size:1rem;font-weight:700;margin-bottom:0.3rem}
-.step-content p{font-size:0.88rem;color:var(--text2);margin-bottom:0.6rem}
-.step-code{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);padding:0.85rem 1rem;font-family:'SF Mono','Fira Code',monospace;font-size:0.8rem;color:var(--accent2);overflow-x:auto;line-height:1.5}
-
-/* ============================================
-   QUOTE
-   ============================================ */
-.quote-block{margin-top:3rem;padding:2.5rem;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);position:relative}
-.quote-block::before{content:'\201C';position:absolute;top:0.5rem;left:1.5rem;font-size:5rem;font-weight:800;color:rgba(124,108,240,0.1);line-height:1;font-family:Georgia,serif}
-.quote-block blockquote{font-size:1.15rem;line-height:1.7;color:var(--text);font-style:italic;padding-left:0.5rem;max-width:90%}
-.quote-block cite{display:block;margin-top:1rem;font-size:0.85rem;color:var(--text3);font-style:normal;font-weight:600}
-
-/* ============================================
-   FORMULA
-   ============================================ */
-.formula-box{background:var(--surface);border:1px solid rgba(124,108,240,0.15);border-radius:var(--radius);padding:2.5rem 3rem;margin-top:3rem;text-align:center}
-.formula-code{font-family:'SF Mono','Fira Code',monospace;font-size:clamp(0.85rem,1.5vw,1.05rem);line-height:2.2;text-align:left;display:inline-block}
-.formula-code .var{color:var(--accent);font-weight:700}
-.formula-code .op{color:var(--text3)}
-.formula-code .comment{color:var(--text3);font-size:0.85em}
-
-/* ============================================
-   FOOTER
-   ============================================ */
-.footer{padding:4rem 0 3rem;border-top:1px solid var(--border);text-align:center}
-.footer-tagline{font-size:1.1rem;color:var(--text2);font-style:italic;margin-bottom:0.75rem}
-.footer-links{display:flex;gap:2rem;justify-content:center;margin-top:1.5rem;flex-wrap:wrap}
-.footer-links a{color:var(--text3);font-size:0.85rem;font-weight:500}
-.footer-links a:hover{color:var(--accent2)}
-.footer-copy{margin-top:2rem;font-size:0.75rem;color:var(--text3)}
-
-/* ============================================
-   RESPONSIVE
-   ============================================ */
-@media(max-width:900px){
-  .bento{grid-template-columns:1fr}
-  .bento-card--wide,.bento-card--tall{grid-column:span 1;grid-row:span 1}
-  .problem-grid{grid-template-columns:1fr}
-  .rules-grid{grid-template-columns:1fr}
-  .proof-grid{grid-template-columns:repeat(3,1fr)}
-  .proof-grid .proof-item:nth-child(4),.proof-grid .proof-item:nth-child(5){grid-column:auto}
-  .pipeline{flex-direction:column;gap:0.5rem}
-  .pipeline::before{display:none}
-  .nav-links{display:none}
-}
-@media(max-width:600px){
-  .proof-grid{grid-template-columns:repeat(2,1fr)}
-  .hero h1{font-size:2.4rem}
-  .section{padding:4rem 0}
-  .step{grid-template-columns:1fr}
-  .step-num{width:40px;height:40px;font-size:0.9rem}
-  .step-num::after{display:none}
-}
-
-/* ============================================
-   ANIMATIONS (intersection observer)
-   ============================================ */
-.reveal{opacity:0;transform:translateY(30px);transition:all 0.7s cubic-bezier(0.4,0,0.2,1)}
-.reveal.visible{opacity:1;transform:translateY(0)}
-.reveal-delay-1{transition-delay:0.1s}
-.reveal-delay-2{transition-delay:0.2s}
-.reveal-delay-3{transition-delay:0.3s}
-.reveal-delay-4{transition-delay:0.4s}
+img,svg{max-width:100%;height:auto}
+:focus-visible{outline:2px solid #1A1A1A;outline-offset:3px;border-radius:4px}
+.js-scroll{cursor:pointer}
+/* restored SEO internal-link row in the footer */
+.footer-links-seo{max-width:1080px;margin:0 auto 20px;padding:0 40px;display:flex;flex-wrap:wrap;gap:8px 20px;
+ border-bottom:1px solid rgba(255,255,255,0.06);padding-bottom:20px}
+.footer-links-seo a{font-family:'Inter',sans-serif;font-size:12px;color:#8a8a8a;text-decoration:none;transition:color .2s;padding:3px 0}
+.footer-links-seo a:hover{color:#ccc}
+.skip-link{position:absolute;left:-9999px;top:0;z-index:200;background:#1A1A1A;color:#fff;padding:10px 16px;border-radius:0 0 6px 0;font-family:'Inter',sans-serif;font-size:14px}
+.skip-link:focus{left:0}
+@media(max-width:767px){.footer-links-seo{padding-left:24px;padding-right:24px}}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}*{animation-duration:.01ms!important;transition-duration:.01ms!important}}
+.h5b14ad9:hover{color: #1A1A1A}
+.h8507f75:hover{background: #333}
+.h421a154:hover{text-decoration-color: #999}
+.hdab905e:hover{background: #F5F5F3}
+.h78c1349:hover{border-color: #CCC}
+.hee81a6f:hover{background: #E8E8E6}
+.h57e0e31:hover{color: #888}
 </style>
 </head>
 <body>
-
+<a href="#main" class="skip-link">Skip to main content</a>
 <!-- NAV -->
-<nav class="nav" id="nav">
-  <div class="container">
-    <a href="/" class="nav-logo"><span class="brand">ml0x</span></a>
-    <div class="nav-links">
-      <a href="/tools/">Tools</a>
-      <a href="/answers/">Answers</a>
-      <a href="/research/">Research</a>
-      <a href="/about.html">About</a>
-      <a href="#insights">Insights</a>
-      <a href="#pipeline">Pipeline</a>
-      <a href="#costs">Costs</a>
-      <a href="#start">Get Started</a>
-      <a href="https://github.com/theluckystrike/100xagenticdev" class="nav-cta">GitHub</a>
-    </div>
-  </div>
+<nav style="position: sticky; top: 0; z-index: 100; background: rgba(250,250,249,0.88); backdrop-filter: blur(20px) saturate(1.8); -webkit-backdrop-filter: blur(20px) saturate(1.8); height: 52px; display: flex; align-items: center; justify-content: space-between; padding: 0 40px; border-bottom: 1px solid rgba(0,0,0,0.04);">
+<div style="display: flex; align-items: center; gap: 40px;">
+<span class="js-scroll" data-scroll="top" role="link" style="font-family: 'JetBrains Mono', monospace; font-weight: 700; font-size: 15px; color: #1A1A1A; letter-spacing: -0.5px; cursor: pointer;" tabindex="0">ml0x</span>
+<div data-r="nav-links" style="display: flex; gap: 28px;">
+<span class="js-scroll h5b14ad9" data-scroll="proof" role="link" style="font-family: 'Inter', sans-serif; font-size: 13px; font-weight: 500; color: #6a6a6a; cursor: pointer; transition: color 0.2s;" tabindex="0">Proof</span>
+<span class="js-scroll h5b14ad9" data-scroll="how" role="link" style="font-family: 'Inter', sans-serif; font-size: 13px; font-weight: 500; color: #6a6a6a; cursor: pointer; transition: color 0.2s;" tabindex="0">How it works</span>
+<span class="js-scroll h5b14ad9" data-scroll="economics" role="link" style="font-family: 'Inter', sans-serif; font-size: 13px; font-weight: 500; color: #6a6a6a; cursor: pointer; transition: color 0.2s;" tabindex="0">Economics</span>
+</div>
+</div>
+<a class="h8507f75" href="https://zovo.one/pricing" style="font-family: 'Inter', sans-serif; font-size: 13px; font-weight: 500; color: #fff; background: #1A1A1A; padding: 7px 18px; border-radius: 980px; text-decoration: none; transition: background 0.2s;" target="_blank">Full system, $99</a>
 </nav>
-
 <!-- HERO -->
-<section class="hero">
-  <div class="container">
-    <div class="hero-grid">
-      <div>
-        <div class="hero-eyebrow">
-          <span class="badge badge--purple">Open Source</span>
-          <span class="badge badge--green">Production Ready</span>
-        </div>
-        <h1>One developer.<br><span class="gradient">100-person output.</span></h1>
-        <p class="hero-sub">The autonomous engineering pipeline built on Karpathy's context engineering, Claude Code, NASA-grade quality gates, and cost-optimized model routing. Every script copy-paste ready. Every claim sourced.</p>
-        <div class="hero-actions">
-          <a href="#start" class="btn btn--primary">Get Started in 15 min</a>
-          <a href="#insights" class="btn btn--ghost">See Key Insights</a>
-        </div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- PROOF BAR -->
-<div class="proof-bar">
-  <div class="container">
-    <div class="proof-grid">
-      <div class="proof-item">
-        <div class="proof-num">6-10x</div>
-        <div class="proof-label">Harness Multiplier</div>
-      </div>
-      <div class="proof-item">
-        <div class="proof-num">85%</div>
-        <div class="proof-label">Cost Reduction</div>
-      </div>
-      <div class="proof-item">
-        <div class="proof-num">90%</div>
-        <div class="proof-label">Cache Savings</div>
-      </div>
-      <div class="proof-item">
-        <div class="proof-num">7-Stage</div>
-        <div class="proof-label">Quality Gate</div>
-      </div>
-      <div class="proof-item">
-        <div class="proof-num">$0</div>
-        <div class="proof-label">Runaway Costs</div>
-      </div>
-    </div>
-  </div>
+<header id="main" role="main" style="overflow: hidden;">
+<div data-r="hero-grid" style="max-width: 1080px; margin: 0 auto; padding: 64px 40px 0; display: grid; grid-template-columns: 1fr 1fr; gap: 80px; align-items: center; min-height: calc(100vh - 52px);">
+<div>
+<!-- Urgency hook -->
+<p style="font-family: 'JetBrains Mono', monospace; font-size: 12px; color: #C53030; margin: 0 0 28px; line-height: 1.7; padding: 10px 14px; background: rgba(197,48,48,0.04); border-radius: 8px; border-left: 2px solid #C53030;">A dev's Claude Code agents looped for 5 hours last month. $47K bill. No budget limits, no kill switch.</p>
+<h1 data-r="hero-h1" style="font-family: 'JetBrains Mono', monospace; font-size: clamp(40px, 5.5vw, 60px); font-weight: 700; line-height: 1.06; letter-spacing: -3px; color: #1A1A1A; margin: 0 0 24px;">Stop<br/>babysitting<br/>your agents.</h1>
+<p style="font-family: 'Inter', sans-serif; font-size: 16px; line-height: 1.7; color: #777; margin: 0 0 36px; max-width: 400px;">A 5-stage pipeline around Claude Code. Budget limits that can't be bypassed, quality gates that run before you see anything, and memory that grows between sessions.</p>
+<div style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
+<a class="h8507f75" href="https://zovo.one/pricing" style="font-family: 'Inter', sans-serif; font-size: 14px; font-weight: 500; color: #fff; background: #1A1A1A; padding: 12px 28px; border-radius: 980px; text-decoration: none; transition: background 0.2s;" target="_blank">Get the full system, $99</a>
+<a class="h5b14ad9" href="https://github.com/theluckystrike/100xagenticdev" style="font-family: 'Inter', sans-serif; font-size: 14px; font-weight: 500; color: #6a6a6a; text-decoration: none; padding: 12px 4px; transition: color 0.2s;" target="_blank">Clone free core</a>
 </div>
-
-<!-- PROBLEM / SOLUTION -->
-<section class="section">
-  <div class="container">
-    <div class="section-label">The Shift</div>
-    <h2 class="section-title">The bottleneck moved from <span>generation to verification</span></h2>
-    <p class="section-desc">AI agents produce at incredible speed. Knowing whether output is correct is the hard part. That's where the 100x engineer lives.</p>
-    <div class="problem-grid reveal">
-      <div class="problem-card">
-        <h3>Without This Pipeline</h3>
-        <ul>
-          <li>Agents hallucinate, you manually review every line</li>
-          <li>$47K surprise bills from runaway agent loops</li>
-          <li>Every session starts from zero — no memory</li>
-          <li>One model for everything — overpaying by 85%</li>
-          <li>No quality enforcement — bugs ship to production</li>
-          <li>"Vibe coding" — high floor, low ceiling</li>
-        </ul>
-      </div>
-      <div class="solution-card">
-        <h3>With ml0x Pipeline</h3>
-        <ul>
-          <li>7-stage quality gate catches issues before you see them</li>
-          <li>5-layer budget system — agents literally cannot overspend</li>
-          <li>Compounding memory — knowledge grows every session</li>
-          <li>Smart routing: $0.28/M for simple, frontier for complex</li>
-          <li>NASA Power of 10 rules enforced by linters and hooks</li>
-          <li>Agentic engineering — high floor AND high ceiling</li>
-        </ul>
-      </div>
-    </div>
-  </div>
+</div>
+<!-- Terminal -->
+<div style="background: #111; border-radius: 12px; overflow: hidden; box-shadow: 0 40px 100px rgba(0,0,0,0.12);">
+<div style="display: flex; align-items: center; gap: 6px; padding: 14px 18px; border-bottom: 1px solid rgba(255,255,255,0.06);">
+<span style="width: 10px; height: 10px; border-radius: 50%; background: #FF5F57;"></span>
+<span style="width: 10px; height: 10px; border-radius: 50%; background: #FFBD2E;"></span>
+<span style="width: 10px; height: 10px; border-radius: 50%; background: #28CA41;"></span>
+<span style="font-family: 'JetBrains Mono', monospace; font-size: 11px; color: #555; margin-left: 10px;">ml0x</span>
+</div>
+<div style="padding: 22px; font-family: 'JetBrains Mono', monospace; font-size: 12px; line-height: 2.1; color: #666;">
+<div><span style="color: #555;">$</span> <span style="color: #ccc;">ml0x run "Add rate limiting to /api/users"</span></div>
+<div style="margin: 8px 0; color: #333;">────────────────────────────────────</div>
+<div><span style="color: #28CA41;"><svg viewBox="0 0 12 12" width="11" height="11" aria-hidden="true" style="display:inline-block;vertical-align:-1px" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M2 6.3 4.6 8.9 10 3.1"/></svg></span> <span style="color: #888;">ANALYZE</span> <span>Opus scanned 847 files</span></div>
+<div><span style="color: #28CA41;"><svg viewBox="0 0 12 12" width="11" height="11" aria-hidden="true" style="display:inline-block;vertical-align:-1px" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M2 6.3 4.6 8.9 10 3.1"/></svg></span> <span style="color: #888;">PLAN</span> <span>Redis sliding window + per-IP</span></div>
+<div><span style="color: #28CA41;"><svg viewBox="0 0 12 12" width="11" height="11" aria-hidden="true" style="display:inline-block;vertical-align:-1px" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M2 6.3 4.6 8.9 10 3.1"/></svg></span> <span style="color: #888;">CODE</span> <span>Sonnet wrote 4 files, 187 lines</span></div>
+<div><span style="color: #28CA41;"><svg viewBox="0 0 12 12" width="11" height="11" aria-hidden="true" style="display:inline-block;vertical-align:-1px" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M2 6.3 4.6 8.9 10 3.1"/></svg></span> <span style="color: #888;">TEST</span> <span>Prettier <svg viewBox="0 0 12 12" width="11" height="11" aria-hidden="true" style="display:inline-block;vertical-align:-1px" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M2 6.3 4.6 8.9 10 3.1"/></svg> ESLint <svg viewBox="0 0 12 12" width="11" height="11" aria-hidden="true" style="display:inline-block;vertical-align:-1px" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M2 6.3 4.6 8.9 10 3.1"/></svg> tsc <svg viewBox="0 0 12 12" width="11" height="11" aria-hidden="true" style="display:inline-block;vertical-align:-1px" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M2 6.3 4.6 8.9 10 3.1"/></svg> 12/12 <svg viewBox="0 0 12 12" width="11" height="11" aria-hidden="true" style="display:inline-block;vertical-align:-1px" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M2 6.3 4.6 8.9 10 3.1"/></svg></span></div>
+<div><span style="color: #28CA41;"><svg viewBox="0 0 12 12" width="11" height="11" aria-hidden="true" style="display:inline-block;vertical-align:-1px" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M2 6.3 4.6 8.9 10 3.1"/></svg></span> <span style="color: #888;">REVIEW</span> <span>LGTM, NASA P10 compliant</span></div>
+<div><span style="color: #28CA41;"><svg viewBox="0 0 12 12" width="11" height="11" aria-hidden="true" style="display:inline-block;vertical-align:-1px" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M2 6.3 4.6 8.9 10 3.1"/></svg></span> <span style="color: #888;">SHIP</span> <span>PR #312, changelog updated</span></div>
+<div style="margin: 8px 0; color: #333;">────────────────────────────────────</div>
+<div><span style="color: #888;">Cost</span> <span style="color: #28CA41;">$0.43</span> <span style="color: #333;">of $5 limit</span> <span style="color: #888;">Time</span> <span style="color: #ccc;">2m 14s</span></div>
+<div><span style="color: #888;">Cache</span> <span style="color: #28CA41;">91%</span> <span style="color: #333;">saved $4.30</span></div>
+<div style="margin-top: 8px;"><span style="color: #555;">$</span> <span style="color: #444; animation: blink 1.2s step-end infinite;">▋</span></div>
+</div>
+</div>
+</div>
+</header>
+<!-- PROOF -->
+<section data-r="section" id="proof" style="padding: 120px 40px 0;">
+<div style="max-width: 1080px; margin: 0 auto;">
+<!-- Builder -->
+<div style="display: flex; align-items: center; gap: 14px; margin-bottom: 48px;">
+<img alt="Michael Lip" loading="lazy" src="https://avatars.githubusercontent.com/u/51033404?v=4" style="width: 36px; height: 36px; border-radius: 50%;"/>
+<div>
+<p style="font-family: 'Inter', sans-serif; font-size: 14px; color: #1A1A1A; margin: 0; font-weight: 500;">Everything below was shipped solo by <a class="h421a154" href="https://github.com/theluckystrike" style="text-decoration: underline; text-decoration-color: #ddd; text-underline-offset: 3px;" target="_blank">Michael Lip</a></p>
+<p style="font-family: 'Inter', sans-serif; font-size: 13px; color: #6a6a6a; margin: 2px 0 0;">140+ PRs merged at GoogleChrome, axios, nicehash. 55+ vulnerability reports filed.</p>
+</div>
+</div>
+<!-- Stats -->
+<div data-r="stats-row" style="display: grid; grid-template-columns: repeat(6, 1fr); gap: 0; border-top: 1px solid #E8E8E6; border-bottom: 1px solid #E8E8E6; padding: 36px 0;">
+<div>
+<div style="font-family: 'JetBrains Mono', monospace; font-size: 28px; font-weight: 700; color: #1A1A1A; font-variant-numeric: tabular-nums; letter-spacing: -1px;">978</div>
+<div style="font-family: 'Inter', sans-serif; font-size: 12px; color: #6a6a6a; margin-top: 4px;">repos</div>
+</div>
+<div>
+<div style="font-family: 'JetBrains Mono', monospace; font-size: 28px; font-weight: 700; color: #1A1A1A; font-variant-numeric: tabular-nums; letter-spacing: -1px;">140+</div>
+<div style="font-family: 'Inter', sans-serif; font-size: 12px; color: #6a6a6a; margin-top: 4px;">PRs merged</div>
+</div>
+<div>
+<div style="font-family: 'JetBrains Mono', monospace; font-size: 28px; font-weight: 700; color: #1A1A1A; font-variant-numeric: tabular-nums; letter-spacing: -1px;">50K</div>
+<div style="font-family: 'Inter', sans-serif; font-size: 12px; color: #6a6a6a; margin-top: 4px;">users</div>
+</div>
+<div>
+<div style="font-family: 'JetBrains Mono', monospace; font-size: 28px; font-weight: 700; color: #1A1A1A; font-variant-numeric: tabular-nums; letter-spacing: -1px;">270</div>
+<div style="font-family: 'Inter', sans-serif; font-size: 12px; color: #6a6a6a; margin-top: 4px;">sales/mo</div>
+</div>
+<div>
+<div style="font-family: 'JetBrains Mono', monospace; font-size: 28px; font-weight: 700; color: #1A1A1A; font-variant-numeric: tabular-nums; letter-spacing: -1px;">20</div>
+<div style="font-family: 'Inter', sans-serif; font-size: 12px; color: #6a6a6a; margin-top: 4px;">extensions</div>
+</div>
+<div>
+<div style="font-family: 'JetBrains Mono', monospace; font-size: 28px; font-weight: 700; color: #1A1A1A; font-variant-numeric: tabular-nums; letter-spacing: -1px;">55+</div>
+<div style="font-family: 'Inter', sans-serif; font-size: 12px; color: #6a6a6a; margin-top: 4px;">vuln reports</div>
+</div>
+</div>
+<!-- Products -->
+<p style="font-family: 'Inter', sans-serif; font-size: 12px; color: #BBB; margin: 32px 0 16px; text-transform: uppercase; letter-spacing: 1px; font-weight: 500;">10 live products, all built with this pipeline</p>
+<div data-r="products-grid" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 1px; background: #E8E8E6; border-radius: 12px; overflow: hidden;">
+<a class="hdab905e" href="https://zovo.one" style="background: #fff; padding: 20px; text-decoration: none; transition: background 0.2s;" target="_blank">
+<div style="font-family: 'JetBrains Mono', monospace; font-size: 13px; font-weight: 700; color: #1A1A1A; margin-bottom: 4px;">Zovo</div>
+<div style="font-family: 'Inter', sans-serif; font-size: 12px; color: #6a6a6a; line-height: 1.4;">244K extensions scanned</div>
+</a>
+<a class="hdab905e" href="https://belikenative.com" style="background: #fff; padding: 20px; text-decoration: none; transition: background 0.2s;" target="_blank">
+<div style="font-family: 'JetBrains Mono', monospace; font-size: 13px; font-weight: 700; color: #1A1A1A; margin-bottom: 4px;">BeLikeNative</div>
+<div style="font-family: 'Inter', sans-serif; font-size: 12px; color: #6a6a6a; line-height: 1.4;">26K users, 4.66 stars</div>
+</a>
+<a class="hdab905e" href="https://claudecodeguides.com" style="background: #fff; padding: 20px; text-decoration: none; transition: background 0.2s;" target="_blank">
+<div style="font-family: 'JetBrains Mono', monospace; font-size: 13px; font-weight: 700; color: #1A1A1A; margin-bottom: 4px;">CC Guides</div>
+<div style="font-family: 'Inter', sans-serif; font-size: 12px; color: #6a6a6a; line-height: 1.4;">3K+ articles, daily</div>
+</a>
+<a class="hdab905e" href="https://earlythunder.com" style="background: #fff; padding: 20px; text-decoration: none; transition: background 0.2s;" target="_blank">
+<div style="font-family: 'JetBrains Mono', monospace; font-size: 13px; font-weight: 700; color: #1A1A1A; margin-bottom: 4px;">Early Thunder</div>
+<div style="font-family: 'Inter', sans-serif; font-size: 12px; color: #6a6a6a; line-height: 1.4;">247 opportunities</div>
+</a>
+<a class="hdab905e" href="https://heytensor.com" style="background: #fff; padding: 20px; text-decoration: none; transition: background 0.2s;" target="_blank">
+<div style="font-family: 'JetBrains Mono', monospace; font-size: 13px; font-weight: 700; color: #1A1A1A; margin-bottom: 4px;">HeyTensor</div>
+<div style="font-family: 'Inter', sans-serif; font-size: 12px; color: #6a6a6a; line-height: 1.4;">14 layer types</div>
+</a>
+<a class="hdab905e" href="https://scanthechain.com" style="background: #fff; padding: 20px; text-decoration: none; transition: background 0.2s;" target="_blank">
+<div style="font-family: 'JetBrains Mono', monospace; font-size: 13px; font-weight: 700; color: #1A1A1A; margin-bottom: 4px;">ScanTheChain</div>
+<div style="font-family: 'Inter', sans-serif; font-size: 12px; color: #6a6a6a; line-height: 1.4;">$11B TVL audited</div>
+</a>
+<a class="hdab905e" href="https://bugbountyreality.com" style="background: #fff; padding: 20px; text-decoration: none; transition: background 0.2s;" target="_blank">
+<div style="font-family: 'JetBrains Mono', monospace; font-size: 13px; font-weight: 700; color: #1A1A1A; margin-bottom: 4px;">BugBounty</div>
+<div style="font-family: 'Inter', sans-serif; font-size: 12px; color: #6a6a6a; line-height: 1.4;">600+ vulns tracked</div>
+</a>
+<a class="hdab905e" href="https://deepvalueradar.com" style="background: #fff; padding: 20px; text-decoration: none; transition: background 0.2s;" target="_blank">
+<div style="font-family: 'JetBrains Mono', monospace; font-size: 13px; font-weight: 700; color: #1A1A1A; margin-bottom: 4px;">DeepValue</div>
+<div style="font-family: 'Inter', sans-serif; font-size: 12px; color: #6a6a6a; line-height: 1.4;">451 equities screened</div>
+</a>
+<a class="hdab905e" href="https://ingredientcalculator.com" style="background: #fff; padding: 20px; text-decoration: none; transition: background 0.2s;" target="_blank">
+<div style="font-family: 'JetBrains Mono', monospace; font-size: 13px; font-weight: 700; color: #1A1A1A; margin-bottom: 4px;">IngCalc</div>
+<div style="font-family: 'Inter', sans-serif; font-size: 12px; color: #6a6a6a; line-height: 1.4;">Recipe scaler</div>
+</a>
+<a class="hdab905e" href="https://github.com/theluckystrike/zovo-tab-suspender-public" style="background: #fff; padding: 20px; text-decoration: none; transition: background 0.2s;" target="_blank">
+<div style="font-family: 'JetBrains Mono', monospace; font-size: 13px; font-weight: 700; color: #1A1A1A; margin-bottom: 4px;">Tab Suspender</div>
+<div style="font-family: 'Inter', sans-serif; font-size: 12px; color: #6a6a6a; line-height: 1.4;">OSS, 4.6 stars</div>
+</a>
+</div>
+<!-- Upstream -->
+<div data-r="upstream-chips" style="display: flex; align-items: center; gap: 12px; margin-top: 20px; flex-wrap: wrap;">
+<span style="font-family: 'Inter', sans-serif; font-size: 12px; color: #BBB;">Merged upstream</span>
+<a class="h78c1349" href="https://github.com/GoogleChrome" style="font-family: 'JetBrains Mono', monospace; font-size: 12px; color: #777; text-decoration: none; border: 1px solid #E8E8E6; padding: 4px 12px; border-radius: 980px; transition: border-color 0.2s;" target="_blank">@GoogleChrome</a>
+<a class="h78c1349" href="https://github.com/axios" style="font-family: 'JetBrains Mono', monospace; font-size: 12px; color: #777; text-decoration: none; border: 1px solid #E8E8E6; padding: 4px 12px; border-radius: 980px; transition: border-color 0.2s;" target="_blank">@axios</a>
+<a class="h78c1349" href="https://github.com/nicehash" style="font-family: 'JetBrains Mono', monospace; font-size: 12px; color: #777; text-decoration: none; border: 1px solid #E8E8E6; padding: 4px 12px; border-radius: 980px; transition: border-color 0.2s;" target="_blank">@nicehash</a>
+<a class="h78c1349" href="https://github.com/microlinkhq" style="font-family: 'JetBrains Mono', monospace; font-size: 12px; color: #777; text-decoration: none; border: 1px solid #E8E8E6; padding: 4px 12px; border-radius: 980px; transition: border-color 0.2s;" target="_blank">@microlinkhq</a>
+</div>
+</div>
 </section>
-
-<!-- KEY INSIGHTS — BENTO GRID -->
-<section class="section section--alt" id="insights">
-  <div class="container">
-    <div class="section-label">Key Insights</div>
-    <h2 class="section-title">Eight compounding <span>multipliers</span></h2>
-    <p class="section-desc">Each works independently. Together they create a fundamentally different operating level. This is what separates vibe coding from agentic engineering.</p>
-
-    <div class="bento">
-      <!-- INSIGHT 1: Harness Engineering (wide) -->
-      <div class="bento-card bento-card--wide bento-card--featured reveal">
-        <div class="bento-icon bento-icon--purple">&#9881;</div>
-        <h3>The harness is the product, not the model</h3>
-        <p>Agent = Model + Harness. Changing only the wrapper around a fixed model improves performance by 6-10x on the same benchmark. Most agent failures are configuration problems, not model limitations. Stripe ships 1,300 AI-generated PRs/week with a heavily modified agent harness — zero model changes.</p>
-        <div class="bento-evidence">Hashline changed only the edit format: Grok Code Fast went from 6.7% to 68.3% — a 10x improvement with the exact same model, zero weight changes.</div>
-        <div><span class="bento-metric bento-metric--purple">6-10x from harness alone</span></div>
-      </div>
-
-      <!-- INSIGHT 2: Model Routing -->
-      <div class="bento-card reveal reveal-delay-1">
-        <div class="bento-big">85%</div>
-        <h3>Cost reduction via model routing</h3>
-        <p>Route simple queries to cheap models, complex to expensive. RouteLLM (ICLR 2025): only 26% of calls need the expensive model. 95% quality retained.</p>
-        <div><span class="bento-metric bento-metric--green">RouteLLM: 48-75% savings</span></div>
-      </div>
-
-      <!-- INSIGHT 3: Prompt Caching -->
-      <div class="bento-card reveal reveal-delay-2">
-        <div class="bento-big">90%</div>
-        <h3>Input savings from prompt caching</h3>
-        <p>Cache reads cost 10% of standard input on Anthropic. DeepSeek cache hits are 50x cheaper than misses. Hit rates go from 7% naive to 84% optimized.</p>
-        <div><span class="bento-metric bento-metric--green">ProjectDiscovery: 59% total cost cut</span></div>
-      </div>
-
-      <!-- INSIGHT 4: Quality Gates -->
-      <div class="bento-card reveal">
-        <div class="bento-icon bento-icon--green">&#9745;</div>
-        <h3>Zero-effort quality enforcement</h3>
-        <p>NASA Power of 10 rules enforced by ESLint. 7-stage fail-fast gate: Prettier, ESLint, tsc, Vitest, Semgrep, Gitleaks, npm audit. Claude Code hooks auto-format every edit and block writes to protected files. Quality becomes automatic.</p>
-        <div><span class="bento-metric bento-metric--green">7 gates, zero manual effort</span></div>
-      </div>
-
-      <!-- INSIGHT 5: Budget Safety (wide) -->
-      <div class="bento-card bento-card--wide reveal reveal-delay-1">
-        <div class="bento-icon bento-icon--pink">&#9888;</div>
-        <h3>Budget enforcement lives outside the agent</h3>
-        <p>90% of agent projects fail within 30 days — runaway costs are #1. Real incidents: $16-50K in 5 hours (recursion loop), $47K in 11 days (LangChain agent). The 5-layer budget system enforces limits at the gateway level. If the gateway enforces the budget before forwarding, the agent literally cannot make a violating call.</p>
-        <div style="display:flex;gap:0.75rem;flex-wrap:wrap;margin-top:1rem">
-          <span class="bento-metric bento-metric--pink">Per-request ceiling</span>
-          <span class="bento-metric bento-metric--pink">Token circuit breaker</span>
-          <span class="bento-metric bento-metric--pink">Progress detection</span>
-          <span class="bento-metric bento-metric--pink">Session budget</span>
-          <span class="bento-metric bento-metric--pink">Daily spend limit</span>
-        </div>
-      </div>
-
-      <!-- INSIGHT 6: Memory Compounds -->
-      <div class="bento-card reveal reveal-delay-2">
-        <div class="bento-icon bento-icon--blue">&#9733;</div>
-        <h3>Memory compounds every session</h3>
-        <p>Karpathy's LLM Wiki: conversations flow into daily logs, compile into a wiki, inject into the next session. Creates a compounding brain, not a forgetful retriever. Every session makes the next one smarter.</p>
-        <div><span class="bento-metric bento-metric--blue">Knowledge grows, never resets</span></div>
-      </div>
-
-      <!-- INSIGHT 7: Generator != Reviewer -->
-      <div class="bento-card reveal reveal-delay-3">
-        <div class="bento-icon bento-icon--purple">&#8651;</div>
-        <h3>Generator never reviews itself</h3>
-        <p>The strongest pattern from production: the agent that writes code never reviews its own work. A separate reviewer catches blind spots. LLM-as-judge matches human agreement at 80% — and costs 500-5000x less.</p>
-        <div><span class="bento-metric bento-metric--purple">Separate write and review agents</span></div>
-      </div>
-
-      <!-- INSIGHT 8: Evals > Vibes -->
-      <div class="bento-card reveal reveal-delay-4">
-        <div class="bento-icon bento-icon--green">&#9878;</div>
-        <h3>Evals beat vibes</h3>
-        <p>Start with 20-50 tasks from real production failures. Use pass@k for capability, pass^k for reliability. Graduate capability evals into regression suites. If pass@1 < pass@3, add retries — the agent is capable but inconsistent.</p>
-        <div><span class="bento-metric bento-metric--green">Anthropic's eval framework</span></div>
-      </div>
-    </div>
-  </div>
+<!-- HOW IT WORKS -->
+<section data-r="section" id="how" style="padding: 120px 40px;">
+<div style="max-width: 1080px; margin: 0 auto;">
+<h2 style="font-family: 'JetBrains Mono', monospace; font-size: clamp(28px, 3.5vw, 36px); font-weight: 700; color: #1A1A1A; margin: 0 0 12px; letter-spacing: -1.5px; line-height: 1.15;">Same Claude Code you use today.<br/>With guardrails around it.</h2>
+<p style="font-family: 'Inter', sans-serif; font-size: 15px; color: #6a6a6a; margin: 0 0 48px; max-width: 480px; line-height: 1.6;">Stripe ships 1,300 AI PRs a week using this pattern. The open-source core is built for one person.</p>
+<div data-r="features-grid" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 1px; background: #E8E8E6; border-radius: 12px; overflow: hidden; margin-bottom: 24px;">
+<div style="background: #fff; padding: 32px 24px;">
+<div style="font-family: 'JetBrains Mono', monospace; font-size: 11px; font-weight: 500; color: #1A1A1A; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px;">Budget</div>
+<div style="font-family: 'JetBrains Mono', monospace; font-size: 20px; font-weight: 700; color: #C53030; letter-spacing: -0.5px; margin-bottom: 12px; font-variant-numeric: tabular-nums;">$0 runaways</div>
+<p style="font-family: 'Inter', sans-serif; font-size: 14px; color: #777; line-height: 1.6; margin: 0;">Five layers of enforcement at the gateway. Your agents can't overspend because the limits live outside the agent process.</p>
+</div>
+<div style="background: #fff; padding: 32px 24px;">
+<div style="font-family: 'JetBrains Mono', monospace; font-size: 11px; font-weight: 500; color: #1A1A1A; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px;">Routing</div>
+<div style="font-family: 'JetBrains Mono', monospace; font-size: 20px; font-weight: 700; color: #1A1A1A; letter-spacing: -0.5px; margin-bottom: 12px; font-variant-numeric: tabular-nums;">-85% cost</div>
+<p style="font-family: 'Inter', sans-serif; font-size: 14px; color: #777; line-height: 1.6; margin: 0;">74% of calls go to Flash at $0.28/M output. Only 26% actually need Opus. The router picks per-task, not per-session.</p>
+</div>
+<div style="background: #fff; padding: 32px 24px;">
+<div style="font-family: 'JetBrains Mono', monospace; font-size: 11px; font-weight: 500; color: #1A1A1A; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px;">Quality</div>
+<div style="font-family: 'JetBrains Mono', monospace; font-size: 20px; font-weight: 700; color: #1A1A1A; letter-spacing: -0.5px; margin-bottom: 12px; font-variant-numeric: tabular-nums;">7 gates</div>
+<p style="font-family: 'Inter', sans-serif; font-size: 14px; color: #777; line-height: 1.6; margin: 0;">Prettier, ESLint, tsc, Vitest, Semgrep, then Opus reviews against NASA Power of 10. All before you see anything.</p>
+</div>
+<div style="background: #fff; padding: 32px 24px;">
+<div style="font-family: 'JetBrains Mono', monospace; font-size: 11px; font-weight: 500; color: #1A1A1A; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px;">Memory</div>
+<div style="font-family: 'JetBrains Mono', monospace; font-size: 20px; font-weight: 700; color: #1A1A1A; letter-spacing: -0.5px; margin-bottom: 12px;">∞ context</div>
+<p style="font-family: 'Inter', sans-serif; font-size: 14px; color: #777; line-height: 1.6; margin: 0;">Sessions flow into logs, logs compile into a wiki, the wiki feeds the next session. It gets better the more you use it.</p>
+</div>
+</div>
+<!-- Pipeline -->
+<div style="border: 1px solid #E8E8E6; border-radius: 12px; padding: 20px 28px;">
+<div data-r="pipeline-row" style="display: flex; align-items: center; gap: 8px;">
+<div style="display: flex; align-items: center; gap: 6px; padding: 8px 16px; border-radius: 980px; border: 1px solid #E8E8E6; flex: 1; justify-content: center;">
+<span style="font-family: 'JetBrains Mono', monospace; font-size: 12px; font-weight: 700; color: #1A1A1A;">1</span>
+<span style="font-family: 'Inter', sans-serif; font-size: 12px; color: #6a6a6a;">Analyze</span>
+</div>
+<span style="color: #DDD; font-size: 12px;">→</span>
+<div style="display: flex; align-items: center; gap: 6px; padding: 8px 16px; border-radius: 980px; border: 1px solid #E8E8E6; flex: 1; justify-content: center;">
+<span style="font-family: 'JetBrains Mono', monospace; font-size: 12px; font-weight: 700; color: #1A1A1A;">2</span>
+<span style="font-family: 'Inter', sans-serif; font-size: 12px; color: #6a6a6a;">Code</span>
+</div>
+<span style="color: #DDD; font-size: 12px;">→</span>
+<div style="display: flex; align-items: center; gap: 6px; padding: 8px 16px; border-radius: 980px; border: 1px solid #E8E8E6; flex: 1; justify-content: center;">
+<span style="font-family: 'JetBrains Mono', monospace; font-size: 12px; font-weight: 700; color: #1A1A1A;">3</span>
+<span style="font-family: 'Inter', sans-serif; font-size: 12px; color: #6a6a6a;">Test</span>
+</div>
+<span style="color: #DDD; font-size: 12px;">→</span>
+<div style="display: flex; align-items: center; gap: 6px; padding: 8px 16px; border-radius: 980px; border: 1px solid #E8E8E6; flex: 1; justify-content: center;">
+<span style="font-family: 'JetBrains Mono', monospace; font-size: 12px; font-weight: 700; color: #1A1A1A;">4</span>
+<span style="font-family: 'Inter', sans-serif; font-size: 12px; color: #6a6a6a;">Review</span>
+</div>
+<span style="color: #DDD; font-size: 12px;">→</span>
+<div style="display: flex; align-items: center; gap: 6px; padding: 8px 16px; border-radius: 980px; border: 1px solid #1A1A1A; flex: 1; justify-content: center;">
+<span style="font-family: 'JetBrains Mono', monospace; font-size: 12px; font-weight: 700; color: #1A1A1A;">5</span>
+<span style="font-family: 'Inter', sans-serif; font-size: 12px; color: #555;">Ship</span>
+</div>
+</div>
+</div>
+</div>
 </section>
-
-<!-- HOW THE PIPELINE WORKS -->
-<section class="section" id="pipeline">
-  <div class="container">
-    <div class="section-label">Pipeline</div>
-    <h2 class="section-title">5 stages, fully <span>autonomous</span></h2>
-    <p class="section-desc">Every task flows through 5 stages. Budget tracked at every step. Circuit breakers halt runaway agents. Quality gates block bad code automatically.</p>
-
-    <div class="pipeline reveal">
-      <div class="pipe-step">
-        <div class="pipe-dot">1</div>
-        <h4>Analyze</h4>
-        <p>Understand codebase, identify files, create plan</p>
-        <div class="pipe-model">Opus</div>
-      </div>
-      <div class="pipe-step">
-        <div class="pipe-dot">2</div>
-        <h4>Implement</h4>
-        <p>Execute plan, write code, handle dependencies</p>
-        <div class="pipe-model">Sonnet</div>
-      </div>
-      <div class="pipe-step">
-        <div class="pipe-dot">3</div>
-        <h4>Test</h4>
-        <p>Run tests, fix failures, add coverage</p>
-        <div class="pipe-model">Haiku</div>
-      </div>
-      <div class="pipe-step">
-        <div class="pipe-dot">4</div>
-        <h4>Review</h4>
-        <p>Security scan, quality check, LLM-as-judge</p>
-        <div class="pipe-model">Opus</div>
-      </div>
-      <div class="pipe-step">
-        <div class="pipe-dot">5</div>
-        <h4>Ship</h4>
-        <p>Commit, create PR, deploy</p>
-        <div class="pipe-model">Haiku</div>
-      </div>
-    </div>
-
-    <!-- ARCHITECTURE -->
-    <div class="arch reveal">
-      <pre>
-  ORCHESTRATOR    Shell scripts  ·  Cron  ·  GitHub Actions  ·  Routines
-  ─────────────────────────────────────────────────────────────────────
-  AGENT LAYER     PLAN (Opus)  ·  CODE (Sonnet)  ·  REVIEW (Opus)  ·  TEST (Haiku)
-  ─────────────────────────────────────────────────────────────────────
-  MCP SERVERS     Memory  ·  GitHub  ·  Search  ·  Browser  ·  Context7
-  ─────────────────────────────────────────────────────────────────────
-  QUALITY GATES   Prettier → ESLint → tsc → Vitest → Semgrep → Gitleaks
-  ─────────────────────────────────────────────────────────────────────
-  COST CONTROL    Model routing  ·  Prompt caching  ·  Token budgets
-  ─────────────────────────────────────────────────────────────────────
-  MEMORY          Conversations → Daily Logs → Compiled Wiki → Next Session</pre>
-    </div>
-  </div>
+<!-- ECONOMICS -->
+<section data-r="section" id="economics" style="padding: 0 40px 120px;">
+<div data-r="econ-grid" style="max-width: 1080px; margin: 0 auto; display: grid; grid-template-columns: 1fr 1fr; gap: 80px; align-items: start;">
+<div>
+<h2 style="font-family: 'JetBrains Mono', monospace; font-size: clamp(28px, 3.5vw, 36px); font-weight: 700; color: #1A1A1A; margin: 0 0 16px; letter-spacing: -1.5px; line-height: 1.15;">The math</h2>
+<p style="font-family: 'Inter', sans-serif; font-size: 15px; color: #777; margin: 0 0 32px; line-height: 1.7;">Without routing, every query hits Opus at $75/M output. With ml0x, 74% go to Flash at $0.28/M. You'll recoup the $99 in your first afternoon.</p>
+<div style="display: flex; flex-direction: column; gap: 0;">
+<div style="display: flex; justify-content: space-between; padding: 14px 0; border-bottom: 1px solid #E8E8E6;">
+<span style="font-family: 'Inter', sans-serif; font-size: 14px; color: #777;">Model routing</span>
+<span style="font-family: 'JetBrains Mono', monospace; font-size: 14px; color: #1A1A1A; font-weight: 500; font-variant-numeric: tabular-nums;">-85%</span>
+</div>
+<div style="display: flex; justify-content: space-between; padding: 14px 0; border-bottom: 1px solid #E8E8E6;">
+<span style="font-family: 'Inter', sans-serif; font-size: 14px; color: #777;">Prompt caching, 90% hit</span>
+<span style="font-family: 'JetBrains Mono', monospace; font-size: 14px; color: #1A1A1A; font-weight: 500;">50x per cached call</span>
+</div>
+<div style="display: flex; justify-content: space-between; padding: 14px 0;">
+<span style="font-family: 'Inter', sans-serif; font-size: 14px; color: #777;">Budget enforcement</span>
+<span style="font-family: 'JetBrains Mono', monospace; font-size: 14px; color: #1A1A1A; font-weight: 500;">$0 surprises</span>
+</div>
+</div>
+<p style="font-family: 'Inter', sans-serif; font-size: 11px; color: #CCC; margin: 16px 0 0;">RouteLLM (ICLR 2025), Anthropic caching docs</p>
+</div>
+<!-- Routing table -->
+<div style="border: 1px solid #E8E8E6; border-radius: 12px; overflow: hidden;">
+<table style="width: 100%; border-collapse: collapse;">
+<thead>
+<tr style="border-bottom: 1px solid #E8E8E6;">
+<th style="text-align: left; padding: 14px 20px; font-family: 'JetBrains Mono', monospace; font-size: 11px; font-weight: 500; color: #BBB; text-transform: uppercase; letter-spacing: 0.5px;">Task</th>
+<th style="text-align: left; padding: 14px 20px; font-family: 'JetBrains Mono', monospace; font-size: 11px; font-weight: 500; color: #BBB; text-transform: uppercase; letter-spacing: 0.5px;">Model</th>
+<th style="text-align: right; padding: 14px 20px; font-family: 'JetBrains Mono', monospace; font-size: 11px; font-weight: 500; color: #BBB; text-transform: uppercase; letter-spacing: 0.5px;">$/1M</th>
+</tr>
+</thead>
+<tbody>
+<tr style="border-bottom: 1px solid #F2F2F0;">
+<td style="padding: 12px 20px; font-family: 'Inter', sans-serif; font-size: 13px; color: #777;">Architecture</td>
+<td style="padding: 12px 20px; font-family: 'JetBrains Mono', monospace; font-size: 12px; color: #555;">Opus</td>
+<td style="padding: 12px 20px; font-family: 'JetBrains Mono', monospace; font-size: 12px; color: #6a6a6a; text-align: right; font-variant-numeric: tabular-nums;">$75.00</td>
+</tr>
+<tr style="border-bottom: 1px solid #F2F2F0;">
+<td style="padding: 12px 20px; font-family: 'Inter', sans-serif; font-size: 13px; color: #777;">Code gen</td>
+<td style="padding: 12px 20px; font-family: 'JetBrains Mono', monospace; font-size: 12px; color: #555;">Sonnet</td>
+<td style="padding: 12px 20px; font-family: 'JetBrains Mono', monospace; font-size: 12px; color: #6a6a6a; text-align: right; font-variant-numeric: tabular-nums;">$15.00</td>
+</tr>
+<tr style="border-bottom: 1px solid #F2F2F0;">
+<td style="padding: 12px 20px; font-family: 'Inter', sans-serif; font-size: 13px; color: #777;">Lint, format</td>
+<td style="padding: 12px 20px; font-family: 'JetBrains Mono', monospace; font-size: 12px; color: #555;">Flash</td>
+<td style="padding: 12px 20px; font-family: 'JetBrains Mono', monospace; font-size: 12px; color: #16A34A; text-align: right; font-weight: 700; font-variant-numeric: tabular-nums;">$0.28</td>
+</tr>
+<tr>
+<td style="padding: 12px 20px; font-family: 'Inter', sans-serif; font-size: 13px; color: #777;">Changelog</td>
+<td style="padding: 12px 20px; font-family: 'JetBrains Mono', monospace; font-size: 12px; color: #555;">Flash</td>
+<td style="padding: 12px 20px; font-family: 'JetBrains Mono', monospace; font-size: 12px; color: #16A34A; text-align: right; font-weight: 700; font-variant-numeric: tabular-nums;">$0.28</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 </section>
-
-<!-- KARPATHY'S RULES -->
-<section class="section section--alt">
-  <div class="container">
-    <div class="section-label">Foundation</div>
-    <h2 class="section-title">Karpathy's 4 rules <span>for agentic code</span></h2>
-    <p class="section-desc">From the 126K+ starred CLAUDE.md that started the agentic engineering movement. The operating system for how agents should write code.</p>
-
-    <div class="rules-grid">
-      <div class="rule reveal">
-        <div class="rule-number">01</div>
-        <h4>Think Before Coding</h4>
-        <p>Don't assume. Don't hide confusion. Surface tradeoffs. If multiple interpretations exist, present them — don't pick silently.</p>
-        <blockquote>If something is unclear, stop. Name what's confusing. Ask.</blockquote>
-      </div>
-      <div class="rule reveal reveal-delay-1">
-        <div class="rule-number">02</div>
-        <h4>Simplicity First</h4>
-        <p>Minimum code that solves the problem. Nothing speculative. No abstractions for single-use code. If 200 lines could be 50, rewrite it.</p>
-        <blockquote>Would a senior engineer say this is overcomplicated? If yes, simplify.</blockquote>
-      </div>
-      <div class="rule reveal reveal-delay-2">
-        <div class="rule-number">03</div>
-        <h4>Surgical Changes</h4>
-        <p>Touch only what you must. Clean up only your own mess. Every changed line should trace directly to the user's request.</p>
-        <blockquote>Don't "improve" adjacent code. Match existing style, even if you'd do it differently.</blockquote>
-      </div>
-      <div class="rule reveal reveal-delay-3">
-        <div class="rule-number">04</div>
-        <h4>Goal-Driven Execution</h4>
-        <p>Define success criteria. Loop until verified. Transform tasks into verifiable goals, then loop independently until they pass.</p>
-        <blockquote>Strong success criteria let you loop independently. Weak criteria require constant clarification.</blockquote>
-      </div>
-    </div>
-
-    <div class="quote-block reveal">
-      <blockquote>People who are very good at this can peak much higher than 10x. Vibe coding raises the floor. Agentic engineering extrapolates the ceiling.</blockquote>
-      <cite>— Andrej Karpathy, Sequoia AI Ascent 2026</cite>
-    </div>
-  </div>
+<!-- PRICING -->
+<section data-r="section" id="pricing" style="padding: 80px 40px 120px; background: #111; border-radius: 24px 24px 0 0;">
+<div style="max-width: 480px; margin: 0 auto; text-align: center;">
+<h2 style="font-family: 'JetBrains Mono', monospace; font-size: clamp(28px, 3.5vw, 36px); font-weight: 700; color: #fff; margin: 0 0 8px; letter-spacing: -1.5px;">$99, once</h2>
+<p style="font-family: 'Inter', sans-serif; font-size: 15px; color: #666; margin: 0 0 40px; line-height: 1.6;">The same system behind 50K users and 270 Stripe sales a month. No subscription, no recurring fees. The free core is always available.</p>
+<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0; text-align: left; margin-bottom: 36px;">
+<div style="display: flex; gap: 10px; padding: 10px 0; border-bottom: 1px solid rgba(255,255,255,0.06);">
+<span style="font-family: 'JetBrains Mono', monospace; color: #28CA41; font-size: 12px;"><svg viewBox="0 0 12 12" width="11" height="11" aria-hidden="true" style="display:inline-block;vertical-align:-1px" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M2 6.3 4.6 8.9 10 3.1"/></svg></span>
+<span style="font-family: 'Inter', sans-serif; font-size: 13px; color: #AAA;">80+ production prompts</span>
+</div>
+<div style="display: flex; gap: 10px; padding: 10px 0; border-bottom: 1px solid rgba(255,255,255,0.06);">
+<span style="font-family: 'JetBrains Mono', monospace; color: #28CA41; font-size: 12px;"><svg viewBox="0 0 12 12" width="11" height="11" aria-hidden="true" style="display:inline-block;vertical-align:-1px" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M2 6.3 4.6 8.9 10 3.1"/></svg></span>
+<span style="font-family: 'Inter', sans-serif; font-size: 13px; color: #AAA;">16 CLAUDE.md templates</span>
+</div>
+<div style="display: flex; gap: 10px; padding: 10px 0; border-bottom: 1px solid rgba(255,255,255,0.06);">
+<span style="font-family: 'JetBrains Mono', monospace; color: #28CA41; font-size: 12px;"><svg viewBox="0 0 12 12" width="11" height="11" aria-hidden="true" style="display:inline-block;vertical-align:-1px" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M2 6.3 4.6 8.9 10 3.1"/></svg></span>
+<span style="font-family: 'Inter', sans-serif; font-size: 13px; color: #AAA;">Multi-agent orchestration</span>
+</div>
+<div style="display: flex; gap: 10px; padding: 10px 0; border-bottom: 1px solid rgba(255,255,255,0.06);">
+<span style="font-family: 'JetBrains Mono', monospace; color: #28CA41; font-size: 12px;"><svg viewBox="0 0 12 12" width="11" height="11" aria-hidden="true" style="display:inline-block;vertical-align:-1px" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M2 6.3 4.6 8.9 10 3.1"/></svg></span>
+<span style="font-family: 'Inter', sans-serif; font-size: 13px; color: #AAA;">Extension Engine</span>
+</div>
+<div style="display: flex; gap: 10px; padding: 10px 0;">
+<span style="font-family: 'JetBrains Mono', monospace; color: #28CA41; font-size: 12px;"><svg viewBox="0 0 12 12" width="11" height="11" aria-hidden="true" style="display:inline-block;vertical-align:-1px" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M2 6.3 4.6 8.9 10 3.1"/></svg></span>
+<span style="font-family: 'Inter', sans-serif; font-size: 13px; color: #AAA;">All future updates</span>
+</div>
+<div style="display: flex; gap: 10px; padding: 10px 0;">
+<span style="font-family: 'JetBrains Mono', monospace; color: #28CA41; font-size: 12px;"><svg viewBox="0 0 12 12" width="11" height="11" aria-hidden="true" style="display:inline-block;vertical-align:-1px" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M2 6.3 4.6 8.9 10 3.1"/></svg></span>
+<span style="font-family: 'Inter', sans-serif; font-size: 13px; color: #AAA;">Founding member perks</span>
+</div>
+</div>
+<a class="hee81a6f" href="https://zovo.one/pricing" style="display: block; font-family: 'Inter', sans-serif; font-size: 15px; font-weight: 500; color: #111; background: #fff; padding: 14px 28px; border-radius: 980px; text-decoration: none; transition: background 0.2s; margin-bottom: 12px;" target="_blank">Get lifetime access</a>
+<div style="display: flex; justify-content: center; gap: 16px;">
+<span style="font-family: 'Inter', sans-serif; font-size: 12px; color: #444;">14-day refund</span>
+<span style="color: #333;">·</span>
+<a class="h57e0e31" href="https://github.com/theluckystrike/100xagenticdev" style="font-family: 'Inter', sans-serif; font-size: 12px; color: #444; text-decoration: none;" target="_blank">Free core on GitHub</a>
+</div>
+</div>
 </section>
-
-<!-- COST COMPARISON -->
-<section class="section" id="costs">
-  <div class="container">
-    <div class="section-label">Economics</div>
-    <h2 class="section-title">Route smart, <span>pay less</span></h2>
-    <p class="section-desc">Not every task needs a frontier model. Route by complexity. DeepSeek V4 Flash trails Opus by 1.8 SWE-bench points but costs 35-100x less.</p>
-
-    <div class="cost-wrap reveal">
-      <table class="cost-table">
-        <thead>
-          <tr>
-            <th>Model</th>
-            <th>Input / 1M</th>
-            <th>Output / 1M</th>
-            <th>SWE-bench</th>
-            <th>vs Frontier</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td><strong>Claude Opus 4</strong></td>
-            <td>$15.00</td>
-            <td>$75.00</td>
-            <td>72.5%</td>
-            <td>Baseline</td>
-          </tr>
-          <tr>
-            <td><strong>Claude Sonnet 4</strong></td>
-            <td>$3.00</td>
-            <td>$15.00</td>
-            <td>72.7%</td>
-            <td><span class="cost-savings">5x cheaper</span></td>
-          </tr>
-          <tr>
-            <td><strong>DeepSeek V4 Pro</strong> <span class="cost-promo">75% OFF</span></td>
-            <td class="cost-green">$0.44</td>
-            <td class="cost-green">$0.87</td>
-            <td>80.6%</td>
-            <td><span class="cost-savings">~7x cheaper</span></td>
-          </tr>
-          <tr>
-            <td><strong>DeepSeek V4 Flash</strong></td>
-            <td class="cost-green">$0.14</td>
-            <td class="cost-green">$0.28</td>
-            <td>~79%</td>
-            <td><span class="cost-savings">35-100x cheaper</span></td>
-          </tr>
-          <tr>
-            <td><strong>DS V4 Pro</strong> (cache hit)</td>
-            <td class="cost-green">$0.004</td>
-            <td>—</td>
-            <td>—</td>
-            <td><span class="cost-savings">~1,400x cheaper</span></td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-
-    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:1.25rem;margin-top:2rem" class="reveal">
-      <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:1.5rem;text-align:center">
-        <div style="font-size:2.2rem;font-weight:800;color:var(--accent2)">$0.28</div>
-        <div style="font-size:0.8rem;color:var(--text3);margin-top:0.25rem">per 1M output tokens<br>DeepSeek V4 Flash</div>
-      </div>
-      <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:1.5rem;text-align:center">
-        <div style="font-size:2.2rem;font-weight:800;color:var(--accent2)">50x</div>
-        <div style="font-size:0.8rem;color:var(--text3);margin-top:0.25rem">cheaper cache hits<br>vs cache misses</div>
-      </div>
-      <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:1.5rem;text-align:center">
-        <div style="font-size:2.2rem;font-weight:800;color:var(--accent2)">26%</div>
-        <div style="font-size:0.8rem;color:var(--text3);margin-top:0.25rem">calls need expensive model<br>RouteLLM (ICLR 2025)</div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- THE FORMULA -->
-<section class="section section--alt">
-  <div class="container" style="text-align:center">
-    <div class="section-label">The Compound Effect</div>
-    <h2 class="section-title">The <span>ml0x formula</span></h2>
-    <p class="section-desc" style="margin:0 auto 2rem">Each multiplier compounds. Miss one, you're still 10x. Stack all seven, you operate at a fundamentally different level.</p>
-    <div class="formula-box reveal">
-      <div class="formula-code">
-        <span class="var">100x</span> <span class="op">=</span> CLAUDE.md rules<br>
-        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="op">+</span> Harness engineering &nbsp;&nbsp;&nbsp;<span class="comment">// 6-10x on same model</span><br>
-        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="op">+</span> Model routing &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">// 75-85% cost reduction</span><br>
-        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="op">+</span> Prompt caching &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">// 90% input savings</span><br>
-        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="op">+</span> Eval loops &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">// quality maintenance</span><br>
-        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="op">+</span> Loop budgets &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">// prevents $47K incidents</span><br>
-        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="op">+</span> Multi-agent &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">// parallel execution</span><br>
-        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="op">+</span> Memory system &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">// compounding knowledge</span>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- GET STARTED -->
-<section class="section" id="start">
-  <div class="container">
-    <div class="section-label">Onboarding</div>
-    <h2 class="section-title">Get started in <span>15 minutes</span></h2>
-    <p class="section-desc">Incremental adoption. Each step works independently. No all-or-nothing commitment. Add a layer when you're ready.</p>
-
-    <div class="steps">
-      <div class="step reveal">
-        <div class="step-num">1</div>
-        <div class="step-content">
-          <h4>Clone the pipeline</h4>
-          <p>All configs, scripts, and research in one repo.</p>
-          <div class="step-code">git clone https://github.com/theluckystrike/100xagenticdev.git<br>cd 100xagenticdev</div>
-        </div>
-      </div>
-      <div class="step reveal reveal-delay-1">
-        <div class="step-num">2</div>
-        <div class="step-content">
-          <h4>Copy CLAUDE.md to your project</h4>
-          <p>Adapt the rules to your codebase. Keep under 150 lines. Add project-specific patterns.</p>
-          <div class="step-code">cp CLAUDE.md ~/your-project/CLAUDE.md</div>
-        </div>
-      </div>
-      <div class="step reveal reveal-delay-2">
-        <div class="step-num">3</div>
-        <div class="step-content">
-          <h4>Install MCP servers</h4>
-          <p>Expand Claude's capabilities: memory, search, browser, GitHub, docs.</p>
-          <div class="step-code">bash config/mcp-setup.sh<br>claude mcp list &nbsp;# verify</div>
-        </div>
-      </div>
-      <div class="step reveal reveal-delay-3">
-        <div class="step-num">4</div>
-        <div class="step-content">
-          <h4>Enable hooks &amp; quality gates</h4>
-          <p>Auto-format on every edit. Block edits to .env files. Restore context after compaction.</p>
-          <div class="step-code">cp config/hooks-settings.json ~/.claude/settings.json</div>
-        </div>
-      </div>
-      <div class="step reveal reveal-delay-4">
-        <div class="step-num">5</div>
-        <div class="step-content">
-          <h4>Run your first autonomous pipeline</h4>
-          <p>4-stage pipeline: Analyze, Implement, Test, Review. Budget-tracked and JSON-logged.</p>
-          <div class="step-code">cd ~/your-project<br>bash ~/100xagenticdev/scripts/pipeline.sh "Add input validation to all API endpoints"</div>
-        </div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- WHAT'S INCLUDED -->
-<section class="section section--alt">
-  <div class="container">
-    <div class="section-label">Included</div>
-    <h2 class="section-title">Everything in <span>one repo</span></h2>
-
-    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(340px,1fr));gap:1.25rem;margin-top:3rem" class="reveal">
-      <div style="background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:1.5rem">
-        <div style="font-size:0.8rem;font-weight:700;color:var(--accent);margin-bottom:0.75rem;font-family:'SF Mono',monospace">CLAUDE.md</div>
-        <div style="font-size:0.92rem;color:var(--text2)">Project instructions template with NASA Power of 10 rules. Copy to any project and adapt.</div>
-      </div>
-      <div style="background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:1.5rem">
-        <div style="font-size:0.8rem;font-weight:700;color:var(--accent);margin-bottom:0.75rem;font-family:'SF Mono',monospace">config/hooks-settings.json</div>
-        <div style="font-size:0.92rem;color:var(--text2)">Claude Code hooks: auto-lint on edit, block secrets, protect files, restore context after compaction.</div>
-      </div>
-      <div style="background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:1.5rem">
-        <div style="font-size:0.8rem;font-weight:700;color:var(--accent);margin-bottom:0.75rem;font-family:'SF Mono',monospace">config/nasa-p10-eslint.config.mjs</div>
-        <div style="font-size:0.92rem;color:var(--text2)">ESLint rules enforcing NASA Power of 10: 60-line functions, bounded loops, no global state.</div>
-      </div>
-      <div style="background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:1.5rem">
-        <div style="font-size:0.8rem;font-weight:700;color:var(--accent);margin-bottom:0.75rem;font-family:'SF Mono',monospace">scripts/pipeline.sh</div>
-        <div style="font-size:0.92rem;color:var(--text2)">4-stage autonomous pipeline with budget tracking, cost logging, and JSON output.</div>
-      </div>
-      <div style="background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:1.5rem">
-        <div style="font-size:0.8rem;font-weight:700;color:var(--accent);margin-bottom:0.75rem;font-family:'SF Mono',monospace">scripts/parallel-agents.sh</div>
-        <div style="font-size:0.92rem;color:var(--text2)">Spawn N Claude instances on isolated git worktrees. Parallel execution with auto-commit.</div>
-      </div>
-      <div style="background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:1.5rem">
-        <div style="font-size:0.8rem;font-weight:700;color:var(--accent);margin-bottom:0.75rem;font-family:'SF Mono',monospace">scripts/quality-gate.sh</div>
-        <div style="font-size:0.92rem;color:var(--text2)">7-stage fail-fast: Prettier, ESLint, tsc, Vitest, Semgrep, Gitleaks, npm audit.</div>
-      </div>
-      <div style="background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:1.5rem">
-        <div style="font-size:0.8rem;font-weight:700;color:var(--accent);margin-bottom:0.75rem;font-family:'SF Mono',monospace">config/mcp-setup.sh</div>
-        <div style="font-size:0.92rem;color:var(--text2)">One-command MCP server installer: Memory, Sequential Thinking, Context7, Playwright, Fetch.</div>
-      </div>
-      <div style="background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:1.5rem">
-        <div style="font-size:0.8rem;font-weight:700;color:var(--accent);margin-bottom:0.75rem;font-family:'SF Mono',monospace">research/</div>
-        <div style="font-size:0.92rem;color:var(--text2)">Definitive Karpathy study (63 repos), deep 1000x developer report (20 sections, 150+ sources).</div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- ADOPTION PATH -->
-<section class="section">
-  <div class="container" style="text-align:center">
-    <div class="section-label">Adoption</div>
-    <h2 class="section-title">Grow at <span>your pace</span></h2>
-    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:0.75rem;margin-top:3rem;max-width:900px;margin-left:auto;margin-right:auto" class="reveal">
-      <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);padding:1.25rem 0.75rem;text-align:center">
-        <div style="font-size:0.7rem;color:var(--accent);font-weight:700;text-transform:uppercase;letter-spacing:0.08em">Week 1</div>
-        <div style="font-size:0.88rem;font-weight:600;margin-top:0.4rem">CLAUDE.md</div>
-        <div style="font-size:0.75rem;color:var(--text3);margin-top:0.25rem">2-3x accuracy</div>
-      </div>
-      <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);padding:1.25rem 0.75rem;text-align:center">
-        <div style="font-size:0.7rem;color:var(--accent);font-weight:700;text-transform:uppercase;letter-spacing:0.08em">Week 2</div>
-        <div style="font-size:0.88rem;font-weight:600;margin-top:0.4rem">MCP Servers</div>
-        <div style="font-size:0.75rem;color:var(--text3);margin-top:0.25rem">Expanded reach</div>
-      </div>
-      <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);padding:1.25rem 0.75rem;text-align:center">
-        <div style="font-size:0.7rem;color:var(--accent);font-weight:700;text-transform:uppercase;letter-spacing:0.08em">Week 3</div>
-        <div style="font-size:0.88rem;font-weight:600;margin-top:0.4rem">Hooks</div>
-        <div style="font-size:0.75rem;color:var(--text3);margin-top:0.25rem">Auto quality</div>
-      </div>
-      <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);padding:1.25rem 0.75rem;text-align:center">
-        <div style="font-size:0.7rem;color:var(--accent);font-weight:700;text-transform:uppercase;letter-spacing:0.08em">Week 4</div>
-        <div style="font-size:0.88rem;font-weight:600;margin-top:0.4rem">CI/CD</div>
-        <div style="font-size:0.75rem;color:var(--text3);margin-top:0.25rem">Auto PR review</div>
-      </div>
-      <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);padding:1.25rem 0.75rem;text-align:center">
-        <div style="font-size:0.7rem;color:var(--accent);font-weight:700;text-transform:uppercase;letter-spacing:0.08em">Week 5</div>
-        <div style="font-size:0.88rem;font-weight:600;margin-top:0.4rem">Pipeline</div>
-        <div style="font-size:0.75rem;color:var(--text3);margin-top:0.25rem">Autonomous tasks</div>
-      </div>
-      <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);padding:1.25rem 0.75rem;text-align:center">
-        <div style="font-size:0.7rem;color:var(--accent);font-weight:700;text-transform:uppercase;letter-spacing:0.08em">Week 6</div>
-        <div style="font-size:0.88rem;font-weight:600;margin-top:0.4rem">Multi-Agent</div>
-        <div style="font-size:0.75rem;color:var(--text3);margin-top:0.25rem">Parallel work</div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- SOURCES -->
-<section class="section section--alt">
-  <div class="container" style="text-align:center">
-    <div class="section-label">Based On</div>
-    <h2 class="section-title" style="font-size:1.5rem">Built on <span>real research</span>, not hype</h2>
-    <div style="display:flex;flex-wrap:wrap;gap:0.75rem;justify-content:center;margin-top:2rem">
-      <a href="https://karpathy.bearblog.dev/sequoia-ascent-2026/" style="padding:10px 18px;background:var(--surface);border:1px solid var(--border);border-radius:100px;font-size:0.82rem;color:var(--text2);transition:border-color 0.2s" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--border)'">Karpathy Sequoia 2026</a>
-      <a href="https://github.com/anthropics/claude-code" style="padding:10px 18px;background:var(--surface);border:1px solid var(--border);border-radius:100px;font-size:0.82rem;color:var(--text2);transition:border-color 0.2s" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--border)'">Claude Code</a>
-      <a href="https://www.lmsys.org/blog/2024-07-01-routellm/" style="padding:10px 18px;background:var(--surface);border:1px solid var(--border);border-radius:100px;font-size:0.82rem;color:var(--text2);transition:border-color 0.2s" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--border)'">RouteLLM (ICLR 2025)</a>
-      <a href="https://www.anthropic.com/engineering/demystifying-evals-for-ai-agents" style="padding:10px 18px;background:var(--surface);border:1px solid var(--border);border-radius:100px;font-size:0.82rem;color:var(--text2);transition:border-color 0.2s" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--border)'">Anthropic Evals Guide</a>
-      <a href="https://martinfowler.com/articles/harness-engineering.html" style="padding:10px 18px;background:var(--surface);border:1px solid var(--border);border-radius:100px;font-size:0.82rem;color:var(--text2);transition:border-color 0.2s" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--border)'">Martin Fowler: Harness Eng.</a>
-      <a href="https://platform.claude.com/docs/en/build-with-claude/prompt-caching" style="padding:10px 18px;background:var(--surface);border:1px solid var(--border);border-radius:100px;font-size:0.82rem;color:var(--text2);transition:border-color 0.2s" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--border)'">Anthropic Prompt Caching</a>
-    </div>
-    <p style="margin-top:2rem;font-size:0.82rem;color:var(--text3)">150+ sources researched. All claims sourced. Unverified claims explicitly flagged.</p>
-  </div>
-</section>
-
-<!-- RESOURCES -->
-<section class="section">
-  <div class="container">
-    <div class="section-label">Resources</div>
-    <h2 class="section-title">Explore <span>ml0x</span></h2>
-    <p class="section-desc">Deep dives, references, and cheatsheets from the ml0x research pipeline.</p>
-    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(340px,1fr));gap:1.25rem;margin-top:3rem" class="reveal">
-      <a href="/research/ml-cheatsheet.html" style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:2rem;text-decoration:none;display:block;transition:border-color 0.3s" onmouseover="this.style.borderColor='rgba(124,108,240,0.25)'" onmouseout="this.style.borderColor='var(--border)'">
-        <div style="font-size:0.8rem;font-weight:700;color:var(--accent);margin-bottom:0.5rem;text-transform:uppercase;letter-spacing:0.08em">Research</div>
-        <h3 style="font-size:1.15rem;font-weight:700;color:var(--text);margin-bottom:0.5rem">Machine Learning Cheatsheet 2026</h3>
-        <p style="font-size:0.9rem;color:var(--text2);line-height:1.6;margin:0">Algorithms, evaluation metrics, sklearn code snippets, hyperparameter guides, and common pitfalls. One page, everything you need.</p>
-      </a>
-      <a href="/about.html" style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:2rem;text-decoration:none;display:block;transition:border-color 0.3s" onmouseover="this.style.borderColor='rgba(0,212,170,0.25)'" onmouseout="this.style.borderColor='var(--border)'">
-        <div style="font-size:0.8rem;font-weight:700;color:var(--accent2);margin-bottom:0.5rem;text-transform:uppercase;letter-spacing:0.08em">About</div>
-        <h3 style="font-size:1.15rem;font-weight:700;color:var(--text);margin-bottom:0.5rem">About ml0x</h3>
-        <p style="font-size:0.9rem;color:var(--text2);line-height:1.6;margin:0">The philosophy, architecture, and research behind the agentic engineering pipeline. Open source, sourced from 150+ references.</p>
-      </a>
-      <a href="/tools/neural-network-playground.html" style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:2rem;text-decoration:none;display:block;transition:border-color 0.3s" onmouseover="this.style.borderColor='rgba(124,108,240,0.25)'" onmouseout="this.style.borderColor='var(--border)'">
-        <div style="font-size:0.8rem;font-weight:700;color:var(--accent);margin-bottom:0.5rem;text-transform:uppercase;letter-spacing:0.08em">Tool</div>
-        <h3 style="font-size:1.15rem;font-weight:700;color:var(--text);margin-bottom:0.5rem">Neural Network Playground</h3>
-        <p style="font-size:0.9rem;color:var(--text2);line-height:1.6;margin:0">Interactive neural network visualizer. Build, train, and experiment with architectures in your browser.</p>
-      </a>
-      <a href="/tools/confusion-matrix-calculator.html" style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:2rem;text-decoration:none;display:block;transition:border-color 0.3s" onmouseover="this.style.borderColor='rgba(124,108,240,0.25)'" onmouseout="this.style.borderColor='var(--border)'">
-        <div style="font-size:0.8rem;font-weight:700;color:var(--accent);margin-bottom:0.5rem;text-transform:uppercase;letter-spacing:0.08em">Tool</div>
-        <h3 style="font-size:1.15rem;font-weight:700;color:var(--text);margin-bottom:0.5rem">Confusion Matrix Calculator</h3>
-        <p style="font-size:0.9rem;color:var(--text2);line-height:1.6;margin:0">Calculate precision, recall, F1 score, and accuracy from your confusion matrix. Instant visual feedback.</p>
-      </a>
-      <a href="/tools/learning-rate-finder.html" style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:2rem;text-decoration:none;display:block;transition:border-color 0.3s" onmouseover="this.style.borderColor='rgba(124,108,240,0.25)'" onmouseout="this.style.borderColor='var(--border)'">
-        <div style="font-size:0.8rem;font-weight:700;color:var(--accent);margin-bottom:0.5rem;text-transform:uppercase;letter-spacing:0.08em">Tool</div>
-        <h3 style="font-size:1.15rem;font-weight:700;color:var(--text);margin-bottom:0.5rem">Learning Rate Finder</h3>
-        <p style="font-size:0.9rem;color:var(--text2);line-height:1.6;margin:0">Find the optimal learning rate for your model. Interactive sweep visualization with schedule recommendations.</p>
-      </a>
-      <a href="/guides/gradient-descent-explained.html" style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:2rem;text-decoration:none;display:block;transition:border-color 0.3s" onmouseover="this.style.borderColor='rgba(0,212,170,0.25)'" onmouseout="this.style.borderColor='var(--border)'">
-        <div style="font-size:0.8rem;font-weight:700;color:var(--accent2);margin-bottom:0.5rem;text-transform:uppercase;letter-spacing:0.08em">Guide</div>
-        <h3 style="font-size:1.15rem;font-weight:700;color:var(--text);margin-bottom:0.5rem">Gradient Descent Explained</h3>
-        <p style="font-size:0.9rem;color:var(--text2);line-height:1.6;margin:0">Visual guide to gradient descent optimization. SGD, Adam, learning rate schedules, and convergence diagnostics.</p>
-      </a>
-      <a href="/guides/overfitting-underfitting-guide.html" style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:2rem;text-decoration:none;display:block;transition:border-color 0.3s" onmouseover="this.style.borderColor='rgba(0,212,170,0.25)'" onmouseout="this.style.borderColor='var(--border)'">
-        <div style="font-size:0.8rem;font-weight:700;color:var(--accent2);margin-bottom:0.5rem;text-transform:uppercase;letter-spacing:0.08em">Guide</div>
-        <h3 style="font-size:1.15rem;font-weight:700;color:var(--text);margin-bottom:0.5rem">Overfitting vs Underfitting</h3>
-        <p style="font-size:0.9rem;color:var(--text2);line-height:1.6;margin:0">Diagnose and fix bias-variance tradeoff problems. Visual examples, detection strategies, and practical solutions.</p>
-      </a>
-      <a href="/answers/ml-algorithm-comparison.html" style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:2rem;text-decoration:none;display:block;transition:border-color 0.3s" onmouseover="this.style.borderColor='rgba(240,98,146,0.25)'" onmouseout="this.style.borderColor='var(--border)'">
-        <div style="font-size:0.8rem;font-weight:700;color:var(--accent3);margin-bottom:0.5rem;text-transform:uppercase;letter-spacing:0.08em">Answer</div>
-        <h3 style="font-size:1.15rem;font-weight:700;color:var(--text);margin-bottom:0.5rem">ML Algorithm Comparison</h3>
-        <p style="font-size:0.9rem;color:var(--text2);line-height:1.6;margin:0">Side-by-side comparison of ML algorithms. When to use each, strengths, weaknesses, and decision criteria.</p>
-      </a>
-      <a href="/answers/supervised-vs-unsupervised.html" style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:2rem;text-decoration:none;display:block;transition:border-color 0.3s" onmouseover="this.style.borderColor='rgba(240,98,146,0.25)'" onmouseout="this.style.borderColor='var(--border)'">
-        <div style="font-size:0.8rem;font-weight:700;color:var(--accent3);margin-bottom:0.5rem;text-transform:uppercase;letter-spacing:0.08em">Answer</div>
-        <h3 style="font-size:1.15rem;font-weight:700;color:var(--text);margin-bottom:0.5rem">Supervised vs Unsupervised Learning</h3>
-        <p style="font-size:0.9rem;color:var(--text2);line-height:1.6;margin:0">Clear breakdown of supervised and unsupervised learning paradigms. Use cases, algorithms, and how to choose.</p>
-      </a>
-      <a href="/research/feature-engineering-checklist.html" style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:2rem;text-decoration:none;display:block;transition:border-color 0.3s" onmouseover="this.style.borderColor='rgba(124,108,240,0.25)'" onmouseout="this.style.borderColor='var(--border)'">
-        <div style="font-size:0.8rem;font-weight:700;color:var(--accent);margin-bottom:0.5rem;text-transform:uppercase;letter-spacing:0.08em">Research</div>
-        <h3 style="font-size:1.15rem;font-weight:700;color:var(--text);margin-bottom:0.5rem">Feature Engineering Checklist</h3>
-        <p style="font-size:0.9rem;color:var(--text2);line-height:1.6;margin:0">Step-by-step checklist for feature engineering. Encoding, scaling, selection, and transformation techniques.</p>
-      </a>
-      <a href="/research/transfer-learning-guide.html" style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:2rem;text-decoration:none;display:block;transition:border-color 0.3s" onmouseover="this.style.borderColor='rgba(124,108,240,0.25)'" onmouseout="this.style.borderColor='var(--border)'">
-        <div style="font-size:0.8rem;font-weight:700;color:var(--accent);margin-bottom:0.5rem;text-transform:uppercase;letter-spacing:0.08em">Research</div>
-        <h3 style="font-size:1.15rem;font-weight:700;color:var(--text);margin-bottom:0.5rem">Transfer Learning Guide</h3>
-        <p style="font-size:0.9rem;color:var(--text2);line-height:1.6;margin:0">When and how to use transfer learning. Pre-trained models, fine-tuning strategies, and domain adaptation.</p>
-      </a>
-    </div>
-  </div>
-</section>
-
 <!-- FOOTER -->
-<footer class="footer">
-  <div class="container">
-    <p class="footer-tagline">"You can outsource your thinking, but you can't outsource your understanding."</p>
-    <p style="font-size:0.82rem;color:var(--text3)">— Andrej Karpathy</p>
-    <div class="footer-links">
-      <a href="https://github.com/theluckystrike/100xagenticdev">GitHub</a>
-      <a href="https://karpathy.bearblog.dev/sequoia-ascent-2026/">Karpathy's Talk</a>
-      <a href="https://x.com/karpathy/status/1937902205765607626">Context Engineering</a>
-    </div>
-    <p class="footer-copy">ml0x — Your engineering multiplier. Built with Claude Code. Researched from 150+ sources across academic papers, production case studies, and official documentation.</p>
-  </div>
-</footer>
-
-<!-- SCRIPTS -->
-<script>
-// Nav scroll effect
-const nav = document.getElementById('nav');
-window.addEventListener('scroll', () => {
-  nav.classList.toggle('scrolled', window.scrollY > 50);
-});
-
-// Intersection Observer for reveal animations
-const observer = new IntersectionObserver((entries) => {
-  entries.forEach(entry => {
-    if (entry.isIntersecting) {
-      entry.target.classList.add('visible');
-    }
-  });
-}, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
-
-document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
-</script>
-
-
-<nav class="zovo-network" aria-label="Zovo Tools Network">
-    <div class="zovo-network-inner">
-        <h3 class="zovo-network-title">Explore More Tools</h3>
-        <div class="zovo-network-links">
-            <a href="https://abwex.com">ABWex — A/B Testing</a>
-            <a href="https://b2berp.com">B2BERP — Business Tools</a>
-            <a href="https://bugbountyreality.com">BugBountyReality — Security</a>
-            <a href="https://claudflow.com">ClaudFlow — Workflows</a>
-            <a href="https://claudkit.com">ClaudKit — API Tools</a>
-            <a href="https://dismissticket.com">DismissTicket — Support</a>
-            <a href="https://enhio.com">Enhio — Text Tools</a>
-            <a href="https://epochpilot.com">EpochPilot — Timestamps</a>
-            <a href="https://gen8x.com">Gen8X — Color Tools</a>
-            <a href="https://gpt0x.com">GPT0X — AI Models</a>
-            <a href="https://heytensor.com">HeyTensor — ML Tools</a>
-            <a href="https://ingredientcalculator.com">IngredientCalc — Recipes</a>
-            <a href="https://invokebot.com">InvokeBot — Webhooks</a>
-            <a href="https://kappafy.com">Kappafy — JSON</a>
-            <a href="https://kappakit.com">KappaKit — Dev Toolkit</a>
-            <a href="https://kickllm.com">KickLLM — LLM Costs</a>
-            <a href="https://krzen.com">Krzen — Image Tools</a>
-            <a href="https://lochbot.com">LochBot — Security</a>
-            <a href="https://lockml.com">LockML — ML Security</a>
-            <a href="https://ml3x.com">ML3X — Matrix Math</a>
-            <a href="https://pictureeditor.net">PictureEditor — Image Editing</a>
-            <a href="https://recipetool.net">RecipeTool — Cooking</a>
-            <a href="https://viryd.com">Viryd — Dev Tools</a>
-        </div>
-    </div>
-</nav>
-
-<div class="pow-strip">
-  <div class="pow-strip-inner">
-    <span class="pow-label">By the same builder:</span>
-    <a href="https://github.com/theluckystrike" rel="nofollow">GitHub — theluckystrike</a>
-    <a href="https://www.belikenative.com" rel="nofollow">BeLikeNative — Grammar AI</a>
-    <a href="https://earlythunder.com" rel="nofollow">EarlyThunder — Dev Blog</a>
-    <a href="https://bugbountyreality.com" rel="nofollow">Bug Bounty Reality</a>
-    <a href="https://zovo.one" rel="nofollow">Zovo — AI Dev Tools</a>
-  </div>
+<footer style="padding: 28px 40px; background: #111;"><nav aria-label="ML tools and content" class="footer-links-seo"><a href="/tools/">ML tools</a><a href="/tools/learning-rate-finder.html">Learning rate finder</a><a href="/tools/confusion-matrix-calculator.html">Confusion matrix calculator</a><a href="/calculators/kv-cache-size-calculator.html">KV cache calculator</a><a href="/research/">Research</a><a href="/research/ml-cheatsheet.html">ML cheat sheet</a><a href="/guides/">Guides</a><a href="/guides/gradient-descent-explained.html">Gradient descent</a><a href="/answers/">Answers</a><a href="/answers/ml-algorithm-comparison.html">Algorithm comparison</a><a href="/about.html">About</a></nav>
+<div data-r="footer-inner" style="max-width: 1080px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center;">
+<div style="display: flex; align-items: center; gap: 12px;">
+<span style="font-family: 'JetBrains Mono', monospace; font-weight: 700; font-size: 13px; color: #8a8a8a;">ml0x</span>
+<span style="font-family: 'Inter', sans-serif; font-size: 11px; color: #8a8a8a;">by <a class="h57e0e31" href="https://github.com/theluckystrike" style="color: #8a8a8a;" target="_blank">@theluckystrike</a></span>
 </div>
+<div style="display: flex; gap: 20px;">
+<a class="h57e0e31" href="https://github.com/theluckystrike/100xagenticdev" style="font-family: 'Inter', sans-serif; font-size: 11px; color: #8a8a8a; text-decoration: none;" target="_blank">GitHub</a>
+<a class="h57e0e31" href="https://ml0x.com/research/" style="font-family: 'Inter', sans-serif; font-size: 11px; color: #8a8a8a; text-decoration: none;">Research</a>
+<a class="h57e0e31" href="https://twitter.com/_alphashark_" style="font-family: 'Inter', sans-serif; font-size: 11px; color: #8a8a8a; text-decoration: none;" target="_blank">X</a>
+</div>
+</div>
+</footer>
+<script>(function () {
+  'use strict';
+  var MAX_TARGETS = 200; // NASA rule 2: fixed upper bound on the node loop
+  function scrollToTarget(id) {
+    if (id === 'top') { window.scrollTo({ top: 0, behavior: 'smooth' }); return; }
+    var el = document.getElementById(id);
+    if (!el) { return; } // NASA rule: null-check every DOM lookup, never assume it exists
+    el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+  function wire() {
+    var nodes = document.querySelectorAll('.js-scroll');
+    var n = Math.min(nodes.length, MAX_TARGETS);
+    for (var i = 0; i < n; i++) {
+      (function (node) {
+        var target = node.getAttribute('data-scroll');
+        if (!target) { return; }
+        node.addEventListener('click', function () { scrollToTarget(target); });
+        node.addEventListener('keydown', function (ev) {
+          if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); scrollToTarget(target); }
+        });
+      })(nodes[i]);
+    }
+  }
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', wire);
+  } else { wire(); }
+})();</script>
 </body>
 </html>
