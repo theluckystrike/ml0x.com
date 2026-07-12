@@ -1,122 +1,207 @@
 <!DOCTYPE html>
-<html lang='en'>
+<html lang="en">
 <head>
-<meta charset='utf-8'>
-<meta name='viewport' content='width=device-width, initial-scale=1'>
-<title>LLM memory calculator with exact fetched model counts</title>
-<meta name='description' content='Size LLM weights, KV cache, gradients and optimizer states in your browser, from presets that carry exact fetched parameter counts, like 8.03 billion for Llama 3.1 8B, and a KV formula that uses num_key_value_heads instead of the attention head count.'>
-<meta name='author' content='Michael Lip'>
-<meta name='robots' content='index, follow, max-image-preview:large'>
-<link rel='canonical' href='https://ml0x.com/calculators/llm-memory-calculator.html'>
-<link rel='alternate' hreflang='en' href='https://ml0x.com/calculators/llm-memory-calculator.html'>
-<link rel='alternate' hreflang='x-default' href='https://ml0x.com/calculators/llm-memory-calculator.html'>
-<meta property='og:type' content='website'>
-<meta property='og:title' content='LLM memory calculator with exact fetched model counts'>
-<meta property='og:description' content='Size LLM weights, KV cache, gradients and optimizer states in your browser, from presets that carry exact fetched parameter counts and a KV formula that uses num_key_value_heads.'>
-<meta property='og:url' content='https://ml0x.com/calculators/llm-memory-calculator.html'>
-<meta property='og:site_name' content='ml0x'>
-<meta property='og:locale' content='en_US'>
-<meta name='twitter:card' content='summary'>
-<meta name='twitter:title' content='LLM memory calculator with exact fetched model counts'>
-<meta name='twitter:description' content='Size LLM weights, KV cache, gradients and optimizer states in your browser, from presets with exact fetched parameter counts.'>
-<style>body{font:16px/1.6 system-ui,-apple-system,sans-serif;color:#1a1a1a;max-width:960px;margin:0 auto;padding:0 16px 64px}h1,h2,h3{line-height:1.25}table{border-collapse:collapse;width:100%;font-size:14px;margin:16px 0}th,td{border:1px solid #ccc;padding:6px 8px;text-align:left;vertical-align:top}th{background:#f3f3f3}.tool{border:1px solid #ccc;border-radius:8px;padding:16px;background:#fafafa;margin:16px 0}.tool label{display:block;font-size:14px;margin:10px 0 2px}.tool input,.tool select{padding:6px;font-size:16px;width:100%;max-width:300px;min-height:44px;box-sizing:border-box}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:0 16px}#out td,.tt td{font-variant-numeric:tabular-nums}.tt td{font-weight:600;background:#eef}.note{font-size:14px;color:#444}code{background:#f3f3f3;padding:1px 4px;border-radius:3px;font-size:14px}.byline{color:#555;font-size:14px}.tablewrap{overflow-x:auto}footer{margin-top:48px;border-top:1px solid #ccc;padding-top:16px;font-size:14px;color:#444}</style>
-<script type='application/ld+json'>{"@context":"https://schema.org","@type":"Article","headline":"LLM memory calculator","description":"Size weights, KV cache, gradients, optimizer states and activations for inference and training, with exact fetched parameter counts and a KV cache sized by num_key_value_heads.","author":{"@type":"Person","name":"Michael Lip","url":"https://zovo.one","description":"Builds open-source ML tools and developer utilities at zovo.one. ml0x is part of the Zovo Tools network, a collection of free, privacy-first tools for developers and data scientists."},"datePublished":"2026-07-12","dateModified":"2026-07-12","mainEntityOfPage":"https://ml0x.com/calculators/llm-memory-calculator.html"}</script>
-<script type='application/ld+json'>{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Home","item":"https://ml0x.com/"},{"@type":"ListItem","position":2,"name":"Calculators","item":"https://ml0x.com/calculators/"},{"@type":"ListItem","position":3,"name":"LLM memory calculator","item":"https://ml0x.com/calculators/llm-memory-calculator.html"}]}</script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LLM memory calculator, weights and KV and optimizer for 19 models | ml0x</title>
+<meta name="description" content="Size LLM weights, KV cache, gradients and optimizer states in your browser, from presets that carry exact fetched parameter counts and a KV formula that uses num_key_value_heads instead of the attention head count.">
+<meta name="robots" content="index, follow, max-image-preview:large">
+<link rel="canonical" href="https://ml0x.com/calculators/llm-memory-calculator.html">
+<link rel="alternate" hreflang="en" href="https://ml0x.com/calculators/llm-memory-calculator.html">
+<link rel="alternate" hreflang="x-default" href="https://ml0x.com/calculators/llm-memory-calculator.html">
+<meta property="og:type" content="website">
+<meta property="og:title" content="LLM memory calculator, weights and KV and optimizer for 19 models">
+<meta property="og:description" content="Size LLM weights, KV cache, gradients and optimizer states from exact fetched parameter counts, with a KV cache sized by num_key_value_heads.">
+<meta property="og:url" content="https://ml0x.com/calculators/llm-memory-calculator.html">
+<meta property="og:site_name" content="ml0x">
+<meta property="og:locale" content="en_US">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="LLM memory calculator, weights and KV and optimizer for 19 models">
+<meta name="twitter:description" content="Size LLM weights, KV cache, gradients and optimizer states from exact fetched parameter counts.">
+<meta name="author" content="Michael Lip">
+<link rel="stylesheet" href="/assets/style.css">
+<style>
+.llm-calc{max-width:880px;margin:0 auto;padding:1rem 0}
+.llm-calc nav[aria-label="Breadcrumb"]{font-size:.85rem;color:var(--text-muted);margin-bottom:1rem}
+.llm-calc h1{font-family:var(--font-display);font-size:2rem;margin:.25rem 0 .4rem}
+.llm-calc h2{font-family:var(--font-display);font-size:1.35rem;color:var(--accent);margin:2.25rem 0 .75rem}
+.llm-calc h3{font-size:1.1rem;margin:1.5rem 0 .5rem}
+.llm-calc p{color:var(--text-muted);margin-bottom:1rem;line-height:1.7}
+.llm-calc code{font-family:var(--font-display);background:var(--bg-card);padding:2px 6px;border-radius:3px;font-size:.9em;color:var(--text)}
+.llm-calc .byline{color:var(--text-muted);font-size:.9rem}
+.llm-calc table{width:100%;border-collapse:collapse;font-size:.85rem;margin:1.5rem 0;display:block;overflow-x:auto}
+.llm-calc th{text-align:left;padding:10px 12px;border-bottom:2px solid var(--border);color:var(--accent);font-weight:600;font-size:.74rem;text-transform:uppercase;letter-spacing:.4px;white-space:nowrap}
+.llm-calc td{padding:9px 12px;border-bottom:1px solid var(--border);white-space:nowrap;vertical-align:top}
+.llm-calc tbody tr:hover{background:var(--bg-hover)}
+.llm-calc .tool{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:20px;margin:1.5rem 0}
+.llm-calc .tool label{display:block;font-size:.72rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:.5px;font-weight:600;margin:.9rem 0 .3rem}
+.llm-calc .tool select,.llm-calc .tool input{background:var(--bg);border:1px solid var(--border);border-radius:var(--radius);color:var(--text);padding:.6rem .7rem;font-family:var(--font-body);font-size:1rem;min-height:44px;width:100%;max-width:320px;box-sizing:border-box}
+.llm-calc .tool select:focus,.llm-calc .tool input:focus{outline:none;border-color:var(--accent)}
+.llm-calc .tool .mode{margin:1rem 0 .25rem}
+.llm-calc .tool .mode label{display:inline-flex;align-items:center;gap:.4rem;text-transform:none;letter-spacing:0;font-size:.95rem;color:var(--text);margin-right:1.25rem}
+.llm-calc .tool .mode input{width:auto;min-height:0;max-width:none}
+.llm-calc .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:0 18px}
+.llm-calc #out td:first-child{color:var(--text)}
+.llm-calc #out td,.llm-calc .tt td{font-variant-numeric:tabular-nums}
+.llm-calc .tt td{font-weight:700;color:var(--text)}
+.llm-calc #out tr.tt td{background:rgba(59,130,246,0.08)}
+.llm-calc .note{font-size:.85rem;color:var(--text-muted)}
+.llm-calc .tablewrap{overflow-x:auto}
+.llm-calc ul{color:var(--text-muted);margin:0 0 1rem 1.4rem}
+.llm-calc li{margin-bottom:.4rem;line-height:1.6}
+.llm-calc .disclaimer,.llm-calc .boilerplate{font-size:.85rem;color:var(--text-muted);font-style:italic}
+.llm-calc .related-list{list-style:none;margin-left:0}
+.llm-calc .related-list li{margin-bottom:.5rem}
+</style>
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"WebApplication","name":"LLM memory calculator","url":"https://ml0x.com/calculators/llm-memory-calculator.html","applicationCategory":"DeveloperApplication","operatingSystem":"Any","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"},"isBasedOn":[{"@type":"CreativeWork","name":"Efficiently Scaling Transformer Inference (Pope et al.)","url":"https://arxiv.org/abs/2211.05102"},{"@type":"CreativeWork","name":"PagedAttention (Kwon et al.)","url":"https://arxiv.org/abs/2309.06180"},{"@type":"CreativeWork","name":"Mixed Precision Training (Micikevicius et al.)","url":"https://arxiv.org/abs/1710.03740"}]}
+</script>
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"Why another calculator shows a bigger KV cache","acceptedAnswer":{"@type":"Answer","text":"The other calculator probably multiplied by num_attention_heads. Grouped query attention stores keys and values for num_key_value_heads only, and the query heads share them. The over-report column in the table shows the gap per model."}},{"@type":"Question","name":"What Adam stores, and why it outweighs fp16 weights","acceptedAnswer":{"@type":"Answer","text":"Adam keeps adaptive estimates of two lower-order moments of the gradients, two state values per parameter. Held in fp32 at four bytes each, that comes to eight bytes per parameter, four times what the fp16 weights themselves cost. The optimizer, not the model, dominates a training budget."}},{"@type":"Question","name":"Whether int4 shrinks the whole budget","acceptedAnswer":{"@type":"Answer","text":"No, only the weights line. Quantizing weights to half a byte per parameter leaves this page's fp16 KV cache and the activation estimate untouched. At long contexts the cache can outweigh the quantized weights."}},{"@type":"Question","name":"Why the activation line is only an estimate","acceptedAnswer":{"@type":"Answer","text":"Runtimes differ in what they keep live. Fused kernels, activation recomputation, memory pooling and batching strategy all change the real footprint, so the calculator states its coefficient instead of pretending to measure. Trust a profiler over any formula."}},{"@type":"Question","name":"What mixed precision actually saves","acceptedAnswer":{"@type":"Answer","text":"Micikevicius et al. report that mixed precision training can reduce the memory consumption of deep learning models by nearly 2x, with weights, activations and gradients stored in half precision. The savings land in the weights and gradients lines. The fp32 master copy and the Adam states stay full width."}}]}
+</script>
+<script type="application/ld+json">
+{"@context":"https://schema.org","@graph":[{"@type":"Article","@id":"#article","headline":"LLM memory calculator","description":"Size weights, KV cache, gradients, optimizer states and activations for inference and training, with exact fetched parameter counts and a KV cache sized by num_key_value_heads.","author":{"@id":"https://zovo.one#michael-lip"},"datePublished":"2026-07-12","dateModified":"2026-07-13","publisher":{"@type":"Organization","name":"ml0x","url":"https://ml0x.com/"},"mainEntityOfPage":{"@id":"#webpage"}},{"@type":"Person","@id":"https://zovo.one#michael-lip","name":"Michael Lip","url":"https://zovo.one","description":"Builds open-source ML tools and developer utilities at zovo.one. ml0x is part of the Zovo Tools network, a collection of free, privacy-first tools for developers and data scientists."},{"@type":"WebPage","@id":"#webpage","name":"LLM memory calculator","url":"https://ml0x.com/calculators/llm-memory-calculator.html","breadcrumb":{"@id":"#breadcrumb"}},{"@type":"BreadcrumbList","@id":"#breadcrumb","itemListElement":[{"@type":"ListItem","position":1,"name":"ml0x","item":"https://ml0x.com/"},{"@type":"ListItem","position":2,"name":"Calculators","item":"https://ml0x.com/calculators/"},{"@type":"ListItem","position":3,"name":"LLM memory calculator"}]}]}
+</script>
 </head>
 <body>
-<p class='byline'><a href='/'>ml0x</a> / <a href='/calculators/'>calculators</a> / llm memory calculator</p>
+<header>
+  <div class="container header-inner">
+    <a href="/" class="logo">ml0x</a>
+    <nav>
+      <a href="/">Home</a>
+      <a href="/calculators/">Calculators</a>
+      <a href="/research/">Research</a>
+      <a href="/tools/">Tools</a>
+      <a href="/guides/">Guides</a>
+      <a href="/answers/">Answers</a>
+      <div class="nav-right">
+        <a href="https://zovo.one/pricing?utm_source=ml0x.com&utm_medium=satellite&utm_campaign=nav-link" class="nav-pro" target="_blank" rel="noopener">Go Pro &#10022;</a>
+        <a href="https://zovo.one/tools" class="nav-zovo">Zovo Tools</a>
+      </div>
+    </nav>
+  </div>
+</header>
+<main class="container">
+<article class="llm-calc">
+<nav aria-label="Breadcrumb"><a href="/">ml0x</a> / <a href="/calculators/">Calculators</a> / <span>LLM memory calculator</span></nav>
 <h1>LLM memory calculator</h1>
-<p class='byline'>By <a href='https://zovo.one'>Michael Lip</a>. Model fields fetched and cross checked on 12 July 2026.</p>
+<p class="byline">By <a href="https://zovo.one" rel="author">Michael Lip</a>. Model fields fetched and cross checked on 12 July 2026.</p>
+<section>
 <h2>The head count most calculators get wrong</h2>
-<p>Most LLM memory calculators make two quiet mistakes. They ask you to type a parameter count you are guessing at, and they size the KV cache from <code>num_attention_heads</code>. The second one inflates the cache badly on modern models. Under grouped query attention the tensors that persist across decoding are the keys and values, and their count comes from <code>num_key_value_heads</code>, a different config field that is usually several times smaller. Pope et al. show that sharing key and value heads across query heads lowers memory requirements and lets inference scale to much longer contexts (<a href='https://arxiv.org/abs/2211.05102'>arXiv 2211.05102</a>).</p>
-<p>Take Qwen2.5 7B. Its published <a href='https://huggingface.co/Qwen/Qwen2.5-7B/raw/main/config.json'>config.json</a> sets <code>&quot;num_attention_heads&quot;: 28</code> and <code>&quot;num_key_value_heads&quot;: 4</code>. Open the file and check. A calculator that sizes the cache from the attention head count over-reports it by 7x for this model. <a href='https://modelscope.cn/api/v1/models/Qwen/Qwen2.5-7B/repo?Revision=master&amp;FilePath=config.json'>ModelScope</a>, an independent host run by a different operator, serves the same two values in its copy of the file, so this is not a typo on one hub.</p>
-<p>The parameter counts here are fetched, not typed. Every preset carries the exact count from the <code>safetensors.total</code> field of that model's Hugging Face model-info record. Llama 3.1 8B, for example, reports <a href='https://huggingface.co/api/models/NousResearch/Meta-Llama-3.1-8B'>8030261248 parameters</a>, which is 8.03 billion, a little over the name. Pick a preset and both numbers land in the calculator for you.</p>
+<p>Most LLM memory calculators make two quiet mistakes. They ask you to type a parameter count you are guessing at, and they size the KV cache from <code>num_attention_heads</code>. The second one inflates the cache badly on modern models. Under grouped query attention the tensors that persist across decoding are the keys and values, and their count comes from <code>num_key_value_heads</code>, a different config field that is usually several times smaller. Pope et al. show that sharing key and value heads across query heads lowers memory requirements and lets inference scale to much longer contexts (<a href="https://arxiv.org/abs/2211.05102">arXiv 2211.05102</a>).</p>
+<p>Take Qwen2.5 7B. Its published <a href="https://huggingface.co/Qwen/Qwen2.5-7B/raw/main/config.json">config.json</a> sets <code>"num_attention_heads": 28</code> and <code>"num_key_value_heads": 4</code>. Open the file and check. A calculator that sizes the cache from the attention head count over-reports it by 7x for this model. <a href="https://modelscope.cn/api/v1/models/Qwen/Qwen2.5-7B/repo?Revision=master&amp;FilePath=config.json">ModelScope</a>, an independent host run by a different operator, serves the same two values in its copy of the file, so this is not a typo on one hub.</p>
+<p>The parameter counts here are fetched, not typed. Every preset carries the exact count from the <code>safetensors.total</code> field of that model's Hugging Face model-info record. Llama 3.1 8B, for example, reports <a href="https://huggingface.co/api/models/NousResearch/Meta-Llama-3.1-8B">8030261248 parameters</a>, which is 8.03 billion, a little over the name. Pick a preset and both numbers land in the calculator for you.</p>
+</section>
+<section id="tool">
 <h2>The calculator</h2>
-<p>Every result recomputes as you type, in your browser. Weights are the parameter count times the bytes per parameter you pick. The KV cache is per-token bytes times context length times batch, held at fp16, two bytes per value, doubled once because K and V are separate tensors (Pope et al., <a href='https://arxiv.org/abs/2211.05102'>arXiv 2211.05102</a>; Kwon et al., <a href='https://arxiv.org/abs/2309.06180'>arXiv 2309.06180</a>). Adam's optimizer states cost eight bytes per parameter, two fp32 moment estimates of four bytes each (Kingma and Ba, <a href='https://arxiv.org/abs/1412.6980'>arXiv 1412.6980</a>; Micikevicius et al., <a href='https://arxiv.org/abs/1710.03740'>arXiv 1710.03740</a>). The activation line is an estimate and says so, with its coefficient printed right next to it.</p>
-<noscript><p class='note'>The calculator needs JavaScript. The comparison table below is prebuilt from the same fetched fields and works without it.</p></noscript>
-<div class='tool'>
-<div class='grid'>
-<div><label for='preset'>Model preset</label><select id='preset'></select></div>
-<div><label for='prec'>Weights precision</label><select id='prec'><option value='4'>fp32, 4 bytes per parameter</option><option value='2' selected>fp16 or bf16, 2 bytes per parameter</option><option value='1'>int8, 1 byte per parameter</option><option value='0.5'>int4, 0.5 bytes per parameter</option></select></div>
-<div><label for='ctx'>Context length in tokens</label><input id='ctx' type='number' min='1' max='100000000' value='8192'></div>
-<div><label for='bat'>Batch size</label><input id='bat' type='number' min='1' max='1000000' value='1'></div>
+<p>Every result recomputes as you type, in your browser. Weights are the parameter count times the bytes per parameter you pick. The KV cache is per-token bytes times context length times batch, held at fp16, two bytes per value, doubled once because K and V are separate tensors (Pope et al., <a href="https://arxiv.org/abs/2211.05102">arXiv 2211.05102</a>; Kwon et al., <a href="https://arxiv.org/abs/2309.06180">arXiv 2309.06180</a>). Adam's optimizer states cost eight bytes per parameter, two fp32 moment estimates of four bytes each (Kingma and Ba, <a href="https://arxiv.org/abs/1412.6980">arXiv 1412.6980</a>; Micikevicius et al., <a href="https://arxiv.org/abs/1710.03740">arXiv 1710.03740</a>). The activation line is an estimate and says so, with its coefficient printed right next to it.</p>
+<noscript><p class="note">The calculator needs JavaScript. The comparison table below is prebuilt from the same fetched fields and works without it.</p></noscript>
+<div class="tool">
+<div class="grid">
+<div><label for="preset">Model preset</label><select id="preset"></select></div>
+<div><label for="prec">Weights precision</label><select id="prec"><option value="4">fp32, 4 bytes per parameter</option><option value="2" selected>fp16 or bf16, 2 bytes per parameter</option><option value="1">int8, 1 byte per parameter</option><option value="0.5">int4, 0.5 bytes per parameter</option></select></div>
+<div><label for="ctx">Context length in tokens</label><input id="ctx" type="number" min="1" max="100000000" value="8192"></div>
+<div><label for="bat">Batch size</label><input id="bat" type="number" min="1" max="1000000" value="1"></div>
 </div>
-<p><label><input type='radio' name='mode' id='mInf' checked> Inference</label> <label><input type='radio' name='mode' id='mTrain'> Training</label></p>
-<div id='infRows'><label for='ovh'>Runtime overhead percent, an assumption you can edit</label><input id='ovh' type='number' min='0' max='100000' value='10'></div>
-<div id='trainRows' hidden><div class='grid'>
-<div><label for='opt'>Optimizer</label><select id='opt'><option value='8'>Adam, 8 bytes per parameter, two fp32 moments</option><option value='4'>SGD with momentum, 4 bytes per parameter</option><option value='0'>Plain SGD, no state</option></select></div>
-<div><label for='tprec'>Training precision for gradients</label><select id='tprec'><option value='2' selected>fp16 or bf16, 2 bytes</option><option value='4'>fp32, 4 bytes</option></select></div>
+<p class="mode"><label><input type="radio" name="mode" id="mInf" checked> Inference</label> <label><input type="radio" name="mode" id="mTrain"> Training</label></p>
+<div id="infRows"><label for="ovh">Runtime overhead percent, an assumption you can edit</label><input id="ovh" type="number" min="0" max="100000" value="10"></div>
+<div id="trainRows" hidden><div class="grid">
+<div><label for="opt">Optimizer</label><select id="opt"><option value="8">Adam, 8 bytes per parameter, two fp32 moments</option><option value="4">SGD with momentum, 4 bytes per parameter</option><option value="0">Plain SGD, no state</option></select></div>
+<div><label for="tprec">Training precision for gradients</label><select id="tprec"><option value="2" selected>fp16 or bf16, 2 bytes</option><option value="4">fp32, 4 bytes</option></select></div>
 </div></div>
-<div id='custom' hidden><p class='note'>Copy these from your model's config.json on the Hub.</p><div class='grid'>
-<div><label for='cP'>Parameters in billions</label><input id='cP' type='number' min='0' max='100000' step='0.01'></div>
-<div><label for='cL'>num_hidden_layers</label><input id='cL' type='number' min='1' max='10000'></div>
-<div><label for='cKV'>num_key_value_heads</label><input id='cKV' type='number' min='1' max='100000'></div>
-<div><label for='cHD'>head_dim</label><input id='cHD' type='number' min='1' max='100000'></div>
-<div><label for='cAH'>num_attention_heads, for the activation estimate and the naive check</label><input id='cAH' type='number' min='1' max='100000'></div>
+<div id="custom" hidden><p class="note">Copy these from your model's config.json on the Hub.</p><div class="grid">
+<div><label for="cP">Parameters in billions</label><input id="cP" type="number" min="0" max="100000" step="0.01"></div>
+<div><label for="cL">num_hidden_layers</label><input id="cL" type="number" min="1" max="10000"></div>
+<div><label for="cKV">num_key_value_heads</label><input id="cKV" type="number" min="1" max="100000"></div>
+<div><label for="cHD">head_dim</label><input id="cHD" type="number" min="1" max="100000"></div>
+<div><label for="cAH">num_attention_heads, for the activation estimate and the naive check</label><input id="cAH" type="number" min="1" max="100000"></div>
 </div></div>
-<table><thead><tr><th>Line</th><th>Memory</th><th>How the number is computed</th></tr></thead><tbody id='out'></tbody></table>
+<table><thead><tr><th>Line</th><th>Memory</th><th>How the number is computed</th></tr></thead><tbody id="out"></tbody></table>
 </div>
-<p class='note'>For a model outside the list, pick Custom and copy <code>num_hidden_layers</code>, <code>num_key_value_heads</code> and <code>head_dim</code> from its config.json. When <code>head_dim</code> is not published, divide <code>hidden_size</code> by <code>num_attention_heads</code>. Qwen2.5 7B, for instance, publishes <code>&quot;hidden_size&quot;: 3584</code> alongside its 28 attention heads, and the head dimension follows from that division.</p>
+<p class="note">For a model outside the list, pick Custom and copy <code>num_hidden_layers</code>, <code>num_key_value_heads</code> and <code>head_dim</code> from its config.json. When <code>head_dim</code> is not published, divide <code>hidden_size</code> by <code>num_attention_heads</code>. Qwen2.5 7B, for instance, publishes <code>"hidden_size": 3584</code> alongside its 28 attention heads, and the head dimension follows from that division.</p>
+<p class="disclaimer">All computation runs client side. No data leaves your browser.</p>
+</section>
+<section>
 <h2>Every preset, sized from its fetched count</h2>
-<p>One row per preset. The parameter column is the exact <code>safetensors.total</code> from the linked record, in billions. Weights columns use two bytes per parameter at fp16 and half a byte at int4. Adam states use eight bytes per parameter (Micikevicius et al., <a href='https://arxiv.org/abs/1710.03740'>arXiv 1710.03740</a>). The KV column assumes an fp16 cache, a single sequence, and a 128k context. And the over-report column is the reason this page exists. It shows how far a <code>num_attention_heads</code> calculator overstates that model's cache.</p>
-<div class='tablewrap'><table>
+<p>One row per preset. The parameter column is the exact <code>safetensors.total</code> from the linked record, in billions. Weights columns use two bytes per parameter at fp16 and half a byte at int4. Adam states use eight bytes per parameter (Micikevicius et al., <a href="https://arxiv.org/abs/1710.03740">arXiv 1710.03740</a>). The KV column assumes an fp16 cache, a single sequence, and a 128k context. And the over-report column is the reason this page exists. It shows how far a <code>num_attention_heads</code> calculator overstates that model's cache.</p>
+<div class="tablewrap"><table>
 <thead><tr><th>Model</th><th>Params (B)</th><th>Q heads per KV head</th><th>Naive KV over-report</th><th>Weights fp16 (GiB)</th><th>Weights int4 (GiB)</th><th>Adam states (GiB)</th><th>KV cache at 128k (GiB)</th><th>Count source</th></tr></thead>
 <tbody>
-<tr><td>Llama 3.1 8B</td><td>8.03</td><td>4</td><td>300%</td><td>14.96</td><td>3.74</td><td>59.83</td><td>16</td><td><a href='https://huggingface.co/api/models/NousResearch/Meta-Llama-3.1-8B'>record</a></td></tr>
-<tr><td>Llama 3.2 1B</td><td>1.24</td><td>4</td><td>300%</td><td>2.3</td><td>0.58</td><td>9.21</td><td>4</td><td><a href='https://huggingface.co/api/models/NousResearch/Llama-3.2-1B'>record</a></td></tr>
-<tr><td>Qwen2.5 0.5B</td><td>0.49</td><td>7</td><td>600%</td><td>0.92</td><td>0.23</td><td>3.68</td><td>1.5</td><td><a href='https://huggingface.co/api/models/Qwen/Qwen2.5-0.5B'>record</a></td></tr>
-<tr><td>Qwen2.5 1.5B</td><td>1.54</td><td>6</td><td>500%</td><td>2.88</td><td>0.72</td><td>11.5</td><td>3.5</td><td><a href='https://huggingface.co/api/models/Qwen/Qwen2.5-1.5B'>record</a></td></tr>
-<tr><td>Qwen2.5 3B</td><td>3.09</td><td>8</td><td>700%</td><td>5.75</td><td>1.44</td><td>22.99</td><td>4.5</td><td><a href='https://huggingface.co/api/models/Qwen/Qwen2.5-3B'>record</a></td></tr>
-<tr><td>Qwen2.5 7B</td><td>7.62</td><td>7</td><td>600%</td><td>14.19</td><td>3.55</td><td>56.74</td><td>7</td><td><a href='https://huggingface.co/api/models/Qwen/Qwen2.5-7B'>record</a></td></tr>
-<tr><td>Qwen2.5 14B</td><td>14.77</td><td>5</td><td>400%</td><td>27.51</td><td>6.88</td><td>110.05</td><td>24</td><td><a href='https://huggingface.co/api/models/Qwen/Qwen2.5-14B'>record</a></td></tr>
-<tr><td>Qwen2.5 32B</td><td>32.76</td><td>5</td><td>400%</td><td>61.03</td><td>15.26</td><td>244.11</td><td>32</td><td><a href='https://huggingface.co/api/models/Qwen/Qwen2.5-32B'>record</a></td></tr>
-<tr><td>Qwen2.5 72B</td><td>72.71</td><td>8</td><td>700%</td><td>135.43</td><td>33.86</td><td>541.7</td><td>40</td><td><a href='https://huggingface.co/api/models/Qwen/Qwen2.5-72B'>record</a></td></tr>
-<tr><td>Qwen3 8B</td><td>8.19</td><td>4</td><td>300%</td><td>15.26</td><td>3.81</td><td>61.03</td><td>18</td><td><a href='https://huggingface.co/api/models/Qwen/Qwen3-8B'>record</a></td></tr>
-<tr><td>Qwen3 14B</td><td>14.77</td><td>5</td><td>400%</td><td>27.51</td><td>6.88</td><td>110.03</td><td>20</td><td><a href='https://huggingface.co/api/models/Qwen/Qwen3-14B'>record</a></td></tr>
-<tr><td>Qwen3 32B</td><td>32.76</td><td>8</td><td>700%</td><td>61.02</td><td>15.26</td><td>244.1</td><td>32</td><td><a href='https://huggingface.co/api/models/Qwen/Qwen3-32B'>record</a></td></tr>
-<tr><td>Mistral 7B v0.1</td><td>7.24</td><td>4</td><td>300%</td><td>13.49</td><td>3.37</td><td>53.96</td><td>16</td><td><a href='https://huggingface.co/api/models/mistralai/Mistral-7B-v0.1'>record</a></td></tr>
-<tr><td>Mistral NeMo 12B</td><td>12.25</td><td>4</td><td>300%</td><td>22.81</td><td>5.7</td><td>91.25</td><td>20</td><td><a href='https://huggingface.co/api/models/mistralai/Mistral-Nemo-Base-2407'>record</a></td></tr>
-<tr><td>Mixtral 8x7B</td><td>46.7</td><td>4</td><td>300%</td><td>86.99</td><td>21.75</td><td>347.96</td><td>16</td><td><a href='https://huggingface.co/api/models/mistralai/Mixtral-8x7B-v0.1'>record</a></td></tr>
-<tr><td>Phi-3 mini 4k</td><td>3.82</td><td>1</td><td>0%</td><td>7.12</td><td>1.78</td><td>28.47</td><td>48</td><td><a href='https://huggingface.co/api/models/microsoft/Phi-3-mini-4k-instruct'>record</a></td></tr>
-<tr><td>Phi-4</td><td>14.66</td><td>4</td><td>300%</td><td>27.31</td><td>6.83</td><td>109.22</td><td>25</td><td><a href='https://huggingface.co/api/models/microsoft/phi-4'>record</a></td></tr>
-<tr><td>OLMo 2 7B</td><td>7.3</td><td>1</td><td>0%</td><td>13.59</td><td>3.4</td><td>54.38</td><td>64</td><td><a href='https://huggingface.co/api/models/allenai/OLMo-2-1124-7B'>record</a></td></tr>
-<tr><td>SmolLM2 1.7B</td><td>1.71</td><td>1</td><td>0%</td><td>3.19</td><td>0.8</td><td>12.75</td><td>24</td><td><a href='https://huggingface.co/api/models/HuggingFaceTB/SmolLM2-1.7B'>record</a></td></tr>
+<tr><td>Llama 3.1 8B</td><td>8.03</td><td>4</td><td>300%</td><td>14.96</td><td>3.74</td><td>59.83</td><td>16</td><td><a href="https://huggingface.co/api/models/NousResearch/Meta-Llama-3.1-8B">record</a></td></tr>
+<tr><td>Llama 3.2 1B</td><td>1.24</td><td>4</td><td>300%</td><td>2.3</td><td>0.58</td><td>9.21</td><td>4</td><td><a href="https://huggingface.co/api/models/NousResearch/Llama-3.2-1B">record</a></td></tr>
+<tr><td>Qwen2.5 0.5B</td><td>0.49</td><td>7</td><td>600%</td><td>0.92</td><td>0.23</td><td>3.68</td><td>1.5</td><td><a href="https://huggingface.co/api/models/Qwen/Qwen2.5-0.5B">record</a></td></tr>
+<tr><td>Qwen2.5 1.5B</td><td>1.54</td><td>6</td><td>500%</td><td>2.88</td><td>0.72</td><td>11.5</td><td>3.5</td><td><a href="https://huggingface.co/api/models/Qwen/Qwen2.5-1.5B">record</a></td></tr>
+<tr><td>Qwen2.5 3B</td><td>3.09</td><td>8</td><td>700%</td><td>5.75</td><td>1.44</td><td>22.99</td><td>4.5</td><td><a href="https://huggingface.co/api/models/Qwen/Qwen2.5-3B">record</a></td></tr>
+<tr><td>Qwen2.5 7B</td><td>7.62</td><td>7</td><td>600%</td><td>14.19</td><td>3.55</td><td>56.74</td><td>7</td><td><a href="https://huggingface.co/api/models/Qwen/Qwen2.5-7B">record</a></td></tr>
+<tr><td>Qwen2.5 14B</td><td>14.77</td><td>5</td><td>400%</td><td>27.51</td><td>6.88</td><td>110.05</td><td>24</td><td><a href="https://huggingface.co/api/models/Qwen/Qwen2.5-14B">record</a></td></tr>
+<tr><td>Qwen2.5 32B</td><td>32.76</td><td>5</td><td>400%</td><td>61.03</td><td>15.26</td><td>244.11</td><td>32</td><td><a href="https://huggingface.co/api/models/Qwen/Qwen2.5-32B">record</a></td></tr>
+<tr><td>Qwen2.5 72B</td><td>72.71</td><td>8</td><td>700%</td><td>135.43</td><td>33.86</td><td>541.7</td><td>40</td><td><a href="https://huggingface.co/api/models/Qwen/Qwen2.5-72B">record</a></td></tr>
+<tr><td>Qwen3 8B</td><td>8.19</td><td>4</td><td>300%</td><td>15.26</td><td>3.81</td><td>61.03</td><td>18</td><td><a href="https://huggingface.co/api/models/Qwen/Qwen3-8B">record</a></td></tr>
+<tr><td>Qwen3 14B</td><td>14.77</td><td>5</td><td>400%</td><td>27.51</td><td>6.88</td><td>110.03</td><td>20</td><td><a href="https://huggingface.co/api/models/Qwen/Qwen3-14B">record</a></td></tr>
+<tr><td>Qwen3 32B</td><td>32.76</td><td>8</td><td>700%</td><td>61.02</td><td>15.26</td><td>244.1</td><td>32</td><td><a href="https://huggingface.co/api/models/Qwen/Qwen3-32B">record</a></td></tr>
+<tr><td>Mistral 7B v0.1</td><td>7.24</td><td>4</td><td>300%</td><td>13.49</td><td>3.37</td><td>53.96</td><td>16</td><td><a href="https://huggingface.co/api/models/mistralai/Mistral-7B-v0.1">record</a></td></tr>
+<tr><td>Mistral NeMo 12B</td><td>12.25</td><td>4</td><td>300%</td><td>22.81</td><td>5.7</td><td>91.25</td><td>20</td><td><a href="https://huggingface.co/api/models/mistralai/Mistral-Nemo-Base-2407">record</a></td></tr>
+<tr><td>Mixtral 8x7B</td><td>46.7</td><td>4</td><td>300%</td><td>86.99</td><td>21.75</td><td>347.96</td><td>16</td><td><a href="https://huggingface.co/api/models/mistralai/Mixtral-8x7B-v0.1">record</a></td></tr>
+<tr><td>Phi-3 mini 4k</td><td>3.82</td><td>1</td><td>0%</td><td>7.12</td><td>1.78</td><td>28.47</td><td>48</td><td><a href="https://huggingface.co/api/models/microsoft/Phi-3-mini-4k-instruct">record</a></td></tr>
+<tr><td>Phi-4</td><td>14.66</td><td>4</td><td>300%</td><td>27.31</td><td>6.83</td><td>109.22</td><td>25</td><td><a href="https://huggingface.co/api/models/microsoft/phi-4">record</a></td></tr>
+<tr><td>OLMo 2 7B</td><td>7.3</td><td>1</td><td>0%</td><td>13.59</td><td>3.4</td><td>54.38</td><td>64</td><td><a href="https://huggingface.co/api/models/allenai/OLMo-2-1124-7B">record</a></td></tr>
+<tr><td>SmolLM2 1.7B</td><td>1.71</td><td>1</td><td>0%</td><td>3.19</td><td>0.8</td><td>12.75</td><td>24</td><td><a href="https://huggingface.co/api/models/HuggingFaceTB/SmolLM2-1.7B">record</a></td></tr>
 </tbody></table></div>
-<p>The ratio is not one number across model families. Mistral 7B v0.1 publishes <code>&quot;num_key_value_heads&quot;: 8</code> against <code>&quot;num_attention_heads&quot;: 32</code> in its <a href='https://huggingface.co/mistralai/Mistral-7B-v0.1/raw/main/config.json'>config.json</a>. phi-4 publishes <code>&quot;num_key_value_heads&quot;: 10</code> against <code>&quot;num_attention_heads&quot;: 40</code> in <a href='https://huggingface.co/microsoft/phi-4/raw/main/config.json'>its file</a>. And OLMo 2 7B keeps full multi head attention, with <code>&quot;num_key_value_heads&quot;: 32</code> equal to its <code>&quot;num_attention_heads&quot;: 32</code> in <a href='https://huggingface.co/allenai/OLMo-2-1124-7B/raw/main/config.json'>its config</a>, so the naive method happens to be right there. You cannot assume the correction away. Check the config, or use a calculator that already did.</p>
+<p>The ratio is not one number across model families. Mistral 7B v0.1 publishes <code>"num_key_value_heads": 8</code> against <code>"num_attention_heads": 32</code> in its <a href="https://huggingface.co/mistralai/Mistral-7B-v0.1/raw/main/config.json">config.json</a>. phi-4 publishes <code>"num_key_value_heads": 10</code> against <code>"num_attention_heads": 40</code> in <a href="https://huggingface.co/microsoft/phi-4/raw/main/config.json">its file</a>. And OLMo 2 7B keeps full multi head attention, with <code>"num_key_value_heads": 32</code> equal to its <code>"num_attention_heads": 32</code> in <a href="https://huggingface.co/allenai/OLMo-2-1124-7B/raw/main/config.json">its config</a>, so the naive method happens to be right there. You cannot assume the correction away. Check the config, or use a calculator that already did.</p>
+</section>
+<section>
 <h2>A worked example with Llama 3.1 8B</h2>
-<p>Llama 3.1 8B reports 8030261248 parameters in <code>safetensors.total</code> (<a href='https://huggingface.co/api/models/NousResearch/Meta-Llama-3.1-8B'>the model-info record</a>). Serve it at fp16 and the weights take 14.96 GiB, the count times two bytes. The cache then adds 131072 bytes for every token in flight, 128 KiB each, so one full 128k-token sequence costs 16 GiB on top of the weights. Fine-tune the same model with Adam and the bill changes shape. Gradients at fp16 match the fp16 weights, another 14.96 GiB, and the optimizer's two fp32 moment tensors add 59.83 GiB at eight bytes per parameter (Micikevicius et al., <a href='https://arxiv.org/abs/1710.03740'>arXiv 1710.03740</a>). Mixed precision training also maintains a single-precision master copy of the weights that accumulates the gradients after each optimizer step, so budget four more bytes per parameter if your framework keeps one. Even with that, the same paper reports mixed precision training can reduce the memory consumption of deep learning models by nearly 2x against full fp32.</p>
+<p>Llama 3.1 8B reports 8030261248 parameters in <code>safetensors.total</code> (<a href="https://huggingface.co/api/models/NousResearch/Meta-Llama-3.1-8B">the model-info record</a>). Serve it at fp16 and the weights take 14.96 GiB, the count times two bytes. The cache then adds 131072 bytes for every token in flight, 128 KiB each, so one full 128k-token sequence costs 16 GiB on top of the weights. Fine-tune the same model with Adam and the bill changes shape. Gradients at fp16 match the fp16 weights, another 14.96 GiB, and the optimizer's two fp32 moment tensors add 59.83 GiB at eight bytes per parameter (Micikevicius et al., <a href="https://arxiv.org/abs/1710.03740">arXiv 1710.03740</a>). Mixed precision training also maintains a single-precision master copy of the weights that accumulates the gradients after each optimizer step, so budget four more bytes per parameter if your framework keeps one. Even with that, the same paper reports mixed precision training can reduce the memory consumption of deep learning models by nearly 2x against full fp32.</p>
+</section>
+<section>
 <h2>The KV cache, briefly</h2>
-<p>Kwon et al. put it plainly in the vLLM paper. The KV cache memory for each request is huge, and it grows and shrinks dynamically (<a href='https://arxiv.org/abs/2309.06180'>arXiv 2309.06180</a>). So at long contexts the context length input moves your total more than any other field on this page. Sizing the cache precisely, per model and per quantization, is its own topic, and this site already covers it in depth. The <a href='/calculators/kv-cache-size-calculator.html'>KV cache size calculator</a> goes further than the summary here.</p>
+<p>Kwon et al. put it plainly in the vLLM paper. The KV cache memory for each request is huge, and it grows and shrinks dynamically (<a href="https://arxiv.org/abs/2309.06180">arXiv 2309.06180</a>). So at long contexts the context length input moves your total more than any other field on this page. Sizing the cache precisely, per model and per quantization, is its own topic, and this site already covers it in depth. The <a href="/calculators/kv-cache-size-calculator.html">KV cache size calculator</a> goes further than the summary here.</p>
+</section>
+<section>
 <h2>Common questions</h2>
 <h3>Why another calculator shows a bigger KV cache</h3>
-<p>The other calculator probably multiplied by <code>num_attention_heads</code>. Grouped query attention stores keys and values for <code>num_key_value_heads</code> only, and the query heads share them (Pope et al., <a href='https://arxiv.org/abs/2211.05102'>arXiv 2211.05102</a>). The over-report column in the table shows the gap per model.</p>
+<p>The other calculator probably multiplied by <code>num_attention_heads</code>. Grouped query attention stores keys and values for <code>num_key_value_heads</code> only, and the query heads share them (Pope et al., <a href="https://arxiv.org/abs/2211.05102">arXiv 2211.05102</a>). The over-report column in the table shows the gap per model.</p>
 <h3>What Adam stores, and why it outweighs fp16 weights</h3>
-<p>Adam keeps adaptive estimates of lower-order moments of the gradients, two state values per parameter (Kingma and Ba, <a href='https://arxiv.org/abs/1412.6980'>arXiv 1412.6980</a>). Held in fp32 at four bytes each, that comes to eight bytes per parameter, four times what the fp16 weights themselves cost. The optimizer, not the model, dominates a training budget.</p>
+<p>Adam keeps adaptive estimates of lower-order moments of the gradients, two state values per parameter (Kingma and Ba, <a href="https://arxiv.org/abs/1412.6980">arXiv 1412.6980</a>). Held in fp32 at four bytes each, that comes to eight bytes per parameter, four times what the fp16 weights themselves cost. The optimizer, not the model, dominates a training budget.</p>
 <h3>Whether int4 shrinks the whole budget</h3>
 <p>No, only the weights line. Quantizing weights to half a byte per parameter leaves this page's fp16 KV cache and the activation estimate untouched. At long contexts the cache can outweigh the quantized weights, and the table's 128k column makes that easy to spot.</p>
 <h3>Why the activation line is only an estimate</h3>
 <p>Runtimes differ in what they keep live. Fused kernels, activation recomputation, memory pooling and batching strategy all change the real footprint, so the calculator states its coefficient (two live values of d_model per layer per token, at two bytes each) instead of pretending to measure. Trust a profiler over any formula, this one included.</p>
 <h3>What mixed precision actually saves</h3>
-<p>Micikevicius et al. report that mixed precision training can reduce the memory consumption of deep learning models by nearly 2x, with weights, activations and gradients stored in IEEE half-precision format, sixteen bits per value (<a href='https://arxiv.org/abs/1710.03740'>arXiv 1710.03740</a>). The savings land in the weights and gradients lines here. The fp32 master copy and the Adam states stay full width.</p>
+<p>Micikevicius et al. report that mixed precision training can reduce the memory consumption of deep learning models by nearly 2x, with weights, activations and gradients stored in IEEE half-precision format, sixteen bits per value (<a href="https://arxiv.org/abs/1710.03740">arXiv 1710.03740</a>). The savings land in the weights and gradients lines here. The fp32 master copy and the Adam states stay full width.</p>
+</section>
+<section>
 <h2>Where these numbers come from</h2>
-<p>Nothing on this page is typed from memory. Parameter counts are read from each model's Hugging Face model-info record, the <code>safetensors.total</code> field, then cross checked against the model's safetensors byte footprint divided by its stored dtype width, and against the same footprint on ModelScope, an independent host. Per-token KV figures come from each model's own config.json, recomputed in code as two bytes at fp16, times two for K and V, times <code>num_key_value_heads</code>, times <code>head_dim</code>, times <code>num_hidden_layers</code>, following Pope et al. (<a href='https://arxiv.org/abs/2211.05102'>arXiv 2211.05102</a>) and Kwon et al. (<a href='https://arxiv.org/abs/2309.06180'>arXiv 2309.06180</a>). A value the two hosts disagree on is held back, and nothing gets published for it. Models whose attention layout the formula does not describe are excluded rather than approximated, so no preset carries a silently wrong number. Weights, gradient and optimizer results are pure multiples of the fetched count by the bytes-per-parameter constant shown beside each one, recomputed in your browser so you can reproduce every figure.</p>
+<p>Nothing on this page is typed from memory. Parameter counts are read from each model's Hugging Face model-info record, the <code>safetensors.total</code> field, then cross checked against the model's safetensors byte footprint divided by its stored dtype width, and against the same footprint on ModelScope, an independent host. Per-token KV figures come from each model's own config.json, recomputed in code as two bytes at fp16, times two for K and V, times <code>num_key_value_heads</code>, times <code>head_dim</code>, times <code>num_hidden_layers</code>, following Pope et al. (<a href="https://arxiv.org/abs/2211.05102">arXiv 2211.05102</a>) and Kwon et al. (<a href="https://arxiv.org/abs/2309.06180">arXiv 2309.06180</a>). A value the two hosts disagree on is held back, and nothing gets published for it. Models whose attention layout the formula does not describe are excluded rather than approximated, so no preset carries a silently wrong number. Weights, gradient and optimizer results are pure multiples of the fetched count by the bytes-per-parameter constant shown beside each one, recomputed in your browser so you can reproduce every figure.</p>
 <p>Every ml0x tool runs client side, and I check that the way you would, by watching the network panel while the page works. I ran that inspection across the live ml0x calculator pages on 10 July 2026 and the computation stayed on the machine. This page is built the same way.</p>
 <h3>Sources</h3>
 <ul>
 <li>Per-model parameter records, linked in the Count source column of the table above.</li>
-<li>Config files. <a href='https://huggingface.co/Qwen/Qwen2.5-7B/raw/main/config.json'>Qwen2.5 7B</a>, <a href='https://modelscope.cn/api/v1/models/Qwen/Qwen2.5-7B/repo?Revision=master&amp;FilePath=config.json'>Qwen2.5 7B on ModelScope</a>, <a href='https://huggingface.co/mistralai/Mistral-7B-v0.1/raw/main/config.json'>Mistral 7B v0.1</a>, <a href='https://huggingface.co/microsoft/phi-4/raw/main/config.json'>phi-4</a>, <a href='https://huggingface.co/allenai/OLMo-2-1124-7B/raw/main/config.json'>OLMo 2 7B</a>.</li>
-<li>Kwon et al., the PagedAttention paper behind vLLM, <a href='https://arxiv.org/abs/2309.06180'>arXiv 2309.06180</a>.</li>
-<li>Pope et al., Efficiently Scaling Transformer Inference, <a href='https://arxiv.org/abs/2211.05102'>arXiv 2211.05102</a>.</li>
-<li>Micikevicius et al., Mixed Precision Training, <a href='https://arxiv.org/abs/1710.03740'>arXiv 1710.03740</a>.</li>
-<li>Kingma and Ba, Adam, <a href='https://arxiv.org/abs/1412.6980'>arXiv 1412.6980</a>.</li>
+<li>Config files. <a href="https://huggingface.co/Qwen/Qwen2.5-7B/raw/main/config.json">Qwen2.5 7B</a>, <a href="https://modelscope.cn/api/v1/models/Qwen/Qwen2.5-7B/repo?Revision=master&amp;FilePath=config.json">Qwen2.5 7B on ModelScope</a>, <a href="https://huggingface.co/mistralai/Mistral-7B-v0.1/raw/main/config.json">Mistral 7B v0.1</a>, <a href="https://huggingface.co/microsoft/phi-4/raw/main/config.json">phi-4</a>, <a href="https://huggingface.co/allenai/OLMo-2-1124-7B/raw/main/config.json">OLMo 2 7B</a>.</li>
+<li>Kwon et al., the PagedAttention paper behind vLLM, <a href="https://arxiv.org/abs/2309.06180">arXiv 2309.06180</a>.</li>
+<li>Pope et al., Efficiently Scaling Transformer Inference, <a href="https://arxiv.org/abs/2211.05102">arXiv 2211.05102</a>.</li>
+<li>Micikevicius et al., Mixed Precision Training, <a href="https://arxiv.org/abs/1710.03740">arXiv 1710.03740</a>.</li>
+<li>Kingma and Ba, Adam, <a href="https://arxiv.org/abs/1412.6980">arXiv 1412.6980</a>.</li>
 </ul>
+</section>
+<section>
 <h2>Assumptions and limits</h2>
 <ul>
 <li>Estimates use standard scaling formulas. Real workloads vary with fused kernels, sharding, and precision.</li>
 <li>This tool is for planning and teaching. Verify against a profiler run before committing a hardware budget.</li>
 <li>All computation runs client side. No data leaves your browser.</li>
 </ul>
-<footer><p>ml0x publishes free machine learning calculators and explainers. Every number on this page is computed in your browser from the inputs you enter. Nothing is sent to a server. Written by Michael Lip, part of the Zovo Tools network.</p></footer>
+<p class="boilerplate">ml0x publishes free machine learning calculators and explainers. Every number on this page is computed in your browser from the inputs you enter. Nothing is sent to a server. Written by Michael Lip, part of the Zovo Tools network.</p>
+</section>
+<section aria-label="Related tools">
+<h2>Related tools</h2>
+<ul class="related-list">
+<li><a href="/calculators/kv-cache-size-calculator.html">KV cache size calculator</a></li>
+<li><a href="/tools/transformer-flops-memory-calculator.html">Transformer FLOPs and memory calculator</a></li>
+<li><a href="/tools/learning-rate-finder.html">Learning rate finder</a></li>
+<li><a href="/tools/">All ML tools</a></li>
+</ul>
+</section>
 <script>
 'use strict';
 (function(){
@@ -189,5 +274,15 @@ var mi=$('mInf'),mt=$('mTrain');if(mi)mi.addEventListener('change',run);if(mt)mt
 run();
 })();
 </script>
+</article>
+</main>
+<footer class="site-footer">
+    <div class="footer-inner">
+        <div class="footer-brand">Zovo Tools</div>
+        <div class="footer-tagline">Free developer tools by a solo dev. No tracking.</div>
+        <a href="https://zovo.one/pricing?utm_source=ml0x.com&utm_medium=satellite&utm_campaign=footer-link" class="footer-cta">Zovo Lifetime, $99 once, free forever &rarr;</a>
+        <div class="footer-copy">&copy; 2026 <a href="https://zovo.one">Zovo</a> &middot; 47/500 founding spots</div>
+    </div>
+</footer>
 </body>
 </html>
