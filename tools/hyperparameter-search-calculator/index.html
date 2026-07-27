@@ -22,9 +22,14 @@
     </script>
     <link rel="stylesheet" href="/assets/ml0x.css">
     <style>
-        /* two-column tool layout */
-        .layout { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin: 24px 0; }
-        @media (max-width: 967px) { .layout { grid-template-columns: 1fr; } }
+        /* two-column tool layout; minmax(0,..) keeps a wide table from
+           blowing the grid track out past the viewport */
+        .layout {
+            display: grid; grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 24px; margin: 24px 0;
+        }
+        @media (max-width: 967px) { .layout { grid-template-columns: minmax(0, 1fr); } }
+        .table-scroll { margin: 14px 0 0; }
 
         /* panel headers: the shared .section-title is a page-level heading size */
         .panel .section-title {
@@ -183,6 +188,7 @@
                 <div class="section-title">Search Strategy Comparison</div>
                 <canvas id="comparisonChart"></canvas>
 
+                <div class="table-scroll">
                 <table class="comparison-table">
                     <thead>
                         <tr>
@@ -217,6 +223,7 @@
                         </tr>
                     </tbody>
                 </table>
+                </div>
             </div>
         </div>
 
