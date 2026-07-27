@@ -20,7 +20,7 @@
 <meta name="twitter:description" content="Interactive comparison of grid search, random search, and Bayesian optimization. Visualize search efficiency and convergence across parameter spaces.">
 <meta name="author" content="Michael Lip">
 <meta name="robots" content="index, follow">
-<link rel="stylesheet" href="/assets/style.css">
+<link rel="stylesheet" href="/assets/ml0x.css">
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
@@ -64,24 +64,24 @@
 </head>
 <body>
 
-<header>
-  <div class="container header-inner">
-    <a href="/" class="logo">ml0x</a>
-    <nav>
-      <a href="/">Home</a>
-      <a href="/research/">Research</a>
-      <a href="/tools/">Tools</a>
-      <a href="/guides/">Guides</a>
-      <a href="/answers/">Answers</a>
-      <div class="nav-right">
-        <a href="https://zovo.one/pricing?utm_source=ml0x.com&utm_medium=satellite&utm_campaign=nav-link" class="nav-pro" target="_blank">Go Pro &#10022;</a>
-        <a href="https://zovo.one/tools" class="nav-zovo">Zovo Tools</a>
-      </div>
-    </nav>
+<a class="skip-link" href="#main">Skip to content</a>
+<header class="site-nav">
+  <div class="site-nav__inner">
+    <div class="site-nav__left">
+      <a class="site-nav__logo" href="/">ml0x</a>
+      <nav class="site-nav__links" aria-label="Main">
+        <a href="/tools/">Tools</a>
+        <a href="/calculators/">Calculators</a>
+        <a href="/guides/">Guides</a>
+        <a href="/answers/" aria-current="page">Answers</a>
+        <a href="/research/">Research</a>
+      </nav>
+    </div>
+    <a class="nav-cta" href="https://zovo.one/pricing" target="_blank" rel="noopener">Full system, $99</a>
   </div>
 </header>
 
-<main class="container">
+<main id="main" class="container">
   <div class="breadcrumb">
     <a href="/">Home</a> <span>&rsaquo;</span> <a href="/answers/">Answers</a> <span>&rsaquo;</span> Hyperparameter Tuning Guide
   </div>
@@ -126,11 +126,11 @@
     <div class="control-row" style="margin-top:12px;">
       <div class="control-group">
         <label>Parameter 1 Range</label>
-        <input type="text" id="param1Name" value="learning_rate" style="width:130px;padding:8px;background:#1a1a1a;border:1px solid #333;border-radius:6px;color:#e0e0e0;font-size:13px;">
+        <input type="text" id="param1Name" value="learning_rate" style="width:170px;">
       </div>
       <div class="control-group">
         <label>Parameter 2 Range</label>
-        <input type="text" id="param2Name" value="n_estimators" style="width:130px;padding:8px;background:#1a1a1a;border:1px solid #333;border-radius:6px;color:#e0e0e0;font-size:13px;">
+        <input type="text" id="param2Name" value="n_estimators" style="width:170px;">
       </div>
       <button class="btn" id="runBtn">Run Search</button>
       <button class="btn btn-secondary" id="stepBtn">Step-by-Step</button>
@@ -148,7 +148,7 @@
       <div class="stat-card"><div class="value" id="metConverge">--</div><div class="label">Convergence Step</div></div>
     </div>
 
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:16px;">
+    <div class="grid-2">
       <div class="tool-card">
         <h3>Search Space Exploration</h3>
         <div class="viz-container"><svg id="searchSvg" width="400" height="400" viewBox="0 0 400 400"></svg></div>
@@ -162,15 +162,15 @@
     <div class="tool-card" id="compareSection" style="display:none;">
       <h3>Method Comparison Summary</h3>
       <div style="overflow-x:auto;">
-        <table style="width:100%;border-collapse:collapse;font-size:14px;" id="compareTable">
+        <table class="data-table" id="compareTable">
           <thead>
-            <tr style="border-bottom:2px solid #333;">
-              <th style="text-align:left;padding:8px;color:#aaa;">Method</th>
-              <th style="text-align:right;padding:8px;color:#aaa;">Best Score</th>
-              <th style="text-align:right;padding:8px;color:#aaa;">Avg Score</th>
-              <th style="text-align:right;padding:8px;color:#aaa;">Converge Step</th>
-              <th style="text-align:right;padding:8px;color:#aaa;">Unique P1 Values</th>
-              <th style="text-align:right;padding:8px;color:#aaa;">Unique P2 Values</th>
+            <tr>
+              <th >Method</th>
+              <th style="text-align:right;">Best Score</th>
+              <th style="text-align:right;">Avg Score</th>
+              <th style="text-align:right;">Converge Step</th>
+              <th style="text-align:right;">Unique P1 Values</th>
+              <th style="text-align:right;">Unique P2 Values</th>
             </tr>
           </thead>
           <tbody id="compareBody"></tbody>
@@ -185,7 +185,7 @@
         <button class="btn btn-secondary codeTabBtn" data-tab="optuna">Optuna</button>
         <button class="btn btn-secondary codeTabBtn" data-tab="raytune">Ray Tune</button>
       </div>
-      <pre id="codeOutput" style="background:#0d0d0d;border:1px solid #333;border-radius:8px;padding:16px;color:#e0e0e0;font-size:13px;font-family:'IBM Plex Mono',monospace;overflow-x:auto;white-space:pre;line-height:1.5;max-height:350px;overflow-y:auto;"></pre>
+      <pre id="codeOutput" style="white-space:pre;max-height:350px;overflow-y:auto;"></pre>
       <button class="btn btn-secondary" id="copyCodeBtn" style="margin-top:8px;">Copy Code</button>
     </div>
   </div>
@@ -293,13 +293,34 @@
 </main>
 
 <footer class="site-footer">
-    <div class="footer-inner">
-        <div class="footer-brand">Zovo Tools</div>
-        <div class="footer-tagline">Free developer tools by a solo dev. No tracking.</div>
-        <a href="https://zovo.one/pricing?utm_source=ml0x.com&utm_medium=satellite&utm_campaign=footer-link" class="footer-cta">Zovo Lifetime — $99 once, free forever &rarr;</a>
-        <div class="footer-copy">&copy; 2026 <a href="https://zovo.one">Zovo</a> &middot; 47/500 founding spots</div>
+  <nav class="footer-links-seo" aria-label="ML tools and content">
+    <a href="/tools/">ML tools</a>
+    <a href="/tools/learning-rate-finder.html">Learning rate finder</a>
+    <a href="/tools/confusion-matrix-calculator.html">Confusion matrix calculator</a>
+    <a href="/tools/neural-network-playground.html">Neural network playground</a>
+    <a href="/tools/attention-mechanism-visualizer.html">Attention visualizer</a>
+    <a href="/tools/dataset-splitter.html">Dataset splitter</a>
+    <a href="/calculators/kv-cache-size-calculator.html">KV cache calculator</a>
+    <a href="/calculators/llm-memory-calculator.html">LLM memory calculator</a>
+    <a href="/guides/">Guides</a>
+    <a href="/guides/gradient-descent-explained.html">Gradient descent</a>
+    <a href="/answers/">Answers</a>
+    <a href="/answers/ml-algorithm-comparison.html">Algorithm comparison</a>
+    <a href="/research/">Research</a>
+    <a href="/research/ml-cheatsheet.html">ML cheat sheet</a>
+    <a href="/about.html">About</a>
+  </nav>
+  <div class="site-footer__inner">
+    <div class="site-footer__brand">
+      <span class="site-footer__logo">ml0x</span>
+      <span class="site-footer__meta">by <a href="https://github.com/theluckystrike" target="_blank" rel="noopener">@theluckystrike</a></span>
     </div>
-</footer>
+    <div class="site-footer__links">
+      <a href="https://github.com/theluckystrike/100xagenticdev" target="_blank" rel="noopener">GitHub</a>
+      <a href="/research/">Research</a>
+      <a href="https://twitter.com/_alphashark_" target="_blank" rel="noopener">X</a>
+    </div>
+  </div>
 
 <nav class="zovo-network" aria-label="Zovo Tools Network">
     <div class="zovo-network-inner">
@@ -342,7 +363,7 @@
     <a href="https://zovo.one" rel="nofollow">Zovo — AI Dev Tools</a>
   </div>
 </div>
-
+</footer>
 <script>
 (function() {
   var method = 'grid';
@@ -478,7 +499,7 @@
   function drawSearch(res, svgId) {
     var svg = document.getElementById(svgId || 'searchSvg');
     var pad = 50, w = 350, h = 350;
-    var html = '<rect width="400" height="400" fill="#141414"/>';
+    var html = '<rect width="400" height="400" fill="#FFFFFF"/>';
     for (var gi = 0; gi <= 20; gi++) {
       for (var gj = 0; gj <= 20; gj++) {
         var gx = gi/20, gy = gj/20;
@@ -491,12 +512,12 @@
         html += '<rect x="'+(px-8)+'" y="'+(py-8)+'" width="17" height="17" fill="rgb('+r+','+g+','+b+')" opacity="0.25"/>';
       }
     }
-    html += '<line x1="'+pad+'" y1="'+h+'" x2="'+w+'" y2="'+h+'" stroke="#555" stroke-width="1"/>';
-    html += '<line x1="'+pad+'" y1="'+pad+'" x2="'+pad+'" y2="'+h+'" stroke="#555" stroke-width="1"/>';
-    html += '<text x="'+(pad+(w-pad)/2)+'" y="390" text-anchor="middle" fill="#aaa" font-size="12" font-family="IBM Plex Sans,sans-serif">' + document.getElementById('param1Name').value + '</text>';
-    html += '<text x="15" y="'+(pad+(h-pad)/2)+'" text-anchor="middle" fill="#aaa" font-size="12" font-family="IBM Plex Sans,sans-serif" transform="rotate(-90,15,'+(pad+(h-pad)/2)+')">' + document.getElementById('param2Name').value + '</text>';
-    var colors = {'grid':'#3b82f6','random':'#22c55e','bayesian':'#f59e0b'};
-    var color = colors[res.method] || '#3b82f6';
+    html += '<line x1="'+pad+'" y1="'+h+'" x2="'+w+'" y2="'+h+'" stroke="#B8B8B6" stroke-width="1"/>';
+    html += '<line x1="'+pad+'" y1="'+pad+'" x2="'+pad+'" y2="'+h+'" stroke="#B8B8B6" stroke-width="1"/>';
+    html += '<text x="'+(pad+(w-pad)/2)+'" y="390" text-anchor="middle" fill="#6a6a6a" font-size="12" font-family="IBM Plex Sans,sans-serif">' + document.getElementById('param1Name').value + '</text>';
+    html += '<text x="15" y="'+(pad+(h-pad)/2)+'" text-anchor="middle" fill="#6a6a6a" font-size="12" font-family="IBM Plex Sans,sans-serif" transform="rotate(-90,15,'+(pad+(h-pad)/2)+')">' + document.getElementById('param2Name').value + '</text>';
+    var colors = {'grid':'#2563EB','random':'#157F3B','bayesian':'#B45309'};
+    var color = colors[res.method] || '#2563EB';
     var count = stepping ? stepIdx : res.points.length;
     for (var i = 0; i < count && i < res.points.length; i++) {
       var px = pad + res.points[i].x * (w - pad);
@@ -504,8 +525,8 @@
       var isB = (i === res.bestIdx && i < count);
       html += '<circle cx="'+px+'" cy="'+py+'" r="'+(isB?7:4)+'" fill="'+color+'" opacity="'+(isB?1:0.6)+'"/>';
       if (isB) {
-        html += '<circle cx="'+px+'" cy="'+py+'" r="10" fill="none" stroke="#fff" stroke-width="2"/>';
-        html += '<text x="'+(px+14)+'" y="'+(py-8)+'" fill="#fff" font-size="11" font-family="IBM Plex Sans,sans-serif">Best: '+res.best.score.toFixed(4)+'</text>';
+        html += '<circle cx="'+px+'" cy="'+py+'" r="10" fill="none" stroke="#1A1A1A" stroke-width="2"/>';
+        html += '<text x="'+(px+14)+'" y="'+(py-8)+'" fill="#1A1A1A" font-size="11" font-family="IBM Plex Sans,sans-serif">Best: '+res.best.score.toFixed(4)+'</text>';
       }
     }
     if (res.method === 'bayesian' && count > 1) {
@@ -523,17 +544,17 @@
   function drawConvergence(resList) {
     var svg = document.getElementById('convergeSvg');
     var pad = 50, w = 350, h = 250;
-    var html = '<rect width="400" height="300" fill="#141414"/>';
-    html += '<line x1="'+pad+'" y1="'+h+'" x2="'+w+'" y2="'+h+'" stroke="#555" stroke-width="1"/>';
-    html += '<line x1="'+pad+'" y1="30" x2="'+pad+'" y2="'+h+'" stroke="#555" stroke-width="1"/>';
-    html += '<text x="'+(pad+(w-pad)/2)+'" y="285" text-anchor="middle" fill="#aaa" font-size="12" font-family="IBM Plex Sans,sans-serif">Evaluation #</text>';
-    html += '<text x="15" y="'+(30+(h-30)/2)+'" text-anchor="middle" fill="#aaa" font-size="12" font-family="IBM Plex Sans,sans-serif" transform="rotate(-90,15,'+(30+(h-30)/2)+')">Best Score</text>';
+    var html = '<rect width="400" height="300" fill="#FFFFFF"/>';
+    html += '<line x1="'+pad+'" y1="'+h+'" x2="'+w+'" y2="'+h+'" stroke="#B8B8B6" stroke-width="1"/>';
+    html += '<line x1="'+pad+'" y1="30" x2="'+pad+'" y2="'+h+'" stroke="#B8B8B6" stroke-width="1"/>';
+    html += '<text x="'+(pad+(w-pad)/2)+'" y="285" text-anchor="middle" fill="#6a6a6a" font-size="12" font-family="IBM Plex Sans,sans-serif">Evaluation #</text>';
+    html += '<text x="15" y="'+(30+(h-30)/2)+'" text-anchor="middle" fill="#6a6a6a" font-size="12" font-family="IBM Plex Sans,sans-serif" transform="rotate(-90,15,'+(30+(h-30)/2)+')">Best Score</text>';
     for (var i = 0; i <= 4; i++) {
       var gy = h - i * (h-30)/4;
-      html += '<line x1="'+pad+'" y1="'+gy+'" x2="'+w+'" y2="'+gy+'" stroke="#333" stroke-width="0.5"/>';
-      html += '<text x="'+(pad-6)+'" y="'+(gy+4)+'" text-anchor="end" fill="#666" font-size="10" font-family="IBM Plex Mono,monospace">'+(i*0.25).toFixed(2)+'</text>';
+      html += '<line x1="'+pad+'" y1="'+gy+'" x2="'+w+'" y2="'+gy+'" stroke="#E8E8E6" stroke-width="0.5"/>';
+      html += '<text x="'+(pad-6)+'" y="'+(gy+4)+'" text-anchor="end" fill="#6a6a6a" font-size="10" font-family="IBM Plex Mono,monospace">'+(i*0.25).toFixed(2)+'</text>';
     }
-    var colors = {'grid':'#3b82f6','random':'#22c55e','bayesian':'#f59e0b'};
+    var colors = {'grid':'#2563EB','random':'#157F3B','bayesian':'#B45309'};
     if (!Array.isArray(resList)) resList = [resList];
     for (var r = 0; r < resList.length; r++) {
       var res = resList[r];
@@ -566,16 +587,16 @@
   function updateCompareTable(allRes) {
     var tbody = document.getElementById('compareBody');
     tbody.innerHTML = '';
-    var colors = {'grid':'#3b82f6','random':'#22c55e','bayesian':'#f59e0b'};
+    var colors = {'grid':'#2563EB','random':'#157F3B','bayesian':'#B45309'};
     for (var i = 0; i < allRes.length; i++) {
       var r = allRes[i];
-      var row = '<tr style="border-bottom:1px solid #222;">';
-      row += '<td style="padding:8px;color:'+colors[r.method]+';font-weight:600;">'+r.method.charAt(0).toUpperCase()+r.method.slice(1)+'</td>';
-      row += '<td style="padding:8px;text-align:right;color:#ddd;">'+r.best.score.toFixed(4)+'</td>';
-      row += '<td style="padding:8px;text-align:right;color:#ddd;">'+r.avgScore.toFixed(4)+'</td>';
-      row += '<td style="padding:8px;text-align:right;color:#ddd;">'+r.convergeStep+'</td>';
-      row += '<td style="padding:8px;text-align:right;color:#aaa;">'+r.uniqueX+'</td>';
-      row += '<td style="padding:8px;text-align:right;color:#aaa;">'+r.uniqueY+'</td>';
+      var row = '<tr>';
+      row += '<td style="color:'+colors[r.method]+';font-weight:600;">'+r.method.charAt(0).toUpperCase()+r.method.slice(1)+'</td>';
+      row += '<td style="text-align:right;color:#4A4A4A;">'+r.best.score.toFixed(4)+'</td>';
+      row += '<td style="text-align:right;color:#4A4A4A;">'+r.avgScore.toFixed(4)+'</td>';
+      row += '<td style="text-align:right;color:#4A4A4A;">'+r.convergeStep+'</td>';
+      row += '<td style="text-align:right;color:#6a6a6a;">'+r.uniqueX+'</td>';
+      row += '<td style="text-align:right;color:#6a6a6a;">'+r.uniqueY+'</td>';
       row += '</tr>';
       tbody.innerHTML += row;
     }

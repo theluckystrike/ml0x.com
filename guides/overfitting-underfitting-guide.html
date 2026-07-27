@@ -20,7 +20,13 @@
 <meta name="twitter:description" content="Adjust polynomial degree to see underfitting, good fit, and overfitting in real time. Learn regularization, cross-validation, and early stopping.">
 <meta name="author" content="Michael Lip">
 <meta name="robots" content="index, follow">
-<link rel="stylesheet" href="/assets/style.css">
+<link rel="stylesheet" href="/assets/ml0x.css">
+<style>
+/* Structural only: this tool's Fit Status value is a long single word
+   ("Underfitting"), which pushes the 2-column stat grid past a 375px
+   viewport and clips the Test MSE figure. One column below 480px. */
+@media (max-width: 480px) { .stat-grid { grid-template-columns: 1fr; } }
+</style>
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
@@ -62,24 +68,24 @@
 </head>
 <body>
 
-<header>
-  <div class="container header-inner">
-    <a href="/" class="logo">ml0x</a>
-    <nav>
-      <a href="/">Home</a>
-      <a href="/research/">Research</a>
-      <a href="/tools/">Tools</a>
-      <a href="/guides/">Guides</a>
-      <a href="/answers/">Answers</a>
-      <div class="nav-right">
-        <a href="https://zovo.one/pricing?utm_source=ml0x.com&utm_medium=satellite&utm_campaign=nav-link" class="nav-pro" target="_blank">Go Pro &#10022;</a>
-        <a href="https://zovo.one/tools" class="nav-zovo">Zovo Tools</a>
-      </div>
-    </nav>
+<a class="skip-link" href="#main">Skip to content</a>
+<header class="site-nav">
+  <div class="site-nav__inner">
+    <div class="site-nav__left">
+      <a class="site-nav__logo" href="/">ml0x</a>
+      <nav class="site-nav__links" aria-label="Main">
+        <a href="/tools/">Tools</a>
+        <a href="/calculators/">Calculators</a>
+        <a href="/guides/" aria-current="page">Guides</a>
+        <a href="/answers/">Answers</a>
+        <a href="/research/">Research</a>
+      </nav>
+    </div>
+    <a class="nav-cta" href="https://zovo.one/pricing" target="_blank" rel="noopener">Full system, $99</a>
   </div>
 </header>
 
-<main class="container">
+<main id="main" class="container">
   <div class="breadcrumb">
     <a href="/">Home</a> <span>&rsaquo;</span> <a href="/guides/">Guides</a> <span>&rsaquo;</span> Overfitting vs Underfitting
   </div>
@@ -120,7 +126,7 @@
       <div class="stat-card"><div class="value" id="degreeVal">3</div><div class="label">Degree</div></div>
     </div>
     <div class="results-box" id="fitAdvice" style="margin-top:12px;">
-      <p style="color:#888;margin:0;">Adjust the polynomial degree slider to explore underfitting, good fit, and overfitting regimes.</p>
+      <p style="color:#4A4A4A;margin:0;">Adjust the polynomial degree slider to explore underfitting, good fit, and overfitting regimes.</p>
     </div>
   </div>
 
@@ -244,13 +250,34 @@
 </main>
 
 <footer class="site-footer">
-    <div class="footer-inner">
-        <div class="footer-brand">Zovo Tools</div>
-        <div class="footer-tagline">Free developer tools by a solo dev. No tracking.</div>
-        <a href="https://zovo.one/pricing?utm_source=ml0x.com&utm_medium=satellite&utm_campaign=footer-link" class="footer-cta">Zovo Lifetime — $99 once, free forever &rarr;</a>
-        <div class="footer-copy">&copy; 2026 <a href="https://zovo.one">Zovo</a> &middot; 47/500 founding spots</div>
+  <nav class="footer-links-seo" aria-label="ML tools and content">
+    <a href="/tools/">ML tools</a>
+    <a href="/tools/learning-rate-finder.html">Learning rate finder</a>
+    <a href="/tools/confusion-matrix-calculator.html">Confusion matrix calculator</a>
+    <a href="/tools/neural-network-playground.html">Neural network playground</a>
+    <a href="/tools/attention-mechanism-visualizer.html">Attention visualizer</a>
+    <a href="/tools/dataset-splitter.html">Dataset splitter</a>
+    <a href="/calculators/kv-cache-size-calculator.html">KV cache calculator</a>
+    <a href="/calculators/llm-memory-calculator.html">LLM memory calculator</a>
+    <a href="/guides/">Guides</a>
+    <a href="/guides/gradient-descent-explained.html">Gradient descent</a>
+    <a href="/answers/">Answers</a>
+    <a href="/answers/ml-algorithm-comparison.html">Algorithm comparison</a>
+    <a href="/research/">Research</a>
+    <a href="/research/ml-cheatsheet.html">ML cheat sheet</a>
+    <a href="/about.html">About</a>
+  </nav>
+  <div class="site-footer__inner">
+    <div class="site-footer__brand">
+      <span class="site-footer__logo">ml0x</span>
+      <span class="site-footer__meta">by <a href="https://github.com/theluckystrike" target="_blank" rel="noopener">@theluckystrike</a></span>
     </div>
-</footer>
+    <div class="site-footer__links">
+      <a href="https://github.com/theluckystrike/100xagenticdev" target="_blank" rel="noopener">GitHub</a>
+      <a href="/research/">Research</a>
+      <a href="https://twitter.com/_alphashark_" target="_blank" rel="noopener">X</a>
+    </div>
+  </div>
 
 <nav class="zovo-network" aria-label="Zovo Tools Network">
     <div class="zovo-network-inner">
@@ -293,6 +320,7 @@
     <a href="https://zovo.one" rel="nofollow">Zovo — AI Dev Tools</a>
   </div>
 </div>
+</footer>
 
 <script>
 (function() {
@@ -411,16 +439,16 @@
       advice = 'Training and test errors are both reasonably low and close together. The model captures the underlying pattern without fitting noise.';
     }
     document.getElementById('fitStatus').textContent = status;
-    document.getElementById('fitStatus').style.color = status === 'Good Fit' ? '#22c55e' : status === 'Overfitting' ? '#f87171' : '#eab308';
-    document.getElementById('fitAdvice').innerHTML = '<p style="color:#888;margin:0;"><strong style="color:' +
-      (status === 'Good Fit' ? '#22c55e' : status === 'Overfitting' ? '#f87171' : '#eab308') + '">' + status + ':</strong> ' + advice + '</p>';
+    document.getElementById('fitStatus').style.color = status === 'Good Fit' ? '#157F3B' : status === 'Overfitting' ? '#C53030' : '#B45309';
+    document.getElementById('fitAdvice').innerHTML = '<p style="color:#4A4A4A;margin:0;"><strong style="color:' +
+      (status === 'Good Fit' ? '#157F3B' : status === 'Overfitting' ? '#C53030' : '#B45309') + '">' + status + ':</strong> ' + advice + '</p>';
 
     draw(coeffs);
   }
 
   function draw(coeffs) {
     ctx.clearRect(0, 0, W, H);
-    ctx.fillStyle = '#141414';
+    ctx.fillStyle = '#FFFFFF';
     ctx.fillRect(0, 0, W, H);
 
     const xMin = -2.2, xMax = 2.2;
@@ -432,12 +460,12 @@
     function toY(y) { return (H - pad) - (y - yMin) / (yMax - yMin) * (H - 2 * pad); }
 
     // Grid
-    ctx.strokeStyle = '#222';
+    ctx.strokeStyle = '#E8E8E6';
     ctx.lineWidth = 0.5;
     for (let i = 0; i <= 4; i++) {
       const x = xMin + (xMax - xMin) * i / 4;
       ctx.beginPath(); ctx.moveTo(toX(x), pad); ctx.lineTo(toX(x), H - pad); ctx.stroke();
-      ctx.fillStyle = '#555';
+      ctx.fillStyle = '#6a6a6a';
       ctx.font = '10px IBM Plex Sans';
       ctx.fillText(x.toFixed(1), toX(x) - 10, H - pad + 16);
     }
@@ -448,7 +476,7 @@
     }
 
     // Axes
-    ctx.strokeStyle = '#444';
+    ctx.strokeStyle = '#B8B8B6';
     ctx.lineWidth = 1;
     ctx.beginPath();
     ctx.moveTo(pad, pad); ctx.lineTo(pad, H - pad); ctx.lineTo(W - pad, H - pad);
@@ -456,7 +484,7 @@
 
     // True function
     ctx.beginPath();
-    ctx.strokeStyle = 'rgba(34,197,94,0.4)';
+    ctx.strokeStyle = 'rgba(21,127,59,0.75)';
     ctx.lineWidth = 2;
     ctx.setLineDash([6, 4]);
     for (let px = pad; px <= W - pad; px++) {
@@ -469,7 +497,7 @@
 
     // Fitted curve
     ctx.beginPath();
-    ctx.strokeStyle = '#3b82f6';
+    ctx.strokeStyle = '#2563EB';
     ctx.lineWidth = 2.5;
     for (let px = pad; px <= W - pad; px++) {
       const x = xMin + (px - pad) / (W - 2 * pad) * (xMax - xMin);
@@ -483,9 +511,9 @@
     for (const pt of trainData) {
       ctx.beginPath();
       ctx.arc(toX(pt.x), toY(pt.y), 5, 0, Math.PI * 2);
-      ctx.fillStyle = '#3b82f6';
+      ctx.fillStyle = '#2563EB';
       ctx.fill();
-      ctx.strokeStyle = '#fff';
+      ctx.strokeStyle = '#FFFFFF';
       ctx.lineWidth = 1;
       ctx.stroke();
     }
@@ -495,20 +523,20 @@
       ctx.beginPath();
       ctx.arc(toX(pt.x), toY(pt.y), 4, 0, Math.PI * 2);
       ctx.fillStyle = 'transparent';
-      ctx.strokeStyle = '#f87171';
+      ctx.strokeStyle = '#C53030';
       ctx.lineWidth = 1.5;
       ctx.stroke();
     }
 
     // Legend
     ctx.font = '11px IBM Plex Sans, sans-serif';
-    ctx.fillStyle = '#3b82f6';
+    ctx.fillStyle = '#2563EB';
     ctx.fillText('\u25CF Train data', W - pad - 180, pad + 16);
-    ctx.fillStyle = '#f87171';
+    ctx.fillStyle = '#C53030';
     ctx.fillText('\u25CB Test data', W - pad - 180, pad + 32);
-    ctx.fillStyle = '#22c55e';
+    ctx.fillStyle = '#157F3B';
     ctx.fillText('--- True function', W - pad - 180, pad + 48);
-    ctx.fillStyle = '#3b82f6';
+    ctx.fillStyle = '#2563EB';
     ctx.fillText('\u2014 Fitted polynomial', W - pad - 180, pad + 64);
   }
 

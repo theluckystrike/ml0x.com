@@ -35,88 +35,77 @@
   ]
 }
 </script>
+<link rel="stylesheet" href="/assets/ml0x.css">
 <style>
-:root{
-  --bg:#0d1117; --panel:#161b22; --panel2:#1c2430; --line:#2b3341;
-  --txt:#e6edf3; --mut:#9aa7b4; --acc:#58a6ff; --acc2:#f778ba;
-  --grn:#3fb950; --amb:#d29922; --red:#f85149;
-}
-*{box-sizing:border-box}
-body{
-  margin:0; background:var(--bg); color:var(--txt);
-  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
-  line-height:1.6; font-size:16px;
-}
-nav{
-  display:flex; gap:20px; padding:14px 20px; border-bottom:1px solid var(--line);
-  background:var(--panel); position:sticky; top:0; z-index:5;
-}
-nav a{color:var(--acc); text-decoration:none; font-weight:600; font-size:15px}
-nav a:hover{text-decoration:underline}
-main{max-width:1040px; margin:0 auto; padding:24px 20px 60px}
-h1{font-size:28px; line-height:1.25; margin:18px 0 8px}
-h2{font-size:21px; margin:34px 0 10px; border-bottom:1px solid var(--line); padding-bottom:6px}
-p.intro{color:var(--mut); font-size:17px; max-width:74ch}
-section#tool{background:var(--panel); border:1px solid var(--line); border-radius:12px; padding:20px; margin-top:20px}
+/* tool-specific structure only; every colour is a token */
+main.wrap{padding-bottom:60px}
+h2{border-bottom:1px solid var(--line); padding-bottom:8px}
+p.intro{color:var(--ink-muted); font-size:16px; max-width:66ch}
+section#tool{background:var(--surface); border:1px solid var(--line); border-radius:var(--radius); padding:20px; margin-top:20px}
 .grid{display:grid; grid-template-columns:1fr 1fr; gap:18px}
 @media(max-width:820px){.grid{grid-template-columns:1fr}}
-label{display:block; font-weight:600; font-size:14px; margin:0 0 6px; color:var(--txt)}
-.hint{font-weight:400; color:var(--mut); font-size:12px}
-textarea{
-  width:100%; min-height:150px; background:var(--panel2); color:var(--txt);
-  border:1px solid var(--line); border-radius:8px; padding:10px; font-family:ui-monospace,Menlo,Consolas,monospace;
-  font-size:13px; resize:vertical;
-}
-.controls{display:flex; flex-wrap:wrap; gap:16px; align-items:center; margin:16px 0}
-.controls .fld{display:flex; flex-direction:column; gap:4px}
-select,input[type=number]{
-  background:var(--panel2); color:var(--txt); border:1px solid var(--line);
-  border-radius:8px; padding:8px 10px; font-size:14px; min-width:120px;
-}
-button{
-  background:var(--acc); color:#03121f; border:0; border-radius:8px; padding:10px 16px;
-  font-weight:700; font-size:14px; cursor:pointer;
-}
-button:hover{filter:brightness(1.1)}
-button.sec{background:var(--panel2); color:var(--txt); border:1px solid var(--line)}
+#tool label{font-family:var(--font-body); font-weight:600; font-size:13px; margin:0 0 6px;
+  color:var(--ink); text-transform:none; letter-spacing:0}
+.hint{font-weight:400; color:var(--ink-muted); font-size:12px}
+#scores,#labels{min-height:150px; font-family:var(--font-mono); resize:vertical}
+.controls{display:flex; flex-wrap:wrap; gap:16px; align-items:flex-end; margin:16px 0}
+.controls .fld{display:flex; flex-direction:column; gap:4px; min-width:0}
+.controls .fld select{min-width:190px}
+.controls .fld button{width:auto; min-width:120px}
+button.sec{background:var(--surface); color:var(--ink); border:1px solid var(--line-strong)}
+button.sec:hover{background:var(--surface-2); color:var(--ink); border-color:var(--ink)}
 .plots{display:grid; grid-template-columns:1fr 1fr; gap:18px; margin-top:8px}
 @media(max-width:820px){.plots{grid-template-columns:1fr}}
-.plot{background:var(--panel2); border:1px solid var(--line); border-radius:10px; padding:12px}
-.plot h3{margin:0 0 8px; font-size:15px}
-svg{width:100%; height:auto; display:block; touch-action:none}
+.plot{background:var(--surface); border:1px solid var(--line); border-radius:var(--radius); padding:12px}
+.plot h3{margin:0 0 8px; font-size:14px}
+svg{width:100%; height:auto; display:block; touch-action:none; background:var(--surface)}
 .cards{display:flex; flex-wrap:wrap; gap:12px; margin-top:16px}
-.card{background:var(--panel2); border:1px solid var(--line); border-radius:10px; padding:12px 16px; flex:1 1 130px; min-width:130px}
-.card .k{font-size:12px; color:var(--mut); text-transform:uppercase; letter-spacing:.04em}
-.card .v{font-size:24px; font-weight:800; margin-top:4px}
-.card .v.acc{color:var(--acc)}
-.card .v.pink{color:var(--acc2)}
-.card .v.grn{color:var(--grn)}
-table{width:100%; border-collapse:collapse; margin-top:14px; font-size:13px}
-th,td{border:1px solid var(--line); padding:6px 8px; text-align:right}
-th{background:var(--panel2); text-align:right}
-th:first-child,td:first-child{text-align:left}
+.cards .card{background:var(--surface-2); border:1px solid var(--line); border-radius:var(--radius-sm);
+  padding:14px 16px; flex:1 1 130px; min-width:130px; margin:0}
+.card .k{font-family:var(--font-mono); font-size:11px; color:var(--ink-muted);
+  text-transform:uppercase; letter-spacing:.06em}
+.card .v{font-family:var(--font-mono); font-size:22px; font-weight:700; margin-top:4px;
+  color:var(--ink); font-variant-numeric:tabular-nums; letter-spacing:-0.5px}
+.card .v.acc{color:var(--s1)}
+.card .v.pink{color:var(--s2)}
+.card .v.grn{color:var(--ok)}
+#metrics{width:auto; min-width:280px; margin-top:14px; font-size:13px}
+#metrics th,#metrics td{border:1px solid var(--line); padding:8px 12px; text-align:right}
+#metrics th{background:var(--surface-2); text-align:right; white-space:nowrap}
+#metrics th:first-child,#metrics td:first-child{text-align:left}
+#metrics tbody tr:hover td{background:transparent}
 .cm{display:inline-grid; grid-template-columns:auto auto; gap:4px; margin-top:8px}
-.cm div{background:var(--panel2); border:1px solid var(--line); padding:8px 14px; border-radius:6px; text-align:center; min-width:74px}
-.cm .lab{background:transparent; border:0; color:var(--mut); font-size:12px}
-.err{color:var(--red); font-weight:600; margin-top:10px; min-height:20px}
-code{background:var(--panel2); padding:1px 5px; border-radius:4px; font-size:13px}
-.prose{max-width:76ch}
-.prose h2{margin-top:30px}
-.rel a{color:var(--acc); text-decoration:none; font-weight:600}
-.rel a:hover{text-decoration:underline}
+.cm div{background:var(--surface-2); border:1px solid var(--line); padding:9px 14px;
+  border-radius:6px; text-align:center; min-width:74px; font-family:var(--font-mono); font-size:13px; color:var(--ink)}
+.cm .lab{background:transparent; border:0; color:var(--ink-muted); font-family:var(--font-body); font-size:12px}
+.err{color:var(--bad); font-weight:600; margin-top:10px; min-height:20px}
+.prose{max-width:70ch}
+.prose h2{margin-top:34px}
+.rel a{color:var(--ink); text-decoration:underline; font-weight:600}
+.rel a:hover{color:var(--ink-muted)}
 .rel li{margin:6px 0}
-footer{border-top:1px solid var(--line); margin-top:50px; padding:24px 20px; color:var(--mut); font-size:14px}
-footer a{color:var(--acc); text-decoration:none; margin-right:18px}
-.slideval{color:var(--acc); font-weight:700; font-family:ui-monospace,monospace}
-input[type=range]{width:220px; accent-color:var(--acc)}
+.slideval{color:var(--ink); font-weight:700; font-family:var(--font-mono)}
+#thr{width:220px; max-width:100%}
 </style>
 </head>
 <body>
-<nav>
-  <a href="/">Home</a>
-  <a href="/tools/">Tools</a>
-</nav>
-<main>
+<a class="skip-link" href="#main">Skip to content</a>
+<header class="site-nav">
+  <div class="site-nav__inner">
+    <div class="site-nav__left">
+      <a class="site-nav__logo" href="/">ml0x</a>
+      <nav class="site-nav__links" aria-label="Main">
+        <a href="/tools/" aria-current="page">Tools</a>
+        <a href="/calculators/">Calculators</a>
+        <a href="/guides/">Guides</a>
+        <a href="/answers/">Answers</a>
+        <a href="/research/">Research</a>
+      </nav>
+    </div>
+    <a class="nav-cta" href="https://zovo.one/pricing" target="_blank" rel="noopener">Full system, $99</a>
+  </div>
+</header>
+<main id="main" class="wrap">
 <h1>Plot ROC / PR curves and pick your best decision threshold</h1>
 <p class="intro">Paste raw model scores and their true 0/1 labels. This tool sweeps every candidate threshold, builds the full confusion matrix at each cut, draws the ROC and precision&ndash;recall curves, integrates the area under each, and highlights the operating point that maximizes <strong>F1</strong> or <strong>Youden&rsquo;s J</strong>. Everything runs locally in your browser &mdash; no data leaves the page.</p>
 
@@ -202,18 +191,42 @@ input[type=range]{width:220px; accent-color:var(--acc)}
 
 <h2 class="rel">Related Tools</h2>
 <ul class="rel">
-  <li><a href="/tools/confusion-matrix-metrics-calculator">Confusion Matrix Metrics Calculator</a></li>
-  <li><a href="/tools/f1-score-precision-recall-calculator">F1, Precision &amp; Recall Calculator</a></li>
-  <li><a href="/tools/logistic-regression-sigmoid-visualizer">Logistic Regression Sigmoid Visualizer</a></li>
+  <li><a href="/tools/confusion-matrix-calculator.html">Confusion Matrix Calculator</a></li>
+  <li><a href="/answers/ml-metrics-explained.html">ML Metrics Explained: Precision, Recall, F1</a></li>
+  <li><a href="/tools/activation-function-visualizer-relu-gelu-swish-15-more">Activation Function Visualizer</a></li>
 </ul>
 </div>
 </main>
 
-<footer>
-  <a href="/">Home</a>
-  <a href="/tools/">All Tools</a>
-  <a href="/tools/roc-pr-curve-threshold-calculator">ROC &amp; PR Calculator</a>
-  <div style="margin-top:10px">&copy; 2026 ml0x.com &middot; Built by Michael Lip</div>
+<footer class="site-footer">
+  <nav class="footer-links-seo" aria-label="ML tools and content">
+    <a href="/tools/">ML tools</a>
+    <a href="/tools/learning-rate-finder.html">Learning rate finder</a>
+    <a href="/tools/confusion-matrix-calculator.html">Confusion matrix calculator</a>
+    <a href="/tools/neural-network-playground.html">Neural network playground</a>
+    <a href="/tools/attention-mechanism-visualizer.html">Attention visualizer</a>
+    <a href="/tools/dataset-splitter.html">Dataset splitter</a>
+    <a href="/calculators/kv-cache-size-calculator.html">KV cache calculator</a>
+    <a href="/calculators/llm-memory-calculator.html">LLM memory calculator</a>
+    <a href="/guides/">Guides</a>
+    <a href="/guides/gradient-descent-explained.html">Gradient descent</a>
+    <a href="/answers/">Answers</a>
+    <a href="/answers/ml-algorithm-comparison.html">Algorithm comparison</a>
+    <a href="/research/">Research</a>
+    <a href="/research/ml-cheatsheet.html">ML cheat sheet</a>
+    <a href="/about.html">About</a>
+  </nav>
+  <div class="site-footer__inner">
+    <div class="site-footer__brand">
+      <span class="site-footer__logo">ml0x</span>
+      <span class="site-footer__meta">by <a href="https://github.com/theluckystrike" target="_blank" rel="noopener">@theluckystrike</a></span>
+    </div>
+    <div class="site-footer__links">
+      <a href="https://github.com/theluckystrike/100xagenticdev" target="_blank" rel="noopener">GitHub</a>
+      <a href="/research/">Research</a>
+      <a href="https://twitter.com/_alphashark_" target="_blank" rel="noopener">X</a>
+    </div>
+  </div>
 </footer>
 
 <script>
@@ -330,16 +343,16 @@ input[type=range]{width:220px; accent-color:var(--acc)}
     function Y(y){ return (W-PAD) - y*PW; }
     var p="";
     // axes
-    p+='<line x1="'+PAD+'" y1="'+(W-PAD)+'" x2="'+(PAD+PW)+'" y2="'+(W-PAD)+'" stroke="#2b3341"/>';
-    p+='<line x1="'+PAD+'" y1="'+(W-PAD)+'" x2="'+PAD+'" y2="'+(W-PAD-PW)+'" stroke="#2b3341"/>';
+    p+='<line x1="'+PAD+'" y1="'+(W-PAD)+'" x2="'+(PAD+PW)+'" y2="'+(W-PAD)+'" stroke="#B8B8B6"/>';
+    p+='<line x1="'+PAD+'" y1="'+(W-PAD)+'" x2="'+PAD+'" y2="'+(W-PAD-PW)+'" stroke="#B8B8B6"/>';
     // gridlines
     var g;
     for(g=0.25;g<1.0001;g+=0.25){
-      p+='<line x1="'+X(g)+'" y1="'+(W-PAD)+'" x2="'+X(g)+'" y2="'+(W-PAD-PW)+'" stroke="#1c2430"/>';
-      p+='<line x1="'+PAD+'" y1="'+Y(g)+'" x2="'+(PAD+PW)+'" y2="'+Y(g)+'" stroke="#1c2430"/>';
+      p+='<line x1="'+X(g)+'" y1="'+(W-PAD)+'" x2="'+X(g)+'" y2="'+(W-PAD-PW)+'" stroke="#E8E8E6"/>';
+      p+='<line x1="'+PAD+'" y1="'+Y(g)+'" x2="'+(PAD+PW)+'" y2="'+Y(g)+'" stroke="#E8E8E6"/>';
     }
     if(diag){
-      p+='<line x1="'+X(0)+'" y1="'+Y(0)+'" x2="'+X(1)+'" y2="'+Y(1)+'" stroke="#3a4452" stroke-dasharray="4 4"/>';
+      p+='<line x1="'+X(0)+'" y1="'+Y(0)+'" x2="'+X(1)+'" y2="'+Y(1)+'" stroke="#B8B8B6" stroke-dasharray="4 4"/>';
     }
     // curve path
     var d="", k;
@@ -355,14 +368,14 @@ input[type=range]{width:220px; accent-color:var(--acc)}
     p+='<path d="'+d+'" fill="none" stroke="'+col+'" stroke-width="2"/>';
     // marker
     if(marker){
-      p+='<circle cx="'+X(marker.x).toFixed(1)+'" cy="'+Y(marker.y).toFixed(1)+'" r="5" fill="#3fb950" stroke="#0d1117" stroke-width="1.5"/>';
+      p+='<circle cx="'+X(marker.x).toFixed(1)+'" cy="'+Y(marker.y).toFixed(1)+'" r="5" fill="#157F3B" stroke="#FFFFFF" stroke-width="1.5"/>';
     }
     // labels
-    p+='<text x="'+(PAD+PW/2)+'" y="'+(W-6)+'" fill="#9aa7b4" font-size="11" text-anchor="middle">'+xlab+'</text>';
-    p+='<text x="12" y="'+(W-PAD-PW/2)+'" fill="#9aa7b4" font-size="11" text-anchor="middle" transform="rotate(-90 12 '+(W-PAD-PW/2)+')">'+ylab+'</text>';
-    p+='<text x="'+PAD+'" y="'+(W-PAD+13)+'" fill="#9aa7b4" font-size="9">0</text>';
-    p+='<text x="'+(PAD+PW)+'" y="'+(W-PAD+13)+'" fill="#9aa7b4" font-size="9" text-anchor="end">1</text>';
-    p+='<text x="'+(PAD-5)+'" y="'+(W-PAD-PW+4)+'" fill="#9aa7b4" font-size="9" text-anchor="end">1</text>';
+    p+='<text x="'+(PAD+PW/2)+'" y="'+(W-6)+'" fill="#6a6a6a" font-size="11" text-anchor="middle">'+xlab+'</text>';
+    p+='<text x="12" y="'+(W-PAD-PW/2)+'" fill="#6a6a6a" font-size="11" text-anchor="middle" transform="rotate(-90 12 '+(W-PAD-PW/2)+')">'+ylab+'</text>';
+    p+='<text x="'+PAD+'" y="'+(W-PAD+13)+'" fill="#6a6a6a" font-size="9">0</text>';
+    p+='<text x="'+(PAD+PW)+'" y="'+(W-PAD+13)+'" fill="#6a6a6a" font-size="9" text-anchor="end">1</text>';
+    p+='<text x="'+(PAD-5)+'" y="'+(W-PAD-PW+4)+'" fill="#6a6a6a" font-size="9" text-anchor="end">1</text>';
     svgEl.innerHTML=p;
   }
 
@@ -391,8 +404,8 @@ input[type=range]{width:220px; accent-color:var(--acc)}
     // plots: mark best point
     var rocMark = best? {x:best.fpr, y:best.tpr} : null;
     var prMark  = best? {x:best.tpr, y:best.prec} : null;
-    plot($("rocSvg"), res.roc, rocMark, {col:"#58a6ff", xlab:"False Positive Rate", ylab:"True Positive Rate", diag:true});
-    plot($("prSvg"),  res.pr,  prMark,  {col:"#f778ba", xlab:"Recall", ylab:"Precision", diag:false});
+    plot($("rocSvg"), res.roc, rocMark, {col:"#2563EB", xlab:"False Positive Rate", ylab:"True Positive Rate", diag:true});
+    plot($("prSvg"),  res.pr,  prMark,  {col:"#C53030", xlab:"Recall", ylab:"Precision", diag:false});
 
     // sync slider default to best on data/opt change unless user is dragging
     if(render._syncBest && best){

@@ -6,59 +6,84 @@
 <title>ML Answers — Common Machine Learning Questions Explained | ml0x</title>
 <meta name="description" content="Get clear answers to common machine learning questions. Batch size optimization, hyperparameter tuning, algorithm comparison, metrics explained, and supervised vs unsupervised learning.">
 <link rel="canonical" href="https://ml0x.com/answers/">
-<link rel="stylesheet" href="/assets/style.css">
+<link rel="stylesheet" href="/assets/ml0x.css">
 <script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Home","item":"https://ml0x.com/"},{"@type":"ListItem","position":2,"name":"Answers","item":"https://ml0x.com/answers/"}]}</script>
 </head>
 <body>
-<header>
-<div class="container">
-<a href="/" class="logo">ml0x</a>
-<nav>
-<a href="/">Home</a>
-<a href="/answers/">Answers</a>
-<a href="/guides/">Guides</a>
-<a href="/tools/">Tools</a>
-<a href="/blog/">Blog</a>
-<a href="/about.html">About</a>
-</nav>
-</div>
+<a class="skip-link" href="#main">Skip to content</a>
+<header class="site-nav">
+  <div class="site-nav__inner">
+    <div class="site-nav__left">
+      <a class="site-nav__logo" href="/">ml0x</a>
+      <nav class="site-nav__links" aria-label="Main">
+        <a href="/tools/">Tools</a>
+        <a href="/calculators/">Calculators</a>
+        <a href="/guides/">Guides</a>
+        <a href="/answers/" aria-current="page">Answers</a>
+        <a href="/research/">Research</a>
+      </nav>
+    </div>
+    <a class="nav-cta" href="https://zovo.one/pricing" target="_blank" rel="noopener">Full system, $99</a>
+  </div>
 </header>
-<main class="container">
+<main id="main" class="container">
 <div class="breadcrumb"><a href="/">Home</a> <span>/</span> Answers</div>
 <section class="hero">
 <h1>ML <span>Answers</span></h1>
 <p>Clear, interactive answers to the most common machine learning questions. Each answer includes hands-on tools to deepen your understanding.</p>
 </section>
-<div class="card-grid" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:1.5rem;margin:2rem 0;">
-<a href="/answers/batch-size-optimizer.html" class="tool-card" style="display:block;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:1.5rem;text-decoration:none;transition:border-color 0.2s;">
-<h3 style="color:var(--text);margin-bottom:0.5rem;font-size:1.1rem;">Batch Size Optimizer</h3>
-<p style="color:var(--text-muted);font-size:0.9rem;line-height:1.5;">Calculate maximum batch size from GPU memory and model parameters. Visualize memory vs convergence tradeoffs for fp32, fp16, and bf16 precision.</p>
+<div class="related-grid">
+<a href="/answers/batch-size-optimizer.html" class="related-card">
+<h3 class="related-title" style="margin:0 0 6px;">Batch Size Optimizer</h3>
+<p class="related-desc" style="margin:0;">Calculate maximum batch size from GPU memory and model parameters. Visualize memory vs convergence tradeoffs for fp32, fp16, and bf16 precision.</p>
 </a>
-<a href="/answers/hyperparameter-tuning-guide.html" class="tool-card" style="display:block;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:1.5rem;text-decoration:none;transition:border-color 0.2s;">
-<h3 style="color:var(--text);margin-bottom:0.5rem;font-size:1.1rem;">Hyperparameter Tuning Guide</h3>
-<p style="color:var(--text-muted);font-size:0.9rem;line-height:1.5;">Compare grid search, random search, and Bayesian optimization. Interactive tuner visualizes search patterns and convergence across parameter spaces.</p>
+<a href="/answers/hyperparameter-tuning-guide.html" class="related-card">
+<h3 class="related-title" style="margin:0 0 6px;">Hyperparameter Tuning Guide</h3>
+<p class="related-desc" style="margin:0;">Compare grid search, random search, and Bayesian optimization. Interactive tuner visualizes search patterns and convergence across parameter spaces.</p>
 </a>
-<a href="/answers/ml-metrics-explained.html" class="tool-card" style="display:block;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:1.5rem;text-decoration:none;transition:border-color 0.2s;">
-<h3 style="color:var(--text);margin-bottom:0.5rem;font-size:1.1rem;">ML Metrics Explained</h3>
-<p style="color:var(--text-muted);font-size:0.9rem;line-height:1.5;">Choose the right evaluation metric for your task. Interactive wizard for classification, multi-class, regression, and ranking with formulas and mini-calculators.</p>
+<a href="/answers/ml-metrics-explained.html" class="related-card">
+<h3 class="related-title" style="margin:0 0 6px;">ML Metrics Explained</h3>
+<p class="related-desc" style="margin:0;">Choose the right evaluation metric for your task. Interactive wizard for classification, multi-class, regression, and ranking with formulas and mini-calculators.</p>
 </a>
-<a href="/answers/supervised-vs-unsupervised.html" class="tool-card" style="display:block;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:1.5rem;text-decoration:none;transition:border-color 0.2s;">
-<h3 style="color:var(--text);margin-bottom:0.5rem;font-size:1.1rem;">Supervised vs Unsupervised Learning</h3>
-<p style="color:var(--text-muted);font-size:0.9rem;line-height:1.5;">Interactive drag-and-drop classifier. Sort algorithms, compare approaches, and use the decision flowchart to pick the right learning paradigm.</p>
+<a href="/answers/supervised-vs-unsupervised.html" class="related-card">
+<h3 class="related-title" style="margin:0 0 6px;">Supervised vs Unsupervised Learning</h3>
+<p class="related-desc" style="margin:0;">Interactive drag-and-drop classifier. Sort algorithms, compare approaches, and use the decision flowchart to pick the right learning paradigm.</p>
 </a>
-<a href="/answers/ml-algorithm-comparison.html" class="tool-card" style="display:block;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:1.5rem;text-decoration:none;transition:border-color 0.2s;">
-<h3 style="color:var(--text);margin-bottom:0.5rem;font-size:1.1rem;">ML Algorithm Comparison</h3>
-<p style="color:var(--text-muted);font-size:0.9rem;line-height:1.5;">Answer questions about your data type, task, and dataset size to get personalized algorithm recommendations with pros, cons, and comparison tables.</p>
+<a href="/answers/ml-algorithm-comparison.html" class="related-card">
+<h3 class="related-title" style="margin:0 0 6px;">ML Algorithm Comparison</h3>
+<p class="related-desc" style="margin:0;">Answer questions about your data type, task, and dataset size to get personalized algorithm recommendations with pros, cons, and comparison tables.</p>
 </a>
 </div>
 </main>
 <footer class="site-footer">
-<div class="footer-inner">
-<div class="footer-brand">Zovo Tools</div>
-<div class="footer-tagline">Free developer tools by a solo dev. No tracking.</div>
-<div class="footer-copy">&copy; 2026 <a href="https://zovo.one">Zovo</a></div>
-</div>
-</footer>
+  <nav class="footer-links-seo" aria-label="ML tools and content">
+    <a href="/tools/">ML tools</a>
+    <a href="/tools/learning-rate-finder.html">Learning rate finder</a>
+    <a href="/tools/confusion-matrix-calculator.html">Confusion matrix calculator</a>
+    <a href="/tools/neural-network-playground.html">Neural network playground</a>
+    <a href="/tools/attention-mechanism-visualizer.html">Attention visualizer</a>
+    <a href="/tools/dataset-splitter.html">Dataset splitter</a>
+    <a href="/calculators/kv-cache-size-calculator.html">KV cache calculator</a>
+    <a href="/calculators/llm-memory-calculator.html">LLM memory calculator</a>
+    <a href="/guides/">Guides</a>
+    <a href="/guides/gradient-descent-explained.html">Gradient descent</a>
+    <a href="/answers/">Answers</a>
+    <a href="/answers/ml-algorithm-comparison.html">Algorithm comparison</a>
+    <a href="/research/">Research</a>
+    <a href="/research/ml-cheatsheet.html">ML cheat sheet</a>
+    <a href="/about.html">About</a>
+  </nav>
+  <div class="site-footer__inner">
+    <div class="site-footer__brand">
+      <span class="site-footer__logo">ml0x</span>
+      <span class="site-footer__meta">by <a href="https://github.com/theluckystrike" target="_blank" rel="noopener">@theluckystrike</a></span>
+    </div>
+    <div class="site-footer__links">
+      <a href="https://github.com/theluckystrike/100xagenticdev" target="_blank" rel="noopener">GitHub</a>
+      <a href="/research/">Research</a>
+      <a href="https://twitter.com/_alphashark_" target="_blank" rel="noopener">X</a>
+    </div>
+  </div>
 
 <nav class="zovo-network" aria-label="Zovo Tools Network">
     <div class="zovo-network-inner">
@@ -101,5 +126,6 @@
     <a href="https://zovo.one" rel="nofollow">Zovo — AI Dev Tools</a>
   </div>
 </div>
+</footer>
 </body>
 </html>

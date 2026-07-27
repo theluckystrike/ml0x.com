@@ -20,7 +20,7 @@
 <meta name="twitter:description" content="Interactive K-Fold CV simulator. Visualize folds, run synthetic CV, compare K values, and toggle stratified mode.">
 <meta name="author" content="Michael Lip">
 <meta name="robots" content="index, follow">
-<link rel="stylesheet" href="/assets/style.css">
+<link rel="stylesheet" href="/assets/ml0x.css">
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
@@ -61,24 +61,24 @@
 </head>
 <body>
 
-<header>
-  <div class="container header-inner">
-    <a href="/" class="logo">ml0x</a>
-    <nav>
-      <a href="/">Home</a>
-      <a href="/research/">Research</a>
-      <a href="/tools/">Tools</a>
-      <a href="/guides/">Guides</a>
-      <a href="/answers/">Answers</a>
-      <div class="nav-right">
-        <a href="https://zovo.one/pricing?utm_source=ml0x.com&utm_medium=satellite&utm_campaign=nav-link" class="nav-pro" target="_blank">Go Pro &#10022;</a>
-        <a href="https://zovo.one/tools" class="nav-zovo">Zovo Tools</a>
-      </div>
-    </nav>
+<a class="skip-link" href="#main">Skip to content</a>
+<header class="site-nav">
+  <div class="site-nav__inner">
+    <div class="site-nav__left">
+      <a class="site-nav__logo" href="/">ml0x</a>
+      <nav class="site-nav__links" aria-label="Main">
+        <a href="/tools/">Tools</a>
+        <a href="/calculators/">Calculators</a>
+        <a href="/guides/" aria-current="page">Guides</a>
+        <a href="/answers/">Answers</a>
+        <a href="/research/">Research</a>
+      </nav>
+    </div>
+    <a class="nav-cta" href="https://zovo.one/pricing" target="_blank" rel="noopener">Full system, $99</a>
   </div>
 </header>
 
-<main class="container">
+<main id="main" class="container">
   <div class="breadcrumb">
     <a href="/">Home</a> <span>&rsaquo;</span> <a href="/guides/">Guides</a> <span>&rsaquo;</span> K-Fold Cross Validation Explained
   </div>
@@ -138,7 +138,7 @@
   <div id="foldViz" style="display:none;">
     <div class="tool-card">
       <h3>Fold Assignments</h3>
-      <p style="color:#aaa;font-size:13px;margin-bottom:12px;">Each row is one data sample. Colors indicate fold assignment. The highlighted fold is the validation set for that round.</p>
+      <p class="hint" style="margin-bottom:12px;">Each row is one data sample. Colors indicate fold assignment. The highlighted fold is the validation set for that round.</p>
       <div class="viz-container" style="overflow-x:auto;">
         <canvas id="foldCanvas" width="700" height="300"></canvas>
       </div>
@@ -162,7 +162,7 @@
   <div id="compareViz" style="display:none;">
     <div class="tool-card">
       <h3>K Value Comparison</h3>
-      <p style="color:#aaa;font-size:13px;margin-bottom:12px;">Mean accuracy &plusmn; std for K = 2, 3, 5, 7, 10, 15, 20. Higher K reduces bias but increases variance and computation cost.</p>
+      <p class="hint" style="margin-bottom:12px;">Mean accuracy &plusmn; std for K = 2, 3, 5, 7, 10, 15, 20. Higher K reduces bias but increases variance and computation cost.</p>
       <div class="viz-container">
         <canvas id="compareCanvas" width="700" height="300"></canvas>
       </div>
@@ -272,13 +272,34 @@
 </main>
 
 <footer class="site-footer">
-    <div class="footer-inner">
-        <div class="footer-brand">Zovo Tools</div>
-        <div class="footer-tagline">Free developer tools by a solo dev. No tracking.</div>
-        <a href="https://zovo.one/pricing?utm_source=ml0x.com&utm_medium=satellite&utm_campaign=footer-link" class="footer-cta">Zovo Lifetime — $99 once, free forever &rarr;</a>
-        <div class="footer-copy">&copy; 2026 <a href="https://zovo.one">Zovo</a> &middot; 47/500 founding spots</div>
+  <nav class="footer-links-seo" aria-label="ML tools and content">
+    <a href="/tools/">ML tools</a>
+    <a href="/tools/learning-rate-finder.html">Learning rate finder</a>
+    <a href="/tools/confusion-matrix-calculator.html">Confusion matrix calculator</a>
+    <a href="/tools/neural-network-playground.html">Neural network playground</a>
+    <a href="/tools/attention-mechanism-visualizer.html">Attention visualizer</a>
+    <a href="/tools/dataset-splitter.html">Dataset splitter</a>
+    <a href="/calculators/kv-cache-size-calculator.html">KV cache calculator</a>
+    <a href="/calculators/llm-memory-calculator.html">LLM memory calculator</a>
+    <a href="/guides/">Guides</a>
+    <a href="/guides/gradient-descent-explained.html">Gradient descent</a>
+    <a href="/answers/">Answers</a>
+    <a href="/answers/ml-algorithm-comparison.html">Algorithm comparison</a>
+    <a href="/research/">Research</a>
+    <a href="/research/ml-cheatsheet.html">ML cheat sheet</a>
+    <a href="/about.html">About</a>
+  </nav>
+  <div class="site-footer__inner">
+    <div class="site-footer__brand">
+      <span class="site-footer__logo">ml0x</span>
+      <span class="site-footer__meta">by <a href="https://github.com/theluckystrike" target="_blank" rel="noopener">@theluckystrike</a></span>
     </div>
-</footer>
+    <div class="site-footer__links">
+      <a href="https://github.com/theluckystrike/100xagenticdev" target="_blank" rel="noopener">GitHub</a>
+      <a href="/research/">Research</a>
+      <a href="https://twitter.com/_alphashark_" target="_blank" rel="noopener">X</a>
+    </div>
+  </div>
 
 <nav class="zovo-network" aria-label="Zovo Tools Network">
     <div class="zovo-network-inner">
@@ -321,10 +342,11 @@
     <a href="https://zovo.one" rel="nofollow">Zovo — AI Dev Tools</a>
   </div>
 </div>
+</footer>
 
 <script>
 (function() {
-  var foldColors = ['#3b82f6','#22c55e','#f59e0b','#ef4444','#a78bfa','#ec4899','#14b8a6','#f97316','#6366f1','#84cc16','#06b6d4','#e879f9','#facc15','#fb7185','#34d399','#818cf8','#fbbf24','#38bdf8','#c084fc','#4ade80'];
+  var foldColors = ['#2563EB','#157F3B','#B45309','#C53030','#7C3AED','#0E7490','#BE185D','#4D7C0F','#1D4ED8','#047857','#92400E','#9F1239','#6D28D9','#155E75','#A21CAF','#3F6212','#1E40AF','#065F46','#78350F','#831843'];
 
   function simulateCV(K, N, balance, stratified) {
     var data = [];
@@ -370,7 +392,7 @@
     var ctx = canvas.getContext('2d');
     var W = canvas.width, H = canvas.height;
     ctx.clearRect(0, 0, W, H);
-    ctx.fillStyle = '#141414';
+    ctx.fillStyle = '#FFFFFF';
     ctx.fillRect(0, 0, W, H);
 
     var N = result.N, K = result.K;
@@ -379,25 +401,25 @@
     var ox = 80, oy = 30;
 
     ctx.font = '11px IBM Plex Sans, sans-serif';
-    ctx.fillStyle = '#aaa';
+    ctx.fillStyle = '#6a6a6a';
     ctx.fillText('Samples \u2192', ox + (N * barW) / 2 - 30, 18);
 
     for (var f = 0; f < K; f++) {
-      ctx.fillStyle = '#888';
+      ctx.fillStyle = '#6a6a6a';
       ctx.textAlign = 'right';
       ctx.fillText('Fold ' + (f + 1), ox - 8, oy + f * (barH + 4) + barH / 2 + 4);
 
       for (var i = 0; i < N; i++) {
         var isVal = result.folds[i] === f;
         var color = foldColors[result.folds[i] % foldColors.length];
-        ctx.fillStyle = isVal ? color : '#2a2a2a';
+        ctx.fillStyle = isVal ? color : '#767676';
         ctx.globalAlpha = isVal ? 1 : 0.3;
         ctx.fillRect(ox + i * barW, oy + f * (barH + 4), Math.max(1, barW - 1), barH);
       }
       ctx.globalAlpha = 1;
 
       // Score
-      ctx.fillStyle = '#e0e0e0';
+      ctx.fillStyle = '#1A1A1A';
       ctx.textAlign = 'left';
       ctx.fillText((result.scores[f] * 100).toFixed(1) + '%', ox + N * barW + 8, oy + f * (barH + 4) + barH / 2 + 4);
     }
@@ -406,13 +428,13 @@
     // Legend
     var lx = ox;
     var ly = oy + K * (barH + 4) + 16;
-    ctx.fillStyle = '#3b82f6';
+    ctx.fillStyle = '#2563EB';
     ctx.fillRect(lx, ly, 12, 12);
-    ctx.fillStyle = '#aaa';
+    ctx.fillStyle = '#6a6a6a';
     ctx.fillText('= Validation fold', lx + 16, ly + 10);
-    ctx.fillStyle = '#2a2a2a';
+    ctx.fillStyle = '#767676';
     ctx.fillRect(lx + 140, ly, 12, 12);
-    ctx.fillStyle = '#aaa';
+    ctx.fillStyle = '#6a6a6a';
     ctx.fillText('= Training fold', lx + 156, ly + 10);
   }
 
@@ -421,7 +443,7 @@
     var ctx = canvas.getContext('2d');
     var W = canvas.width, H = canvas.height;
     ctx.clearRect(0, 0, W, H);
-    ctx.fillStyle = '#141414';
+    ctx.fillStyle = '#FFFFFF';
     ctx.fillRect(0, 0, W, H);
 
     var scores = result.scores, K = result.K;
@@ -435,7 +457,7 @@
     var base = Math.max(0, minS - 0.05);
 
     // Axes
-    ctx.strokeStyle = '#333';
+    ctx.strokeStyle = '#B8B8B6';
     ctx.lineWidth = 1;
     ctx.beginPath();
     ctx.moveTo(pad, 20);
@@ -445,7 +467,7 @@
 
     // Mean line
     var meanY = H - pad - ((mean - base) / range) * (H - pad - 20);
-    ctx.strokeStyle = '#3b82f6';
+    ctx.strokeStyle = '#2563EB';
     ctx.lineWidth = 1;
     ctx.setLineDash([4, 4]);
     ctx.beginPath();
@@ -453,14 +475,14 @@
     ctx.lineTo(W - 20, meanY);
     ctx.stroke();
     ctx.setLineDash([]);
-    ctx.fillStyle = '#3b82f6';
+    ctx.fillStyle = '#2563EB';
     ctx.font = '10px IBM Plex Sans, sans-serif';
     ctx.fillText('Mean: ' + (mean * 100).toFixed(1) + '%', W - 120, meanY - 4);
 
     // Std band
     var stdTop = H - pad - ((mean + std - base) / range) * (H - pad - 20);
     var stdBot = H - pad - ((mean - std - base) / range) * (H - pad - 20);
-    ctx.fillStyle = 'rgba(59,130,246,0.08)';
+    ctx.fillStyle = 'rgba(37,99,235,0.10)';
     ctx.fillRect(pad, stdTop, W - pad - 20, stdBot - stdTop);
 
     // Bars
@@ -475,18 +497,18 @@
       ctx.fillRect(x, y, bw, barH2);
       ctx.globalAlpha = 1;
 
-      ctx.fillStyle = '#e0e0e0';
+      ctx.fillStyle = '#1A1A1A';
       ctx.font = '10px IBM Plex Mono, monospace';
       ctx.textAlign = 'center';
       ctx.fillText((scores[i] * 100).toFixed(1), x + bw / 2, y - 4);
-      ctx.fillStyle = '#888';
+      ctx.fillStyle = '#6a6a6a';
       ctx.font = '10px IBM Plex Sans, sans-serif';
       ctx.fillText('F' + (i + 1), x + bw / 2, H - pad + 14);
     }
     ctx.textAlign = 'left';
 
     // Y-axis labels
-    ctx.fillStyle = '#666';
+    ctx.fillStyle = '#6a6a6a';
     ctx.font = '10px IBM Plex Mono, monospace';
     ctx.fillText((base * 100).toFixed(0) + '%', 4, H - pad + 4);
     ctx.fillText(((base + range) * 100).toFixed(0) + '%', 4, 28);
@@ -497,7 +519,7 @@
     var ctx = canvas.getContext('2d');
     var W = canvas.width, H = canvas.height;
     ctx.clearRect(0, 0, W, H);
-    ctx.fillStyle = '#141414';
+    ctx.fillStyle = '#FFFFFF';
     ctx.fillRect(0, 0, W, H);
 
     var pad = 60;
@@ -519,7 +541,7 @@
     var range = allMax - allMin;
 
     // Axes
-    ctx.strokeStyle = '#333';
+    ctx.strokeStyle = '#B8B8B6';
     ctx.lineWidth = 1;
     ctx.beginPath();
     ctx.moveTo(pad, 20);
@@ -528,7 +550,7 @@
     ctx.stroke();
 
     ctx.font = '11px IBM Plex Sans, sans-serif';
-    ctx.fillStyle = '#aaa';
+    ctx.fillStyle = '#6a6a6a';
     ctx.textAlign = 'center';
     ctx.fillText('K Value', (W + pad) / 2, H - 10);
     ctx.save();
@@ -547,7 +569,7 @@
       var yBot = H - pad - ((means[i] - stds[i] - allMin) / range) * (H - pad - 20);
 
       // Error bar
-      ctx.strokeStyle = '#555';
+      ctx.strokeStyle = '#6a6a6a';
       ctx.lineWidth = 1;
       ctx.beginPath();
       ctx.moveTo(x, yTop);
@@ -561,22 +583,22 @@
       // Point
       ctx.beginPath();
       ctx.arc(x, y, 5, 0, Math.PI * 2);
-      ctx.fillStyle = '#3b82f6';
+      ctx.fillStyle = '#2563EB';
       ctx.fill();
 
       // Label
-      ctx.fillStyle = '#e0e0e0';
+      ctx.fillStyle = '#1A1A1A';
       ctx.font = '10px IBM Plex Mono, monospace';
       ctx.textAlign = 'center';
       ctx.fillText((means[i] * 100).toFixed(1) + '%', x, y - 12);
-      ctx.fillStyle = '#aaa';
+      ctx.fillStyle = '#6a6a6a';
       ctx.font = '11px IBM Plex Sans, sans-serif';
       ctx.fillText('K=' + ks[i], x, H - pad + 16);
     }
 
     // Connect with line
     ctx.beginPath();
-    ctx.strokeStyle = '#3b82f6';
+    ctx.strokeStyle = '#2563EB';
     ctx.lineWidth = 2;
     for (var i = 0; i < means.length; i++) {
       var x = pad + i * spacing;

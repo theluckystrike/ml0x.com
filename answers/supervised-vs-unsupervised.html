@@ -20,7 +20,7 @@
 <meta name="twitter:description" content="Drag-and-drop algorithms into supervised or unsupervised bins, compare approaches, and use a decision flowchart to pick the right ML paradigm.">
 <meta name="author" content="Michael Lip">
 <meta name="robots" content="index, follow">
-<link rel="stylesheet" href="/assets/style.css">
+<link rel="stylesheet" href="/assets/ml0x.css">
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
@@ -61,24 +61,24 @@
 </head>
 <body>
 
-<header>
-  <div class="container header-inner">
-    <a href="/" class="logo">ml0x</a>
-    <nav>
-      <a href="/">Home</a>
-      <a href="/research/">Research</a>
-      <a href="/tools/">Tools</a>
-      <a href="/guides/">Guides</a>
-      <a href="/answers/">Answers</a>
-      <div class="nav-right">
-        <a href="https://zovo.one/pricing?utm_source=ml0x.com&utm_medium=satellite&utm_campaign=nav-link" class="nav-pro" target="_blank">Go Pro &#10022;</a>
-        <a href="https://zovo.one/tools" class="nav-zovo">Zovo Tools</a>
-      </div>
-    </nav>
+<a class="skip-link" href="#main">Skip to content</a>
+<header class="site-nav">
+  <div class="site-nav__inner">
+    <div class="site-nav__left">
+      <a class="site-nav__logo" href="/">ml0x</a>
+      <nav class="site-nav__links" aria-label="Main">
+        <a href="/tools/">Tools</a>
+        <a href="/calculators/">Calculators</a>
+        <a href="/guides/">Guides</a>
+        <a href="/answers/" aria-current="page">Answers</a>
+        <a href="/research/">Research</a>
+      </nav>
+    </div>
+    <a class="nav-cta" href="https://zovo.one/pricing" target="_blank" rel="noopener">Full system, $99</a>
   </div>
 </header>
 
-<main class="container">
+<main id="main" class="container">
   <div class="breadcrumb">
     <a href="/">Home</a> <span>&rsaquo;</span> <a href="/answers/">Answers</a> <span>&rsaquo;</span> Supervised vs Unsupervised Learning
   </div>
@@ -90,17 +90,17 @@
 
   <div class="tool-card">
     <h3>Algorithm Sorting Challenge</h3>
-    <p style="color:#aaa;margin-bottom:12px;">Drag each algorithm card into the correct bin. Get instant feedback on each placement.</p>
+    <p style="color:#6a6a6a;margin-bottom:12px;">Drag each algorithm card into the correct bin. Get instant feedback on each placement.</p>
     <div id="sortGame" style="margin-bottom:16px;">
-      <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px;min-height:48px;padding:12px;border:1px dashed #333;border-radius:8px;" id="cardPool"></div>
+      <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px;min-height:48px;padding:12px;border:1px dashed #D8D8D6;border-radius:8px;" id="cardPool"></div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
         <div>
-          <div style="text-align:center;font-weight:600;color:#3b82f6;margin-bottom:8px;">Supervised</div>
-          <div id="binSupervised" style="min-height:120px;padding:12px;border:2px dashed #3b82f6;border-radius:8px;display:flex;flex-wrap:wrap;gap:8px;align-content:flex-start;transition:background 0.2s;"></div>
+          <div style="text-align:center;font-weight:600;color:#2563EB;margin-bottom:8px;">Supervised</div>
+          <div id="binSupervised" style="min-height:120px;padding:12px;border:2px dashed #2563EB;border-radius:8px;display:flex;flex-wrap:wrap;gap:8px;align-content:flex-start;transition:background 0.2s;"></div>
         </div>
         <div>
-          <div style="text-align:center;font-weight:600;color:#a78bfa;margin-bottom:8px;">Unsupervised</div>
-          <div id="binUnsupervised" style="min-height:120px;padding:12px;border:2px dashed #a78bfa;border-radius:8px;display:flex;flex-wrap:wrap;gap:8px;align-content:flex-start;transition:background 0.2s;"></div>
+          <div style="text-align:center;font-weight:600;color:#7C3AED;margin-bottom:8px;">Unsupervised</div>
+          <div id="binUnsupervised" style="min-height:120px;padding:12px;border:2px dashed #7C3AED;border-radius:8px;display:flex;flex-wrap:wrap;gap:8px;align-content:flex-start;transition:background 0.2s;"></div>
         </div>
       </div>
     </div>
@@ -116,49 +116,49 @@
   <div class="tool-card">
     <h3>Comparison Table</h3>
     <div style="overflow-x:auto;">
-      <table style="width:100%;border-collapse:collapse;font-size:14px;">
+      <table class="data-table">
         <thead>
-          <tr style="border-bottom:2px solid #333;">
-            <th style="text-align:left;padding:10px;color:#aaa;">Aspect</th>
-            <th style="text-align:left;padding:10px;color:#3b82f6;">Supervised</th>
-            <th style="text-align:left;padding:10px;color:#a78bfa;">Unsupervised</th>
+          <tr>
+            <th>Aspect</th>
+            <th style="color:#2563EB;">Supervised</th>
+            <th style="color:#7C3AED;">Unsupervised</th>
           </tr>
         </thead>
         <tbody id="compTable">
-          <tr style="border-bottom:1px solid #222;">
-            <td style="padding:10px;color:#ccc;font-weight:600;">Training Data</td>
-            <td style="padding:10px;color:#ddd;">Labeled (input-output pairs)</td>
-            <td style="padding:10px;color:#ddd;">Unlabeled (inputs only)</td>
-          </tr>
-          <tr style="border-bottom:1px solid #222;">
-            <td style="padding:10px;color:#ccc;font-weight:600;">Goal</td>
-            <td style="padding:10px;color:#ddd;">Predict outputs for new inputs</td>
-            <td style="padding:10px;color:#ddd;">Discover hidden patterns / structure</td>
-          </tr>
-          <tr style="border-bottom:1px solid #222;">
-            <td style="padding:10px;color:#ccc;font-weight:600;">Tasks</td>
-            <td style="padding:10px;color:#ddd;">Classification, Regression</td>
-            <td style="padding:10px;color:#ddd;">Clustering, Dimensionality Reduction, Anomaly Detection</td>
-          </tr>
-          <tr style="border-bottom:1px solid #222;">
-            <td style="padding:10px;color:#ccc;font-weight:600;">Evaluation</td>
-            <td style="padding:10px;color:#ddd;">Accuracy, F1, MSE, R&sup2;</td>
-            <td style="padding:10px;color:#ddd;">Silhouette Score, Elbow Method, Reconstruction Error</td>
-          </tr>
-          <tr style="border-bottom:1px solid #222;">
-            <td style="padding:10px;color:#ccc;font-weight:600;">Data Cost</td>
-            <td style="padding:10px;color:#ddd;">High (requires labeling)</td>
-            <td style="padding:10px;color:#ddd;">Low (raw data sufficient)</td>
-          </tr>
-          <tr style="border-bottom:1px solid #222;">
-            <td style="padding:10px;color:#ccc;font-weight:600;">Complexity</td>
-            <td style="padding:10px;color:#ddd;">Easier to evaluate and tune</td>
-            <td style="padding:10px;color:#ddd;">Harder to validate results</td>
+          <tr>
+            <td style="color:#1A1A1A;font-weight:600;">Training Data</td>
+            <td>Labeled (input-output pairs)</td>
+            <td>Unlabeled (inputs only)</td>
           </tr>
           <tr>
-            <td style="padding:10px;color:#ccc;font-weight:600;">Example</td>
-            <td style="padding:10px;color:#ddd;">Spam detection, price prediction</td>
-            <td style="padding:10px;color:#ddd;">Customer segmentation, topic modeling</td>
+            <td style="color:#1A1A1A;font-weight:600;">Goal</td>
+            <td>Predict outputs for new inputs</td>
+            <td>Discover hidden patterns / structure</td>
+          </tr>
+          <tr>
+            <td style="color:#1A1A1A;font-weight:600;">Tasks</td>
+            <td>Classification, Regression</td>
+            <td>Clustering, Dimensionality Reduction, Anomaly Detection</td>
+          </tr>
+          <tr>
+            <td style="color:#1A1A1A;font-weight:600;">Evaluation</td>
+            <td>Accuracy, F1, MSE, R&sup2;</td>
+            <td>Silhouette Score, Elbow Method, Reconstruction Error</td>
+          </tr>
+          <tr>
+            <td style="color:#1A1A1A;font-weight:600;">Data Cost</td>
+            <td>High (requires labeling)</td>
+            <td>Low (raw data sufficient)</td>
+          </tr>
+          <tr>
+            <td style="color:#1A1A1A;font-weight:600;">Complexity</td>
+            <td>Easier to evaluate and tune</td>
+            <td>Harder to validate results</td>
+          </tr>
+          <tr>
+            <td style="color:#1A1A1A;font-weight:600;">Example</td>
+            <td>Spam detection, price prediction</td>
+            <td>Customer segmentation, topic modeling</td>
           </tr>
         </tbody>
       </table>
@@ -167,9 +167,9 @@
 
   <div class="tool-card">
     <h3>Decision Flowchart</h3>
-    <p style="color:#aaa;margin-bottom:12px;">Answer a few questions to determine which learning paradigm fits your problem.</p>
+    <p style="color:#6a6a6a;margin-bottom:12px;">Answer a few questions to determine which learning paradigm fits your problem.</p>
     <div id="flowchart">
-      <div id="flowQuestion" style="font-size:16px;font-weight:600;color:#e0e0e0;margin-bottom:16px;"></div>
+      <div id="flowQuestion" style="font-size:16px;font-weight:600;color:#1A1A1A;margin-bottom:16px;"></div>
       <div id="flowOptions" style="display:flex;gap:12px;flex-wrap:wrap;"></div>
       <div id="flowResult" style="display:none;padding:16px;border-radius:8px;margin-top:12px;"></div>
     </div>
@@ -272,13 +272,34 @@
 </main>
 
 <footer class="site-footer">
-    <div class="footer-inner">
-        <div class="footer-brand">Zovo Tools</div>
-        <div class="footer-tagline">Free developer tools by a solo dev. No tracking.</div>
-        <a href="https://zovo.one/pricing?utm_source=ml0x.com&utm_medium=satellite&utm_campaign=footer-link" class="footer-cta">Zovo Lifetime — $99 once, free forever &rarr;</a>
-        <div class="footer-copy">&copy; 2026 <a href="https://zovo.one">Zovo</a> &middot; 47/500 founding spots</div>
+  <nav class="footer-links-seo" aria-label="ML tools and content">
+    <a href="/tools/">ML tools</a>
+    <a href="/tools/learning-rate-finder.html">Learning rate finder</a>
+    <a href="/tools/confusion-matrix-calculator.html">Confusion matrix calculator</a>
+    <a href="/tools/neural-network-playground.html">Neural network playground</a>
+    <a href="/tools/attention-mechanism-visualizer.html">Attention visualizer</a>
+    <a href="/tools/dataset-splitter.html">Dataset splitter</a>
+    <a href="/calculators/kv-cache-size-calculator.html">KV cache calculator</a>
+    <a href="/calculators/llm-memory-calculator.html">LLM memory calculator</a>
+    <a href="/guides/">Guides</a>
+    <a href="/guides/gradient-descent-explained.html">Gradient descent</a>
+    <a href="/answers/">Answers</a>
+    <a href="/answers/ml-algorithm-comparison.html">Algorithm comparison</a>
+    <a href="/research/">Research</a>
+    <a href="/research/ml-cheatsheet.html">ML cheat sheet</a>
+    <a href="/about.html">About</a>
+  </nav>
+  <div class="site-footer__inner">
+    <div class="site-footer__brand">
+      <span class="site-footer__logo">ml0x</span>
+      <span class="site-footer__meta">by <a href="https://github.com/theluckystrike" target="_blank" rel="noopener">@theluckystrike</a></span>
     </div>
-</footer>
+    <div class="site-footer__links">
+      <a href="https://github.com/theluckystrike/100xagenticdev" target="_blank" rel="noopener">GitHub</a>
+      <a href="/research/">Research</a>
+      <a href="https://twitter.com/_alphashark_" target="_blank" rel="noopener">X</a>
+    </div>
+  </div>
 
 <nav class="zovo-network" aria-label="Zovo Tools Network">
     <div class="zovo-network-inner">
@@ -321,7 +342,7 @@
     <a href="https://zovo.one" rel="nofollow">Zovo — AI Dev Tools</a>
   </div>
 </div>
-
+</footer>
 <script>
 (function() {
   var algorithms = [
@@ -359,7 +380,7 @@
     card.setAttribute('data-type', algo.type);
     card.setAttribute('title', algo.hint);
     card.textContent = algo.name;
-    card.style.cssText = 'padding:8px 14px;background:#1e1e1e;border:1px solid #333;border-radius:6px;cursor:grab;font-size:13px;color:#e0e0e0;user-select:none;transition:all 0.2s;white-space:nowrap;';
+    card.style.cssText = 'padding:8px 14px;background:#F2F2F0;border:1px solid #D8D8D6;border-radius:6px;cursor:grab;font-size:13px;color:#1A1A1A;user-select:none;transition:all 0.2s;white-space:nowrap;';
     card.addEventListener('dragstart', function(e) {
       draggedEl = card;
       card.style.opacity = '0.5';
@@ -376,7 +397,7 @@
     bin.addEventListener('dragover', function(e) {
       e.preventDefault();
       e.dataTransfer.dropEffect = 'move';
-      bin.style.background = 'rgba(59,130,246,0.08)';
+      bin.style.background = 'rgba(37,99,235,0.08)';
     });
     bin.addEventListener('dragleave', function() {
       bin.style.background = '';
@@ -389,11 +410,11 @@
       total++;
       if (correct) {
         score++;
-        draggedEl.style.borderColor = '#22c55e';
-        draggedEl.style.background = 'rgba(34,197,94,0.1)';
+        draggedEl.style.borderColor = '#157F3B';
+        draggedEl.style.background = 'rgba(21,127,59,0.10)';
       } else {
-        draggedEl.style.borderColor = '#ef4444';
-        draggedEl.style.background = 'rgba(239,68,68,0.1)';
+        draggedEl.style.borderColor = '#C53030';
+        draggedEl.style.background = 'rgba(197,48,48,0.10)';
       }
       draggedEl.draggable = false;
       draggedEl.style.cursor = 'default';
@@ -430,11 +451,11 @@
     {q: 'Do you have labeled training data?', opts: [{text:'Yes, I have labels', next:1},{text:'No labels available', next:2}]},
     {q: 'What type of output do you need to predict?', opts: [{text:'Categories (classes)', next:3},{text:'Continuous numbers', next:4}]},
     {q: 'What is your primary goal?', opts: [{text:'Group similar items', next:5},{text:'Reduce dimensions / visualize', next:6},{text:'Detect anomalies', next:7}]},
-    {result: true, title:'Supervised Classification', color:'#3b82f6', text:'Use supervised classification algorithms. Start with Logistic Regression as a baseline, then try Random Forest or XGBoost for better accuracy. For complex data (images, text), consider neural networks. Evaluate with accuracy, precision, recall, F1-score, and AUC-ROC.'},
-    {result: true, title:'Supervised Regression', color:'#3b82f6', text:'Use supervised regression algorithms. Start with Linear Regression as a baseline, then try Random Forest Regressor or Gradient Boosting. For nonlinear relationships, consider neural networks. Evaluate with MSE, RMSE, MAE, and R-squared.'},
-    {result: true, title:'Clustering', color:'#a78bfa', text:'Use clustering algorithms. Try K-Means for spherical clusters with known K, DBSCAN for arbitrary shapes with unknown K, or Hierarchical Clustering for nested structures. Evaluate with silhouette score, within-cluster sum of squares, and domain expert review.'},
-    {result: true, title:'Dimensionality Reduction', color:'#a78bfa', text:'Use dimensionality reduction techniques. PCA for linear reduction (preserves global variance), t-SNE or UMAP for nonlinear visualization (preserves local structure), or Autoencoders for learned representations. Evaluate with explained variance ratio or reconstruction error.'},
-    {result: true, title:'Anomaly Detection', color:'#a78bfa', text:'Use unsupervised anomaly detection. Isolation Forest for tabular data, Autoencoders for complex patterns (high reconstruction error = anomaly), or One-Class SVM for well-defined normal regions. Evaluate with precision-at-k if you have some labeled anomalies for validation.'}
+    {result: true, title:'Supervised Classification', color:'#2563EB', text:'Use supervised classification algorithms. Start with Logistic Regression as a baseline, then try Random Forest or XGBoost for better accuracy. For complex data (images, text), consider neural networks. Evaluate with accuracy, precision, recall, F1-score, and AUC-ROC.'},
+    {result: true, title:'Supervised Regression', color:'#2563EB', text:'Use supervised regression algorithms. Start with Linear Regression as a baseline, then try Random Forest Regressor or Gradient Boosting. For nonlinear relationships, consider neural networks. Evaluate with MSE, RMSE, MAE, and R-squared.'},
+    {result: true, title:'Clustering', color:'#7C3AED', text:'Use clustering algorithms. Try K-Means for spherical clusters with known K, DBSCAN for arbitrary shapes with unknown K, or Hierarchical Clustering for nested structures. Evaluate with silhouette score, within-cluster sum of squares, and domain expert review.'},
+    {result: true, title:'Dimensionality Reduction', color:'#7C3AED', text:'Use dimensionality reduction techniques. PCA for linear reduction (preserves global variance), t-SNE or UMAP for nonlinear visualization (preserves local structure), or Autoencoders for learned representations. Evaluate with explained variance ratio or reconstruction error.'},
+    {result: true, title:'Anomaly Detection', color:'#7C3AED', text:'Use unsupervised anomaly detection. Isolation Forest for tabular data, Autoencoders for complex patterns (high reconstruction error = anomaly), or One-Class SVM for well-defined normal regions. Evaluate with precision-at-k if you have some labeled anomalies for validation.'}
   ];
 
   var flowEl = document.getElementById('flowQuestion');
@@ -448,9 +469,9 @@
       flowEl.style.display = 'none';
       optsEl.style.display = 'none';
       resultEl.style.display = 'block';
-      resultEl.style.background = 'rgba(59,130,246,0.06)';
+      resultEl.style.background = 'rgba(37,99,235,0.06)';
       resultEl.style.border = '1px solid ' + step.color;
-      resultEl.innerHTML = '<div style="font-size:18px;font-weight:700;color:' + step.color + ';margin-bottom:8px;">' + step.title + '</div><p style="color:#ccc;margin:0;line-height:1.6;">' + step.text + '</p>';
+      resultEl.innerHTML = '<div style="font-size:18px;font-weight:700;color:' + step.color + ';margin-bottom:8px;">' + step.title + '</div><p style="color:#4A4A4A;margin:0;line-height:1.6;">' + step.text + '</p>';
       resetFlowBtn.style.display = 'inline-block';
     } else {
       flowEl.style.display = 'block';

@@ -7,6 +7,10 @@
   <meta name="description" content="Interactive batch normalization calculator: compute mean, variance, normalize, scale & shift. Visualize distributions with canvas histogram. For ml0x.com.">
   <meta name="keywords" content="batch normalization, BN, deep learning, normalization calculator, step-by-step, mean, variance, scale, shift, histogram">
   <link rel="canonical" href="https://ml0x.com/tools/batch-normalization-calculator">
+<meta property="og:title" content="Batch Normalization Calculator — Step-by-Step BN Computation">
+<meta property="og:description" content="Interactive batch normalization calculator: compute mean, variance, normalize, scale & shift. Visualize distributions with canvas histogram. For ml0x.com.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://ml0x.com/tools/batch-normalization-calculator">
   <!-- JSON-LD FAQ -->
   <script type="application/ld+json">
   {
@@ -40,191 +44,57 @@
     ]
   }
   </script>
+  <link rel="stylesheet" href="/assets/ml0x.css">
   <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
-    body {
-      background: #0f172a;
-      color: #e2e8f0;
-      font-family: system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-      padding: 1.5rem 1rem;
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-    }
-    .container {
-      max-width: 1000px;
-      width: 100%;
-    }
-    h1 {
-      font-size: 2rem;
-      font-weight: 600;
-      letter-spacing: -0.02em;
-      margin-bottom: 0.25rem;
-      color: #f1f5f9;
-    }
-    .subhead {
-      color: #94a3b8;
-      margin-bottom: 2rem;
-      border-left: 3px solid #38bdf8;
-      padding-left: 0.75rem;
-      font-size: 0.95rem;
-    }
-    .card {
-      background: #1e293b;
-      border-radius: 20px;
-      padding: 1.5rem 1.2rem;
-      margin-bottom: 2rem;
-      box-shadow: 0 8px 20px rgba(0,0,0,0.5);
-    }
-    .grid-2 {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 1.2rem;
-    }
-    .input-group {
-      display: flex;
-      flex-direction: column;
-      gap: 0.3rem;
-      margin-bottom: 1rem;
-    }
-    label {
-      font-size: 0.85rem;
-      font-weight: 500;
-      color: #cbd5e1;
-      letter-spacing: 0.3px;
-    }
-    input, textarea {
-      background: #0f172a;
-      border: 1px solid #334155;
-      border-radius: 12px;
-      padding: 0.7rem 1rem;
-      color: #f1f5f9;
-      font-size: 0.95rem;
-      transition: border 0.2s;
-      width: 100%;
-    }
-    input:focus, textarea:focus {
-      outline: none;
-      border-color: #38bdf8;
-      box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.2);
-    }
-    textarea {
-      min-height: 80px;
-      resize: vertical;
-      font-family: 'SF Mono', 'Fira Code', monospace;
-    }
-    .param-row {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 1rem;
-    }
-    .param-item {
-      flex: 1 0 100px;
-    }
-    button {
-      background: #38bdf8;
-      border: none;
-      color: #0f172a;
-      font-weight: 600;
-      padding: 0.8rem 1.8rem;
-      border-radius: 40px;
-      font-size: 1rem;
-      cursor: pointer;
-      transition: all 0.15s;
-      box-shadow: 0 4px 12px rgba(56,189,248,0.3);
-      margin-top: 0.5rem;
-    }
-    button:hover {
-      background: #7dd3fc;
-      transform: scale(1.02);
-      box-shadow: 0 6px 16px rgba(56,189,248,0.5);
-    }
-    button:active {
-      transform: scale(0.97);
-    }
-    .results {
-      background: #0f172a;
-      border-radius: 16px;
-      padding: 1.2rem 1.2rem 0.8rem;
-      margin-top: 1.5rem;
-      border: 1px solid #2d3a4e;
-    }
+    /* structural only; every colour is a v6 token */
+    .card label { text-transform: none; font-size: 12px; letter-spacing: 0; }
+    textarea { min-height: 92px; resize: vertical; font-family: var(--font-mono); }
+    .param-row { display: flex; flex-wrap: wrap; gap: 14px; }
+    .param-item { flex: 1 1 110px; min-width: 0; }
     .step {
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: space-between;
-      border-bottom: 1px solid #1e2a3a;
-      padding: 0.6rem 0;
+      display: flex; flex-wrap: wrap; gap: 6px 16px;
+      justify-content: space-between; align-items: baseline;
+      border-bottom: 1px solid var(--line); padding: 10px 0;
     }
-    .step:last-child {
-      border-bottom: none;
-    }
-    .step-label {
-      font-weight: 500;
-      color: #94a3b8;
-    }
+    .step:first-child { padding-top: 0; }
+    .step:last-child { border-bottom: 0; padding-bottom: 0; }
+    .step-label { font-family: var(--font-mono); font-size: 12px; color: var(--ink-muted); }
     .step-value {
-      font-family: 'SF Mono', monospace;
-      background: #1e293b;
-      padding: 0.2rem 0.8rem;
-      border-radius: 20px;
-      color: #e2e8f0;
-      word-break: break-all;
+      font-family: var(--font-mono); font-size: 13px; color: var(--ink);
+      background: var(--surface); border: 1px solid var(--line);
+      padding: 3px 10px; border-radius: var(--radius-pill);
+      word-break: break-all; max-width: 100%;
     }
-    .histogram-container {
-      margin: 1.5rem 0 0.5rem;
-    }
-    canvas {
-      width: 100%;
-      height: auto;
-      background: #0f172a;
-      border-radius: 16px;
-      display: block;
-      border: 1px solid #2a3a4e;
-    }
-    .inference-note {
-      background: #1a2538;
-      padding: 1rem 1.2rem;
-      border-radius: 16px;
-      margin-top: 1.5rem;
-      font-size: 0.9rem;
-      border-left: 4px solid #38bdf8;
-    }
-    .inference-note strong {
-      color: #7dd3fc;
-    }
-    footer {
-      margin-top: 2.5rem;
-      text-align: center;
-      color: #475569;
-      font-size: 0.9rem;
-      border-top: 1px solid #1e293b;
-      padding-top: 1.5rem;
-      width: 100%;
-    }
-    @media (max-width: 640px) {
-      .grid-2 {
-        grid-template-columns: 1fr;
-        gap: 0.8rem;
-      }
-      h1 {
-        font-size: 1.6rem;
-      }
-      .card {
-        padding: 1rem;
-      }
-    }
+    @media (max-width: 767px) { .param-item { flex: 1 1 100%; } }
+    /* system cascade bug: base `.site-nav nav` (0,1,1) outranks the mobile
+       `.site-nav__links{display:none}` (0,1,0) in assets/ml0x.css, so the nav
+       never collapses. Belongs in the system; overridden here meanwhile. */
   </style>
 </head>
 <body>
+<a class="skip-link" href="#main">Skip to content</a>
+<header class="site-nav">
+  <div class="site-nav__inner">
+    <div class="site-nav__left">
+      <a class="site-nav__logo" href="/">ml0x</a>
+      <nav class="site-nav__links" aria-label="Main">
+        <a href="/tools/" aria-current="page">Tools</a>
+        <a href="/calculators/">Calculators</a>
+        <a href="/guides/">Guides</a>
+        <a href="/answers/">Answers</a>
+        <a href="/research/">Research</a>
+      </nav>
+    </div>
+    <a class="nav-cta" href="https://zovo.one/pricing" target="_blank" rel="noopener">Full system, $99</a>
+  </div>
+</header>
+
+<main id="main">
 <div class="container">
-  <h1>⚡ Batch Normalization</h1>
-  <div class="subhead">Step-by-step · mean · variance · normalize · scale & shift</div>
+  <div class="page-head">
+    <h1>Batch Normalization</h1>
+    <p class="subhead">Step-by-step · mean · variance · normalize · scale &amp; shift</p>
+  </div>
 
   <div class="card">
     <div class="grid-2">
@@ -250,29 +120,28 @@
     <button id="computeBtn">Compute Normalization</button>
 
     <!-- Results -->
-    <div class="results" id="resultsPanel">
-      <div class="step"><span class="step-label">📊 Batch mean (μ)</span><span class="step-value" id="meanVal">—</span></div>
-      <div class="step"><span class="step-label">📊 Batch variance (σ²)</span><span class="step-value" id="varVal">—</span></div>
-      <div class="step"><span class="step-label">⚙️ Normalized (x - μ)/√(σ²+ε)</span><span class="step-value" id="normalizedVal">—</span></div>
-      <div class="step"><span class="step-label">🎯 Scaled & shifted (γ·norm+β)</span><span class="step-value" id="outputVal">—</span></div>
-      <div class="step"><span class="step-label">📋 Input values</span><span class="step-value" id="inputDisplay">—</span></div>
+    <div class="results-box" id="resultsPanel">
+      <div class="step"><span class="step-label">Batch mean (μ)</span><span class="step-value" id="meanVal">—</span></div>
+      <div class="step"><span class="step-label">Batch variance (σ²)</span><span class="step-value" id="varVal">—</span></div>
+      <div class="step"><span class="step-label">Normalized (x - μ)/√(σ²+ε)</span><span class="step-value" id="normalizedVal">—</span></div>
+      <div class="step"><span class="step-label">Scaled &amp; shifted (γ·norm+β)</span><span class="step-value" id="outputVal">—</span></div>
+      <div class="step"><span class="step-label">Input values</span><span class="step-value" id="inputDisplay">—</span></div>
     </div>
 
     <!-- Histogram canvas -->
-    <div class="histogram-container">
+    <div class="viz-container">
       <canvas id="histogramCanvas" width="600" height="200"></canvas>
     </div>
 
     <!-- Inference mode explanation -->
-    <div class="inference-note">
-      <strong>🔁 Inference mode</strong> — During training, running mean & variance are updated via exponential moving average.
+    <div class="note">
+      <strong>Inference mode</strong> — During training, running mean &amp; variance are updated via exponential moving average.
       At inference, the <strong>running mean</strong> and <strong>running variance</strong> replace batch statistics.
       This ensures consistent normalization regardless of batch size.
     </div>
   </div>
-
-  <footer>© 2025 ml0x.com</footer>
 </div>
+</main>
 
 <script>
   (function() {
@@ -343,7 +212,7 @@
       // combine ranges for consistent scale
       const all = [...before, ...after];
       if (all.length === 0) {
-        ctx.fillStyle = '#475569';
+        ctx.fillStyle = '#6a6a6a';
         ctx.font = '14px system-ui';
         ctx.textAlign = 'center';
         ctx.fillText('no data', w/2, h/2);
@@ -366,7 +235,7 @@
       maxCount = Math.max(maxCount, 1);
 
       // draw axes
-      ctx.strokeStyle = '#334155';
+      ctx.strokeStyle = '#B8B8B6';
       ctx.lineWidth = 1;
       ctx.beginPath();
       ctx.moveTo(padding, padding);
@@ -387,27 +256,27 @@
         const aHeight = (aCount / maxCount) * chartH;
 
         // before (blue)
-        ctx.fillStyle = '#3b82f6';
+        ctx.fillStyle = '#2563EB';
         ctx.fillRect(x, h - padding - bHeight, barWidth, bHeight);
 
         // after (cyan)
-        ctx.fillStyle = '#38bdf8';
+        ctx.fillStyle = '#157F3B';
         ctx.fillRect(x + barWidth + 2, h - padding - aHeight, barWidth, aHeight);
       }
 
       // legend
-      ctx.fillStyle = '#94a3b8';
+      ctx.fillStyle = '#6a6a6a';
       ctx.font = '11px system-ui';
       ctx.textAlign = 'left';
       ctx.fillRect(padding + 10, 10, 12, 8);
-      ctx.fillStyle = '#3b82f6';
+      ctx.fillStyle = '#2563EB';
       ctx.fillRect(padding + 10, 10, 12, 8);
-      ctx.fillStyle = '#e2e8f0';
+      ctx.fillStyle = '#1A1A1A';
       ctx.fillText('before', padding + 26, 18);
 
-      ctx.fillStyle = '#38bdf8';
+      ctx.fillStyle = '#157F3B';
       ctx.fillRect(padding + 80, 10, 12, 8);
-      ctx.fillStyle = '#e2e8f0';
+      ctx.fillStyle = '#1A1A1A';
       ctx.fillText('after', padding + 96, 18);
     }
 
@@ -460,5 +329,35 @@
     // also compute on enter? but keep simple
   })();
 </script>
+<footer class="site-footer">
+  <nav class="footer-links-seo" aria-label="ML tools and content">
+    <a href="/tools/">ML tools</a>
+    <a href="/tools/learning-rate-finder.html">Learning rate finder</a>
+    <a href="/tools/confusion-matrix-calculator.html">Confusion matrix calculator</a>
+    <a href="/tools/neural-network-playground.html">Neural network playground</a>
+    <a href="/tools/attention-mechanism-visualizer.html">Attention visualizer</a>
+    <a href="/tools/dataset-splitter.html">Dataset splitter</a>
+    <a href="/calculators/kv-cache-size-calculator.html">KV cache calculator</a>
+    <a href="/calculators/llm-memory-calculator.html">LLM memory calculator</a>
+    <a href="/guides/">Guides</a>
+    <a href="/guides/gradient-descent-explained.html">Gradient descent</a>
+    <a href="/answers/">Answers</a>
+    <a href="/answers/ml-algorithm-comparison.html">Algorithm comparison</a>
+    <a href="/research/">Research</a>
+    <a href="/research/ml-cheatsheet.html">ML cheat sheet</a>
+    <a href="/about.html">About</a>
+  </nav>
+  <div class="site-footer__inner">
+    <div class="site-footer__brand">
+      <span class="site-footer__logo">ml0x</span>
+      <span class="site-footer__meta">by <a href="https://github.com/theluckystrike" target="_blank" rel="noopener">@theluckystrike</a></span>
+    </div>
+    <div class="site-footer__links">
+      <a href="https://github.com/theluckystrike/100xagenticdev" target="_blank" rel="noopener">GitHub</a>
+      <a href="/research/">Research</a>
+      <a href="https://twitter.com/_alphashark_" target="_blank" rel="noopener">X</a>
+    </div>
+  </div>
+</footer>
 </body>
 </html>

@@ -27,296 +27,101 @@
         }
     }
     </script>
+    <link rel="stylesheet" href="/assets/ml0x.css">
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
 
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-            background: #0a0e27;
-            color: #e0e6ed;
-            line-height: 1.6;
-            padding: 20px;
-        }
-
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-        }
-
-        header {
-            margin-bottom: 40px;
-            border-bottom: 2px solid #00d4aa;
-            padding-bottom: 20px;
-        }
-
-        h1 {
-            font-size: 2.5rem;
-            color: #00d4aa;
-            margin-bottom: 10px;
-        }
-
-        .subtitle {
-            font-size: 1.1rem;
-            color: #a0a6b3;
-        }
-
-        .content {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 30px;
-            margin-bottom: 40px;
-        }
-
-        .panel {
-            background: #0f1633;
-            border: 1px solid #1a2847;
-            border-radius: 8px;
-            padding: 25px;
-        }
-
+        /* two-column tool layout with a full-width visualization row */
+        .content { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin: 24px 0 40px; }
+        .visualization-panel { grid-column: 1 / -1; }
         .panel h2 {
-            font-size: 1.3rem;
-            color: #00d4aa;
-            margin-bottom: 20px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
+            font-family: var(--font-mono); font-size: 13px; font-weight: 700;
+            color: var(--ink); text-transform: uppercase; letter-spacing: 1px;
+            margin: 0 0 18px;
         }
-
-        .input-group {
-            margin-bottom: 20px;
-        }
-
-        label {
-            display: block;
-            font-size: 0.95rem;
-            font-weight: 500;
-            margin-bottom: 8px;
-            color: #c0c6d3;
-        }
-
-        input[type="number"],
-        input[type="range"],
-        select {
-            width: 100%;
-            padding: 10px 12px;
-            background: #0a0e27;
-            border: 1px solid #1a2847;
-            border-radius: 4px;
-            color: #e0e6ed;
-            font-size: 1rem;
-        }
-
-        input[type="range"] {
-            height: 6px;
-            padding: 0;
-            cursor: pointer;
-            -webkit-appearance: none;
-        }
-
-        input[type="range"]::-webkit-slider-thumb {
-            -webkit-appearance: none;
-            appearance: none;
-            width: 18px;
-            height: 18px;
-            border-radius: 50%;
-            background: #00d4aa;
-            cursor: pointer;
-            box-shadow: 0 0 0 3px rgba(0, 212, 170, 0.3);
-        }
-
-        input[type="range"]::-moz-range-thumb {
-            width: 18px;
-            height: 18px;
-            border-radius: 50%;
-            background: #00d4aa;
-            cursor: pointer;
-            border: none;
-            box-shadow: 0 0 0 3px rgba(0, 212, 170, 0.3);
-        }
-
-        input:focus,
-        select:focus {
-            outline: none;
-            border-color: #00d4aa;
-        }
-
-        .input-hint {
-            font-size: 0.85rem;
-            color: #707a89;
-            margin-top: 4px;
-        }
-
-        button {
-            width: 100%;
-            padding: 12px 20px;
-            background: linear-gradient(135deg, #00d4aa 0%, #00a892 100%);
-            color: #0a0e27;
-            border: none;
-            border-radius: 4px;
-            font-size: 1rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            margin-top: 10px;
-        }
-
-        button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 20px rgba(0, 212, 170, 0.3);
-        }
-
+        .panel h2.chart-heading { margin-top: 32px; }
+        .input-group { margin-bottom: 18px; }
         .result-box {
-            background: #0a0e27;
-            border: 1px solid #1a2847;
-            border-radius: 4px;
-            padding: 15px;
-            margin-top: 15px;
+            background: var(--surface-2); border: 1px solid var(--line);
+            border-radius: var(--radius-sm); padding: 4px 16px; margin-top: 14px;
         }
-
         .result-row {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 15px;
-            padding: 15px 0;
-            border-bottom: 1px solid #1a2847;
+            display: grid; grid-template-columns: 1fr 1fr; gap: 16px;
+            padding: 14px 0; border-bottom: 1px solid var(--line);
         }
-
-        .result-row:last-child {
-            border-bottom: none;
-        }
-
+        .result-row:last-child { border-bottom: 0; }
         .result-label {
-            color: #a0a6b3;
-            font-size: 0.9rem;
+            font-family: var(--font-mono); font-size: 11px; font-weight: 500;
+            color: var(--ink-muted); text-transform: uppercase; letter-spacing: 0.8px;
         }
-
         .result-value {
-            color: #00d4aa;
-            font-weight: 600;
-            font-size: 1.1rem;
+            font-family: var(--font-mono); font-size: 20px; font-weight: 700;
+            color: var(--ink); letter-spacing: -0.5px;
+            font-variant-numeric: tabular-nums; margin-top: 2px;
         }
-
+        /* proportional train/val/test bar; JS sets each segment width in % */
         .split-visualization {
-            position: relative;
-            height: 30px;
-            background: #0a0e27;
-            border-radius: 4px;
-            overflow: hidden;
-            border: 1px solid #1a2847;
-            margin-top: 10px;
+            display: flex; height: 32px; margin-top: 8px;
+            background: var(--surface-2); border: 1px solid var(--line);
+            border-radius: var(--radius-sm); overflow: hidden;
         }
-
-        .split-segment {
-            height: 100%;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 0.75rem;
-            font-weight: 600;
-            color: #0a0e27;
-        }
-
-        .segment-train {
-            background: linear-gradient(90deg, #00d4aa 0%, #00a892 100%);
-        }
-
-        .segment-val {
-            background: linear-gradient(90deg, #00a892 0%, #008b7a 100%);
-        }
-
-        .segment-test {
-            background: linear-gradient(90deg, #008b7a 0%, #007368 100%);
-        }
-
+        .split-segment { height: 100%; }
+        .segment-train { background: var(--s1); }
+        .segment-val { background: var(--s3); }
+        .segment-test { background: var(--s5); }
         .kfold-card {
-            background: #0a0e27;
-            border: 1px solid #1a2847;
-            border-radius: 4px;
-            padding: 12px;
-            margin-bottom: 10px;
+            background: var(--surface-2); border: 1px solid var(--line);
+            border-radius: var(--radius-sm); padding: 14px 16px; margin-bottom: 10px;
         }
-
         .kfold-title {
-            color: #00d4aa;
-            font-weight: 600;
-            margin-bottom: 5px;
+            font-family: var(--font-mono); font-size: 13px; font-weight: 700;
+            color: var(--ink); margin-bottom: 4px;
         }
-
-        .kfold-desc {
-            color: #a0a6b3;
-            font-size: 0.9rem;
-        }
-
+        .kfold-desc { font-size: 13px; color: var(--ink-2); }
         .chart-container {
-            position: relative;
-            margin-top: 20px;
-            padding: 15px;
-            background: #0a0e27;
-            border: 1px solid #1a2847;
-            border-radius: 4px;
+            background: var(--surface); border: 1px solid var(--line);
+            border-radius: var(--radius); padding: 12px; margin-top: 16px; overflow-x: auto;
         }
-
-        canvas {
-            width: 100% !important;
-            height: auto !important;
-        }
-
-        .visualization-panel {
-            grid-column: 1 / -1;
-        }
-
+        .chart-container canvas { width: 100%; height: auto; }
         .recommendation {
-            background: rgba(0, 212, 170, 0.1);
-            border-left: 4px solid #00d4aa;
-            padding: 12px;
-            border-radius: 2px;
-            margin-top: 15px;
-            font-size: 0.9rem;
-            color: #e0e6ed;
+            background: var(--surface-2); border: 1px solid var(--line);
+            border-left: 3px solid var(--ink); border-radius: var(--radius-sm);
+            padding: 14px 18px; margin-top: 16px; font-size: 14px; color: var(--ink-2);
         }
-
-        @media (max-width: 768px) {
-            .content {
-                grid-template-columns: 1fr;
-            }
-
-            h1 {
-                font-size: 2rem;
-            }
-
-            .visualization-panel {
-                grid-column: 1;
-            }
-
-            .result-row {
-                grid-template-columns: 1fr;
-            }
-        }
-
-        footer {
-            border-top: 1px solid #1a2847;
-            padding-top: 20px;
-            text-align: center;
-            color: #707a89;
-            font-size: 0.9rem;
+        @media (max-width: 767px) {
+            .content { grid-template-columns: 1fr; }
+            .visualization-panel { grid-column: 1; }
+            .result-row { grid-template-columns: 1fr; }
         }
     </style>
 </head>
 <body>
+<a class="skip-link" href="#main">Skip to content</a>
+<header class="site-nav">
+  <div class="site-nav__inner">
+    <div class="site-nav__left">
+      <a class="site-nav__logo" href="/">ml0x</a>
+      <nav class="site-nav__links" aria-label="Main">
+        <a href="/tools/" aria-current="page">Tools</a>
+        <a href="/calculators/">Calculators</a>
+        <a href="/guides/">Guides</a>
+        <a href="/answers/">Answers</a>
+        <a href="/research/">Research</a>
+      </nav>
+    </div>
+    <a class="nav-cta" href="https://zovo.one/pricing" target="_blank" rel="noopener">Full system, $99</a>
+  </div>
+</header>
+
+<main id="main">
     <div class="container">
-        <header>
+        <div class="page-head">
             <h1>Train Test Split Calculator</h1>
             <p class="subtitle">Optimize your data splits with stratification and k-fold analysis</p>
-        </header>
+        </div>
 
         <div class="content">
             <div class="panel">
-                <h2>📊 Dataset Configuration</h2>
+                <h2>Dataset Configuration</h2>
 
                 <div class="input-group">
                     <label for="datasetSize">Total Dataset Size</label>
@@ -346,7 +151,7 @@
             </div>
 
             <div class="panel">
-                <h2>🎯 Split Results</h2>
+                <h2>Split Results</h2>
 
                 <div class="result-box">
                     <div class="result-row">
@@ -372,7 +177,7 @@
                 </div>
 
                 <div style="margin-top: 15px;">
-                    <label style="margin-bottom: 10px;">Split Visualization</label>
+                    <label>Split Visualization</label>
                     <div class="split-visualization">
                         <div id="segmentTrain" class="split-segment segment-train"></div>
                         <div id="segmentVal" class="split-segment segment-val"></div>
@@ -386,7 +191,7 @@
             </div>
 
             <div class="panel visualization-panel">
-                <h2>🔀 K-Fold Cross-Validation Recommendations</h2>
+                <h2>K-Fold Cross-Validation Recommendations</h2>
 
                 <div id="kfoldRecommendations">
                     <div class="kfold-card">
@@ -394,16 +199,13 @@
                     </div>
                 </div>
 
-                <h2 style="margin-top: 30px; color: #00d4aa;">📈 Data Distribution Analysis</h2>
+                <h2 class="chart-heading">Data Distribution Analysis</h2>
                 <div class="chart-container">
                     <canvas id="splitChart" width="800" height="300"></canvas>
                 </div>
             </div>
         </div>
 
-        <footer>
-            <p>&copy; 2026 ml0x.com. All rights reserved.</p>
-        </footer>
     </div>
 
     <script>
@@ -487,7 +289,7 @@
             const height = canvas.height;
             const padding = 50;
 
-            ctx.fillStyle = '#0a0e27';
+            ctx.fillStyle = '#FFFFFF';
             ctx.fillRect(0, 0, width, height);
 
             const total = trainCount + valCount + testCount;
@@ -502,32 +304,32 @@
 
             // Train segment
             let x = padding;
-            ctx.fillStyle = '#00d4aa';
+            ctx.fillStyle = '#2563EB';
             const trainW = (trainPercent / 100) * barWidth;
             ctx.fillRect(x, barY, trainW, barHeight);
-            ctx.fillStyle = '#e0e6ed';
+            ctx.fillStyle = '#FFFFFF';
             ctx.font = 'bold 14px sans-serif';
             ctx.textAlign = 'center';
             ctx.fillText(`Train (${trainPercent.toFixed(0)}%)`, x + trainW / 2, barY + barHeight / 2 + 5);
 
             // Val segment
             x += trainW;
-            ctx.fillStyle = '#00a892';
+            ctx.fillStyle = '#157F3B';
             const valW = (valPercent / 100) * barWidth;
             ctx.fillRect(x, barY, valW, barHeight);
-            ctx.fillStyle = '#e0e6ed';
+            ctx.fillStyle = '#FFFFFF';
             ctx.fillText(`Val (${valPercent.toFixed(0)}%)`, x + valW / 2, barY + barHeight / 2 + 5);
 
             // Test segment
             x += valW;
-            ctx.fillStyle = '#007368';
+            ctx.fillStyle = '#7C3AED';
             const testW = (testPercent / 100) * barWidth;
             ctx.fillRect(x, barY, testW, barHeight);
-            ctx.fillStyle = '#e0e6ed';
+            ctx.fillStyle = '#FFFFFF';
             ctx.fillText(`Test (${testPercent.toFixed(0)}%)`, x + testW / 2, barY + barHeight / 2 + 5);
 
             // Labels below
-            ctx.fillStyle = '#a0a6b3';
+            ctx.fillStyle = '#6a6a6a';
             ctx.font = '11px sans-serif';
             ctx.fillText(trainCount.toLocaleString() + ' samples', padding + trainW / 2, barY + barHeight + 25);
             ctx.fillText(valCount.toLocaleString() + ' samples', padding + trainW + valW / 2, barY + barHeight + 25);
@@ -538,5 +340,37 @@
             updateCalculation();
         });
     </script>
+</main>
+
+<footer class="site-footer">
+  <nav class="footer-links-seo" aria-label="ML tools and content">
+    <a href="/tools/">ML tools</a>
+    <a href="/tools/learning-rate-finder.html">Learning rate finder</a>
+    <a href="/tools/confusion-matrix-calculator.html">Confusion matrix calculator</a>
+    <a href="/tools/neural-network-playground.html">Neural network playground</a>
+    <a href="/tools/attention-mechanism-visualizer.html">Attention visualizer</a>
+    <a href="/tools/dataset-splitter.html">Dataset splitter</a>
+    <a href="/calculators/kv-cache-size-calculator.html">KV cache calculator</a>
+    <a href="/calculators/llm-memory-calculator.html">LLM memory calculator</a>
+    <a href="/guides/">Guides</a>
+    <a href="/guides/gradient-descent-explained.html">Gradient descent</a>
+    <a href="/answers/">Answers</a>
+    <a href="/answers/ml-algorithm-comparison.html">Algorithm comparison</a>
+    <a href="/research/">Research</a>
+    <a href="/research/ml-cheatsheet.html">ML cheat sheet</a>
+    <a href="/about.html">About</a>
+  </nav>
+  <div class="site-footer__inner">
+    <div class="site-footer__brand">
+      <span class="site-footer__logo">ml0x</span>
+      <span class="site-footer__meta">by <a href="https://github.com/theluckystrike" target="_blank" rel="noopener">@theluckystrike</a></span>
+    </div>
+    <div class="site-footer__links">
+      <a href="https://github.com/theluckystrike/100xagenticdev" target="_blank" rel="noopener">GitHub</a>
+      <a href="/research/">Research</a>
+      <a href="https://twitter.com/_alphashark_" target="_blank" rel="noopener">X</a>
+    </div>
+  </div>
+</footer>
 </body>
 </html>

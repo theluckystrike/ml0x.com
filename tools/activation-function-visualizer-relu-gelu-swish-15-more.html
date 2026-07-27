@@ -6,7 +6,12 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Activation Function Visualizer — ReLU, GELU, Swish & 15 More</title>
   <meta name="description" content="Interactive chart for 18 activation functions with derivatives, formulas, PyTorch code, pros/cons & comparison mode.">
-  <link rel="canonical" href="https://ml0x.com/activation-visualizer">
+  <link rel="canonical" href="https://ml0x.com/tools/activation-function-visualizer-relu-gelu-swish-15-more">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Activation Function Visualizer — ReLU, GELU, Swish & 15 More">
+<meta property="og:description" content="Interactive chart for 18 activation functions with derivatives, formulas, PyTorch code, pros/cons & comparison mode.">
+<meta property="og:url" content="https://ml0x.com/tools/activation-function-visualizer-relu-gelu-swish-15-more">
+<meta property="og:site_name" content="ml0x">
   <!-- structured data: WebApplication + FAQPage + BreadcrumbList -->
   <script type="application/ld+json">
   {
@@ -33,75 +38,118 @@
     "@type": "BreadcrumbList",
     "itemListElement": [
       {"@type": "ListItem", "position": 1, "name": "ml0x.com", "item": "https://ml0x.com"},
-      {"@type": "ListItem", "position": 2, "name": "Activation Visualizer", "item": "https://ml0x.com/activation-visualizer"}
+      {"@type": "ListItem", "position": 2, "name": "Activation Visualizer", "item": "https://ml0x.com/tools/activation-function-visualizer-relu-gelu-swish-15-more"}
     ]
   }
   </script>
+  <link rel="stylesheet" href="/assets/ml0x.css">
   <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    body { background: #0a0c10; color: #e5e9f0; font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; padding: 1.5rem; }
-    h1 { font-size: 2.2rem; font-weight: 600; letter-spacing: -0.5px; margin-bottom: 0.3rem; }
-    .subhead { color: #8892b0; margin-bottom: 2rem; border-left: 4px solid #3b82f6; padding-left: 1rem; }
-    .container { max-width: 1600px; margin: 0 auto; }
-    .grid { display: grid; grid-template-columns: 1fr 360px; gap: 2rem; }
-    @media (max-width: 1000px) { .grid { grid-template-columns: 1fr; } }
-    .chart-panel { background: #11141c; border-radius: 24px; padding: 1.5rem; border: 1px solid #252a36; }
-    .chart-header { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.8rem; margin-bottom: 1rem; }
-    .chart-header h2 { font-size: 1.3rem; font-weight: 500; }
-    .controls { display: flex; gap: 0.5rem; flex-wrap: wrap; align-items: center; }
-    .btn { background: #1e2532; border: none; color: #bcc3d4; padding: 0.4rem 1rem; border-radius: 40px; font-size: 0.8rem; cursor: pointer; transition: 0.2s; border: 1px solid #2d3546; }
-    .btn:hover { background: #2a3346; color: white; border-color: #3b82f6; }
-    .btn.active { background: #1e3a5f; border-color: #3b82f6; color: #b4d0ff; }
-    .chart-area { position: relative; width: 100%; height: 460px; background: #0d1017; border-radius: 18px; }
-    #plotCanvas { width: 100%; height: 100%; display: block; border-radius: 18px; }
-    .info-box { background: #11141c; border-radius: 24px; padding: 1.5rem; border: 1px solid #252a36; max-height: 700px; overflow-y: auto; }
-    .info-box h3 { font-size: 1.2rem; margin-bottom: 0.75rem; display: flex; align-items: center; gap: 8px; }
-    .func-list { display: flex; flex-wrap: wrap; gap: 0.4rem 0.6rem; margin-bottom: 1.2rem; }
-    .func-tag { background: #1a1f2b; padding: 0.2rem 0.8rem; border-radius: 40px; font-size: 0.7rem; border: 1px solid #2a3245; cursor: pointer; transition: 0.1s; }
-    .func-tag.active { border-color: #3b82f6; background: #1a2a44; color: white; }
-    .func-tag:hover { border-color: #5b9aff; }
-    .detail-panel { margin-top: 0.5rem; }
-    .detail-item { background: #161c28; border-radius: 16px; padding: 1rem; margin-bottom: 0.6rem; border-left: 4px solid #3b82f6; }
-    .detail-item h4 { font-size: 1rem; font-weight: 600; }
-    .detail-item .meta { font-size: 0.75rem; color: #8892b0; margin: 0.2rem 0 0.4rem; }
-    .detail-item .formula { font-family: 'Courier New', monospace; background: #0d111a; padding: 0.3rem 0.6rem; border-radius: 12px; display: inline-block; margin: 0.2rem 0; }
-    .detail-item .pros { color: #8bc48a; }
-    .detail-item .cons { color: #e68a8a; }
-    .pytorch-code { background: #0b0e14; padding: 0.3rem 0.6rem; border-radius: 10px; font-size: 0.7rem; font-family: 'Courier New', monospace; color: #c9d1e6; }
-    .flex-between { display: flex; justify-content: space-between; align-items: center; }
-    .badge { background: #1e2a44; padding: 0.2rem 0.6rem; border-radius: 30px; font-size: 0.6rem; }
-    .hover-value { background: #1a1f2b; padding: 0.2rem 0.8rem; border-radius: 20px; font-size: 0.75rem; }
+    /* structural only; every colour is a v6 token */
+    .tool-grid-split { display: grid; grid-template-columns: 1fr 340px; gap: 24px; align-items: start; margin: 24px 0; }
+    .tool-grid-split > .card { margin: 0; }
+    .chart-header {
+      display: flex; justify-content: space-between; align-items: center;
+      flex-wrap: wrap; gap: 12px; margin-bottom: 16px;
+    }
+    .chart-header h2 { margin: 0; font-size: 18px; letter-spacing: -0.4px; }
+    .chart-header h3 { margin: 0; }
+    .controls { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+    .controls .btn { min-height: 36px; padding: 7px 15px; font-size: 13px; }
+    .btn.active { background: var(--ink); border-color: var(--ink); color: var(--surface); }
+    .chart-area {
+      position: relative; width: 100%; height: 460px;
+      background: var(--surface); border: 1px solid var(--line);
+      border-radius: var(--radius-sm);
+    }
+    #plotCanvas { width: 100%; height: 100%; display: block; border-radius: var(--radius-sm); }
+    .panel-scroll { max-height: 740px; overflow-y: auto; }
+    .func-list { display: flex; flex-wrap: wrap; gap: 6px; margin: 0 0 18px; }
+    .func-tag {
+      font-family: var(--font-mono); font-size: 11px; color: var(--ink-muted);
+      background: var(--surface); border: 1px solid var(--line);
+      padding: 3px 10px; border-radius: var(--radius-pill);
+      cursor: pointer; user-select: none; transition: border-color 0.15s, color 0.15s;
+    }
+    .func-tag:hover { border-color: var(--line-strong); color: var(--ink); }
+    .func-tag.active { background: var(--surface-2); border-color: var(--ink); color: var(--ink); font-weight: 500; }
+    .detail-panel { margin-top: 4px; }
+    .detail-item {
+      background: var(--surface); border: 1px solid var(--line);
+      border-left: 3px solid var(--ink); border-radius: var(--radius-sm);
+      padding: 12px 14px; margin-bottom: 8px;
+    }
+    .detail-item h4 { margin: 0; font-size: 14px; }
+    .detail-item .meta { font-size: 12px; color: var(--ink-muted); margin: 3px 0 5px; }
+    .detail-item .formula {
+      font-family: var(--font-mono); background: var(--surface-2);
+      padding: 2px 7px; border-radius: 4px; display: inline-block;
+    }
+    .detail-item .pros { color: var(--ok); }
+    .detail-item .cons { color: var(--bad); }
+    .pytorch-code {
+      font-family: var(--font-mono); font-size: 11px; color: var(--ink);
+      background: var(--surface-2); padding: 3px 8px; border-radius: 4px;
+      display: inline-block; margin-top: 5px;
+    }
+    .hover-row {
+      display: flex; justify-content: space-between; gap: 16px; flex-wrap: wrap;
+      margin-top: 10px; font-family: var(--font-mono); font-size: 12px; color: var(--ink-muted);
+    }
     ::-webkit-scrollbar { width: 6px; }
-    ::-webkit-scrollbar-track { background: #11141c; }
-    ::-webkit-scrollbar-thumb { background: #2d3546; border-radius: 10px; }
+    ::-webkit-scrollbar-track { background: var(--surface-2); }
+    ::-webkit-scrollbar-thumb { background: var(--line-strong); border-radius: 10px; }
+    @media (max-width: 1000px) { .tool-grid-split { grid-template-columns: 1fr; } }
+    /* system cascade bug: base `.site-nav nav` (0,1,1) outranks the mobile
+       `.site-nav__links{display:none}` (0,1,0) in assets/ml0x.css, so the nav
+       never collapses. Belongs in the system; overridden here meanwhile. */
   </style>
 </head>
 <body>
+<a class="skip-link" href="#main">Skip to content</a>
+<header class="site-nav">
+  <div class="site-nav__inner">
+    <div class="site-nav__left">
+      <a class="site-nav__logo" href="/">ml0x</a>
+      <nav class="site-nav__links" aria-label="Main">
+        <a href="/tools/" aria-current="page">Tools</a>
+        <a href="/calculators/">Calculators</a>
+        <a href="/guides/">Guides</a>
+        <a href="/answers/">Answers</a>
+        <a href="/research/">Research</a>
+      </nav>
+    </div>
+    <a class="nav-cta" href="https://zovo.one/pricing" target="_blank" rel="noopener">Full system, $99</a>
+  </div>
+</header>
+
+<main id="main">
 <div class="container">
-  <h1>🧠 Activation Function Visualizer</h1>
-  <div class="subhead">18 functions · derivatives · formulas · PyTorch · comparison mode</div>
-  <div class="grid">
-    <div class="chart-panel">
+  <div class="page-head">
+    <h1>Activation Function Visualizer</h1>
+    <p class="subhead">18 functions · derivatives · formulas · PyTorch · comparison mode</p>
+  </div>
+  <div class="tool-grid-split">
+    <div class="card">
       <div class="chart-header">
-        <h2>Interactive plot <span style="font-weight:400; font-size:0.8rem; color:#8892b0;">(hover for values)</span></h2>
+        <h2>Interactive plot <span style="font-weight:400;font-size:13px;color:var(--ink-muted)">(hover for values)</span></h2>
         <div class="controls">
-          <button class="btn active" id="modeFn">📈 Function</button>
-          <button class="btn" id="modeDer">📉 Derivative</button>
-          <button class="btn" id="compareBtn">🔀 Compare (2-4)</button>
-          <button class="btn" id="resetZoom">⟲ Reset zoom</button>
+          <button class="btn btn-secondary active" id="modeFn">Function</button>
+          <button class="btn btn-secondary" id="modeDer">Derivative</button>
+          <button class="btn btn-secondary" id="compareBtn">Compare (2-4)</button>
+          <button class="btn btn-secondary" id="resetZoom">⟲ Reset zoom</button>
         </div>
       </div>
       <div class="chart-area" id="chartArea">
         <canvas id="plotCanvas"></canvas>
       </div>
-      <div style="display:flex; justify-content:space-between; margin-top:0.5rem; font-size:0.7rem; color:#6a7488;">
-        <span>🧾 <span id="hoverX">x: —</span> <span id="hoverY">y: —</span></span>
-        <span>⚡ drag to zoom · click tag to toggle</span>
+      <div class="hover-row">
+        <span><span id="hoverX">x: —</span> <span id="hoverY">y: —</span></span>
+        <span>drag to zoom · click tag to toggle</span>
       </div>
     </div>
-    <div class="info-box" id="infoPanel">
-      <div style="display:flex; justify-content:space-between; align-items:center;">
-        <h3>📋 Function details</h3>
+    <div class="card panel-scroll" id="infoPanel">
+      <div class="chart-header">
+        <h3>Function details</h3>
         <span class="badge" id="activeCount">18 active</span>
       </div>
       <div class="func-list" id="funcList"></div>
@@ -109,6 +157,8 @@
     </div>
   </div>
 </div>
+</main>
+
 <script>
   (function() {
     // ---------- 18 activation functions (fn, df, formula, derivative, pros, cons, use, torch) ----------
@@ -167,11 +217,11 @@
       ctx.clearRect(0,0,w,h);
       ctx.scale(dpr, dpr);
       // background
-      ctx.fillStyle = '#0d1017';
+      ctx.fillStyle = '#FFFFFF';
       ctx.fillRect(0,0,W,H);
       
       // grid
-      ctx.strokeStyle = '#1f2636';
+      ctx.strokeStyle = '#E8E8E6';
       ctx.lineWidth = 0.5;
       for (let x = Math.ceil(xMin); x <= xMax; x++) {
         const px = (x - xMin)/(xMax - xMin)*W;
@@ -182,7 +232,7 @@
         ctx.beginPath(); ctx.moveTo(0,py); ctx.lineTo(W,py); ctx.stroke();
       }
       // axes
-      ctx.strokeStyle = '#3d4b66';
+      ctx.strokeStyle = '#B8B8B6';
       ctx.lineWidth = 1.2;
       if (xMin < 0 && xMax > 0) {
         const px = (0 - xMin)/(xMax - xMin)*W;
@@ -194,7 +244,7 @@
       }
 
       // draw functions
-      const colors = ['#3b82f6','#f97316','#22c55e','#ef4444','#a855f7','#ec4899','#14b8a6','#eab308','#8b5cf6','#f43f5e','#06b6d4','#84cc16','#d946ef','#0ea5e9','#f59e0b','#10b981','#6366f1','#db2777'];
+      const colors = ['#2563EB','#C53030','#157F3B','#B45309','#7C3AED','#0E7490','#BE185D','#4D7C0F','#1E3A8A','#92400E','#6D28D9','#0F766E','#9D174D','#0369A1','#A16207','#047857','#4338CA','#A21CAF'];
       const steps = 300;
       for (let i=0; i<FUNCS.length; i++) {
         if (!active[i]) continue;
@@ -242,7 +292,7 @@
       const dpr = window.devicePixelRatio || 1;
       const W = canvas.width / dpr, H = canvas.height / dpr;
       ctx.setTransform(1,0,0,1,0,0);
-      ctx.strokeStyle = '#5b7aaa';
+      ctx.strokeStyle = '#6a6a6a';
       ctx.lineWidth = 0.8;
       ctx.setLineDash([4,4]);
       ctx.beginPath(); ctx.moveTo(mouseX/dpr,0); ctx.lineTo(mouseX/dpr,H); ctx.stroke();
@@ -352,7 +402,7 @@
           div.innerHTML = `<h4>${fn.name}</h4>
             <div class="meta">Formula: <span class="formula">${fn.formula}</span> · Deriv: ${fn.deriv}</div>
             <div><span class="pros">✓ ${fn.pros}</span> · <span class="cons">✗ ${fn.cons}</span> · Use: ${fn.use}</div>
-            <div class="pytorch-code">🧪 ${fn.torch}</div>`;
+            <div class="pytorch-code">${fn.torch}</div>`;
           detailPanel.appendChild(div);
         }
       });
@@ -366,5 +416,35 @@
     window.FUNCS = FUNCS;
   })();
 </script>
+<footer class="site-footer">
+  <nav class="footer-links-seo" aria-label="ML tools and content">
+    <a href="/tools/">ML tools</a>
+    <a href="/tools/learning-rate-finder.html">Learning rate finder</a>
+    <a href="/tools/confusion-matrix-calculator.html">Confusion matrix calculator</a>
+    <a href="/tools/neural-network-playground.html">Neural network playground</a>
+    <a href="/tools/attention-mechanism-visualizer.html">Attention visualizer</a>
+    <a href="/tools/dataset-splitter.html">Dataset splitter</a>
+    <a href="/calculators/kv-cache-size-calculator.html">KV cache calculator</a>
+    <a href="/calculators/llm-memory-calculator.html">LLM memory calculator</a>
+    <a href="/guides/">Guides</a>
+    <a href="/guides/gradient-descent-explained.html">Gradient descent</a>
+    <a href="/answers/">Answers</a>
+    <a href="/answers/ml-algorithm-comparison.html">Algorithm comparison</a>
+    <a href="/research/">Research</a>
+    <a href="/research/ml-cheatsheet.html">ML cheat sheet</a>
+    <a href="/about.html">About</a>
+  </nav>
+  <div class="site-footer__inner">
+    <div class="site-footer__brand">
+      <span class="site-footer__logo">ml0x</span>
+      <span class="site-footer__meta">by <a href="https://github.com/theluckystrike" target="_blank" rel="noopener">@theluckystrike</a></span>
+    </div>
+    <div class="site-footer__links">
+      <a href="https://github.com/theluckystrike/100xagenticdev" target="_blank" rel="noopener">GitHub</a>
+      <a href="/research/">Research</a>
+      <a href="https://twitter.com/_alphashark_" target="_blank" rel="noopener">X</a>
+    </div>
+  </div>
+</footer>
 </body>
 </html>

@@ -20,7 +20,7 @@
 <meta name="twitter:description" content="Interactive transformer attention heatmap. See self-attention and cross-attention weights for any sentence. Runs entirely in your browser.">
 <meta name="author" content="Michael Lip">
 <meta name="robots" content="index, follow">
-<link rel="stylesheet" href="/assets/style.css">
+<link rel="stylesheet" href="/assets/ml0x.css">
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
@@ -64,24 +64,24 @@
 </head>
 <body>
 
-<header>
-  <div class="container header-inner">
-    <a href="/" class="logo">ml0x</a>
-    <nav>
-      <a href="/">Home</a>
-      <a href="/research/">Research</a>
-      <a href="/tools/">Tools</a>
-      <a href="/guides/">Guides</a>
-      <a href="/answers/">Answers</a>
-      <div class="nav-right">
-        <a href="https://zovo.one/pricing?utm_source=ml0x.com&utm_medium=satellite&utm_campaign=nav-link" class="nav-pro" target="_blank">Go Pro &#10022;</a>
-        <a href="https://zovo.one/tools" class="nav-zovo">Zovo Tools</a>
-      </div>
-    </nav>
+<a class="skip-link" href="#main">Skip to content</a>
+<header class="site-nav">
+  <div class="site-nav__inner">
+    <div class="site-nav__left">
+      <a class="site-nav__logo" href="/">ml0x</a>
+      <nav class="site-nav__links" aria-label="Main">
+        <a href="/tools/" aria-current="page">Tools</a>
+        <a href="/calculators/">Calculators</a>
+        <a href="/guides/">Guides</a>
+        <a href="/answers/">Answers</a>
+        <a href="/research/">Research</a>
+      </nav>
+    </div>
+    <a class="nav-cta" href="https://zovo.one/pricing" target="_blank" rel="noopener">Full system, $99</a>
   </div>
 </header>
 
-<main class="container">
+<main id="main" class="container">
   <div class="breadcrumb">
     <a href="/">Home</a> <span>&rsaquo;</span> <a href="/tools/">Tools</a> <span>&rsaquo;</span> Attention Mechanism Visualizer
   </div>
@@ -149,15 +149,15 @@
 
   <div class="tool-card" style="margin-top:16px;">
     <h3>Attention Heatmap</h3>
-    <div id="heatmapStatus" style="color:#888;font-size:0.85rem;margin-bottom:8px;">Click "Visualize Attention" to generate the heatmap.</div>
+    <div id="heatmapStatus" style="color:#6a6a6a;font-size:0.85rem;margin-bottom:8px;">Click "Visualize Attention" to generate the heatmap.</div>
     <div style="overflow-x:auto;">
       <canvas id="heatmapCanvas" width="700" height="700" style="display:block;max-width:100%;"></canvas>
     </div>
-    <div style="display:flex;gap:20px;margin-top:12px;flex-wrap:wrap;font-size:0.82rem;color:#888;">
+    <div style="display:flex;gap:20px;margin-top:12px;flex-wrap:wrap;font-size:0.82rem;color:#6a6a6a;">
       <span>Row = Query token (attends FROM)</span>
       <span>Col = Key token (attends TO)</span>
       <span style="display:flex;align-items:center;gap:6px;">
-        <span style="display:inline-block;width:60px;height:10px;background:linear-gradient(to right,#0a0a0a,#22c55e);border-radius:2px;"></span>
+        <span style="display:inline-block;width:60px;height:10px;background:linear-gradient(to right,#FFFFFF,#157F3B);border:1px solid #E8E8E6;border-radius:2px;"></span>
         0 &rarr; 1
       </span>
     </div>
@@ -165,7 +165,7 @@
 
   <div class="tool-card" style="margin-top:16px;" id="arcCard">
     <h3>Top Attention Arcs (Selected Token)</h3>
-    <div id="arcStatus" style="color:#888;font-size:0.85rem;margin-bottom:8px;">Click a token in the heatmap row labels to inspect its outgoing attention.</div>
+    <div id="arcStatus" style="color:#6a6a6a;font-size:0.85rem;margin-bottom:8px;">Click a token in the heatmap row labels to inspect its outgoing attention.</div>
     <canvas id="arcCanvas" width="700" height="160" style="display:block;max-width:100%;"></canvas>
   </div>
 
@@ -239,13 +239,34 @@
 </main>
 
 <footer class="site-footer">
-  <div class="footer-inner">
-    <div class="footer-brand">Zovo Tools</div>
-    <div class="footer-tagline">Free developer tools by a solo dev. No tracking.</div>
-    <a href="https://zovo.one/pricing?utm_source=ml0x.com&utm_medium=satellite&utm_campaign=footer-link" class="footer-cta" target="_blank">Zovo Lifetime — $99 once, free forever &rarr;</a>
-    <div class="footer-copy">&copy; 2026 <a href="https://zovo.one">Zovo</a> &middot; 47/500 founding spots</div>
+  <nav class="footer-links-seo" aria-label="ML tools and content">
+    <a href="/tools/">ML tools</a>
+    <a href="/tools/learning-rate-finder.html">Learning rate finder</a>
+    <a href="/tools/confusion-matrix-calculator.html">Confusion matrix calculator</a>
+    <a href="/tools/neural-network-playground.html">Neural network playground</a>
+    <a href="/tools/attention-mechanism-visualizer.html">Attention visualizer</a>
+    <a href="/tools/dataset-splitter.html">Dataset splitter</a>
+    <a href="/calculators/kv-cache-size-calculator.html">KV cache calculator</a>
+    <a href="/calculators/llm-memory-calculator.html">LLM memory calculator</a>
+    <a href="/guides/">Guides</a>
+    <a href="/guides/gradient-descent-explained.html">Gradient descent</a>
+    <a href="/answers/">Answers</a>
+    <a href="/answers/ml-algorithm-comparison.html">Algorithm comparison</a>
+    <a href="/research/">Research</a>
+    <a href="/research/ml-cheatsheet.html">ML cheat sheet</a>
+    <a href="/about.html">About</a>
+  </nav>
+  <div class="site-footer__inner">
+    <div class="site-footer__brand">
+      <span class="site-footer__logo">ml0x</span>
+      <span class="site-footer__meta">by <a href="https://github.com/theluckystrike" target="_blank" rel="noopener">@theluckystrike</a></span>
+    </div>
+    <div class="site-footer__links">
+      <a href="https://github.com/theluckystrike/100xagenticdev" target="_blank" rel="noopener">GitHub</a>
+      <a href="/research/">Research</a>
+      <a href="https://twitter.com/_alphashark_" target="_blank" rel="noopener">X</a>
+    </div>
   </div>
-</footer>
 
 <nav class="zovo-network" aria-label="Zovo Tools Network">
     <div class="zovo-network-inner">
@@ -288,6 +309,7 @@
     <a href="https://zovo.one" rel="nofollow">Zovo — AI Dev Tools</a>
   </div>
 </div>
+</footer>
 
 <script>
 (function() {
@@ -361,10 +383,10 @@
   }
 
   function lerpColor(t) {
-    // 0 = #0a0a0a (bg), 1 = #22c55e (accent green)
-    var r = Math.round(10 + t * (34 - 10));
-    var g = Math.round(10 + t * (197 - 10));
-    var b = Math.round(10 + t * (94 - 10));
+    // 0 = #FFFFFF (surface), 1 = #157F3B (accent green)
+    var r = Math.round(255 + t * (21 - 255));
+    var g = Math.round(255 + t * (127 - 255));
+    var b = Math.round(255 + t * (59 - 255));
     return 'rgb(' + r + ',' + g + ',' + b + ')';
   }
 
@@ -387,20 +409,20 @@
     canvas.width = totalW;
     canvas.height = totalH;
     ctx.clearRect(0, 0, totalW, totalH);
-    ctx.fillStyle = '#0a0a0a';
+    ctx.fillStyle = '#FFFFFF';
     ctx.fillRect(0, 0, totalW, totalH);
 
     // Column headers (key tokens)
     ctx.save();
     ctx.font = '600 12px IBM Plex Sans, sans-serif';
-    ctx.fillStyle = '#888';
+    ctx.fillStyle = '#6a6a6a';
     ctx.textAlign = 'center';
     for (var j = 0; j < kn; j++) {
       var cx = labelW + j * cellSize + cellSize / 2;
       ctx.save();
       ctx.translate(cx, labelH - 8);
       ctx.rotate(-Math.PI / 4);
-      ctx.fillStyle = '#aaa';
+      ctx.fillStyle = '#6a6a6a';
       ctx.font = '600 11px IBM Plex Sans, sans-serif';
       ctx.textAlign = 'left';
       ctx.fillText(kTokens[j], 0, 0);
@@ -415,13 +437,13 @@
 
       // Row label
       ctx.font = (isHighlight ? '700' : '600') + ' 11px IBM Plex Sans, sans-serif';
-      ctx.fillStyle = isHighlight ? '#22c55e' : '#aaa';
+      ctx.fillStyle = isHighlight ? '#157F3B' : '#6a6a6a';
       ctx.textAlign = 'right';
       ctx.fillText(qTokens[i], labelW - 8, cy + 4);
 
       // Hover highlight strip
       if (isHighlight) {
-        ctx.fillStyle = 'rgba(34,197,94,0.06)';
+        ctx.fillStyle = 'rgba(21,127,59,0.10)';
         ctx.fillRect(labelW, labelH + i * cellSize, gridW, cellSize);
       }
 
@@ -435,7 +457,7 @@
         // Weight text for larger cells
         if (cellSize >= 44) {
           ctx.font = '10px IBM Plex Mono, monospace';
-          ctx.fillStyle = val > 0.4 ? '#0a0a0a' : '#555';
+          ctx.fillStyle = val > 0.4 ? '#FFFFFF' : '#767676';
           ctx.textAlign = 'center';
           ctx.fillText(val.toFixed(2), cx2 + cellSize / 2, cy2 + cellSize / 2 + 4);
         }
@@ -443,7 +465,7 @@
     }
 
     // Grid lines
-    ctx.strokeStyle = '#1e1e1e';
+    ctx.strokeStyle = '#E8E8E6';
     ctx.lineWidth = 0.5;
     for (var i = 0; i <= qn; i++) {
       ctx.beginPath();
@@ -460,7 +482,7 @@
 
     // Axis labels
     ctx.font = '11px IBM Plex Sans, sans-serif';
-    ctx.fillStyle = '#555';
+    ctx.fillStyle = '#6a6a6a';
     ctx.textAlign = 'center';
     ctx.fillText('Key tokens (attends TO)', labelW + gridW / 2, totalH - 4);
     ctx.save();
@@ -477,12 +499,12 @@
     var W = canvas.width, H = canvas.height;
 
     ctx.clearRect(0, 0, W, H);
-    ctx.fillStyle = '#0a0a0a';
+    ctx.fillStyle = '#FFFFFF';
     ctx.fillRect(0, 0, W, H);
 
     if (rowIdx < 0 || rowIdx >= matrix.length) {
       ctx.font = '13px IBM Plex Sans, sans-serif';
-      ctx.fillStyle = '#555';
+      ctx.fillStyle = '#6a6a6a';
       ctx.textAlign = 'center';
       ctx.fillText('Click a row label in the heatmap to inspect token attention arcs', W / 2, H / 2);
       return;
@@ -500,11 +522,11 @@
       if (w < 0.01) continue;
       var arcH = Math.min(40 + w * 110, H - 40);
       var alpha = 0.2 + w * 0.8;
-      var green = Math.round(94 + w * 109);
+      var green = Math.round(120 - w * 61);
       ctx.beginPath();
       ctx.moveTo(x1, tokenY - 14);
       ctx.quadraticCurveTo((x1 + x2) / 2, tokenY - arcH, x2, tokenY - 14);
-      ctx.strokeStyle = 'rgba(34,' + Math.round(197 * w + 80 * (1 - w)) + ',' + green + ',' + alpha + ')';
+      ctx.strokeStyle = 'rgba(21,' + Math.round(127 * w + 160 * (1 - w)) + ',' + green + ',' + alpha + ')';
       ctx.lineWidth = Math.max(1, w * 5);
       ctx.stroke();
     }
@@ -517,20 +539,20 @@
 
       ctx.beginPath();
       ctx.arc(tx, tokenY - 14, isQuery ? 9 : 6 + w * 6, 0, Math.PI * 2);
-      ctx.fillStyle = isQuery ? '#22c55e' : lerpColor(w);
+      ctx.fillStyle = isQuery ? '#157F3B' : lerpColor(w);
       ctx.fill();
-      ctx.strokeStyle = isQuery ? '#22c55e' : '#1e1e1e';
+      ctx.strokeStyle = isQuery ? '#157F3B' : '#D8D8D6';
       ctx.lineWidth = 1.5;
       ctx.stroke();
 
       ctx.font = (isQuery ? '700' : '500') + ' 11px IBM Plex Sans, sans-serif';
-      ctx.fillStyle = isQuery ? '#22c55e' : '#aaa';
+      ctx.fillStyle = isQuery ? '#157F3B' : '#4A4A4A';
       ctx.textAlign = 'center';
       ctx.fillText(qTokens[j], tx, tokenY + 10);
 
       if (!isQuery && w >= 0.05) {
         ctx.font = '10px IBM Plex Mono, monospace';
-        ctx.fillStyle = '#555';
+        ctx.fillStyle = '#767676';
         ctx.fillText(w.toFixed(2), tx, tokenY - 24);
       }
     }

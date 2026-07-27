@@ -20,7 +20,7 @@
 <meta name="twitter:description" content="Design ML pipelines visually and generate production-ready sklearn Pipeline and PyTorch code. Free, runs entirely in your browser.">
 <meta name="author" content="Michael Lip">
 <meta name="robots" content="index, follow">
-<link rel="stylesheet" href="/assets/style.css">
+<link rel="stylesheet" href="/assets/ml0x.css">
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
@@ -61,27 +61,32 @@
   ]
 }
 </script>
+<style>
+/* two visualisations side by side on desktop, stacked on a phone */
+.viz-pair { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 16px; }
+.viz-pair > .tool-card { margin: 0; }
+@media (max-width: 767px) { .viz-pair { grid-template-columns: 1fr; } }
+</style>
 </head>
 <body>
-
-<header>
-  <div class="container header-inner">
-    <a href="/" class="logo">ml0x</a>
-    <nav>
-      <a href="/">Home</a>
-      <a href="/research/">Research</a>
-      <a href="/tools/">Tools</a>
-      <a href="/guides/">Guides</a>
-      <a href="/answers/">Answers</a>
-      <div class="nav-right">
-        <a href="https://zovo.one/pricing?utm_source=ml0x.com&utm_medium=satellite&utm_campaign=nav-link" class="nav-pro" target="_blank">Go Pro &#10022;</a>
-        <a href="https://zovo.one/tools" class="nav-zovo">Zovo Tools</a>
-      </div>
-    </nav>
+<a class="skip-link" href="#main">Skip to content</a>
+<header class="site-nav">
+  <div class="site-nav__inner">
+    <div class="site-nav__left">
+      <a class="site-nav__logo" href="/">ml0x</a>
+      <nav class="site-nav__links" aria-label="Main">
+        <a href="/tools/">Tools</a>
+        <a href="/calculators/">Calculators</a>
+        <a href="/guides/">Guides</a>
+        <a href="/answers/">Answers</a>
+        <a href="/research/" aria-current="page">Research</a>
+      </nav>
+    </div>
+    <a class="nav-cta" href="https://zovo.one/pricing" target="_blank" rel="noopener">Full system, $99</a>
   </div>
 </header>
 
-<main class="container">
+<main id="main" class="container">
   <div class="breadcrumb">
     <a href="/">Home</a> <span>&rsaquo;</span> <a href="/research/">Research</a> <span>&rsaquo;</span> ML Pipeline Builder
   </div>
@@ -136,9 +141,9 @@
   </div>
 
   <div class="tool-card">
-    <h3>Pipeline Steps <span id="stepCount" style="color:#3b82f6;font-size:14px;">(0 steps)</span></h3>
-    <div id="pipelineSteps" style="min-height:60px;border:1px dashed #333;border-radius:8px;padding:12px;">
-      <p id="emptyMsg" style="color:#666;text-align:center;font-size:13px;">Click buttons above to add steps, or select a template.</p>
+    <h3>Pipeline Steps <span id="stepCount" style="color:var(--ink-muted);font-family:var(--font-mono);font-size:12px;">(0 steps)</span></h3>
+    <div id="pipelineSteps" style="min-height:60px;background:var(--surface-2);border:1px dashed var(--line-strong);border-radius:8px;padding:12px;">
+      <p id="emptyMsg" style="color:var(--ink-faint);text-align:center;font-size:13px;margin:0;">Click buttons above to add steps, or select a template.</p>
     </div>
     <div class="control-row" style="margin-top:12px;">
       <button class="btn" id="generateBtn">Generate Code</button>
@@ -150,7 +155,7 @@
   <div id="validationSection" style="display:none;">
     <div class="tool-card" id="validationCard">
       <h3 id="validationTitle">Pipeline Validation</h3>
-      <ul id="validationList" style="color:#ddd;line-height:1.8;list-style:none;padding:0;"></ul>
+      <ul id="validationList" style="color:var(--ink-2);line-height:1.8;list-style:none;padding:0;"></ul>
     </div>
   </div>
 
@@ -164,7 +169,7 @@
       <div class="stat-card"><div class="value" id="metStatus">--</div><div class="label">Status</div></div>
     </div>
 
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:16px;">
+    <div class="viz-pair">
       <div class="tool-card">
         <h3>Pipeline Visualization</h3>
         <div class="viz-container"><svg id="pipelineSvg" width="400" height="400" viewBox="0 0 400 400"></svg></div>
@@ -182,7 +187,7 @@
         <button class="btn btn-secondary codeTabBtn" data-tab="train">Train & Evaluate</button>
         <button class="btn btn-secondary codeTabBtn" data-tab="deploy">Deploy</button>
       </div>
-      <pre id="codeOutput" style="background:#0d0d0d;border:1px solid #333;border-radius:8px;padding:16px;color:#e0e0e0;font-size:13px;font-family:'IBM Plex Mono',monospace;overflow-x:auto;white-space:pre;line-height:1.5;max-height:500px;overflow-y:auto;"></pre>
+      <pre id="codeOutput" style="background:var(--surface-dark);border:0;border-radius:var(--radius);padding:20px 22px;color:var(--on-dark);font-size:13px;font-family:var(--font-mono);overflow-x:auto;white-space:pre;line-height:1.6;max-height:500px;overflow-y:auto;"></pre>
       <button class="btn btn-secondary" id="copyCodeBtn" style="margin-top:8px;">Copy Code</button>
     </div>
   </div>
@@ -289,14 +294,34 @@
 </main>
 
 <footer class="site-footer">
-    <div class="footer-inner">
-        <div class="footer-brand">Zovo Tools</div>
-        <div class="footer-tagline">Free developer tools by a solo dev. No tracking.</div>
-        <a href="https://zovo.one/pricing?utm_source=ml0x.com&utm_medium=satellite&utm_campaign=footer-link" class="footer-cta">Zovo Lifetime — $99 once, free forever &rarr;</a>
-        <div class="footer-copy">&copy; 2026 <a href="https://zovo.one">Zovo</a> &middot; 47/500 founding spots</div>
+  <nav class="footer-links-seo" aria-label="ML tools and content">
+    <a href="/tools/">ML tools</a>
+    <a href="/tools/learning-rate-finder.html">Learning rate finder</a>
+    <a href="/tools/confusion-matrix-calculator.html">Confusion matrix calculator</a>
+    <a href="/tools/neural-network-playground.html">Neural network playground</a>
+    <a href="/tools/attention-mechanism-visualizer.html">Attention visualizer</a>
+    <a href="/tools/dataset-splitter.html">Dataset splitter</a>
+    <a href="/calculators/kv-cache-size-calculator.html">KV cache calculator</a>
+    <a href="/calculators/llm-memory-calculator.html">LLM memory calculator</a>
+    <a href="/guides/">Guides</a>
+    <a href="/guides/gradient-descent-explained.html">Gradient descent</a>
+    <a href="/answers/">Answers</a>
+    <a href="/answers/ml-algorithm-comparison.html">Algorithm comparison</a>
+    <a href="/research/">Research</a>
+    <a href="/research/ml-cheatsheet.html">ML cheat sheet</a>
+    <a href="/about.html">About</a>
+  </nav>
+  <div class="site-footer__inner">
+    <div class="site-footer__brand">
+      <span class="site-footer__logo">ml0x</span>
+      <span class="site-footer__meta">by <a href="https://github.com/theluckystrike" target="_blank" rel="noopener">@theluckystrike</a></span>
     </div>
-</footer>
-
+    <div class="site-footer__links">
+      <a href="https://github.com/theluckystrike/100xagenticdev" target="_blank" rel="noopener">GitHub</a>
+      <a href="/research/">Research</a>
+      <a href="https://twitter.com/_alphashark_" target="_blank" rel="noopener">X</a>
+    </div>
+  </div>
 <nav class="zovo-network" aria-label="Zovo Tools Network">
     <div class="zovo-network-inner">
         <h3 class="zovo-network-title">Explore More Tools</h3>
@@ -338,6 +363,7 @@
     <a href="https://zovo.one" rel="nofollow">Zovo — AI Dev Tools</a>
   </div>
 </div>
+</footer>
 
 <script>
 (function() {
@@ -346,7 +372,7 @@
 
   var STEP_DEFS = {
     imputer: {
-      name: 'Missing Values', category: 'preprocessing', color: '#f59e0b', icon: 'IMP',
+      name: 'Missing Values', category: 'preprocessing', color: '#B45309', icon: 'IMP',
       options: [
         {id:'strategy', label:'Strategy', type:'select', values:['mean','median','most_frequent','constant'], default:'mean'}
       ],
@@ -354,7 +380,7 @@
       skImport: 'from sklearn.impute import SimpleImputer'
     },
     scaler: {
-      name: 'Feature Scaling', category: 'preprocessing', color: '#3b82f6', icon: 'SCL',
+      name: 'Feature Scaling', category: 'preprocessing', color: '#2563EB', icon: 'SCL',
       options: [
         {id:'type', label:'Scaler', type:'select', values:['StandardScaler','MinMaxScaler','RobustScaler','MaxAbsScaler'], default:'StandardScaler'}
       ],
@@ -362,7 +388,7 @@
       skImport: 'from sklearn.preprocessing import StandardScaler, MinMaxScaler, RobustScaler, MaxAbsScaler'
     },
     encoder: {
-      name: 'Categorical Encoding', category: 'preprocessing', color: '#a78bfa', icon: 'ENC',
+      name: 'Categorical Encoding', category: 'preprocessing', color: '#7C3AED', icon: 'ENC',
       options: [
         {id:'type', label:'Encoder', type:'select', values:['OneHotEncoder','OrdinalEncoder','LabelEncoder'], default:'OneHotEncoder'}
       ],
@@ -370,7 +396,7 @@
       skImport: 'from sklearn.preprocessing import OneHotEncoder, OrdinalEncoder'
     },
     pca: {
-      name: 'PCA', category: 'feature_eng', color: '#06b6d4', icon: 'PCA',
+      name: 'PCA', category: 'feature_eng', color: '#0E7490', icon: 'PCA',
       options: [
         {id:'n_components', label:'Components', type:'select', values:['0.95','0.99','10','20','50'], default:'0.95'}
       ],
@@ -378,7 +404,7 @@
       skImport: 'from sklearn.decomposition import PCA'
     },
     selector: {
-      name: 'Feature Selection', category: 'feature_eng', color: '#22c55e', icon: 'SEL',
+      name: 'Feature Selection', category: 'feature_eng', color: '#157F3B', icon: 'SEL',
       options: [
         {id:'method', label:'Method', type:'select', values:['SelectKBest','SelectPercentile','VarianceThreshold'], default:'SelectKBest'},
         {id:'k', label:'K / Percentile', type:'select', values:['10','20','50','auto'], default:'10'}
@@ -391,7 +417,7 @@
       skImport: 'from sklearn.feature_selection import SelectKBest, SelectPercentile, VarianceThreshold, f_classif, f_regression'
     },
     poly: {
-      name: 'Polynomial Features', category: 'feature_eng', color: '#e879f9', icon: 'PLY',
+      name: 'Polynomial Features', category: 'feature_eng', color: '#BE185D', icon: 'PLY',
       options: [
         {id:'degree', label:'Degree', type:'select', values:['2','3','4'], default:'2'},
         {id:'interaction', label:'Interaction Only', type:'select', values:['false','true'], default:'false'}
@@ -400,7 +426,7 @@
       skImport: 'from sklearn.preprocessing import PolynomialFeatures'
     },
     model: {
-      name: 'Model', category: 'model', color: '#ef4444', icon: 'MDL',
+      name: 'Model', category: 'model', color: '#C53030', icon: 'MDL',
       options: [
         {id:'algorithm', label:'Algorithm', type:'select', values:['RandomForest','GradientBoosting','LogisticRegression','SVM','KNN','MLP','LinearRegression','Ridge','Lasso','DecisionTree'], default:'RandomForest'}
       ],
@@ -430,7 +456,7 @@
       skImport: ''
     },
     eval: {
-      name: 'Evaluation', category: 'eval', color: '#fbbf24', icon: 'EVL',
+      name: 'Evaluation', category: 'eval', color: '#92400E', icon: 'EVL',
       options: [
         {id:'method', label:'Method', type:'select', values:['cross_val','holdout','both'], default:'cross_val'},
         {id:'cv', label:'CV Folds', type:'select', values:['3','5','10'], default:'5'}
@@ -471,21 +497,21 @@
     var empty = document.getElementById('emptyMsg');
     document.getElementById('stepCount').textContent = '(' + steps.length + ' step' + (steps.length !== 1 ? 's' : '') + ')';
     if (steps.length === 0) {
-      container.innerHTML = '<p id="emptyMsg" style="color:#666;text-align:center;font-size:13px;">Click buttons above to add steps, or select a template.</p>';
+      container.innerHTML = '<p id="emptyMsg" style="color:var(--ink-faint);text-align:center;font-size:13px;margin:0;">Click buttons above to add steps, or select a template.</p>';
       return;
     }
     var html = '';
     for (var i = 0; i < steps.length; i++) {
       var s = steps[i];
       var def = STEP_DEFS[s.type];
-      html += '<div style="display:flex;align-items:center;gap:10px;padding:10px;margin-bottom:8px;background:#1a1a1a;border:1px solid ' + def.color + '33;border-left:3px solid ' + def.color + ';border-radius:6px;">';
+      html += '<div style="display:flex;align-items:center;gap:10px;padding:10px;margin-bottom:8px;background:#FFFFFF;border:1px solid ' + def.color + '33;border-left:3px solid ' + def.color + ';border-radius:6px;">';
       html += '<div style="font-size:11px;font-weight:700;color:' + def.color + ';width:32px;text-align:center;">' + def.icon + '</div>';
       html += '<div style="flex:1;">';
-      html += '<div style="font-weight:600;color:#e0e0e0;font-size:13px;margin-bottom:4px;">' + (i+1) + '. ' + def.name + '</div>';
+      html += '<div style="font-weight:600;color:#1A1A1A;font-size:14px;margin-bottom:4px;">' + (i+1) + '. ' + def.name + '</div>';
       html += '<div style="display:flex;gap:8px;flex-wrap:wrap;">';
       for (var j = 0; j < def.options.length; j++) {
         var opt = def.options[j];
-        html += '<select data-step="' + s.id + '" data-opt="' + opt.id + '" style="padding:4px 8px;background:#111;border:1px solid #333;border-radius:4px;color:#ccc;font-size:11px;">';
+        html += '<select data-step="' + s.id + '" data-opt="' + opt.id + '" style="width:auto;min-height:38px;padding:6px 10px;background:#FFFFFF;border:1px solid #D8D8D6;border-radius:6px;color:#1A1A1A;font-size:16px;">';
         for (var k = 0; k < opt.values.length; k++) {
           html += '<option value="' + opt.values[k] + '"' + (s.opts[opt.id] === opt.values[k] ? ' selected' : '') + '>' + opt.values[k] + '</option>';
         }
@@ -493,9 +519,9 @@
       }
       html += '</div></div>';
       html += '<div style="display:flex;gap:4px;">';
-      html += '<button class="move-btn" data-id="' + s.id + '" data-dir="-1" style="padding:2px 8px;background:#222;border:1px solid #444;border-radius:3px;color:#aaa;cursor:pointer;font-size:12px;">&#9650;</button>';
-      html += '<button class="move-btn" data-id="' + s.id + '" data-dir="1" style="padding:2px 8px;background:#222;border:1px solid #444;border-radius:3px;color:#aaa;cursor:pointer;font-size:12px;">&#9660;</button>';
-      html += '<button class="remove-btn" data-id="' + s.id + '" style="padding:2px 8px;background:#331111;border:1px solid #553333;border-radius:3px;color:#ef4444;cursor:pointer;font-size:12px;">&#10005;</button>';
+      html += '<button class="move-btn" data-id="' + s.id + '" data-dir="-1" style="width:auto;min-height:32px;padding:2px 8px;background:#FFFFFF;border:1px solid #D8D8D6;border-radius:4px;color:#4A4A4A;cursor:pointer;font-size:12px;">&#9650;</button>';
+      html += '<button class="move-btn" data-id="' + s.id + '" data-dir="1" style="width:auto;min-height:32px;padding:2px 8px;background:#FFFFFF;border:1px solid #D8D8D6;border-radius:4px;color:#4A4A4A;cursor:pointer;font-size:12px;">&#9660;</button>';
+      html += '<button class="remove-btn" data-id="' + s.id + '" style="width:auto;min-height:32px;padding:2px 8px;background:#FFFFFF;border:1px solid #E7C3C3;border-radius:4px;color:#C53030;cursor:pointer;font-size:12px;">&#10005;</button>';
       html += '</div></div>';
     }
     container.innerHTML = html;
@@ -544,7 +570,7 @@
     var list = document.getElementById('validationList');
     list.innerHTML = '';
     var icons = {error: '&#10060;', warning: '&#9888;', info: '&#8505;', success: '&#9989;'};
-    var colors = {error: '#ef4444', warning: '#f59e0b', info: '#3b82f6', success: '#22c55e'};
+    var colors = {error: '#C53030', warning: '#B45309', info: '#2563EB', success: '#157F3B'};
     for (var i = 0; i < issues.length; i++) {
       list.innerHTML += '<li style="padding:6px 0;color:' + colors[issues[i].type] + ';">' + icons[issues[i].type] + ' ' + issues[i].msg + '</li>';
     }
@@ -707,7 +733,7 @@
     document.getElementById('metModel').textContent = modelStep ? modelStep.opts.algorithm : 'None';
     document.getElementById('metFramework').textContent = fw === 'sklearn' ? 'scikit-learn' : 'PyTorch';
     document.getElementById('metStatus').textContent = 'Valid';
-    document.getElementById('metStatus').style.color = '#22c55e';
+    document.getElementById('metStatus').style.color = '#157F3B';
 
     updateCodeDisplay();
     drawPipelineSvg();
@@ -731,7 +757,7 @@
 
   function drawPipelineSvg() {
     var svg = document.getElementById('pipelineSvg');
-    var html = '<rect width="400" height="400" fill="#141414"/>';
+    var html = '<rect width="400" height="400" fill="#FFFFFF"/>';
     if (steps.length === 0) { svg.innerHTML = html; return; }
 
     var boxW = 140, boxH = 44;
@@ -746,13 +772,13 @@
 
       if (i > 0) {
         var prevY = startY + (i-1) * (boxH + gap) + boxH;
-        html += '<line x1="200" y1="'+prevY+'" x2="200" y2="'+y+'" stroke="#555" stroke-width="1.5"/>';
-        html += '<polygon points="196,'+(y-2)+' 204,'+(y-2)+' 200,'+(y+2)+'" fill="#555"/>';
+        html += '<line x1="200" y1="'+prevY+'" x2="200" y2="'+y+'" stroke="#B8B8B6" stroke-width="1.5"/>';
+        html += '<polygon points="196,'+(y-2)+' 204,'+(y-2)+' 200,'+(y+2)+'" fill="#B8B8B6"/>';
       }
-      html += '<rect x="'+startX+'" y="'+y+'" width="'+boxW+'" height="'+boxH+'" fill="#1a1a1a" stroke="'+def.color+'" stroke-width="1.5" rx="6"/>';
+      html += '<rect x="'+startX+'" y="'+y+'" width="'+boxW+'" height="'+boxH+'" fill="#FFFFFF" stroke="'+def.color+'" stroke-width="1.5" rx="6"/>';
       html += '<rect x="'+startX+'" y="'+y+'" width="4" height="'+boxH+'" fill="'+def.color+'" rx="2"/>';
-      html += '<text x="'+(startX+14)+'" y="'+(y+18)+'" fill="'+def.color+'" font-size="10" font-weight="700" font-family="IBM Plex Mono,monospace">'+def.icon+'</text>';
-      html += '<text x="'+(startX+46)+'" y="'+(y+18)+'" fill="#e0e0e0" font-size="12" font-weight="600" font-family="IBM Plex Sans,sans-serif">'+def.name+'</text>';
+      html += '<text x="'+(startX+14)+'" y="'+(y+18)+'" fill="'+def.color+'" font-size="10" font-weight="700" font-family="JetBrains Mono,monospace">'+def.icon+'</text>';
+      html += '<text x="'+(startX+46)+'" y="'+(y+18)+'" fill="#1A1A1A" font-size="12" font-weight="600" font-family="Inter,sans-serif">'+def.name+'</text>';
 
       var optText = '';
       if (s.type === 'model') optText = s.opts.algorithm;
@@ -761,15 +787,15 @@
       else if (s.type === 'encoder') optText = s.opts.type;
       else if (s.type === 'pca') optText = 'n=' + s.opts.n_components;
       else if (s.type === 'eval') optText = s.opts.method;
-      if (optText) html += '<text x="'+(startX+46)+'" y="'+(y+34)+'" fill="#888" font-size="10" font-family="IBM Plex Mono,monospace">'+optText+'</text>';
+      if (optText) html += '<text x="'+(startX+46)+'" y="'+(y+34)+'" fill="#6a6a6a" font-size="10" font-family="JetBrains Mono,monospace">'+optText+'</text>';
     }
     svg.innerHTML = html;
   }
 
   function drawFlowSvg() {
     var svg = document.getElementById('flowSvg');
-    var html = '<rect width="400" height="400" fill="#141414"/>';
-    var phases = {preprocessing: {name:'Preprocessing', color:'#f59e0b', steps:[]}, feature_eng: {name:'Feature Eng.', color:'#06b6d4', steps:[]}, model: {name:'Model', color:'#ef4444', steps:[]}, eval: {name:'Evaluation', color:'#fbbf24', steps:[]}};
+    var html = '<rect width="400" height="400" fill="#FFFFFF"/>';
+    var phases = {preprocessing: {name:'Preprocessing', color:'#B45309', steps:[]}, feature_eng: {name:'Feature Eng.', color:'#0E7490', steps:[]}, model: {name:'Model', color:'#C53030', steps:[]}, eval: {name:'Evaluation', color:'#92400E', steps:[]}};
     for (var i = 0; i < steps.length; i++) {
       var cat = STEP_DEFS[steps[i].type].category;
       phases[cat].steps.push(steps[i]);
@@ -781,7 +807,7 @@
     var boxW = 300, boxH = 60;
     var startX = 50, startY = 30, gap = 20;
 
-    html += '<text x="200" y="18" text-anchor="middle" fill="#aaa" font-size="11" font-family="IBM Plex Sans,sans-serif">Data Flow: Raw Input → Predictions</text>';
+    html += '<text x="200" y="18" text-anchor="middle" fill="#6a6a6a" font-size="11" font-family="Inter,sans-serif">Data Flow: Raw Input → Predictions</text>';
 
     for (var p = 0; p < phaseKeys.length; p++) {
       var phase = phases[phaseKeys[p]];
@@ -794,8 +820,8 @@
         html += '<polygon points="196,'+(y-2)+' 204,'+(y-2)+' 200,'+(y+3)+'" fill="'+phase.color+'" opacity="0.6"/>';
       }
 
-      html += '<rect x="'+startX+'" y="'+y+'" width="'+boxW+'" height="'+boxH+'" fill="#1a1a1a" stroke="'+phase.color+'" stroke-width="1" rx="8" opacity="0.9"/>';
-      html += '<text x="'+(startX+12)+'" y="'+(y+20)+'" fill="'+phase.color+'" font-size="12" font-weight="700" font-family="IBM Plex Sans,sans-serif">'+phase.name+'</text>';
+      html += '<rect x="'+startX+'" y="'+y+'" width="'+boxW+'" height="'+boxH+'" fill="#FFFFFF" stroke="'+phase.color+'" stroke-width="1" rx="8" opacity="0.9"/>';
+      html += '<text x="'+(startX+12)+'" y="'+(y+20)+'" fill="'+phase.color+'" font-size="12" font-weight="700" font-family="Inter,sans-serif">'+phase.name+'</text>';
 
       var stepNames = phase.steps.map(function(s) {
         if (s.type === 'model') return s.opts.algorithm;
@@ -804,7 +830,7 @@
         if (s.type === 'encoder') return s.opts.type;
         return STEP_DEFS[s.type].name;
       });
-      html += '<text x="'+(startX+12)+'" y="'+(y+40)+'" fill="#bbb" font-size="11" font-family="IBM Plex Mono,monospace">'+stepNames.join(' → ')+'</text>';
+      html += '<text x="'+(startX+12)+'" y="'+(y+40)+'" fill="#4A4A4A" font-size="11" font-family="JetBrains Mono,monospace">'+stepNames.join(' → ')+'</text>';
     }
     svg.innerHTML = html;
   }

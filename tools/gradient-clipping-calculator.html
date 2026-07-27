@@ -7,6 +7,11 @@
   <meta name="description" content="Interactive gradient clipping calculator: clip by value, norm, or global norm. Visual comparison, recommended thresholds, PyTorch/TF code snippets.">
   <meta name="robots" content="index, follow">
   <link rel="canonical" href="https://ml0x.com/tools/gradient-clipping-calculator">
+<meta property="og:title" content="Gradient Clipping Calculator — Prevent Exploding Gradients">
+<meta property="og:description" content="Interactive gradient clipping calculator: clip by value, norm, or global norm. Visual comparison, recommended thresholds, PyTorch/TF code snippets.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://ml0x.com/tools/gradient-clipping-calculator">
+  <link rel="stylesheet" href="/assets/ml0x.css">
   <!-- JSON-LD FAQ -->
   <script type="application/ld+json">
   {
@@ -49,253 +54,85 @@
   }
   </script>
   <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
+    /* tool-specific structure only; every colour is a design-system token */
+    .stat-item { display: flex; flex-direction: column; box-shadow: 0 0 0 1px var(--line); }
+    .stat-item .stat-label {
+      font-family: var(--font-mono); font-size: 11px; font-weight: 500;
+      color: var(--ink-muted); text-transform: uppercase; letter-spacing: 0.8px;
     }
-    body {
-      background: #0f172a;
-      color: #e2e8f0;
-      font-family: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
-      padding: 1.5rem 1rem;
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
+    .stat-item .stat-value {
+      font-family: var(--font-mono); font-size: 20px; font-weight: 700;
+      color: var(--ink); letter-spacing: -0.5px; font-variant-numeric: tabular-nums;
     }
-    .container {
-      max-width: 1100px;
-      width: 100%;
-    }
-    header {
-      text-align: center;
-      margin-bottom: 2rem;
-    }
-    h1 {
-      font-size: 2rem;
-      font-weight: 600;
-      letter-spacing: -0.02em;
-      background: linear-gradient(135deg, #38bdf8, #818cf8);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-      margin-bottom: 0.25rem;
-    }
-    .subhead {
-      color: #94a3b8;
-      font-size: 1rem;
-    }
-    .card {
-      background: #1e293b;
-      border-radius: 1.25rem;
-      padding: 1.5rem;
-      margin-bottom: 1.8rem;
-      box-shadow: 0 8px 20px rgba(0,0,0,0.5);
-      border: 1px solid #334155;
-    }
-    .grid-2 {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 1.5rem;
-    }
-    @media (max-width: 640px) {
-      .grid-2 {
-        grid-template-columns: 1fr;
-        gap: 1rem;
-      }
-      h1 { font-size: 1.6rem; }
-    }
-    label {
-      display: block;
-      font-size: 0.9rem;
-      font-weight: 500;
-      margin-bottom: 0.4rem;
-      color: #cbd5e1;
-    }
-    input, select {
-      width: 100%;
-      padding: 0.7rem 0.9rem;
-      background: #0f172a;
-      border: 1px solid #334155;
-      border-radius: 0.75rem;
-      color: #f1f5f9;
-      font-size: 0.95rem;
-      transition: border 0.2s;
-    }
-    input:focus, select:focus {
-      outline: none;
-      border-color: #38bdf8;
-      box-shadow: 0 0 0 2px rgba(56,189,248,0.25);
-    }
-    .input-group {
-      margin-bottom: 1.2rem;
-    }
-    .flex-row {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 0.8rem;
-      align-items: center;
-    }
-    .btn {
-      background: #38bdf8;
-      color: #0f172a;
-      font-weight: 600;
-      padding: 0.7rem 1.6rem;
-      border: none;
-      border-radius: 2rem;
-      font-size: 1rem;
-      cursor: pointer;
-      transition: all 0.2s;
-      box-shadow: 0 2px 8px rgba(56,189,248,0.3);
-    }
-    .btn:hover {
-      background: #7dd3fc;
-      transform: scale(1.02);
-    }
-    .btn-outline {
-      background: transparent;
-      border: 1px solid #38bdf8;
-      color: #38bdf8;
-      box-shadow: none;
-    }
-    .btn-outline:hover {
-      background: #1e293b;
-    }
-    .stats-grid {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 1rem 1.8rem;
-      background: #0f172a;
-      padding: 1rem 1.2rem;
-      border-radius: 1rem;
-      margin: 1rem 0;
-      border: 1px solid #2d3a52;
-    }
-    .stat-item {
-      display: flex;
-      flex-direction: column;
-    }
-    .stat-label {
-      font-size: 0.75rem;
-      text-transform: uppercase;
-      letter-spacing: 0.04em;
-      color: #94a3b8;
-    }
-    .stat-value {
-      font-size: 1.2rem;
-      font-weight: 600;
-      font-variant-numeric: tabular-nums;
-    }
-    .bar-chart {
-      margin: 1.2rem 0 0.5rem;
-    }
-    .bar-row {
-      display: flex;
-      align-items: center;
-      gap: 0.6rem;
-      margin-bottom: 0.5rem;
-      flex-wrap: wrap;
-    }
+    .bar-chart { margin: 16px 0 4px; }
+    .bar-row { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; flex-wrap: wrap; }
     .bar-label {
-      width: 3.2rem;
-      font-size: 0.8rem;
-      color: #94a3b8;
-      text-align: right;
-      overflow: hidden;
-      text-overflow: ellipsis;
+      width: 3.2rem; font-family: var(--font-mono); font-size: 12px;
+      color: var(--ink-muted); text-align: right;
+      overflow: hidden; text-overflow: ellipsis;
     }
-    .bar-container {
-      flex: 1;
-      display: flex;
-      align-items: center;
-      gap: 0.3rem;
-      min-width: 120px;
-    }
+    .bar-container { flex: 1; display: flex; align-items: center; gap: 4px; min-width: 120px; }
     .bar-original {
-      height: 1.2rem;
-      background: #475569;
-      border-radius: 999px;
-      transition: width 0.2s;
-      min-width: 4px;
+      height: 14px; background: var(--ink-muted); border-radius: 999px;
+      transition: width 0.2s; min-width: 4px;
     }
     .bar-clipped {
-      height: 1.2rem;
-      background: #38bdf8;
-      border-radius: 999px;
-      transition: width 0.2s;
-      min-width: 4px;
+      height: 14px; background: var(--s1); border-radius: 999px;
+      transition: width 0.2s; min-width: 4px;
     }
     .bar-legend {
-      display: flex;
-      gap: 1.2rem;
-      justify-content: flex-end;
-      font-size: 0.8rem;
-      margin-bottom: 0.3rem;
+      display: flex; gap: 18px; justify-content: flex-end;
+      font-family: var(--font-mono); font-size: 11px; color: var(--ink-muted);
+      margin-bottom: 6px;
     }
     .legend-dot {
-      display: inline-block;
-      width: 10px;
-      height: 10px;
-      border-radius: 4px;
-      margin-right: 0.3rem;
+      display: inline-block; width: 10px; height: 10px;
+      border-radius: 3px; margin-right: 6px;
     }
     .code-snippet {
-      background: #0f172a;
-      padding: 1rem;
-      border-radius: 0.8rem;
-      font-family: 'Fira Code', 'JetBrains Mono', monospace;
-      font-size: 0.8rem;
-      overflow-x: auto;
-      white-space: pre-wrap;
-      word-break: break-word;
-      border: 1px solid #2d3a52;
-      color: #e2e8f0;
-      margin-top: 0.8rem;
+      background: var(--surface-2); border: 1px solid var(--line);
+      border-radius: var(--radius-sm); padding: 16px; margin-top: 12px;
+      color: var(--ink); font-family: var(--font-mono);
+      font-size: 12.5px; line-height: 1.7;
+      overflow-x: auto; white-space: pre-wrap; word-break: break-word;
     }
     .threshold-badge {
-      display: inline-block;
-      background: #1e293b;
-      padding: 0.2rem 0.8rem;
-      border-radius: 999px;
-      font-size: 0.75rem;
-      border: 1px solid #334155;
-      margin: 0.2rem 0.2rem;
-    }
-    .footer {
-      text-align: center;
-      margin-top: 2.5rem;
-      color: #64748b;
-      font-size: 0.9rem;
-      border-top: 1px solid #1e293b;
-      padding-top: 1.5rem;
+      display: inline-block; font-family: var(--font-mono); font-size: 11px;
+      color: var(--ink-muted); background: var(--surface); border: 1px solid var(--line);
+      padding: 4px 12px; border-radius: var(--radius-pill); margin: 2px 4px 2px 0;
     }
     .inline-code {
-      background: #1e293b;
-      padding: 0.1rem 0.4rem;
-      border-radius: 6px;
-      font-family: monospace;
-      font-size: 0.85rem;
+      font-family: var(--font-mono); font-size: 0.9em;
+      background: var(--surface-2); color: var(--ink);
+      padding: 2px 6px; border-radius: 4px;
     }
-    .note {
-      color: #94a3b8;
-      font-size: 0.85rem;
-      margin-top: 0.3rem;
-    }
-    .flex-between {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      flex-wrap: wrap;
-    }
+    .flex-between { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; }
   </style>
 </head>
 <body>
+<a class="skip-link" href="#main">Skip to content</a>
+<header class="site-nav">
+  <div class="site-nav__inner">
+    <div class="site-nav__left">
+      <a class="site-nav__logo" href="/">ml0x</a>
+      <nav class="site-nav__links" aria-label="Main">
+        <a href="/tools/" aria-current="page">Tools</a>
+        <a href="/calculators/">Calculators</a>
+        <a href="/guides/">Guides</a>
+        <a href="/answers/">Answers</a>
+        <a href="/research/">Research</a>
+      </nav>
+    </div>
+    <a class="nav-cta" href="https://zovo.one/pricing" target="_blank" rel="noopener">Full system, $99</a>
+  </div>
+</header>
+
+<main id="main">
 <div class="container">
-  <header>
-    <h1>⚡ Gradient Clipping Calculator</h1>
+  <div class="page-head">
+    <h1>Gradient Clipping Calculator</h1>
     <div class="subhead">Prevent exploding gradients · interactive analysis</div>
-  </header>
+  </div>
 
   <div class="card">
     <div class="grid-2">
@@ -320,8 +157,8 @@
           <button class="btn" id="computeBtn">Compute clipping</button>
           <button class="btn btn-outline" id="resetBtn">Reset defaults</button>
         </div>
-        <div style="margin-top: 0.8rem;">
-          <span style="font-weight: 500; color:#94a3b8;">Recommended thresholds: </span>
+        <div style="margin-top: 14px;">
+          <span class="hint">Recommended thresholds: </span>
           <span class="threshold-badge">RNN 1.0</span>
           <span class="threshold-badge">Transformer 1.0</span>
           <span class="threshold-badge">CNN 5.0</span>
@@ -335,46 +172,43 @@
           <div class="stat-item"><span class="stat-label">Method</span><span class="stat-value" id="methodDisplay">clip_by_norm</span></div>
         </div>
         <div class="bar-legend">
-          <span><span class="legend-dot" style="background:#475569;"></span>Original</span>
-          <span><span class="legend-dot" style="background:#38bdf8;"></span>Clipped</span>
+          <span><span class="legend-dot" style="background:#6a6a6a;"></span>Original</span>
+          <span><span class="legend-dot" style="background:#2563EB;"></span>Clipped</span>
         </div>
         <div id="barChartContainer" class="bar-chart">
-          <div style="color:#64748b; font-size:0.9rem; padding:0.5rem 0;">Enter gradients and click compute.</div>
+          <div style="color:#6a6a6a; font-size:14px; padding:8px 0;">Enter gradients and click compute.</div>
         </div>
       </div>
     </div>
   </div>
 
   <!-- when to use & code snippets -->
-  <div class="grid-2" style="margin-bottom:1.8rem;">
+  <div class="grid-2" style="margin-bottom:28px;">
     <div class="card">
-      <h3 style="font-weight:500; margin-bottom:0.8rem; color:#38bdf8;">📘 When to use each method</h3>
-      <ul style="list-style: none; line-height:1.6;">
-        <li><strong style="color:#e2e8f0;">Clip by value</strong> – bound each element individually. Use when you want to avoid extreme single values; may distort direction.</li>
-        <li><strong style="color:#e2e8f0;">Clip by norm</strong> – scale whole gradient if L2 norm > threshold. Preserves direction. Default for RNN, Transformer.</li>
-        <li><strong style="color:#e2e8f0;">Global norm</strong> – treat all parameters as one vector. Use for multi‑layer / shared parameters.</li>
+      <h3>When to use each method</h3>
+      <ul style="list-style: none; padding-left: 0; line-height:1.6;">
+        <li><strong>Clip by value</strong> – bound each element individually. Use when you want to avoid extreme single values; may distort direction.</li>
+        <li><strong>Clip by norm</strong> – scale whole gradient if L2 norm > threshold. Preserves direction. Default for RNN, Transformer.</li>
+        <li><strong>Global norm</strong> – treat all parameters as one vector. Use for multi‑layer / shared parameters.</li>
       </ul>
-      <div style="margin-top:0.8rem; background:#0f172a; padding:0.6rem 1rem; border-radius:0.8rem;">
-        <span style="color:#94a3b8;">🔹 RNN: 1.0 &nbsp;|&nbsp; Transformer: 1.0 &nbsp;|&nbsp; CNN: 5.0</span>
+      <div class="note" style="margin-top:14px;">
+        <span>RNN: 1.0 &nbsp;|&nbsp; Transformer: 1.0 &nbsp;|&nbsp; CNN: 5.0</span>
       </div>
     </div>
     <div class="card">
-      <h3 style="font-weight:500; margin-bottom:0.8rem; color:#38bdf8;">🧩 PyTorch / TF snippets</h3>
+      <h3>PyTorch / TF snippets</h3>
       <div class="code-snippet" id="codeSnippet">
-        <span style="color:#38bdf8;"># PyTorch (clip by norm)</span>
+        <span style="color:#2563EB;"># PyTorch (clip by norm)</span>
         torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=1.0)
         <br><br>
-        <span style="color:#38bdf8;"># TensorFlow (clip by global norm)</span>
+        <span style="color:#2563EB;"># TensorFlow (clip by global norm)</span>
         tf.clip_by_global_norm(gradients, clip_norm=1.0)
       </div>
-      <p class="note">Snippet updates with selected method & threshold.</p>
+      <p class="note">Snippet updates with selected method &amp; threshold.</p>
     </div>
   </div>
-
-  <div class="footer">
-    © 2025 ml0x.com
-  </div>
 </div>
+</main>
 
 <script>
   (function() {
@@ -404,7 +238,7 @@
       const raw = gradInput.value;
       const grads = parseGrads(raw);
       if (grads.length === 0) {
-        barChartContainer.innerHTML = `<div style="color:#ef4444; padding:0.5rem 0;">⚠️ Please enter valid comma-separated numbers.</div>`;
+        barChartContainer.innerHTML = `<div style="color:#C53030; padding:0.5rem 0;">Please enter valid comma-separated numbers.</div>`;
         origGlobalNormEl.textContent = '—';
         clippedGlobalNormEl.textContent = '—';
         scalingFactorEl.textContent = '—';
@@ -416,7 +250,7 @@
       const method = methodSelect.value;
       const threshold = parseFloat(thresholdInput.value);
       if (isNaN(threshold) || threshold <= 0) {
-        barChartContainer.innerHTML = `<div style="color:#ef4444;">⚠️ Threshold must be positive.</div>`;
+        barChartContainer.innerHTML = `<div style="color:#C53030;">Threshold must be positive.</div>`;
         return;
       }
 
@@ -432,7 +266,7 @@
         // clip each element to [-threshold, threshold]
         clippedGrads = grads.map(g => Math.min(Math.max(g, -threshold), threshold));
         clippedGlobal = l2Norm(clippedGrads);
-        // scaling factor is not uniform; we compute effective scaling per element? show average factor? 
+        // scaling factor is not uniform; we compute effective scaling per element? show average factor?
         // For display: we compute factor as ratio of norms (global clipped / original global) if original >0
         scalingFactor = globalNorm > 1e-12 ? (clippedGlobal / globalNorm) : 1.0;
       } else if (method === 'clip_by_norm') {
@@ -480,7 +314,7 @@
               <div class="bar-original" style="width:${Math.max(origPct, 2)}%;"></div>
               <div class="bar-clipped" style="width:${Math.max(clipPct, 2)}%;"></div>
             </div>
-            <span style="font-size:0.7rem; min-width:3.2rem; text-align:right; color:#94a3b8;">${origVal.toFixed(2)} → ${clipVal.toFixed(2)}</span>
+            <span style="font-size:0.7rem; min-width:3.2rem; text-align:right; color:#6a6a6a;">${origVal.toFixed(2)} → ${clipVal.toFixed(2)}</span>
           </div>
         `;
       }
@@ -518,12 +352,43 @@
     thresholdInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') compute(); });
     methodSelect.addEventListener('change', compute);
     thresholdInput.addEventListener('input', function() {
-      // optional: but we keep compute button primary. we can auto compute after short delay? 
+      // optional: but we keep compute button primary. we can auto compute after short delay?
       // we'll just rely on button, but also on change for method.
     });
     // also compute on threshold change? we add for convenience
     thresholdInput.addEventListener('change', compute);
   })();
 </script>
+
+<footer class="site-footer">
+  <nav class="footer-links-seo" aria-label="ML tools and content">
+    <a href="/tools/">ML tools</a>
+    <a href="/tools/learning-rate-finder.html">Learning rate finder</a>
+    <a href="/tools/confusion-matrix-calculator.html">Confusion matrix calculator</a>
+    <a href="/tools/neural-network-playground.html">Neural network playground</a>
+    <a href="/tools/attention-mechanism-visualizer.html">Attention visualizer</a>
+    <a href="/tools/dataset-splitter.html">Dataset splitter</a>
+    <a href="/calculators/kv-cache-size-calculator.html">KV cache calculator</a>
+    <a href="/calculators/llm-memory-calculator.html">LLM memory calculator</a>
+    <a href="/guides/">Guides</a>
+    <a href="/guides/gradient-descent-explained.html">Gradient descent</a>
+    <a href="/answers/">Answers</a>
+    <a href="/answers/ml-algorithm-comparison.html">Algorithm comparison</a>
+    <a href="/research/">Research</a>
+    <a href="/research/ml-cheatsheet.html">ML cheat sheet</a>
+    <a href="/about.html">About</a>
+  </nav>
+  <div class="site-footer__inner">
+    <div class="site-footer__brand">
+      <span class="site-footer__logo">ml0x</span>
+      <span class="site-footer__meta">by <a href="https://github.com/theluckystrike" target="_blank" rel="noopener">@theluckystrike</a></span>
+    </div>
+    <div class="site-footer__links">
+      <a href="https://github.com/theluckystrike/100xagenticdev" target="_blank" rel="noopener">GitHub</a>
+      <a href="/research/">Research</a>
+      <a href="https://twitter.com/_alphashark_" target="_blank" rel="noopener">X</a>
+    </div>
+  </div>
+</footer>
 </body>
 </html>

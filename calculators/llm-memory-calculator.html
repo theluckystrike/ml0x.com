@@ -19,39 +19,32 @@
 <meta name="twitter:title" content="LLM memory calculator, weights and KV and optimizer for 19 models">
 <meta name="twitter:description" content="Size LLM weights, KV cache, gradients and optimizer states from exact fetched parameter counts.">
 <meta name="author" content="Michael Lip">
-<link rel="stylesheet" href="/assets/style.css">
+<link rel="stylesheet" href="/assets/ml0x.css">
 <style>
-.llm-calc{max-width:880px;margin:0 auto;padding:1rem 0}
-.llm-calc nav[aria-label="Breadcrumb"]{font-size:.85rem;color:var(--text-muted);margin-bottom:1rem}
-.llm-calc h1{font-family:var(--font-display);font-size:2rem;margin:.25rem 0 .4rem}
-.llm-calc h2{font-family:var(--font-display);font-size:1.35rem;color:var(--accent);margin:2.25rem 0 .75rem}
-.llm-calc h3{font-size:1.1rem;margin:1.5rem 0 .5rem}
-.llm-calc p{color:var(--text-muted);margin-bottom:1rem;line-height:1.7}
-.llm-calc code{font-family:var(--font-display);background:var(--bg-card);padding:2px 6px;border-radius:3px;font-size:.9em;color:var(--text)}
-.llm-calc .byline{color:var(--text-muted);font-size:.9rem}
-.llm-calc table{width:100%;border-collapse:collapse;font-size:.85rem;margin:1.5rem 0;display:block;overflow-x:auto}
-.llm-calc th{text-align:left;padding:10px 12px;border-bottom:2px solid var(--border);color:var(--accent);font-weight:600;font-size:.74rem;text-transform:uppercase;letter-spacing:.4px;white-space:nowrap}
-.llm-calc td{padding:9px 12px;border-bottom:1px solid var(--border);white-space:nowrap;vertical-align:top}
-.llm-calc tbody tr:hover{background:var(--bg-hover)}
-.llm-calc .tool{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:20px;margin:1.5rem 0}
-.llm-calc .tool label{display:block;font-size:.72rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:.5px;font-weight:600;margin:.9rem 0 .3rem}
-.llm-calc .tool select,.llm-calc .tool input{background:var(--bg);border:1px solid var(--border);border-radius:var(--radius);color:var(--text);padding:.6rem .7rem;font-family:var(--font-body);font-size:1rem;min-height:44px;width:100%;max-width:320px;box-sizing:border-box}
-.llm-calc .tool select:focus,.llm-calc .tool input:focus{outline:none;border-color:var(--accent)}
-.llm-calc .tool .mode{margin:1rem 0 .25rem}
-.llm-calc .tool .mode label{display:inline-flex;align-items:center;gap:.4rem;text-transform:none;letter-spacing:0;font-size:.95rem;color:var(--text);margin-right:1.25rem}
+.llm-calc{max-width:880px;margin:0 auto;padding:8px 0}
+.llm-calc nav[aria-label="Breadcrumb"]{font-family:var(--font-mono);font-size:12px;color:var(--ink-faint);padding:24px 0 0;margin:0 0 8px}
+.llm-calc nav[aria-label="Breadcrumb"] a{color:var(--ink-faint)}
+.llm-calc nav[aria-label="Breadcrumb"] a:hover{color:var(--ink)}
+.llm-calc .byline{font-family:var(--font-mono);font-size:12px;color:var(--ink-faint);margin:0 0 8px}
+.llm-calc table{display:block;overflow-x:auto;margin:24px 0}
+.llm-calc td{white-space:nowrap;vertical-align:top}
+.llm-calc .tool{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:24px;margin:24px 0}
+.llm-calc .tool select,.llm-calc .tool input{max-width:320px}
+.llm-calc .tool .mode{margin:18px 0 4px}
+.llm-calc .tool .mode label{display:inline-flex;align-items:center;gap:8px;font-family:var(--font-body);font-size:15px;font-weight:400;text-transform:none;letter-spacing:0;color:var(--ink);margin:0 22px 0 0}
 .llm-calc .tool .mode input{width:auto;min-height:0;max-width:none}
 .llm-calc .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:0 18px}
-.llm-calc #out td:first-child{color:var(--text)}
+.llm-calc #out td:first-child{color:var(--ink)}
 .llm-calc #out td,.llm-calc .tt td{font-variant-numeric:tabular-nums}
-.llm-calc .tt td{font-weight:700;color:var(--text)}
-.llm-calc #out tr.tt td{background:rgba(59,130,246,0.08)}
-.llm-calc .note{font-size:.85rem;color:var(--text-muted)}
+.llm-calc .tt td{font-weight:700;color:var(--ink)}
+.llm-calc #out tr.tt td{background:rgba(37,99,235,0.07)}
+.llm-calc .note{font-size:13px;color:var(--ink-muted)}
 .llm-calc .tablewrap{overflow-x:auto}
-.llm-calc ul{color:var(--text-muted);margin:0 0 1rem 1.4rem}
-.llm-calc li{margin-bottom:.4rem;line-height:1.6}
-.llm-calc .disclaimer,.llm-calc .boilerplate{font-size:.85rem;color:var(--text-muted);font-style:italic}
-.llm-calc .related-list{list-style:none;margin-left:0}
-.llm-calc .related-list li{margin-bottom:.5rem}
+.llm-calc .disclaimer,.llm-calc .boilerplate{font-size:13px;color:var(--ink-faint)}
+.llm-calc .related-list{list-style:none;margin-left:0;padding-left:0}
+.llm-calc .related-list li{margin-bottom:8px}
+.llm-calc section p a,.llm-calc td a,.llm-calc li a{color:var(--s1);text-decoration:underline}
+.llm-calc section p a:hover,.llm-calc td a:hover,.llm-calc li a:hover{color:var(--ink)}
 </style>
 <script type="application/ld+json">
 {"@context":"https://schema.org","@type":"WebApplication","name":"LLM memory calculator","url":"https://ml0x.com/calculators/llm-memory-calculator.html","applicationCategory":"DeveloperApplication","operatingSystem":"Any","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"},"isBasedOn":[{"@type":"CreativeWork","name":"Efficiently Scaling Transformer Inference (Pope et al.)","url":"https://arxiv.org/abs/2211.05102"},{"@type":"CreativeWork","name":"PagedAttention (Kwon et al.)","url":"https://arxiv.org/abs/2309.06180"},{"@type":"CreativeWork","name":"Mixed Precision Training (Micikevicius et al.)","url":"https://arxiv.org/abs/1710.03740"}]}
@@ -64,24 +57,23 @@
 </script>
 </head>
 <body>
-<header>
-  <div class="container header-inner">
-    <a href="/" class="logo">ml0x</a>
-    <nav>
-      <a href="/">Home</a>
-      <a href="/calculators/">Calculators</a>
-      <a href="/research/">Research</a>
-      <a href="/tools/">Tools</a>
-      <a href="/guides/">Guides</a>
-      <a href="/answers/">Answers</a>
-      <div class="nav-right">
-        <a href="https://zovo.one/pricing?utm_source=ml0x.com&utm_medium=satellite&utm_campaign=nav-link" class="nav-pro" target="_blank" rel="noopener">Go Pro &#10022;</a>
-        <a href="https://zovo.one/tools" class="nav-zovo">Zovo Tools</a>
-      </div>
-    </nav>
+<a class="skip-link" href="#main">Skip to content</a>
+<header class="site-nav">
+  <div class="site-nav__inner">
+    <div class="site-nav__left">
+      <a class="site-nav__logo" href="/">ml0x</a>
+      <nav class="site-nav__links" aria-label="Main">
+        <a href="/tools/">Tools</a>
+        <a href="/calculators/" aria-current="page">Calculators</a>
+        <a href="/guides/">Guides</a>
+        <a href="/answers/">Answers</a>
+        <a href="/research/">Research</a>
+      </nav>
+    </div>
+    <a class="nav-cta" href="https://zovo.one/pricing" target="_blank" rel="noopener">Full system, $99</a>
   </div>
 </header>
-<main class="container">
+<main id="main" class="container">
 <article class="llm-calc">
 <nav aria-label="Breadcrumb"><a href="/">ml0x</a> / <a href="/calculators/">Calculators</a> / <span>LLM memory calculator</span></nav>
 <h1>LLM memory calculator</h1>
@@ -277,12 +269,34 @@ run();
 </article>
 </main>
 <footer class="site-footer">
-    <div class="footer-inner">
-        <div class="footer-brand">Zovo Tools</div>
-        <div class="footer-tagline">Free developer tools by a solo dev. No tracking.</div>
-        <a href="https://zovo.one/pricing?utm_source=ml0x.com&utm_medium=satellite&utm_campaign=footer-link" class="footer-cta">Zovo Lifetime, $99 once, free forever &rarr;</a>
-        <div class="footer-copy">&copy; 2026 <a href="https://zovo.one">Zovo</a> &middot; 47/500 founding spots</div>
+  <nav class="footer-links-seo" aria-label="ML tools and content">
+    <a href="/tools/">ML tools</a>
+    <a href="/tools/learning-rate-finder.html">Learning rate finder</a>
+    <a href="/tools/confusion-matrix-calculator.html">Confusion matrix calculator</a>
+    <a href="/tools/neural-network-playground.html">Neural network playground</a>
+    <a href="/tools/attention-mechanism-visualizer.html">Attention visualizer</a>
+    <a href="/tools/dataset-splitter.html">Dataset splitter</a>
+    <a href="/calculators/kv-cache-size-calculator.html">KV cache calculator</a>
+    <a href="/calculators/llm-memory-calculator.html">LLM memory calculator</a>
+    <a href="/guides/">Guides</a>
+    <a href="/guides/gradient-descent-explained.html">Gradient descent</a>
+    <a href="/answers/">Answers</a>
+    <a href="/answers/ml-algorithm-comparison.html">Algorithm comparison</a>
+    <a href="/research/">Research</a>
+    <a href="/research/ml-cheatsheet.html">ML cheat sheet</a>
+    <a href="/about.html">About</a>
+  </nav>
+  <div class="site-footer__inner">
+    <div class="site-footer__brand">
+      <span class="site-footer__logo">ml0x</span>
+      <span class="site-footer__meta">by <a href="https://github.com/theluckystrike" target="_blank" rel="noopener">@theluckystrike</a></span>
     </div>
+    <div class="site-footer__links">
+      <a href="https://github.com/theluckystrike/100xagenticdev" target="_blank" rel="noopener">GitHub</a>
+      <a href="/research/">Research</a>
+      <a href="https://twitter.com/_alphashark_" target="_blank" rel="noopener">X</a>
+    </div>
+  </div>
 </footer>
 </body>
 </html>

@@ -6,69 +6,182 @@
 <title>ML Tools — Free Machine Learning Calculators & Visualizers | ml0x</title>
 <meta name="description" content="Free browser-based ML tools. Neural network playground, confusion matrix calculator, learning rate finder, model complexity estimator, and dataset splitter. No sign-up required.">
 <link rel="canonical" href="https://ml0x.com/tools/">
-<link rel="stylesheet" href="/assets/style.css">
+<meta property="og:type" content="website">
+<meta property="og:title" content="ML Tools — Free Machine Learning Calculators & Visualizers | ml0x">
+<meta property="og:description" content="Free browser-based ML tools. Neural network playground, confusion matrix calculator, learning rate finder, model complexity estimator, and dataset splitter. No sign-up required.">
+<meta property="og:url" content="https://ml0x.com/tools/">
+<meta property="og:site_name" content="ml0x">
+<link rel="stylesheet" href="/assets/ml0x.css">
 <script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Home","item":"https://ml0x.com/"},{"@type":"ListItem","position":2,"name":"Tools","item":"https://ml0x.com/tools/"}]}</script>
 </head>
 <body>
-<header>
-<div class="container">
-<a href="/" class="logo">ml0x</a>
-<nav>
-<a href="/">Home</a>
-<a href="/answers/">Answers</a>
-<a href="/guides/">Guides</a>
-<a href="/tools/">Tools</a>
-<a href="/blog/">Blog</a>
-<a href="/about.html">About</a>
-</nav>
-</div>
+<a class="skip-link" href="#main">Skip to content</a>
+<header class="site-nav">
+  <div class="site-nav__inner">
+    <div class="site-nav__left">
+      <a class="site-nav__logo" href="/">ml0x</a>
+      <nav class="site-nav__links" aria-label="Main">
+        <a href="/tools/" aria-current="page">Tools</a>
+        <a href="/calculators/">Calculators</a>
+        <a href="/guides/">Guides</a>
+        <a href="/answers/">Answers</a>
+        <a href="/research/">Research</a>
+      </nav>
+    </div>
+    <a class="nav-cta" href="https://zovo.one/pricing" target="_blank" rel="noopener">Full system, $99</a>
+  </div>
 </header>
-<main class="container">
+
+<main id="main" class="container">
 <div class="breadcrumb"><a href="/">Home</a> <span>/</span> Tools</div>
 <section class="hero">
 <h1>ML <span>Tools</span></h1>
 <p>Free browser-based machine learning tools. Train neural networks, calculate metrics, find learning rates, estimate model complexity, and split datasets. Everything runs locally.</p>
 </section>
-<div class="card-grid" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:1.5rem;margin:2rem 0;">
-<a href="/tools/neural-network-playground.html" class="tool-card" style="display:block;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:1.5rem;text-decoration:none;transition:border-color 0.2s;">
-<h3 style="color:var(--text);margin-bottom:0.5rem;font-size:1.1rem;">Neural Network Playground</h3>
-<p style="color:var(--text-muted);font-size:0.9rem;line-height:1.5;">Choose datasets, configure hidden layers, pick activations, and watch decision boundaries form in real time. All training runs locally in your browser.</p>
-</a>
-<a href="/tools/confusion-matrix-calculator.html" class="tool-card" style="display:block;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:1.5rem;text-decoration:none;transition:border-color 0.2s;">
-<h3 style="color:var(--text);margin-bottom:0.5rem;font-size:1.1rem;">Confusion Matrix Calculator</h3>
-<p style="color:var(--text-muted);font-size:0.9rem;line-height:1.5;">Calculate precision, recall, F1, accuracy, specificity, and MCC. SVG heatmap visualization, ROC point plotting, and multi-class support up to 5 classes.</p>
-</a>
-<a href="/tools/learning-rate-finder.html" class="tool-card" style="display:block;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:1.5rem;text-decoration:none;transition:border-color 0.2s;">
-<h3 style="color:var(--text);margin-bottom:0.5rem;font-size:1.1rem;">Learning Rate Finder</h3>
-<p style="color:var(--text-muted);font-size:0.9rem;line-height:1.5;">Visualize loss vs learning rate on a log scale, auto-detect the optimal LR at steepest descent, compare warm restarts vs one-cycle scheduling.</p>
-</a>
-<a href="/tools/model-complexity-calculator.html" class="tool-card" style="display:block;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:1.5rem;text-decoration:none;transition:border-color 0.2s;">
-<h3 style="color:var(--text);margin-bottom:0.5rem;font-size:1.1rem;">Model Complexity Calculator</h3>
-<p style="color:var(--text-muted);font-size:0.9rem;line-height:1.5;">Build neural networks layer by layer to calculate parameter count, FLOPS, and memory footprint. Compare ResNet, VGG, BERT, GPT architectures.</p>
-</a>
-<a href="/tools/dataset-splitter.html" class="tool-card" style="display:block;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:1.5rem;text-decoration:none;transition:border-color 0.2s;">
-<h3 style="color:var(--text);margin-bottom:0.5rem;font-size:1.1rem;">Dataset Splitter</h3>
-<p style="color:var(--text-muted);font-size:0.9rem;line-height:1.5;">Configure train/validation/test ratios, preview stratified splits, check class balance, and generate Python code for sklearn train_test_split.</p>
-</a>
-<a href="/tools/attention-mechanism-visualizer.html" class="tool-card" style="display:block;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:1.5rem;text-decoration:none;transition:border-color 0.2s;">
-<h3 style="color:var(--text);margin-bottom:0.5rem;font-size:1.1rem;">Attention Mechanism Visualizer</h3>
-<p style="color:var(--text-muted);font-size:0.9rem;line-height:1.5;">Enter a sentence and see transformer attention weights as an interactive heatmap. Toggle self-attention and cross-attention, animate token-by-token processing across 4 attention heads.</p>
-</a>
-<a href="/tools/loss-function-explorer.html" class="tool-card" style="display:block;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:1.5rem;text-decoration:none;transition:border-color 0.2s;">
-<h3 style="color:var(--text);margin-bottom:0.5rem;font-size:1.1rem;">Loss Function Explorer</h3>
-<p style="color:var(--text-muted);font-size:0.9rem;line-height:1.5;">Compare MSE, MAE, Huber, Cross-Entropy, Hinge, Focal, Log-Cosh, and Quantile loss on canvas-drawn plots. Adjust Huber delta, Focal gamma, and Quantile tau with sliders.</p>
-</a>
+
+<div class="related-grid">
+  <a href="/tools/neural-network-playground.html" class="related-card">
+    <div class="related-title">Neural Network Playground</div>
+    <div class="related-desc">Choose datasets, configure hidden layers, pick activations, and watch decision boundaries form in real time.</div>
+  </a>
+  <a href="/tools/confusion-matrix-calculator.html" class="related-card">
+    <div class="related-title">Confusion Matrix Calculator</div>
+    <div class="related-desc">Precision, recall, F1, accuracy, specificity, and MCC with an SVG heatmap, ROC point plotting, and multi-class support up to 5 classes.</div>
+  </a>
+  <a href="/tools/learning-rate-finder.html" class="related-card">
+    <div class="related-title">Learning Rate Finder</div>
+    <div class="related-desc">Visualize loss vs learning rate on a log scale, auto-detect the optimal LR at steepest descent, compare warm restarts vs one-cycle scheduling.</div>
+  </a>
+  <a href="/tools/model-complexity-calculator.html" class="related-card">
+    <div class="related-title">Model Complexity Calculator</div>
+    <div class="related-desc">Build neural networks layer by layer to calculate parameter count, FLOPS, and memory footprint. Compare ResNet, VGG, BERT, GPT architectures.</div>
+  </a>
+  <a href="/tools/dataset-splitter.html" class="related-card">
+    <div class="related-title">Dataset Splitter Calculator</div>
+    <div class="related-desc">Configure train/validation/test ratios, preview stratified splits, check class balance, and generate Python code for sklearn train_test_split.</div>
+  </a>
+  <a href="/tools/attention-mechanism-visualizer.html" class="related-card">
+    <div class="related-title">Attention Mechanism Visualizer</div>
+    <div class="related-desc">Enter a sentence to see self-attention weights as a heatmap. Toggle self vs cross-attention. Browser-only.</div>
+  </a>
+  <a href="/tools/loss-function-explorer.html" class="related-card">
+    <div class="related-title">Loss Function Explorer</div>
+    <div class="related-desc">Compare MSE, MAE, Huber, Cross-Entropy, Hinge, Focal, Log-Cosh, and Quantile loss on interactive plots. Slider controls for parameters.</div>
+  </a>
+  <a href="/tools/activation-function-visualizer-relu-gelu-swish-15-more.html" class="related-card">
+    <div class="related-title">Activation Function Visualizer</div>
+    <div class="related-desc">Interactive chart for 18 activation functions with derivatives, formulas, PyTorch code, pros/cons and comparison mode.</div>
+  </a>
+  <a href="/tools/batch-normalization-calculator" class="related-card">
+    <div class="related-title">Batch Normalization Calculator</div>
+    <div class="related-desc">Compute mean, variance, normalize, scale and shift. Visualize distributions with a canvas histogram.</div>
+  </a>
+  <a href="/tools/bias-variance-calculator" class="related-card">
+    <div class="related-title">Bias-Variance Tradeoff Calculator</div>
+    <div class="related-desc">Adjust polynomial degree, noise, and sample size to see training error, test error, bias&sup2;, variance, and total error.</div>
+  </a>
+  <a href="/tools/confusion-matrix-analyzer" class="related-card">
+    <div class="related-title">Confusion Matrix Analyzer</div>
+    <div class="related-desc">Calculate precision, recall, F1-score, MCC, Cohen's Kappa from confusion matrices. Binary and multi-class classification metrics.</div>
+  </a>
+  <a href="/tools/dropout-optimizer" class="related-card">
+    <div class="related-title">Dropout Rate Optimizer</div>
+    <div class="related-desc">Optimize dropout rate for dense, convolutional, and recurrent layers. Visualize dropped neurons and compute effective capacity.</div>
+  </a>
+  <a href="/tools/feature-importance-calculator" class="related-card">
+    <div class="related-title">Feature Importance Calculator</div>
+    <div class="related-desc">Calculate permutation feature importance. Input features and weights, see ranked importance scores and interactive charts.</div>
+  </a>
+  <a href="/tools/gradient-clipping-calculator" class="related-card">
+    <div class="related-title">Gradient Clipping Calculator</div>
+    <div class="related-desc">Clip by value, norm, or global norm. Visual comparison, recommended thresholds, PyTorch/TF code snippets.</div>
+  </a>
+  <a href="/tools/hyperparameter-search-calculator" class="related-card">
+    <div class="related-title">Hyperparameter Search Calculator</div>
+    <div class="related-desc">Compare grid vs random search vs Bayesian optimization. Calculate search space coverage and find the optimal strategy.</div>
+  </a>
+  <a href="/tools/learning-rate-scheduler-visualizer" class="related-card">
+    <div class="related-title">Learning Rate Scheduler Visualizer</div>
+    <div class="related-desc">Visualize cosine annealing, step decay, and warmup schedules. Compare strategies and generate PyTorch code.</div>
+  </a>
+  <a href="/tools/model-complexity-estimator" class="related-card">
+    <div class="related-title">Model Complexity Estimator</div>
+    <div class="related-desc">Estimate model FLOPs, memory usage, and inference time. Compare neural network architectures instantly.</div>
+  </a>
+  <a href="/tools/ensemble-calculator" class="related-card">
+    <div class="related-title">Model Ensemble Calculator</div>
+    <div class="related-desc">Combine up to 10 models via averaging, voting, or stacking. Compute Fleiss' kappa, agreement, and a diversity-based accuracy estimate.</div>
+  </a>
+  <a href="/tools/optimizer-trajectory-visualizer.html" class="related-card">
+    <div class="related-title">Optimizer Trajectory Visualizer</div>
+    <div class="related-desc">Watch SGD, Momentum, Adam and RMSprop descend a 2D loss surface. Step through the update math and compare convergence paths.</div>
+  </a>
+  <a href="/tools/overfitting-detector" class="related-card">
+    <div class="related-title">Overfitting Detector</div>
+    <div class="related-desc">Input train/val loss curves, detect the overfitting point, and get regularization suggestions.</div>
+  </a>
+  <a href="/tools/roc-pr-curve-threshold-calculator.html" class="related-card">
+    <div class="related-title">ROC &amp; PR Curve Threshold Calculator</div>
+    <div class="related-desc">Paste prediction scores and labels to plot ROC and precision-recall curves, compute AUC, and find the optimal threshold by F1 or Youden's J.</div>
+  </a>
+  <a href="/tools/roc-curve-generator" class="related-card">
+    <div class="related-title">ROC Curve Generator</div>
+    <div class="related-desc">Plot ROC curves and calculate AUC from prediction data. Compare model performance with sensitivity/specificity analysis.</div>
+  </a>
+  <a href="/tools/train-test-split-calculator" class="related-card">
+    <div class="related-title">Train Test Split Calculator</div>
+    <div class="related-desc">Calculate optimal train-test splits. Get stratification impact, k-fold recommendations, and sample size analysis.</div>
+  </a>
+  <a href="/tools/transformer-flops-memory-calculator.html" class="related-card">
+    <div class="related-title">Transformer FLOPs &amp; Memory Calculator</div>
+    <div class="related-desc">Compute training/inference FLOPs, parameter count, activation memory and KV-cache size from layers, d_model, heads, seq length and batch.</div>
+  </a>
+</div>
+
+<h2>Calculators</h2>
+<div class="related-grid">
+  <a href="/calculators/kv-cache-size-calculator.html" class="related-card">
+    <div class="related-title">KV Cache Size Calculator</div>
+    <div class="related-desc">Per-token KV cache size for 19 open models, read from each model's config.json, with a custom-model path and the GQA over-report correction.</div>
+  </a>
+  <a href="/calculators/llm-memory-calculator.html" class="related-card">
+    <div class="related-title">LLM Memory Calculator</div>
+    <div class="related-desc">Size LLM weights, KV cache, gradients and optimizer states from presets that carry exact fetched parameter counts.</div>
+  </a>
 </div>
 </main>
-<footer class="site-footer">
-<div class="footer-inner">
-<div class="footer-brand">Zovo Tools</div>
-<div class="footer-tagline">Free developer tools by a solo dev. No tracking.</div>
-<div class="footer-copy">&copy; 2026 <a href="https://zovo.one">Zovo</a></div>
-</div>
-</footer>
 
-<nav class="zovo-network" aria-label="Zovo Tools Network">
+<footer class="site-footer">
+  <nav class="footer-links-seo" aria-label="ML tools and content">
+    <a href="/tools/">ML tools</a>
+    <a href="/tools/learning-rate-finder.html">Learning rate finder</a>
+    <a href="/tools/confusion-matrix-calculator.html">Confusion matrix calculator</a>
+    <a href="/tools/neural-network-playground.html">Neural network playground</a>
+    <a href="/tools/attention-mechanism-visualizer.html">Attention visualizer</a>
+    <a href="/tools/dataset-splitter.html">Dataset splitter</a>
+    <a href="/calculators/kv-cache-size-calculator.html">KV cache calculator</a>
+    <a href="/calculators/llm-memory-calculator.html">LLM memory calculator</a>
+    <a href="/guides/">Guides</a>
+    <a href="/guides/gradient-descent-explained.html">Gradient descent</a>
+    <a href="/answers/">Answers</a>
+    <a href="/answers/ml-algorithm-comparison.html">Algorithm comparison</a>
+    <a href="/research/">Research</a>
+    <a href="/research/ml-cheatsheet.html">ML cheat sheet</a>
+    <a href="/about.html">About</a>
+  </nav>
+  <div class="site-footer__inner">
+    <div class="site-footer__brand">
+      <span class="site-footer__logo">ml0x</span>
+      <span class="site-footer__meta">by <a href="https://github.com/theluckystrike" target="_blank" rel="noopener">@theluckystrike</a></span>
+    </div>
+    <div class="site-footer__links">
+      <a href="https://github.com/theluckystrike/100xagenticdev" target="_blank" rel="noopener">GitHub</a>
+      <a href="/research/">Research</a>
+      <a href="https://twitter.com/_alphashark_" target="_blank" rel="noopener">X</a>
+    </div>
+  </div>
+
+  <nav class="zovo-network" aria-label="Zovo Tools Network">
     <div class="zovo-network-inner">
         <h3 class="zovo-network-title">Explore More Tools</h3>
         <div class="zovo-network-links">
@@ -97,17 +210,18 @@
             <a href="https://viryd.com">Viryd — Dev Tools</a>
         </div>
     </div>
-</nav>
+  </nav>
 
-<div class="pow-strip">
-  <div class="pow-strip-inner">
-    <span class="pow-label">By the same builder:</span>
-    <a href="https://github.com/theluckystrike" rel="nofollow">GitHub — theluckystrike</a>
-    <a href="https://www.belikenative.com" rel="nofollow">BeLikeNative — Grammar AI</a>
-    <a href="https://earlythunder.com" rel="nofollow">EarlyThunder — Dev Blog</a>
-    <a href="https://bugbountyreality.com" rel="nofollow">Bug Bounty Reality</a>
-    <a href="https://zovo.one" rel="nofollow">Zovo — AI Dev Tools</a>
+  <div class="pow-strip">
+    <div class="pow-strip-inner">
+      <span class="pow-label">By the same builder:</span>
+      <a href="https://github.com/theluckystrike" rel="nofollow">GitHub — theluckystrike</a>
+      <a href="https://www.belikenative.com" rel="nofollow">BeLikeNative — Grammar AI</a>
+      <a href="https://earlythunder.com" rel="nofollow">EarlyThunder — Dev Blog</a>
+      <a href="https://bugbountyreality.com" rel="nofollow">Bug Bounty Reality</a>
+      <a href="https://zovo.one" rel="nofollow">Zovo — AI Dev Tools</a>
+    </div>
   </div>
-</div>
+</footer>
 </body>
 </html>

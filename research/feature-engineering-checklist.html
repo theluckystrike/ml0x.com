@@ -20,7 +20,7 @@
 <meta name="twitter:description" content="Interactive feature engineering checklist with progress tracking. Paste data to get suggestions. No data leaves your browser.">
 <meta name="author" content="Michael Lip">
 <meta name="robots" content="index, follow">
-<link rel="stylesheet" href="/assets/style.css">
+<link rel="stylesheet" href="/assets/ml0x.css">
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
@@ -61,25 +61,24 @@
 </script>
 </head>
 <body>
-
-<header>
-  <div class="container header-inner">
-    <a href="/" class="logo">ml0x</a>
-    <nav>
-      <a href="/">Home</a>
-      <a href="/research/">Research</a>
-      <a href="/tools/">Tools</a>
-      <a href="/guides/">Guides</a>
-      <a href="/answers/">Answers</a>
-      <div class="nav-right">
-        <a href="https://zovo.one/pricing?utm_source=ml0x.com&utm_medium=satellite&utm_campaign=nav-link" class="nav-pro" target="_blank">Go Pro &#10022;</a>
-        <a href="https://zovo.one/tools" class="nav-zovo">Zovo Tools</a>
-      </div>
-    </nav>
+<a class="skip-link" href="#main">Skip to content</a>
+<header class="site-nav">
+  <div class="site-nav__inner">
+    <div class="site-nav__left">
+      <a class="site-nav__logo" href="/">ml0x</a>
+      <nav class="site-nav__links" aria-label="Main">
+        <a href="/tools/">Tools</a>
+        <a href="/calculators/">Calculators</a>
+        <a href="/guides/">Guides</a>
+        <a href="/answers/">Answers</a>
+        <a href="/research/" aria-current="page">Research</a>
+      </nav>
+    </div>
+    <a class="nav-cta" href="https://zovo.one/pricing" target="_blank" rel="noopener">Full system, $99</a>
   </div>
 </header>
 
-<main class="container">
+<main id="main" class="container">
   <div class="breadcrumb">
     <a href="/">Home</a> <span>&rsaquo;</span> <a href="/research/">Research</a> <span>&rsaquo;</span> Feature Engineering Checklist
   </div>
@@ -91,18 +90,18 @@
 
   <div class="tool-card">
     <h3>Progress</h3>
-    <div style="background:var(--bg);border-radius:var(--radius);height:24px;overflow:hidden;margin-bottom:8px;">
-      <div id="progressBar" style="height:100%;background:var(--accent);border-radius:var(--radius);transition:width 0.3s;width:0%;display:flex;align-items:center;justify-content:center;font-size:0.75rem;font-weight:600;color:#fff;"></div>
+    <div style="background:var(--surface-2);border:1px solid var(--line);border-radius:var(--radius);height:24px;overflow:hidden;margin-bottom:8px;">
+      <div id="progressBar" style="height:100%;background:var(--ink);border-radius:var(--radius);transition:width 0.3s;width:0%;display:flex;align-items:center;justify-content:center;font-family:var(--font-mono);font-size:11px;font-weight:500;color:#fff;"></div>
     </div>
-    <p style="color:var(--text-muted);font-size:0.85rem;"><span id="checkedCount">0</span> / <span id="totalCount">0</span> items completed</p>
+    <p style="color:var(--ink-muted);font-size:13px;margin:0;"><span id="checkedCount">0</span> / <span id="totalCount">0</span> items completed</p>
   </div>
 
   <div id="checklistContainer"></div>
 
   <div class="tool-card" style="margin-top:24px;">
     <h3>Data Type Detector</h3>
-    <p style="color:var(--text-muted);font-size:0.88rem;margin-bottom:12px;">Paste a sample of your data (CSV format, first row = headers) and we will detect column types and suggest relevant feature engineering steps. No data leaves your browser.</p>
-    <textarea id="dataInput" style="width:100%;height:120px;background:var(--bg);border:1px solid var(--border);border-radius:var(--radius);color:var(--text);padding:12px;font-family:var(--font-display);font-size:0.85rem;resize:vertical;" placeholder="name,age,salary,signup_date,city,description&#10;Alice,30,75000,2024-01-15,New York,Loves hiking&#10;Bob,25,55000,2024-03-22,Boston,Enjoys cooking"></textarea>
+    <p style="color:var(--ink-2);font-size:14px;margin-bottom:12px;">Paste a sample of your data (CSV format, first row = headers) and we will detect column types and suggest relevant feature engineering steps. No data leaves your browser.</p>
+    <textarea id="dataInput" style="width:100%;height:120px;background:#fff;border:1px solid var(--line-strong);border-radius:var(--radius-sm);color:var(--ink);padding:12px;font-family:var(--font-mono);font-size:16px;resize:vertical;" placeholder="name,age,salary,signup_date,city,description&#10;Alice,30,75000,2024-01-15,New York,Loves hiking&#10;Bob,25,55000,2024-03-22,Boston,Enjoys cooking"></textarea>
     <button class="btn" id="detectBtn" style="margin-top:8px;">Detect Types & Get Suggestions</button>
     <div id="detectionResults" style="margin-top:16px;"></div>
   </div>
@@ -194,15 +193,35 @@
 </main>
 
 <footer class="site-footer">
-    <div class="footer-inner">
-        <div class="footer-brand">Zovo Tools</div>
-        <div class="footer-tagline">Free developer tools by a solo dev. No tracking.</div>
-        <a href="https://zovo.one/pricing?utm_source=ml0x.com&utm_medium=satellite&utm_campaign=footer-link" class="footer-cta">Zovo Lifetime — $99 once, free forever &rarr;</a>
-        <div class="footer-copy">&copy; 2026 <a href="https://zovo.one">Zovo</a> &middot; 47/500 founding spots</div>
+  <nav class="footer-links-seo" aria-label="ML tools and content">
+    <a href="/tools/">ML tools</a>
+    <a href="/tools/learning-rate-finder.html">Learning rate finder</a>
+    <a href="/tools/confusion-matrix-calculator.html">Confusion matrix calculator</a>
+    <a href="/tools/neural-network-playground.html">Neural network playground</a>
+    <a href="/tools/attention-mechanism-visualizer.html">Attention visualizer</a>
+    <a href="/tools/dataset-splitter.html">Dataset splitter</a>
+    <a href="/calculators/kv-cache-size-calculator.html">KV cache calculator</a>
+    <a href="/calculators/llm-memory-calculator.html">LLM memory calculator</a>
+    <a href="/guides/">Guides</a>
+    <a href="/guides/gradient-descent-explained.html">Gradient descent</a>
+    <a href="/answers/">Answers</a>
+    <a href="/answers/ml-algorithm-comparison.html">Algorithm comparison</a>
+    <a href="/research/">Research</a>
+    <a href="/research/ml-cheatsheet.html">ML cheat sheet</a>
+    <a href="/about.html">About</a>
+  </nav>
+  <div class="site-footer__inner">
+    <div class="site-footer__brand">
+      <span class="site-footer__logo">ml0x</span>
+      <span class="site-footer__meta">by <a href="https://github.com/theluckystrike" target="_blank" rel="noopener">@theluckystrike</a></span>
     </div>
-</footer>
-
-<nav class="zovo-network" aria-label="Zovo Tools Network">
+    <div class="site-footer__links">
+      <a href="https://github.com/theluckystrike/100xagenticdev" target="_blank" rel="noopener">GitHub</a>
+      <a href="/research/">Research</a>
+      <a href="https://twitter.com/_alphashark_" target="_blank" rel="noopener">X</a>
+    </div>
+  </div>
+  <nav class="zovo-network" aria-label="Zovo Tools Network">
     <div class="zovo-network-inner">
         <h3 class="zovo-network-title">Explore More Tools</h3>
         <div class="zovo-network-links">
@@ -243,34 +262,45 @@
     <a href="https://zovo.one" rel="nofollow">Zovo — AI Dev Tools</a>
   </div>
 </div>
+</footer>
 
 <style>
 .fe-category { margin-bottom:24px; }
 .fe-category-header {
   display:flex; align-items:center; justify-content:space-between;
-  padding:12px 16px; background:var(--bg-card); border:1px solid var(--border);
+  padding:13px 18px; background:var(--surface-2); border:1px solid var(--line);
   border-radius:var(--radius) var(--radius) 0 0; cursor:pointer;
 }
-.fe-category-header h4 { color:var(--accent); font-size:0.95rem; margin:0; }
-.fe-category-header .cat-progress { font-size:0.8rem; color:var(--text-muted); }
-.fe-items { border:1px solid var(--border); border-top:none; border-radius:0 0 var(--radius) var(--radius); }
+.fe-category-header h4 {
+  font-family:var(--font-mono); font-size:12px; font-weight:500;
+  text-transform:uppercase; letter-spacing:1px; color:var(--ink); margin:0;
+}
+.fe-category-header .cat-progress { font-family:var(--font-mono); font-size:12px; color:var(--ink-muted); }
+.fe-items { background:var(--surface); border:1px solid var(--line); border-top:none; border-radius:0 0 var(--radius) var(--radius); }
 .fe-item {
-  display:flex; gap:12px; padding:12px 16px; border-bottom:1px solid var(--border);
+  display:flex; gap:12px; padding:13px 18px; border-bottom:1px solid var(--line);
   cursor:pointer; transition:background 0.15s; align-items:flex-start;
 }
 .fe-item:last-child { border-bottom:none; }
-.fe-item:hover { background:var(--bg-hover); }
-.fe-item.checked { opacity:0.5; }
-.fe-check { flex-shrink:0; width:20px; height:20px; border:2px solid var(--border); border-radius:4px; display:flex; align-items:center; justify-content:center; font-size:14px; margin-top:2px; }
-.fe-item.checked .fe-check { border-color:var(--accent); color:var(--accent); background:rgba(59,130,246,0.1); }
-.fe-item-content { flex:1; }
-.fe-item-title { font-weight:600; font-size:0.9rem; color:var(--text); }
-.fe-item-desc { font-size:0.82rem; color:var(--text-muted); margin-top:4px; display:none; line-height:1.5; }
+.fe-item:hover { background:var(--surface-2); }
+.fe-item.checked { opacity:0.55; }
+.fe-check {
+  flex-shrink:0; width:20px; height:20px; border:2px solid var(--line-strong);
+  border-radius:4px; display:flex; align-items:center; justify-content:center;
+  font-size:14px; margin-top:2px; color:var(--ok); background:var(--surface);
+}
+.fe-item.checked .fe-check { border-color:var(--ok); color:var(--ok); }
+.fe-item-content { flex:1; min-width:0; }
+.fe-item-title { font-weight:600; font-size:14px; color:var(--ink); }
+.fe-item-desc { font-size:13px; color:var(--ink-2); margin-top:5px; display:none; line-height:1.6; }
 .fe-item.expanded .fe-item-desc { display:block; }
-.detection-col { background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius); padding:12px 16px; margin-bottom:8px; }
-.detection-col .col-name { font-weight:600; color:var(--text); }
-.detection-col .col-type { display:inline-block; padding:2px 8px; border-radius:3px; font-size:0.75rem; font-weight:600; margin-left:8px; }
-.detection-col .suggestions { font-size:0.82rem; color:var(--text-muted); margin-top:6px; }
+.detection-col { background:var(--surface); border:1px solid var(--line); border-radius:var(--radius); padding:14px 18px; margin-bottom:8px; }
+.detection-col .col-name { font-family:var(--font-mono); font-weight:700; font-size:14px; color:var(--ink); }
+.detection-col .col-type {
+  display:inline-block; padding:3px 10px; border-radius:var(--radius-pill);
+  font-family:var(--font-mono); font-size:11px; font-weight:500; margin-left:8px;
+}
+.detection-col .suggestions { font-size:13px; color:var(--ink-2); margin-top:7px; }
 </style>
 
 <script>
@@ -393,28 +423,29 @@
     categories.forEach((cat, ci) => {
       const catItems = allItems.filter(i => i.catIndex === ci);
       const catChecked = catItems.filter(i => i.checked).length;
-      document.getElementById('cat-prog-' + ci).textContent = catChecked + '/' + catItems.length;
+      const catProgId = 'cat-prog-' + ci;
+      document.getElementById(catProgId).textContent = catChecked + '/' + catItems.length;
     });
   }
 
   // Data Type Detector
   document.getElementById('detectBtn').addEventListener('click', function() {
     const raw = document.getElementById('dataInput').value.trim();
-    if (!raw) { document.getElementById('detectionResults').innerHTML = '<p style="color:#f87171;">Please paste some CSV data first.</p>'; return; }
+    if (!raw) { document.getElementById('detectionResults').innerHTML = '<p style="color:#C53030;">Please paste some CSV data first.</p>'; return; }
 
     const lines = raw.split('\n').map(l => l.trim()).filter(l => l);
-    if (lines.length < 2) { document.getElementById('detectionResults').innerHTML = '<p style="color:#f87171;">Need at least a header row and one data row.</p>'; return; }
+    if (lines.length < 2) { document.getElementById('detectionResults').innerHTML = '<p style="color:#C53030;">Need at least a header row and one data row.</p>'; return; }
 
     const headers = lines[0].split(',').map(h => h.trim());
     const rows = lines.slice(1).map(l => l.split(',').map(c => c.trim()));
 
-    let html = '<h4 style="color:var(--accent);margin-bottom:12px;">Detected Columns</h4>';
+    let html = '<h4 style="color:var(--ink);margin-bottom:12px;">Detected Columns</h4>';
 
     headers.forEach((header, i) => {
       const values = rows.map(r => r[i] || '').filter(v => v);
       const type = detectType(header, values);
       const suggestions = getSuggestions(type);
-      const typeColor = type === 'numeric' ? '#22c55e' : type === 'categorical' ? '#3b82f6' : type === 'datetime' ? '#eab308' : type === 'text' ? '#a855f7' : '#888';
+      const typeColor = type === 'numeric' ? '#157F3B' : type === 'categorical' ? '#2563EB' : type === 'datetime' ? '#B45309' : type === 'text' ? '#7C3AED' : '#6a6a6a';
 
       html += '<div class="detection-col">';
       html += '<span class="col-name">' + header + '</span>';

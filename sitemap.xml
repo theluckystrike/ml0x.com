@@ -2,188 +2,237 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
     <loc>https://ml0x.com/about.html</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
+    <lastmod>2026-07-27</lastmod>
+    <priority>0.6</priority>
   </url>
   <url>
     <loc>https://ml0x.com/answers/batch-size-optimizer.html</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.5</priority>
+    <lastmod>2026-07-27</lastmod>
+    <priority>0.6</priority>
   </url>
   <url>
     <loc>https://ml0x.com/answers/hyperparameter-tuning-guide.html</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.5</priority>
+    <lastmod>2026-07-27</lastmod>
+    <priority>0.6</priority>
   </url>
   <url>
     <loc>https://ml0x.com/answers/ml-algorithm-comparison.html</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.5</priority>
+    <lastmod>2026-07-27</lastmod>
+    <priority>0.6</priority>
   </url>
   <url>
     <loc>https://ml0x.com/answers/ml-metrics-explained.html</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.5</priority>
+    <lastmod>2026-07-27</lastmod>
+    <priority>0.6</priority>
   </url>
   <url>
     <loc>https://ml0x.com/answers/supervised-vs-unsupervised.html</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.5</priority>
+    <lastmod>2026-07-27</lastmod>
+    <priority>0.6</priority>
   </url>
   <url>
     <loc>https://ml0x.com/guides/cross-validation-explained.html</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
+    <lastmod>2026-07-27</lastmod>
+    <priority>0.6</priority>
   </url>
   <url>
     <loc>https://ml0x.com/guides/data-augmentation-gallery.html</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
+    <lastmod>2026-07-27</lastmod>
+    <priority>0.6</priority>
   </url>
   <url>
     <loc>https://ml0x.com/guides/gradient-descent-explained.html</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
+    <lastmod>2026-07-27</lastmod>
+    <priority>0.6</priority>
   </url>
   <url>
     <loc>https://ml0x.com/guides/overfitting-underfitting-guide.html</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-  </url>
-  <url>
-    <loc>https://ml0x.com/</loc>
-    <changefreq>weekly</changefreq>
-    <priority>1.0</priority>
+    <lastmod>2026-07-27</lastmod>
+    <priority>0.6</priority>
   </url>
   <url>
     <loc>https://ml0x.com/research/feature-engineering-checklist.html</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-  </url>
-  <url>
-    <loc>https://ml0x.com/research/</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.7</priority>
+    <lastmod>2026-07-27</lastmod>
+    <priority>0.6</priority>
   </url>
   <url>
     <loc>https://ml0x.com/research/ml-cheatsheet.html</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
+    <lastmod>2026-07-27</lastmod>
+    <priority>0.6</priority>
   </url>
   <url>
     <loc>https://ml0x.com/research/ml-pipeline-builder.html</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
+    <lastmod>2026-07-27</lastmod>
+    <priority>0.6</priority>
   </url>
   <url>
     <loc>https://ml0x.com/research/regularization-techniques.html</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
+    <lastmod>2026-07-27</lastmod>
+    <priority>0.6</priority>
   </url>
   <url>
     <loc>https://ml0x.com/research/transfer-learning-guide.html</loc>
-    <changefreq>monthly</changefreq>
+    <lastmod>2026-07-27</lastmod>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://ml0x.com/calculators/kv-cache-size-calculator.html</loc>
+    <lastmod>2026-07-27</lastmod>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://ml0x.com/tools/confusion-matrix-calculator.html</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://ml0x.com/tools/dataset-splitter.html</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://ml0x.com/tools/learning-rate-finder.html</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://ml0x.com/tools/model-complexity-calculator.html</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://ml0x.com/tools/neural-network-playground.html</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://ml0x.com/answers/</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.7</priority>
-  </url>
-  <url>
-    <loc>https://ml0x.com/guides/</loc>
-    <changefreq>weekly</changefreq>
+    <loc>https://ml0x.com/calculators/llm-memory-calculator.html</loc>
+    <lastmod>2026-07-27</lastmod>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://ml0x.com/tools/activation-function-visualizer-relu-gelu-swish-15-more</loc>
-    <lastmod>2026-06-03</lastmod>
-    <changefreq>monthly</changefreq>
+    <lastmod>2026-07-27</lastmod>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://ml0x.com/tools/attention-mechanism-visualizer.html</loc>
+    <lastmod>2026-07-27</lastmod>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://ml0x.com/tools/batch-normalization-calculator</loc>
-    <lastmod>2026-06-03</lastmod>
-    <changefreq>monthly</changefreq>
+    <lastmod>2026-07-27</lastmod>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://ml0x.com/tools/bias-variance-calculator</loc>
-    <lastmod>2026-06-03</lastmod>
-    <changefreq>monthly</changefreq>
+    <lastmod>2026-07-27</lastmod>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://ml0x.com/tools/confusion-matrix-analyzer</loc>
+    <lastmod>2026-07-27</lastmod>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://ml0x.com/tools/confusion-matrix-calculator.html</loc>
+    <lastmod>2026-07-27</lastmod>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://ml0x.com/tools/dataset-splitter.html</loc>
+    <lastmod>2026-07-27</lastmod>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://ml0x.com/tools/dropout-optimizer</loc>
-    <lastmod>2026-06-03</lastmod>
-    <changefreq>monthly</changefreq>
+    <lastmod>2026-07-27</lastmod>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://ml0x.com/tools/ensemble-calculator</loc>
-    <lastmod>2026-06-03</lastmod>
-    <changefreq>monthly</changefreq>
+    <lastmod>2026-07-27</lastmod>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://ml0x.com/tools/feature-importance-calculator</loc>
+    <lastmod>2026-07-27</lastmod>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://ml0x.com/tools/gradient-clipping-calculator</loc>
-    <lastmod>2026-06-03</lastmod>
-    <changefreq>monthly</changefreq>
+    <lastmod>2026-07-27</lastmod>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://ml0x.com/tools/model-complexity-estimator/</loc>
-    <lastmod>2026-06-14</lastmod>
-    <changefreq>monthly</changefreq>
+    <loc>https://ml0x.com/tools/hyperparameter-search-calculator</loc>
+    <lastmod>2026-07-27</lastmod>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://ml0x.com/tools/feature-importance-calculator/</loc>
-    <lastmod>2026-06-14</lastmod>
-    <changefreq>monthly</changefreq>
+    <loc>https://ml0x.com/tools/learning-rate-finder.html</loc>
+    <lastmod>2026-07-27</lastmod>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://ml0x.com/tools/overfitting-detector/</loc>
-    <lastmod>2026-06-14</lastmod>
-    <changefreq>monthly</changefreq>
+    <loc>https://ml0x.com/tools/learning-rate-scheduler-visualizer</loc>
+    <lastmod>2026-07-27</lastmod>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://ml0x.com/tools/train-test-split-calculator/</loc>
-    <lastmod>2026-06-14</lastmod>
-    <changefreq>monthly</changefreq>
+    <loc>https://ml0x.com/tools/loss-function-explorer.html</loc>
+    <lastmod>2026-07-27</lastmod>
     <priority>0.7</priority>
   </url>
-<url><loc>https://ml0x.com/tools/optimizer-trajectory-visualizer</loc><lastmod>2026-07-09</lastmod></url>
-<url><loc>https://ml0x.com/tools/roc-pr-curve-threshold-calculator</loc><lastmod>2026-07-09</lastmod></url>
-<url><loc>https://ml0x.com/tools/transformer-flops-memory-calculator</loc><lastmod>2026-07-09</lastmod></url>
-  <url><loc>https://ml0x.com/calculators/</loc><lastmod>2026-07-11</lastmod></url>
-  <url><loc>https://ml0x.com/calculators/kv-cache-size-calculator.html</loc><lastmod>2026-07-11</lastmod></url>
-  <url><loc>https://ml0x.com/calculators/llm-memory-calculator.html</loc><lastmod>2026-07-12</lastmod></url>
+  <url>
+    <loc>https://ml0x.com/tools/model-complexity-calculator.html</loc>
+    <lastmod>2026-07-27</lastmod>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://ml0x.com/tools/model-complexity-estimator</loc>
+    <lastmod>2026-07-27</lastmod>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://ml0x.com/tools/neural-network-playground.html</loc>
+    <lastmod>2026-07-27</lastmod>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://ml0x.com/tools/optimizer-trajectory-visualizer</loc>
+    <lastmod>2026-07-27</lastmod>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://ml0x.com/tools/overfitting-detector</loc>
+    <lastmod>2026-07-27</lastmod>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://ml0x.com/tools/roc-curve-generator</loc>
+    <lastmod>2026-07-27</lastmod>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://ml0x.com/tools/roc-pr-curve-threshold-calculator</loc>
+    <lastmod>2026-07-27</lastmod>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://ml0x.com/tools/train-test-split-calculator</loc>
+    <lastmod>2026-07-27</lastmod>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://ml0x.com/tools/transformer-flops-memory-calculator</loc>
+    <lastmod>2026-07-27</lastmod>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://ml0x.com/answers/</loc>
+    <lastmod>2026-07-27</lastmod>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://ml0x.com/calculators/</loc>
+    <lastmod>2026-07-27</lastmod>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://ml0x.com/guides/</loc>
+    <lastmod>2026-07-27</lastmod>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://ml0x.com/research/</loc>
+    <lastmod>2026-07-27</lastmod>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://ml0x.com/tools/</loc>
+    <lastmod>2026-07-27</lastmod>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://ml0x.com/</loc>
+    <lastmod>2026-07-27</lastmod>
+    <priority>1.0</priority>
+  </url>
 </urlset>

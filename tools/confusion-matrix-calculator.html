@@ -20,7 +20,7 @@
 <meta name="twitter:description" content="Enter TP/FP/TN/FN values and instantly compute precision, recall, F1, accuracy, specificity, and MCC with visual heatmap.">
 <meta name="author" content="Michael Lip">
 <meta name="robots" content="index, follow">
-<link rel="stylesheet" href="/assets/style.css">
+<link rel="stylesheet" href="/assets/ml0x.css">
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
@@ -64,24 +64,24 @@
 </head>
 <body>
 
-<header>
-  <div class="container header-inner">
-    <a href="/" class="logo">ml0x</a>
-    <nav>
-      <a href="/">Home</a>
-      <a href="/research/">Research</a>
-      <a href="/tools/">Tools</a>
-      <a href="/guides/">Guides</a>
-      <a href="/answers/">Answers</a>
-      <div class="nav-right">
-        <a href="https://zovo.one/pricing?utm_source=ml0x.com&utm_medium=satellite&utm_campaign=nav-link" class="nav-pro" target="_blank">Go Pro &#10022;</a>
-        <a href="https://zovo.one/tools" class="nav-zovo">Zovo Tools</a>
-      </div>
-    </nav>
+<a class="skip-link" href="#main">Skip to content</a>
+<header class="site-nav">
+  <div class="site-nav__inner">
+    <div class="site-nav__left">
+      <a class="site-nav__logo" href="/">ml0x</a>
+      <nav class="site-nav__links" aria-label="Main">
+        <a href="/tools/" aria-current="page">Tools</a>
+        <a href="/calculators/">Calculators</a>
+        <a href="/guides/">Guides</a>
+        <a href="/answers/">Answers</a>
+        <a href="/research/">Research</a>
+      </nav>
+    </div>
+    <a class="nav-cta" href="https://zovo.one/pricing" target="_blank" rel="noopener">Full system, $99</a>
   </div>
 </header>
 
-<main class="container">
+<main id="main" class="container">
   <div class="breadcrumb">
     <a href="/">Home</a> <span>&rsaquo;</span> <a href="/tools/">Tools</a> <span>&rsaquo;</span> Confusion Matrix Calculator
   </div>
@@ -113,27 +113,27 @@
     <h3>Binary Confusion Matrix Input</h3>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;max-width:400px;margin:0 auto;">
       <div style="text-align:center;">
-        <label style="color:#22c55e;font-weight:600;font-size:13px;">True Positive (TP)</label>
-        <input type="number" id="inputTP" value="50" min="0" style="width:100%;padding:10px;background:#1a1a1a;border:1px solid #333;border-radius:6px;color:#e0e0e0;font-size:18px;text-align:center;margin-top:4px;">
+        <label style="color:#157F3B;font-weight:600;font-size:13px;">True Positive (TP)</label>
+        <input type="number" id="inputTP" value="50" min="0" style="width:100%;padding:10px;background:#fff;border:1px solid #D8D8D6;border-radius:6px;color:#1A1A1A;font-size:18px;text-align:center;margin-top:4px;">
       </div>
       <div style="text-align:center;">
-        <label style="color:#ef4444;font-weight:600;font-size:13px;">False Positive (FP)</label>
-        <input type="number" id="inputFP" value="10" min="0" style="width:100%;padding:10px;background:#1a1a1a;border:1px solid #333;border-radius:6px;color:#e0e0e0;font-size:18px;text-align:center;margin-top:4px;">
+        <label style="color:#C53030;font-weight:600;font-size:13px;">False Positive (FP)</label>
+        <input type="number" id="inputFP" value="10" min="0" style="width:100%;padding:10px;background:#fff;border:1px solid #D8D8D6;border-radius:6px;color:#1A1A1A;font-size:18px;text-align:center;margin-top:4px;">
       </div>
       <div style="text-align:center;">
-        <label style="color:#ef4444;font-weight:600;font-size:13px;">False Negative (FN)</label>
-        <input type="number" id="inputFN" value="5" min="0" style="width:100%;padding:10px;background:#1a1a1a;border:1px solid #333;border-radius:6px;color:#e0e0e0;font-size:18px;text-align:center;margin-top:4px;">
+        <label style="color:#C53030;font-weight:600;font-size:13px;">False Negative (FN)</label>
+        <input type="number" id="inputFN" value="5" min="0" style="width:100%;padding:10px;background:#fff;border:1px solid #D8D8D6;border-radius:6px;color:#1A1A1A;font-size:18px;text-align:center;margin-top:4px;">
       </div>
       <div style="text-align:center;">
-        <label style="color:#22c55e;font-weight:600;font-size:13px;">True Negative (TN)</label>
-        <input type="number" id="inputTN" value="85" min="0" style="width:100%;padding:10px;background:#1a1a1a;border:1px solid #333;border-radius:6px;color:#e0e0e0;font-size:18px;text-align:center;margin-top:4px;">
+        <label style="color:#157F3B;font-weight:600;font-size:13px;">True Negative (TN)</label>
+        <input type="number" id="inputTN" value="85" min="0" style="width:100%;padding:10px;background:#fff;border:1px solid #D8D8D6;border-radius:6px;color:#1A1A1A;font-size:18px;text-align:center;margin-top:4px;">
       </div>
     </div>
   </div>
 
   <div class="tool-card" id="multiSection" style="display:none;">
     <h3>Multi-Class Confusion Matrix Input</h3>
-    <p style="color:#aaa;font-size:13px;margin-bottom:12px;">Enter counts: row = actual class, column = predicted class. Diagonal = correct predictions.</p>
+    <p style="color:#6a6a6a;font-size:13px;margin-bottom:12px;">Enter counts: row = actual class, column = predicted class. Diagonal = correct predictions.</p>
     <div id="multiGrid" style="overflow-x:auto;"></div>
   </div>
 
@@ -147,7 +147,7 @@
       <div class="stat-card"><div class="value" id="metMCC">--</div><div class="label">MCC</div></div>
     </div>
 
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:16px;">
+    <div class="grid-2">
       <div class="tool-card">
         <h3>Heatmap</h3>
         <div class="viz-container"><svg id="heatmapSvg" width="350" height="350" viewBox="0 0 350 350"></svg></div>
@@ -163,12 +163,12 @@
       <div style="overflow-x:auto;">
         <table style="width:100%;border-collapse:collapse;font-size:14px;" id="perClassTable">
           <thead>
-            <tr style="border-bottom:2px solid #333;">
-              <th style="text-align:left;padding:8px;color:#aaa;">Class</th>
-              <th style="text-align:right;padding:8px;color:#aaa;">Precision</th>
-              <th style="text-align:right;padding:8px;color:#aaa;">Recall</th>
-              <th style="text-align:right;padding:8px;color:#aaa;">F1</th>
-              <th style="text-align:right;padding:8px;color:#aaa;">Support</th>
+            <tr style="border-bottom:2px solid #E8E8E6;">
+              <th style="text-align:left;padding:8px;color:#6a6a6a;">Class</th>
+              <th style="text-align:right;padding:8px;color:#6a6a6a;">Precision</th>
+              <th style="text-align:right;padding:8px;color:#6a6a6a;">Recall</th>
+              <th style="text-align:right;padding:8px;color:#6a6a6a;">F1</th>
+              <th style="text-align:right;padding:8px;color:#6a6a6a;">Support</th>
             </tr>
           </thead>
           <tbody id="perClassBody"></tbody>
@@ -264,13 +264,34 @@
 </main>
 
 <footer class="site-footer">
-    <div class="footer-inner">
-        <div class="footer-brand">Zovo Tools</div>
-        <div class="footer-tagline">Free developer tools by a solo dev. No tracking.</div>
-        <a href="https://zovo.one/pricing?utm_source=ml0x.com&utm_medium=satellite&utm_campaign=footer-link" class="footer-cta">Zovo Lifetime — $99 once, free forever &rarr;</a>
-        <div class="footer-copy">&copy; 2026 <a href="https://zovo.one">Zovo</a> &middot; 47/500 founding spots</div>
+  <nav class="footer-links-seo" aria-label="ML tools and content">
+    <a href="/tools/">ML tools</a>
+    <a href="/tools/learning-rate-finder.html">Learning rate finder</a>
+    <a href="/tools/confusion-matrix-calculator.html">Confusion matrix calculator</a>
+    <a href="/tools/neural-network-playground.html">Neural network playground</a>
+    <a href="/tools/attention-mechanism-visualizer.html">Attention visualizer</a>
+    <a href="/tools/dataset-splitter.html">Dataset splitter</a>
+    <a href="/calculators/kv-cache-size-calculator.html">KV cache calculator</a>
+    <a href="/calculators/llm-memory-calculator.html">LLM memory calculator</a>
+    <a href="/guides/">Guides</a>
+    <a href="/guides/gradient-descent-explained.html">Gradient descent</a>
+    <a href="/answers/">Answers</a>
+    <a href="/answers/ml-algorithm-comparison.html">Algorithm comparison</a>
+    <a href="/research/">Research</a>
+    <a href="/research/ml-cheatsheet.html">ML cheat sheet</a>
+    <a href="/about.html">About</a>
+  </nav>
+  <div class="site-footer__inner">
+    <div class="site-footer__brand">
+      <span class="site-footer__logo">ml0x</span>
+      <span class="site-footer__meta">by <a href="https://github.com/theluckystrike" target="_blank" rel="noopener">@theluckystrike</a></span>
     </div>
-</footer>
+    <div class="site-footer__links">
+      <a href="https://github.com/theluckystrike/100xagenticdev" target="_blank" rel="noopener">GitHub</a>
+      <a href="/research/">Research</a>
+      <a href="https://twitter.com/_alphashark_" target="_blank" rel="noopener">X</a>
+    </div>
+  </div>
 
 <nav class="zovo-network" aria-label="Zovo Tools Network">
     <div class="zovo-network-inner">
@@ -313,6 +334,7 @@
     <a href="https://zovo.one" rel="nofollow">Zovo — AI Dev Tools</a>
   </div>
 </div>
+</footer>
 
 <script>
 (function() {
@@ -328,16 +350,16 @@
     var n = getNumClasses();
     var grid = document.getElementById('multiGrid');
     var html = '<table style="border-collapse:collapse;margin:0 auto;">';
-    html += '<tr><td></td><td colspan="'+n+'" style="text-align:center;color:#3b82f6;font-weight:600;padding:8px;">Predicted</td></tr>';
+    html += '<tr><td></td><td colspan="'+n+'" style="text-align:center;color:#2563EB;font-weight:600;padding:8px;">Predicted</td></tr>';
     html += '<tr><td></td>';
-    for (var j = 0; j < n; j++) html += '<td style="text-align:center;padding:6px;color:#aaa;font-size:12px;">'+classNames[j]+'</td>';
+    for (var j = 0; j < n; j++) html += '<td style="text-align:center;padding:6px;color:#6a6a6a;font-size:12px;">'+classNames[j]+'</td>';
     html += '</tr>';
     for (var i = 0; i < n; i++) {
       html += '<tr>';
-      if (i === 0) html += '<td rowspan="'+n+'" style="color:#a78bfa;font-weight:600;padding:8px;writing-mode:vertical-rl;text-orientation:mixed;">Actual</td>';
+      if (i === 0) html += '<td rowspan="'+n+'" style="color:#7C3AED;font-weight:600;padding:8px;writing-mode:vertical-rl;text-orientation:mixed;">Actual</td>';
       for (var j = 0; j < n; j++) {
         var val = (i === j) ? 30 : 3;
-        html += '<td style="padding:4px;"><input type="number" class="mc-cell" data-r="'+i+'" data-c="'+j+'" value="'+val+'" min="0" style="width:60px;padding:8px;background:#1a1a1a;border:1px solid '+(i===j?'#22c55e':'#333')+';border-radius:4px;color:#e0e0e0;font-size:14px;text-align:center;"></td>';
+        html += '<td style="padding:4px;"><input type="number" class="mc-cell" data-r="'+i+'" data-c="'+j+'" value="'+val+'" min="0" style="width:60px;padding:8px;background:#fff;border:1px solid '+(i===j?'#157F3B':'#D8D8D6')+';border-radius:4px;color:#1A1A1A;font-size:14px;text-align:center;"></td>';
       }
       html += '</tr>';
     }
@@ -425,12 +447,12 @@
       var tbody = document.getElementById('perClassBody');
       tbody.innerHTML = '';
       for (var i = 0; i < perClass.length; i++) {
-        var row = '<tr style="border-bottom:1px solid #222;">';
-        row += '<td style="padding:8px;color:#ccc;font-weight:600;">'+perClass[i].name+'</td>';
-        row += '<td style="padding:8px;text-align:right;color:#ddd;">'+(perClass[i].prec*100).toFixed(1)+'%</td>';
-        row += '<td style="padding:8px;text-align:right;color:#ddd;">'+(perClass[i].rec*100).toFixed(1)+'%</td>';
-        row += '<td style="padding:8px;text-align:right;color:#ddd;">'+perClass[i].f1.toFixed(4)+'</td>';
-        row += '<td style="padding:8px;text-align:right;color:#aaa;">'+perClass[i].support+'</td>';
+        var row = '<tr style="border-bottom:1px solid #E8E8E6;">';
+        row += '<td style="padding:8px;color:#1A1A1A;font-weight:600;">'+perClass[i].name+'</td>';
+        row += '<td style="padding:8px;text-align:right;color:#4A4A4A;">'+(perClass[i].prec*100).toFixed(1)+'%</td>';
+        row += '<td style="padding:8px;text-align:right;color:#4A4A4A;">'+(perClass[i].rec*100).toFixed(1)+'%</td>';
+        row += '<td style="padding:8px;text-align:right;color:#4A4A4A;">'+perClass[i].f1.toFixed(4)+'</td>';
+        row += '<td style="padding:8px;text-align:right;color:#6a6a6a;">'+perClass[i].support+'</td>';
         row += '</tr>';
         tbody.innerHTML += row;
       }
@@ -444,15 +466,15 @@
     var svg = document.getElementById('heatmapSvg');
     var max = Math.max(tp, fp, fn, tn, 1);
     var cells = [[tp,'TP'],[fp,'FP'],[fn,'FN'],[tn,'TN']];
-    var colors = ['#22c55e','#ef4444','#ef4444','#22c55e'];
+    var colors = ['#157F3B','#C53030','#C53030','#157F3B'];
     var ox = 80, oy = 60, cw = 120, ch = 120;
-    var html = '<rect width="350" height="350" fill="#141414"/>';
-    html += '<text x="175" y="25" text-anchor="middle" fill="#aaa" font-size="12" font-family="IBM Plex Sans,sans-serif">Predicted</text>';
-    html += '<text x="'+(ox+cw/2)+'" y="45" text-anchor="middle" fill="#3b82f6" font-size="11" font-family="IBM Plex Sans,sans-serif">Positive</text>';
-    html += '<text x="'+(ox+cw+cw/2)+'" y="45" text-anchor="middle" fill="#3b82f6" font-size="11" font-family="IBM Plex Sans,sans-serif">Negative</text>';
-    html += '<text x="30" y="175" text-anchor="middle" fill="#aaa" font-size="12" font-family="IBM Plex Sans,sans-serif" transform="rotate(-90,30,175)">Actual</text>';
-    html += '<text x="65" y="'+(oy+ch/2+4)+'" text-anchor="end" fill="#a78bfa" font-size="11" font-family="IBM Plex Sans,sans-serif">Positive</text>';
-    html += '<text x="65" y="'+(oy+ch+ch/2+4)+'" text-anchor="end" fill="#a78bfa" font-size="11" font-family="IBM Plex Sans,sans-serif">Negative</text>';
+    var html = '<rect width="350" height="350" fill="#FFFFFF"/>';
+    html += '<text x="175" y="25" text-anchor="middle" fill="#6a6a6a" font-size="12" font-family="IBM Plex Sans,sans-serif">Predicted</text>';
+    html += '<text x="'+(ox+cw/2)+'" y="45" text-anchor="middle" fill="#2563EB" font-size="11" font-family="IBM Plex Sans,sans-serif">Positive</text>';
+    html += '<text x="'+(ox+cw+cw/2)+'" y="45" text-anchor="middle" fill="#2563EB" font-size="11" font-family="IBM Plex Sans,sans-serif">Negative</text>';
+    html += '<text x="30" y="175" text-anchor="middle" fill="#6a6a6a" font-size="12" font-family="IBM Plex Sans,sans-serif" transform="rotate(-90,30,175)">Actual</text>';
+    html += '<text x="65" y="'+(oy+ch/2+4)+'" text-anchor="end" fill="#7C3AED" font-size="11" font-family="IBM Plex Sans,sans-serif">Positive</text>';
+    html += '<text x="65" y="'+(oy+ch+ch/2+4)+'" text-anchor="end" fill="#7C3AED" font-size="11" font-family="IBM Plex Sans,sans-serif">Negative</text>';
 
     for (var i = 0; i < 4; i++) {
       var r = Math.floor(i / 2), c = i % 2;
@@ -460,9 +482,9 @@
       var baseColor = colors[i];
       var opacity = 0.15 + intensity * 0.6;
       html += '<rect x="'+(ox+c*cw)+'" y="'+(oy+r*ch)+'" width="'+cw+'" height="'+ch+'" fill="'+baseColor+'" opacity="'+opacity+'" rx="4"/>';
-      html += '<rect x="'+(ox+c*cw)+'" y="'+(oy+r*ch)+'" width="'+cw+'" height="'+ch+'" fill="none" stroke="#333" stroke-width="1" rx="4"/>';
-      html += '<text x="'+(ox+c*cw+cw/2)+'" y="'+(oy+r*ch+ch/2-8)+'" text-anchor="middle" fill="#e0e0e0" font-size="24" font-weight="700" font-family="IBM Plex Mono,monospace">'+cells[i][0]+'</text>';
-      html += '<text x="'+(ox+c*cw+cw/2)+'" y="'+(oy+r*ch+ch/2+14)+'" text-anchor="middle" fill="#aaa" font-size="12" font-family="IBM Plex Sans,sans-serif">'+cells[i][1]+'</text>';
+      html += '<rect x="'+(ox+c*cw)+'" y="'+(oy+r*ch)+'" width="'+cw+'" height="'+ch+'" fill="none" stroke="#D8D8D6" stroke-width="1" rx="4"/>';
+      html += '<text x="'+(ox+c*cw+cw/2)+'" y="'+(oy+r*ch+ch/2-8)+'" text-anchor="middle" fill="#1A1A1A" font-size="24" font-weight="700" font-family="IBM Plex Mono,monospace">'+cells[i][0]+'</text>';
+      html += '<text x="'+(ox+c*cw+cw/2)+'" y="'+(oy+r*ch+ch/2+14)+'" text-anchor="middle" fill="#1A1A1A" font-size="12" font-family="IBM Plex Sans,sans-serif">'+cells[i][1]+'</text>';
     }
     svg.innerHTML = html;
   }
@@ -474,18 +496,18 @@
     var ox = 70, oy = 50;
     var cw = Math.floor((280 - ox) / n);
     var ch = Math.floor((300 - oy) / n);
-    var html = '<rect width="350" height="350" fill="#141414"/>';
-    html += '<text x="'+(ox+(350-ox)/2)+'" y="20" text-anchor="middle" fill="#aaa" font-size="11" font-family="IBM Plex Sans,sans-serif">Predicted</text>';
-    for (var j = 0; j < n; j++) html += '<text x="'+(ox+j*cw+cw/2)+'" y="40" text-anchor="middle" fill="#3b82f6" font-size="10" font-family="IBM Plex Sans,sans-serif">'+classNames[j].substring(0,6)+'</text>';
-    for (var i = 0; i < n; i++) html += '<text x="'+(ox-6)+'" y="'+(oy+i*ch+ch/2+4)+'" text-anchor="end" fill="#a78bfa" font-size="10" font-family="IBM Plex Sans,sans-serif">'+classNames[i].substring(0,6)+'</text>';
+    var html = '<rect width="350" height="350" fill="#FFFFFF"/>';
+    html += '<text x="'+(ox+(350-ox)/2)+'" y="20" text-anchor="middle" fill="#6a6a6a" font-size="11" font-family="IBM Plex Sans,sans-serif">Predicted</text>';
+    for (var j = 0; j < n; j++) html += '<text x="'+(ox+j*cw+cw/2)+'" y="40" text-anchor="middle" fill="#2563EB" font-size="10" font-family="IBM Plex Sans,sans-serif">'+classNames[j].substring(0,6)+'</text>';
+    for (var i = 0; i < n; i++) html += '<text x="'+(ox-6)+'" y="'+(oy+i*ch+ch/2+4)+'" text-anchor="end" fill="#7C3AED" font-size="10" font-family="IBM Plex Sans,sans-serif">'+classNames[i].substring(0,6)+'</text>';
     for (var i = 0; i < n; i++) {
       for (var j = 0; j < n; j++) {
         var intensity = mat[i][j] / max;
-        var color = i === j ? '#22c55e' : '#ef4444';
+        var color = i === j ? '#157F3B' : '#C53030';
         var opacity = 0.1 + intensity * 0.7;
         html += '<rect x="'+(ox+j*cw)+'" y="'+(oy+i*ch)+'" width="'+cw+'" height="'+ch+'" fill="'+color+'" opacity="'+opacity+'" rx="2"/>';
-        html += '<rect x="'+(ox+j*cw)+'" y="'+(oy+i*ch)+'" width="'+cw+'" height="'+ch+'" fill="none" stroke="#333" stroke-width="0.5" rx="2"/>';
-        html += '<text x="'+(ox+j*cw+cw/2)+'" y="'+(oy+i*ch+ch/2+5)+'" text-anchor="middle" fill="#e0e0e0" font-size="'+(n>3?'12':'14')+'" font-weight="600" font-family="IBM Plex Mono,monospace">'+mat[i][j]+'</text>';
+        html += '<rect x="'+(ox+j*cw)+'" y="'+(oy+i*ch)+'" width="'+cw+'" height="'+ch+'" fill="none" stroke="#D8D8D6" stroke-width="0.5" rx="2"/>';
+        html += '<text x="'+(ox+j*cw+cw/2)+'" y="'+(oy+i*ch+ch/2+5)+'" text-anchor="middle" fill="#1A1A1A" font-size="'+(n>3?'12':'14')+'" font-weight="600" font-family="IBM Plex Mono,monospace">'+mat[i][j]+'</text>';
       }
     }
     svg.innerHTML = html;
@@ -494,41 +516,41 @@
   function drawROC(tpr, fpr) {
     var svg = document.getElementById('rocSvg');
     var pad = 50, w = 300 - pad, h = 300 - pad;
-    var html = '<rect width="350" height="350" fill="#141414"/>';
+    var html = '<rect width="350" height="350" fill="#FFFFFF"/>';
     // Axes
-    html += '<line x1="'+pad+'" y1="'+(h+10)+'" x2="'+(w+pad)+'" y2="'+(h+10)+'" stroke="#333" stroke-width="1"/>';
-    html += '<line x1="'+pad+'" y1="10" x2="'+pad+'" y2="'+(h+10)+'" stroke="#333" stroke-width="1"/>';
+    html += '<line x1="'+pad+'" y1="'+(h+10)+'" x2="'+(w+pad)+'" y2="'+(h+10)+'" stroke="#B8B8B6" stroke-width="1"/>';
+    html += '<line x1="'+pad+'" y1="10" x2="'+pad+'" y2="'+(h+10)+'" stroke="#B8B8B6" stroke-width="1"/>';
     // Diagonal
-    html += '<line x1="'+pad+'" y1="'+(h+10)+'" x2="'+(w+pad)+'" y2="10" stroke="#555" stroke-width="1" stroke-dasharray="4,4"/>';
+    html += '<line x1="'+pad+'" y1="'+(h+10)+'" x2="'+(w+pad)+'" y2="10" stroke="#B8B8B6" stroke-width="1" stroke-dasharray="4,4"/>';
     // Labels
-    html += '<text x="'+(pad+w/2)+'" y="'+(h+40)+'" text-anchor="middle" fill="#aaa" font-size="11" font-family="IBM Plex Sans,sans-serif">False Positive Rate</text>';
-    html += '<text x="15" y="'+(10+h/2)+'" text-anchor="middle" fill="#aaa" font-size="11" font-family="IBM Plex Sans,sans-serif" transform="rotate(-90,15,'+(10+h/2)+')">True Positive Rate</text>';
-    html += '<text x="'+pad+'" y="'+(h+26)+'" text-anchor="middle" fill="#666" font-size="10" font-family="IBM Plex Mono,monospace">0</text>';
-    html += '<text x="'+(w+pad)+'" y="'+(h+26)+'" text-anchor="middle" fill="#666" font-size="10" font-family="IBM Plex Mono,monospace">1</text>';
-    html += '<text x="'+(pad-8)+'" y="'+(h+14)+'" text-anchor="end" fill="#666" font-size="10" font-family="IBM Plex Mono,monospace">0</text>';
-    html += '<text x="'+(pad-8)+'" y="16" text-anchor="end" fill="#666" font-size="10" font-family="IBM Plex Mono,monospace">1</text>';
+    html += '<text x="'+(pad+w/2)+'" y="'+(h+40)+'" text-anchor="middle" fill="#6a6a6a" font-size="11" font-family="IBM Plex Sans,sans-serif">False Positive Rate</text>';
+    html += '<text x="15" y="'+(10+h/2)+'" text-anchor="middle" fill="#6a6a6a" font-size="11" font-family="IBM Plex Sans,sans-serif" transform="rotate(-90,15,'+(10+h/2)+')">True Positive Rate</text>';
+    html += '<text x="'+pad+'" y="'+(h+26)+'" text-anchor="middle" fill="#767676" font-size="10" font-family="IBM Plex Mono,monospace">0</text>';
+    html += '<text x="'+(w+pad)+'" y="'+(h+26)+'" text-anchor="middle" fill="#767676" font-size="10" font-family="IBM Plex Mono,monospace">1</text>';
+    html += '<text x="'+(pad-8)+'" y="'+(h+14)+'" text-anchor="end" fill="#767676" font-size="10" font-family="IBM Plex Mono,monospace">0</text>';
+    html += '<text x="'+(pad-8)+'" y="16" text-anchor="end" fill="#767676" font-size="10" font-family="IBM Plex Mono,monospace">1</text>';
     // Point
     var px = pad + fpr * w;
     var py = h + 10 - tpr * h;
-    html += '<circle cx="'+px+'" cy="'+py+'" r="8" fill="#3b82f6" opacity="0.3"/>';
-    html += '<circle cx="'+px+'" cy="'+py+'" r="4" fill="#3b82f6"/>';
-    html += '<text x="'+(px+12)+'" y="'+(py-8)+'" fill="#3b82f6" font-size="11" font-family="IBM Plex Sans,sans-serif">('+fpr.toFixed(2)+', '+tpr.toFixed(2)+')</text>';
+    html += '<circle cx="'+px+'" cy="'+py+'" r="8" fill="#2563EB" opacity="0.3"/>';
+    html += '<circle cx="'+px+'" cy="'+py+'" r="4" fill="#2563EB"/>';
+    html += '<text x="'+(px+12)+'" y="'+(py-8)+'" fill="#2563EB" font-size="11" font-family="IBM Plex Sans,sans-serif">('+fpr.toFixed(2)+', '+tpr.toFixed(2)+')</text>';
     // Ideal point
-    html += '<circle cx="'+pad+'" cy="10" r="3" fill="#22c55e" opacity="0.5"/>';
-    html += '<text x="'+(pad+8)+'" y="8" fill="#22c55e" font-size="9" font-family="IBM Plex Sans,sans-serif">Ideal</text>';
+    html += '<circle cx="'+pad+'" cy="10" r="3" fill="#157F3B" opacity="0.5"/>';
+    html += '<text x="'+(pad+8)+'" y="8" fill="#157F3B" font-size="9" font-family="IBM Plex Sans,sans-serif">Ideal</text>';
     svg.innerHTML = html;
   }
 
   function drawROCMulti(perClass) {
     var svg = document.getElementById('rocSvg');
     var pad = 50, w = 300 - pad, h = 300 - pad;
-    var html = '<rect width="350" height="350" fill="#141414"/>';
-    html += '<line x1="'+pad+'" y1="'+(h+10)+'" x2="'+(w+pad)+'" y2="'+(h+10)+'" stroke="#333" stroke-width="1"/>';
-    html += '<line x1="'+pad+'" y1="10" x2="'+pad+'" y2="'+(h+10)+'" stroke="#333" stroke-width="1"/>';
-    html += '<line x1="'+pad+'" y1="'+(h+10)+'" x2="'+(w+pad)+'" y2="10" stroke="#555" stroke-width="1" stroke-dasharray="4,4"/>';
-    html += '<text x="'+(pad+w/2)+'" y="'+(h+40)+'" text-anchor="middle" fill="#aaa" font-size="11" font-family="IBM Plex Sans,sans-serif">1 - Precision</text>';
-    html += '<text x="15" y="'+(10+h/2)+'" text-anchor="middle" fill="#aaa" font-size="11" font-family="IBM Plex Sans,sans-serif" transform="rotate(-90,15,'+(10+h/2)+')">Recall</text>';
-    var colors = ['#3b82f6','#22c55e','#f59e0b','#ef4444','#a78bfa'];
+    var html = '<rect width="350" height="350" fill="#FFFFFF"/>';
+    html += '<line x1="'+pad+'" y1="'+(h+10)+'" x2="'+(w+pad)+'" y2="'+(h+10)+'" stroke="#B8B8B6" stroke-width="1"/>';
+    html += '<line x1="'+pad+'" y1="10" x2="'+pad+'" y2="'+(h+10)+'" stroke="#B8B8B6" stroke-width="1"/>';
+    html += '<line x1="'+pad+'" y1="'+(h+10)+'" x2="'+(w+pad)+'" y2="10" stroke="#B8B8B6" stroke-width="1" stroke-dasharray="4,4"/>';
+    html += '<text x="'+(pad+w/2)+'" y="'+(h+40)+'" text-anchor="middle" fill="#6a6a6a" font-size="11" font-family="IBM Plex Sans,sans-serif">1 - Precision</text>';
+    html += '<text x="15" y="'+(10+h/2)+'" text-anchor="middle" fill="#6a6a6a" font-size="11" font-family="IBM Plex Sans,sans-serif" transform="rotate(-90,15,'+(10+h/2)+')">Recall</text>';
+    var colors = ['#2563EB','#157F3B','#B45309','#C53030','#7C3AED'];
     for (var i = 0; i < perClass.length; i++) {
       var px = pad + (1 - perClass[i].prec) * w;
       var py = h + 10 - perClass[i].rec * h;

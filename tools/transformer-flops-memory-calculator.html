@@ -35,81 +35,78 @@
   ]
 }
 </script>
+<link rel="stylesheet" href="/assets/ml0x.css">
 <style>
-:root{
-  --bg:#0d1117; --panel:#161b22; --panel2:#1c2330; --line:#2a3441;
-  --text:#e6edf3; --muted:#9aa7b4; --accent:#7aa2f7; --accent2:#9ece6a;
-  --warn:#e0af68; --pink:#f7768e;
-}
-*{box-sizing:border-box}
-body{
-  margin:0; background:var(--bg); color:var(--text);
-  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
-  line-height:1.6; font-size:16px;
-}
-a{color:var(--accent); text-decoration:none}
-a:hover{text-decoration:underline}
-nav{
-  display:flex; gap:18px; padding:14px 20px; border-bottom:1px solid var(--line);
-  background:var(--panel); font-size:14px; position:sticky; top:0; z-index:5;
-}
-.wrap{max-width:1000px; margin:0 auto; padding:24px 20px 60px}
-h1{font-size:28px; line-height:1.25; margin:22px 0 8px}
-h2{font-size:20px; margin:34px 0 12px; border-bottom:1px solid var(--line); padding-bottom:6px}
-.lead{color:var(--muted); font-size:17px; margin:0 0 8px}
+/* tool-specific structure only; every colour is a token */
+:root{ --accent:#2563EB; --accent2:#157F3B; --pink:#7C3AED; }
+.wrap{padding-bottom:60px}
+h2{border-bottom:1px solid var(--line); padding-bottom:8px}
+.lead{color:var(--ink-muted); font-size:16px; margin:0 0 8px; max-width:66ch}
 #tool{
-  background:var(--panel); border:1px solid var(--line); border-radius:12px;
+  background:var(--surface); border:1px solid var(--line); border-radius:var(--radius);
   padding:22px; margin:24px 0; display:grid; grid-template-columns:1fr 1fr; gap:26px;
 }
 @media(max-width:760px){#tool{grid-template-columns:1fr}}
-.controls{display:flex; flex-direction:column; gap:14px}
-.field{display:flex; flex-direction:column; gap:5px}
-.field label{font-size:13px; color:var(--muted); font-weight:600; display:flex; justify-content:space-between}
-.field .val{color:var(--accent); font-variant-numeric:tabular-nums}
-input[type=range]{width:100%; accent-color:var(--accent)}
-input[type=number],select{
-  width:100%; background:var(--panel2); border:1px solid var(--line); color:var(--text);
-  padding:8px 10px; border-radius:8px; font-size:14px; font-variant-numeric:tabular-nums;
-}
-input[type=number]:focus,select:focus{outline:1px solid var(--accent)}
+.controls{display:flex; flex-direction:column; gap:14px; min-width:0}
+.field{display:flex; flex-direction:column; gap:5px; min-width:0}
+.field label{font-family:var(--font-body); font-size:12px; color:var(--ink-muted); font-weight:600;
+  display:flex; justify-content:space-between; gap:10px; text-transform:none; letter-spacing:0; margin:0}
+.field .val{color:var(--ink); font-family:var(--font-mono); font-variant-numeric:tabular-nums}
 .row2{display:grid; grid-template-columns:1fr 1fr; gap:10px}
 .presets{display:flex; flex-wrap:wrap; gap:8px; margin-bottom:4px}
 .presets button{
-  background:var(--panel2); border:1px solid var(--line); color:var(--text);
-  padding:6px 11px; border-radius:20px; font-size:12px; cursor:pointer;
+  background:var(--surface); border:1px solid var(--line-strong); color:var(--ink);
+  padding:8px 14px; border-radius:var(--radius-pill); font-size:12px; min-height:38px; width:auto;
 }
-.presets button:hover{border-color:var(--accent); color:var(--accent)}
-.out{display:flex; flex-direction:column; gap:14px}
-.card{background:var(--panel2); border:1px solid var(--line); border-radius:10px; padding:14px 16px}
-.card h3{margin:0 0 10px; font-size:13px; text-transform:uppercase; letter-spacing:.5px; color:var(--muted)}
-.stat{display:flex; justify-content:space-between; align-items:baseline; padding:4px 0; font-size:14px}
-.stat .k{color:var(--muted)}
-.stat .v{font-weight:700; font-variant-numeric:tabular-nums; font-size:15px}
-.big{font-size:26px; font-weight:800; color:var(--accent2); font-variant-numeric:tabular-nums}
-.big small{font-size:13px; color:var(--muted); font-weight:500}
+.presets button:hover{background:var(--surface-2); border-color:var(--ink); color:var(--ink)}
+.out{display:flex; flex-direction:column; gap:14px; min-width:0}
+.out .card{background:var(--surface-2); border:1px solid var(--line);
+  border-radius:var(--radius-sm); padding:14px 16px; margin:0}
+.out .card h3{font-family:var(--font-mono); margin:0 0 10px; font-size:11px;
+  text-transform:uppercase; letter-spacing:.8px; color:var(--ink-muted)}
+.stat{display:flex; justify-content:space-between; align-items:baseline; gap:12px; padding:4px 0; font-size:13px}
+.stat .k{color:var(--ink-muted)}
+.stat .v{color:var(--ink); font-family:var(--font-mono); font-weight:700;
+  font-variant-numeric:tabular-nums; font-size:13px}
+.big{font-family:var(--font-mono); font-size:24px; font-weight:700; color:var(--accent2);
+  font-variant-numeric:tabular-nums; letter-spacing:-0.5px}
+.big small{font-size:12px; color:var(--ink-muted); font-weight:500}
 .split{display:grid; grid-template-columns:1fr 1fr; gap:12px}
-.bar{height:8px; border-radius:4px; background:var(--line); overflow:hidden; margin-top:6px; display:flex}
+.bar{height:8px; border-radius:4px; background:var(--line-strong); overflow:hidden; margin-top:8px; display:flex}
 .bar span{display:block; height:100%}
-.legend{display:flex; flex-wrap:wrap; gap:10px; font-size:11px; color:var(--muted); margin-top:8px}
+.legend{display:flex; flex-wrap:wrap; gap:10px; font-size:11px; color:var(--ink-muted); margin-top:8px}
 .legend i{display:inline-block; width:9px; height:9px; border-radius:2px; margin-right:4px; vertical-align:middle}
-.note{font-size:12px; color:var(--muted); margin-top:4px}
-code{background:var(--panel2); padding:2px 6px; border-radius:5px; font-size:13px; color:var(--accent2)}
-.prose{color:#c9d4df}
+.legend b{color:var(--ink); font-family:var(--font-mono)}
+.note{background:none; border:0; padding:0; font-size:12px; color:var(--ink-faint); margin:4px 0 0}
+.prose{color:var(--ink-2); max-width:70ch}
 .prose p{margin:12px 0}
-.formula{background:var(--panel); border:1px solid var(--line); border-left:3px solid var(--accent);
-  padding:12px 16px; border-radius:8px; font-family:ui-monospace,Menlo,Consolas,monospace; font-size:13px;
-  overflow-x:auto; color:var(--text); margin:14px 0}
+.formula{background:var(--surface-dark); color:var(--on-dark); border:0; border-radius:var(--radius);
+  padding:18px 20px; font-family:var(--font-mono); font-size:13px; line-height:1.7;
+  overflow-x:auto; margin:16px 0; white-space:pre}
 .related{display:flex; flex-wrap:wrap; gap:12px; margin-top:12px}
-.related a{background:var(--panel); border:1px solid var(--line); padding:10px 14px; border-radius:8px; font-size:14px}
-footer{border-top:1px solid var(--line); margin-top:44px; padding:24px 20px; color:var(--muted); font-size:14px}
-footer .fl{display:flex; gap:18px; flex-wrap:wrap; margin-bottom:10px}
+.related a{background:var(--surface); border:1px solid var(--line); color:var(--ink);
+  padding:10px 14px; border-radius:var(--radius-sm); font-size:14px}
+.related a:hover{background:var(--surface-2); border-color:var(--line-strong); color:var(--ink)}
 </style>
 </head>
 <body>
-<nav>
-  <a href="/">Home</a>
-  <a href="/tools/">Tools</a>
-</nav>
+<a class="skip-link" href="#main">Skip to content</a>
+<header class="site-nav">
+  <div class="site-nav__inner">
+    <div class="site-nav__left">
+      <a class="site-nav__logo" href="/">ml0x</a>
+      <nav class="site-nav__links" aria-label="Main">
+        <a href="/tools/" aria-current="page">Tools</a>
+        <a href="/calculators/">Calculators</a>
+        <a href="/guides/">Guides</a>
+        <a href="/answers/">Answers</a>
+        <a href="/research/">Research</a>
+      </nav>
+    </div>
+    <a class="nav-cta" href="https://zovo.one/pricing" target="_blank" rel="noopener">Full system, $99</a>
+  </div>
+</header>
+<main id="main">
 <div class="wrap">
   <h1>Estimate Transformer Compute &amp; VRAM Before You Train</h1>
   <p class="lead">Plug in your architecture and get parameter count, training/inference FLOPs, KV-cache size, and a full VRAM breakdown for training &mdash; instantly, in the browser.</p>
@@ -259,20 +256,42 @@ optimizer mem = params &middot; states &middot; master_bytes   (Adam &rArr; stat
 
   <h2>Related Tools</h2>
   <div class="related">
-    <a href="/tools/llm-vram-requirement-calculator">LLM VRAM Requirement Calculator</a>
-    <a href="/tools/attention-flops-visualizer">Attention FLOPs Visualizer</a>
-    <a href="/tools/model-parameter-counter">Model Parameter Counter</a>
+    <a href="/calculators/llm-memory-calculator.html">LLM Memory Calculator</a>
+    <a href="/tools/attention-mechanism-visualizer.html">Attention Mechanism Visualizer</a>
+    <a href="/calculators/kv-cache-size-calculator.html">KV Cache Size Calculator</a>
   </div>
 </div>
+</main>
 
-<footer>
-  <div class="fl">
-    <a href="/">Home</a>
-    <a href="/tools/">All Tools</a>
-    <a href="/tools/transformer-flops-memory-calculator">Transformer FLOPs Calculator</a>
-    <a href="https://zovo.one">About the author</a>
+<footer class="site-footer">
+  <nav class="footer-links-seo" aria-label="ML tools and content">
+    <a href="/tools/">ML tools</a>
+    <a href="/tools/learning-rate-finder.html">Learning rate finder</a>
+    <a href="/tools/confusion-matrix-calculator.html">Confusion matrix calculator</a>
+    <a href="/tools/neural-network-playground.html">Neural network playground</a>
+    <a href="/tools/attention-mechanism-visualizer.html">Attention visualizer</a>
+    <a href="/tools/dataset-splitter.html">Dataset splitter</a>
+    <a href="/calculators/kv-cache-size-calculator.html">KV cache calculator</a>
+    <a href="/calculators/llm-memory-calculator.html">LLM memory calculator</a>
+    <a href="/guides/">Guides</a>
+    <a href="/guides/gradient-descent-explained.html">Gradient descent</a>
+    <a href="/answers/">Answers</a>
+    <a href="/answers/ml-algorithm-comparison.html">Algorithm comparison</a>
+    <a href="/research/">Research</a>
+    <a href="/research/ml-cheatsheet.html">ML cheat sheet</a>
+    <a href="/about.html">About</a>
+  </nav>
+  <div class="site-footer__inner">
+    <div class="site-footer__brand">
+      <span class="site-footer__logo">ml0x</span>
+      <span class="site-footer__meta">by <a href="https://github.com/theluckystrike" target="_blank" rel="noopener">@theluckystrike</a></span>
+    </div>
+    <div class="site-footer__links">
+      <a href="https://github.com/theluckystrike/100xagenticdev" target="_blank" rel="noopener">GitHub</a>
+      <a href="/research/">Research</a>
+      <a href="https://twitter.com/_alphashark_" target="_blank" rel="noopener">X</a>
+    </div>
   </div>
-  <div>&copy; 2026 ml0x.com &mdash; built for ML engineers by Michael Lip. Estimates use standard scaling laws; real workloads vary with fused kernels, sharding and precision.</div>
 </footer>
 
 <script>

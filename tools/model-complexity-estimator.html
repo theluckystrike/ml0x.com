@@ -13,6 +13,7 @@
     <meta property="og:url" content="https://ml0x.com/tools/model-complexity-estimator">
     <meta property="og:type" content="website">
     <meta property="og:site_name" content="ml0x.com">
+    <link rel="stylesheet" href="/assets/ml0x.css">
     <script type="application/ld+json">
     {
         "@context": "https://schema.org",
@@ -28,252 +29,83 @@
     }
     </script>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-            background: #0a0e27;
-            color: #e0e6ed;
-            line-height: 1.6;
-            padding: 20px;
-        }
-
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-        }
-
-        header {
-            margin-bottom: 40px;
-            border-bottom: 2px solid #00d4aa;
-            padding-bottom: 20px;
-        }
-
-        h1 {
-            font-size: 2.5rem;
-            color: #00d4aa;
-            margin-bottom: 10px;
-        }
-
-        .subtitle {
-            font-size: 1.1rem;
-            color: #a0a6b3;
-        }
-
+        /* tool-specific structure only; every colour is a design-system token */
         .content {
             display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 30px;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 20px;
             margin-bottom: 40px;
         }
+        .visualization-panel { grid-column: 1 / -1; }
 
-        .panel {
-            background: #0f1633;
-            border: 1px solid #1a2847;
-            border-radius: 8px;
-            padding: 25px;
-        }
-
-        .panel h2 {
-            font-size: 1.3rem;
-            color: #00d4aa;
-            margin-bottom: 20px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .input-group {
-            margin-bottom: 20px;
-        }
-
-        label {
-            display: block;
-            font-size: 0.95rem;
-            font-weight: 500;
-            margin-bottom: 8px;
-            color: #c0c6d3;
-        }
-
-        input[type="number"],
-        select {
-            width: 100%;
-            padding: 10px 12px;
-            background: #0a0e27;
-            border: 1px solid #1a2847;
-            border-radius: 4px;
-            color: #e0e6ed;
-            font-size: 0.95rem;
-        }
-
-        input:focus,
-        select:focus {
-            outline: none;
-            border-color: #00d4aa;
-            box-shadow: 0 0 0 3px rgba(0, 212, 170, 0.1);
-        }
-
-        .input-hint {
-            font-size: 0.85rem;
-            color: #707a89;
-            margin-top: 4px;
-        }
-
-        button {
-            width: 100%;
-            padding: 12px 20px;
-            background: linear-gradient(135deg, #00d4aa 0%, #00a892 100%);
-            color: #0a0e27;
-            border: none;
-            border-radius: 4px;
-            font-size: 1rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            margin-top: 10px;
-        }
-
-        button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 20px rgba(0, 212, 170, 0.3);
-        }
-
-        .metric-card {
-            background: #0a0e27;
-            border: 1px solid #1a2847;
-            border-radius: 4px;
-            padding: 15px;
-            margin-bottom: 15px;
-        }
-
-        .metric-label {
-            color: #a0a6b3;
-            font-size: 0.85rem;
-            margin-bottom: 6px;
-        }
-
-        .metric-value {
-            color: #00d4aa;
-            font-size: 1.3rem;
-            font-weight: 700;
-        }
-
+        .metric-card { margin-bottom: 12px; padding: 16px 18px; }
         .metric-unit {
-            color: #707a89;
-            font-size: 0.9rem;
-            margin-left: 5px;
-        }
-
-        .comparison-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 15px;
-        }
-
-        .comparison-table th {
-            background: #0a0e27;
-            color: #00d4aa;
-            padding: 10px;
-            text-align: left;
-            font-weight: 600;
-            font-size: 0.9rem;
-            border-bottom: 2px solid #1a2847;
-        }
-
-        .comparison-table td {
-            padding: 10px;
-            border-bottom: 1px solid #1a2847;
-            color: #e0e6ed;
-            font-size: 0.9rem;
-        }
-
-        .comparison-table tr:hover {
-            background: rgba(0, 212, 170, 0.05);
-        }
-
-        .chart-container {
-            position: relative;
-            margin-top: 20px;
-            padding: 15px;
-            background: #0a0e27;
-            border: 1px solid #1a2847;
-            border-radius: 4px;
-        }
-
-        canvas {
-            width: 100% !important;
-            height: auto !important;
-        }
-
-        .visualization-panel {
-            grid-column: 1 / -1;
+            font-family: var(--font-mono); font-size: 12px;
+            color: var(--ink-muted); margin-left: 5px;
         }
 
         .preset-buttons {
             display: grid;
-            grid-template-columns: 1fr 1fr;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
             gap: 10px;
             margin-bottom: 20px;
         }
-
         .btn-preset {
-            padding: 8px 12px;
-            background: #1a2847;
-            color: #00d4aa;
-            border: 1px solid #00d4aa;
-            border-radius: 4px;
-            font-size: 0.85rem;
-            font-weight: 500;
+            padding: 10px 12px; min-height: 44px;
+            background: var(--surface); color: var(--ink);
+            border: 1px solid var(--line-strong); border-radius: var(--radius-pill);
+            font-family: var(--font-body); font-size: 13px; font-weight: 500;
             cursor: pointer;
-            transition: all 0.3s ease;
         }
+        .btn-preset:hover { background: var(--surface-2); border-color: var(--ink); color: var(--ink); }
+        .btn-full { width: 100%; margin-top: 10px; }
 
-        .btn-preset:hover {
-            background: #00d4aa;
-            color: #0a0e27;
+        .chart-container {
+            position: relative;
+            margin-top: 20px;
+            padding: 12px;
+            background: var(--surface);
+            border: 1px solid var(--line);
+            border-radius: var(--radius);
+            overflow-x: auto;
         }
+        canvas { width: 100% !important; height: auto !important; }
 
-        @media (max-width: 768px) {
-            .content {
-                grid-template-columns: 1fr;
-            }
-
-            h1 {
-                font-size: 2rem;
-            }
-
-            .visualization-panel {
-                grid-column: 1;
-            }
-
-            .preset-buttons {
-                grid-template-columns: 1fr;
-            }
-        }
-
-        footer {
-            border-top: 1px solid #1a2847;
-            padding-top: 20px;
-            text-align: center;
-            color: #707a89;
-            font-size: 0.9rem;
+        @media (max-width: 767px) {
+            .content { grid-template-columns: minmax(0, 1fr); }
+            .visualization-panel { grid-column: 1; }
+            .preset-buttons { grid-template-columns: minmax(0, 1fr); }
         }
     </style>
 </head>
 <body>
+<a class="skip-link" href="#main">Skip to content</a>
+<header class="site-nav">
+  <div class="site-nav__inner">
+    <div class="site-nav__left">
+      <a class="site-nav__logo" href="/">ml0x</a>
+      <nav class="site-nav__links" aria-label="Main">
+        <a href="/tools/" aria-current="page">Tools</a>
+        <a href="/calculators/">Calculators</a>
+        <a href="/guides/">Guides</a>
+        <a href="/answers/">Answers</a>
+        <a href="/research/">Research</a>
+      </nav>
+    </div>
+    <a class="nav-cta" href="https://zovo.one/pricing" target="_blank" rel="noopener">Full system, $99</a>
+  </div>
+</header>
+
+<main id="main">
     <div class="container">
-        <header>
+        <div class="page-head">
             <h1>Model Complexity Estimator</h1>
             <p class="subtitle">Estimate FLOPs, memory usage, and inference time for neural networks</p>
-        </header>
+        </div>
 
         <div class="content">
             <div class="panel">
-                <h2>🏗️ Model Architecture</h2>
+                <h2>Model Architecture</h2>
 
                 <div class="preset-buttons">
                     <button class="btn-preset" onclick="loadPreset('resnet50')">ResNet-50</button>
@@ -316,11 +148,11 @@
                     </select>
                 </div>
 
-                <button onclick="calculateComplexity()">Estimate Complexity</button>
+                <button class="btn btn-full" onclick="calculateComplexity()">Estimate Complexity</button>
             </div>
 
             <div class="panel">
-                <h2>📊 Complexity Metrics</h2>
+                <h2>Complexity Metrics</h2>
 
                 <div class="metric-card">
                     <div class="metric-label">FLOPs (Forward Pass)</div>
@@ -364,8 +196,9 @@
             </div>
 
             <div class="panel visualization-panel">
-                <h2>📈 Architecture Comparison</h2>
+                <h2>Architecture Comparison</h2>
 
+                <div class="table-scroll">
                 <table class="comparison-table">
                     <thead>
                         <tr>
@@ -402,18 +235,16 @@
                         </tr>
                     </tbody>
                 </table>
+                </div>
 
                 <div class="chart-container" style="margin-top: 30px;">
-                    <h3 style="color: #00d4aa; margin-bottom: 15px;">FLOPs vs Memory Trade-off</h3>
+                    <h3 style="margin-bottom: 15px;">FLOPs vs Memory Trade-off</h3>
                     <canvas id="tradeoffChart" width="800" height="300"></canvas>
                 </div>
             </div>
         </div>
-
-        <footer>
-            <p>&copy; 2026 ml0x.com. All rights reserved.</p>
-        </footer>
     </div>
+</main>
 
     <script>
         const presets = {
@@ -496,7 +327,7 @@
             const height = canvas.height;
             const padding = 50;
 
-            ctx.fillStyle = '#0a0e27';
+            ctx.fillStyle = '#FFFFFF';
             ctx.fillRect(0, 0, width, height);
 
             // Example data points for comparison
@@ -512,7 +343,7 @@
             const maxMemory = 600;
 
             // Draw grid
-            ctx.strokeStyle = '#1a2847';
+            ctx.strokeStyle = '#E8E8E6';
             ctx.lineWidth = 1;
             for (let i = 0; i <= 5; i++) {
                 const x = padding + (i / 5) * (width - 2 * padding);
@@ -529,7 +360,7 @@
             }
 
             // Draw axes
-            ctx.strokeStyle = '#707a89';
+            ctx.strokeStyle = '#B8B8B6';
             ctx.lineWidth = 2;
             ctx.beginPath();
             ctx.moveTo(padding, height - padding);
@@ -546,25 +377,25 @@
                 const y = height - padding - (model.memory / maxMemory) * (height - 2 * padding);
 
                 if (model.name === 'Current') {
-                    ctx.fillStyle = '#00d4aa';
+                    ctx.fillStyle = '#2563EB';
                     ctx.beginPath();
                     ctx.arc(x, y, 8, 0, Math.PI * 2);
                     ctx.fill();
                 } else {
-                    ctx.fillStyle = 'rgba(0, 212, 170, 0.5)';
+                    ctx.fillStyle = 'rgba(37, 99, 235, 0.45)';
                     ctx.beginPath();
                     ctx.arc(x, y, 5, 0, Math.PI * 2);
                     ctx.fill();
                 }
 
-                ctx.fillStyle = '#a0a6b3';
+                ctx.fillStyle = '#1A1A1A';
                 ctx.font = '11px sans-serif';
                 ctx.textAlign = 'center';
                 ctx.fillText(model.name, x, y - 15);
             });
 
             // Labels
-            ctx.fillStyle = '#a0a6b3';
+            ctx.fillStyle = '#6a6a6a';
             ctx.font = '12px sans-serif';
             ctx.textAlign = 'center';
             ctx.fillText('GFLOPs', width / 2, height - 15);
@@ -581,5 +412,36 @@
             calculateComplexity();
         });
     </script>
+
+<footer class="site-footer">
+  <nav class="footer-links-seo" aria-label="ML tools and content">
+    <a href="/tools/">ML tools</a>
+    <a href="/tools/learning-rate-finder.html">Learning rate finder</a>
+    <a href="/tools/confusion-matrix-calculator.html">Confusion matrix calculator</a>
+    <a href="/tools/neural-network-playground.html">Neural network playground</a>
+    <a href="/tools/attention-mechanism-visualizer.html">Attention visualizer</a>
+    <a href="/tools/dataset-splitter.html">Dataset splitter</a>
+    <a href="/calculators/kv-cache-size-calculator.html">KV cache calculator</a>
+    <a href="/calculators/llm-memory-calculator.html">LLM memory calculator</a>
+    <a href="/guides/">Guides</a>
+    <a href="/guides/gradient-descent-explained.html">Gradient descent</a>
+    <a href="/answers/">Answers</a>
+    <a href="/answers/ml-algorithm-comparison.html">Algorithm comparison</a>
+    <a href="/research/">Research</a>
+    <a href="/research/ml-cheatsheet.html">ML cheat sheet</a>
+    <a href="/about.html">About</a>
+  </nav>
+  <div class="site-footer__inner">
+    <div class="site-footer__brand">
+      <span class="site-footer__logo">ml0x</span>
+      <span class="site-footer__meta">by <a href="https://github.com/theluckystrike" target="_blank" rel="noopener">@theluckystrike</a></span>
+    </div>
+    <div class="site-footer__links">
+      <a href="https://github.com/theluckystrike/100xagenticdev" target="_blank" rel="noopener">GitHub</a>
+      <a href="/research/">Research</a>
+      <a href="https://twitter.com/_alphashark_" target="_blank" rel="noopener">X</a>
+    </div>
+  </div>
+</footer>
 </body>
 </html>

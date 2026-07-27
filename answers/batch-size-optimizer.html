@@ -20,7 +20,7 @@
 <meta name="twitter:description" content="Calculate maximum batch size from GPU VRAM. Gradient accumulation and multi-GPU scaling for fp32/fp16/bf16.">
 <meta name="author" content="Michael Lip">
 <meta name="robots" content="index, follow">
-<link rel="stylesheet" href="/assets/style.css">
+<link rel="stylesheet" href="/assets/ml0x.css">
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
@@ -61,24 +61,24 @@
 </head>
 <body>
 
-<header>
-  <div class="container header-inner">
-    <a href="/" class="logo">ml0x</a>
-    <nav>
-      <a href="/">Home</a>
-      <a href="/research/">Research</a>
-      <a href="/tools/">Tools</a>
-      <a href="/guides/">Guides</a>
-      <a href="/answers/">Answers</a>
-      <div class="nav-right">
-        <a href="https://zovo.one/pricing?utm_source=ml0x.com&utm_medium=satellite&utm_campaign=nav-link" class="nav-pro" target="_blank">Go Pro &#10022;</a>
-        <a href="https://zovo.one/tools" class="nav-zovo">Zovo Tools</a>
-      </div>
-    </nav>
+<a class="skip-link" href="#main">Skip to content</a>
+<header class="site-nav">
+  <div class="site-nav__inner">
+    <div class="site-nav__left">
+      <a class="site-nav__logo" href="/">ml0x</a>
+      <nav class="site-nav__links" aria-label="Main">
+        <a href="/tools/">Tools</a>
+        <a href="/calculators/">Calculators</a>
+        <a href="/guides/">Guides</a>
+        <a href="/answers/" aria-current="page">Answers</a>
+        <a href="/research/">Research</a>
+      </nav>
+    </div>
+    <a class="nav-cta" href="https://zovo.one/pricing" target="_blank" rel="noopener">Full system, $99</a>
   </div>
 </header>
 
-<main class="container">
+<main id="main" class="container">
   <div class="breadcrumb">
     <a href="/">Home</a> <span>&rsaquo;</span> <a href="/answers/">Answers</a> <span>&rsaquo;</span> Batch Size Optimizer
   </div>
@@ -106,7 +106,7 @@
       </div>
       <div class="control-group">
         <label>Model Parameters (M)</label>
-        <input type="number" id="modelParams" value="125" min="1" max="175000" style="width:100%;padding:8px;background:#1a1a1a;border:1px solid #333;border-radius:6px;color:#e0e0e0;">
+        <input type="number" id="modelParams" value="125" min="1" max="175000">
       </div>
       <div class="control-group">
         <label>Precision</label>
@@ -170,10 +170,10 @@
     <div class="tool-card" style="margin-top:16px;">
       <h3>Batch Size vs Convergence Tradeoff</h3>
       <div class="viz-container"><svg id="tradeoffSvg" width="700" height="300" viewBox="0 0 700 300"></svg></div>
-      <div style="display:flex;gap:16px;margin-top:8px;font-size:12px;color:#aaa;">
-        <span><span style="color:#3b82f6;">&#9644;</span> Training Speed (samples/sec)</span>
-        <span><span style="color:#22c55e;">&#9644;</span> Generalization Score</span>
-        <span><span style="color:#f59e0b;">- -</span> Your Max Batch Size</span>
+      <div style="display:flex;gap:16px;margin-top:8px;font-size:12px;color:#6a6a6a;">
+        <span><span style="color:#2563EB;">&#9644;</span> Training Speed (samples/sec)</span>
+        <span><span style="color:#157F3B;">&#9644;</span> Generalization Score</span>
+        <span><span style="color:#B45309;">- -</span> Your Max Batch Size</span>
       </div>
     </div>
 
@@ -182,11 +182,11 @@
       <div class="control-row" style="margin-bottom:12px;">
         <div class="control-group">
           <label>Target Effective Batch Size</label>
-          <input type="number" id="targetBatch" value="256" min="1" style="width:100%;padding:8px;background:#1a1a1a;border:1px solid #333;border-radius:6px;color:#e0e0e0;">
+          <input type="number" id="targetBatch" value="256" min="1">
         </div>
         <button class="btn btn-secondary" id="accumBtn">Calculate Accumulation Steps</button>
       </div>
-      <div id="accumResult" style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;">
+      <div id="accumResult" class="stat-grid">
         <div class="stat-card"><div class="value" id="accumSteps">--</div><div class="label">Accumulation Steps</div></div>
         <div class="stat-card"><div class="value" id="accumMicro">--</div><div class="label">Micro-Batch Size</div></div>
         <div class="stat-card"><div class="value" id="accumEffective">--</div><div class="label">Effective Batch Size</div></div>
@@ -197,10 +197,10 @@
     <div class="tool-card" style="margin-top:16px;">
       <h3>Multi-GPU Scaling Estimator</h3>
       <div class="viz-container"><svg id="scalingSvg" width="700" height="280" viewBox="0 0 700 280"></svg></div>
-      <div style="display:flex;gap:16px;margin-top:8px;font-size:12px;color:#aaa;">
-        <span><span style="color:#3b82f6;">&#9644;</span> Ideal (linear) scaling</span>
-        <span><span style="color:#22c55e;">&#9644;</span> Realistic scaling</span>
-        <span><span style="color:#a78bfa;">&#9644;</span> Effective batch size</span>
+      <div style="display:flex;gap:16px;margin-top:8px;font-size:12px;color:#6a6a6a;">
+        <span><span style="color:#2563EB;">&#9644;</span> Ideal (linear) scaling</span>
+        <span><span style="color:#157F3B;">&#9644;</span> Realistic scaling</span>
+        <span><span style="color:#7C3AED;">&#9644;</span> Effective batch size</span>
       </div>
     </div>
   </div>
@@ -297,13 +297,34 @@
 </main>
 
 <footer class="site-footer">
-    <div class="footer-inner">
-        <div class="footer-brand">Zovo Tools</div>
-        <div class="footer-tagline">Free developer tools by a solo dev. No tracking.</div>
-        <a href="https://zovo.one/pricing?utm_source=ml0x.com&utm_medium=satellite&utm_campaign=footer-link" class="footer-cta">Zovo Lifetime — $99 once, free forever &rarr;</a>
-        <div class="footer-copy">&copy; 2026 <a href="https://zovo.one">Zovo</a> &middot; 47/500 founding spots</div>
+  <nav class="footer-links-seo" aria-label="ML tools and content">
+    <a href="/tools/">ML tools</a>
+    <a href="/tools/learning-rate-finder.html">Learning rate finder</a>
+    <a href="/tools/confusion-matrix-calculator.html">Confusion matrix calculator</a>
+    <a href="/tools/neural-network-playground.html">Neural network playground</a>
+    <a href="/tools/attention-mechanism-visualizer.html">Attention visualizer</a>
+    <a href="/tools/dataset-splitter.html">Dataset splitter</a>
+    <a href="/calculators/kv-cache-size-calculator.html">KV cache calculator</a>
+    <a href="/calculators/llm-memory-calculator.html">LLM memory calculator</a>
+    <a href="/guides/">Guides</a>
+    <a href="/guides/gradient-descent-explained.html">Gradient descent</a>
+    <a href="/answers/">Answers</a>
+    <a href="/answers/ml-algorithm-comparison.html">Algorithm comparison</a>
+    <a href="/research/">Research</a>
+    <a href="/research/ml-cheatsheet.html">ML cheat sheet</a>
+    <a href="/about.html">About</a>
+  </nav>
+  <div class="site-footer__inner">
+    <div class="site-footer__brand">
+      <span class="site-footer__logo">ml0x</span>
+      <span class="site-footer__meta">by <a href="https://github.com/theluckystrike" target="_blank" rel="noopener">@theluckystrike</a></span>
     </div>
-</footer>
+    <div class="site-footer__links">
+      <a href="https://github.com/theluckystrike/100xagenticdev" target="_blank" rel="noopener">GitHub</a>
+      <a href="/research/">Research</a>
+      <a href="https://twitter.com/_alphashark_" target="_blank" rel="noopener">X</a>
+    </div>
+  </div>
 
 <nav class="zovo-network" aria-label="Zovo Tools Network">
     <div class="zovo-network-inner">
@@ -346,7 +367,7 @@
     <a href="https://zovo.one" rel="nofollow">Zovo — AI Dev Tools</a>
   </div>
 </div>
-
+</footer>
 <script>
 (function() {
   var maxBatch = 0;
@@ -429,14 +450,14 @@
     var w = 700 - pad.l - pad.r, h = 250 - pad.t - pad.b;
     var totalGB = total / (1024*1024*1024);
     var segments = [
-      {label:'Parameters + Gradients', bytes:paramGrad, color:'#3b82f6'},
-      {label:'Optimizer States', bytes:opt, color:'#a78bfa'},
-      {label:'Activations (batch)', bytes:act, color:'#22c55e'},
-      {label:'CUDA Overhead', bytes:overhead, color:'#666'},
-      {label:'Free', bytes:Math.max(0, total - paramGrad - opt - act - overhead), color:'#1a1a1a'}
+      {label:'Parameters + Gradients', bytes:paramGrad, color:'#2563EB'},
+      {label:'Optimizer States', bytes:opt, color:'#7C3AED'},
+      {label:'Activations (batch)', bytes:act, color:'#157F3B'},
+      {label:'CUDA Overhead', bytes:overhead, color:'#B8B8B6'},
+      {label:'Free', bytes:Math.max(0, total - paramGrad - opt - act - overhead), color:'#F2F2F0'}
     ];
 
-    var html = '<rect width="700" height="250" fill="#141414"/>';
+    var html = '<rect width="700" height="250" fill="#FFFFFF"/>';
     var barY = pad.t, barH = 50;
     var x = pad.l;
     for (var i = 0; i < segments.length; i++) {
@@ -445,7 +466,7 @@
       html += '<rect x="'+x+'" y="'+barY+'" width="'+segW+'" height="'+barH+'" fill="'+segments[i].color+'" rx="'+(i===0?'4':'0')+'" opacity="0.8"/>';
       x += segW;
     }
-    html += '<rect x="'+pad.l+'" y="'+barY+'" width="'+w+'" height="'+barH+'" fill="none" stroke="#444" stroke-width="1" rx="4"/>';
+    html += '<rect x="'+pad.l+'" y="'+barY+'" width="'+w+'" height="'+barH+'" fill="none" stroke="#D8D8D6" stroke-width="1" rx="4"/>';
 
     var legendY = barY + barH + 30;
     var cols = 3;
@@ -456,9 +477,9 @@
       var ly = legendY + row * 28;
       var gb = (segments[i].bytes / (1024*1024*1024)).toFixed(2);
       html += '<rect x="'+lx+'" y="'+(ly-8)+'" width="12" height="12" fill="'+segments[i].color+'" rx="2" opacity="0.8"/>';
-      html += '<text x="'+(lx+18)+'" y="'+(ly+2)+'" fill="#ccc" font-size="11" font-family="IBM Plex Sans,sans-serif">'+segments[i].label+': '+gb+' GB</text>';
+      html += '<text x="'+(lx+18)+'" y="'+(ly+2)+'" fill="#4A4A4A" font-size="11" font-family="IBM Plex Sans,sans-serif">'+segments[i].label+': '+gb+' GB</text>';
     }
-    html += '<text x="'+(pad.l+w/2)+'" y="'+(pad.t+barH/2+5)+'" text-anchor="middle" fill="#fff" font-size="12" font-weight="600" font-family="IBM Plex Sans,sans-serif">Total: '+totalGB.toFixed(1)+' GB</text>';
+    html += '<text x="'+(pad.l+w/2)+'" y="'+(pad.t+barH/2+5)+'" text-anchor="middle" fill="#1A1A1A" font-size="12" font-weight="600" font-family="IBM Plex Sans,sans-serif">Total: '+totalGB.toFixed(1)+' GB</text>';
     svg.innerHTML = html;
   }
 
@@ -474,18 +495,18 @@
     function sySpeed(v) { return pad.t + (1 - v) * h; }
     function syGen(v) { return pad.t + (1 - v) * h; }
 
-    var html = '<rect width="700" height="300" fill="#141414"/>';
-    html += '<line x1="'+pad.l+'" y1="'+(pad.t+h)+'" x2="'+(pad.l+w)+'" y2="'+(pad.t+h)+'" stroke="#333" stroke-width="1"/>';
-    html += '<line x1="'+pad.l+'" y1="'+pad.t+'" x2="'+pad.l+'" y2="'+(pad.t+h)+'" stroke="#333" stroke-width="1"/>';
+    var html = '<rect width="700" height="300" fill="#FFFFFF"/>';
+    html += '<line x1="'+pad.l+'" y1="'+(pad.t+h)+'" x2="'+(pad.l+w)+'" y2="'+(pad.t+h)+'" stroke="#B8B8B6" stroke-width="1"/>';
+    html += '<line x1="'+pad.l+'" y1="'+pad.t+'" x2="'+pad.l+'" y2="'+(pad.t+h)+'" stroke="#B8B8B6" stroke-width="1"/>';
 
     var xTicks = [1,2,4,8,16,32,64,128,256,512,1024,2048,4096];
     for (var i = 0; i < xTicks.length; i++) {
       if (xTicks[i] > maxX) break;
       var x = sx(xTicks[i]);
-      html += '<text x="'+x+'" y="'+(pad.t+h+18)+'" text-anchor="middle" fill="#666" font-size="9" font-family="IBM Plex Mono,monospace">'+xTicks[i]+'</text>';
-      html += '<line x1="'+x+'" y1="'+(pad.t+h)+'" x2="'+x+'" y2="'+(pad.t+h+4)+'" stroke="#444" stroke-width="1"/>';
+      html += '<text x="'+x+'" y="'+(pad.t+h+18)+'" text-anchor="middle" fill="#6a6a6a" font-size="9" font-family="IBM Plex Mono,monospace">'+xTicks[i]+'</text>';
+      html += '<line x1="'+x+'" y1="'+(pad.t+h)+'" x2="'+x+'" y2="'+(pad.t+h+4)+'" stroke="#B8B8B6" stroke-width="1"/>';
     }
-    html += '<text x="'+(pad.l+w/2)+'" y="'+(pad.t+h+40)+'" text-anchor="middle" fill="#aaa" font-size="11" font-family="IBM Plex Sans,sans-serif">Batch Size</text>';
+    html += '<text x="'+(pad.l+w/2)+'" y="'+(pad.t+h+40)+'" text-anchor="middle" fill="#6a6a6a" font-size="11" font-family="IBM Plex Sans,sans-serif">Batch Size</text>';
 
     var speedPath = 'M', genPath = 'M';
     for (var i = 0; i < batchSizes.length; i++) {
@@ -495,17 +516,17 @@
       speedPath += (i>0?' L':'')+sx(b).toFixed(1)+' '+sySpeed(speed).toFixed(1);
       genPath += (i>0?' L':'')+sx(b).toFixed(1)+' '+syGen(gen).toFixed(1);
     }
-    html += '<path d="'+speedPath+'" fill="none" stroke="#3b82f6" stroke-width="2"/>';
-    html += '<path d="'+genPath+'" fill="none" stroke="#22c55e" stroke-width="2"/>';
+    html += '<path d="'+speedPath+'" fill="none" stroke="#2563EB" stroke-width="2"/>';
+    html += '<path d="'+genPath+'" fill="none" stroke="#157F3B" stroke-width="2"/>';
 
     if (maxBS > 0 && maxBS <= maxX) {
       var mx = sx(maxBS);
-      html += '<line x1="'+mx+'" y1="'+pad.t+'" x2="'+mx+'" y2="'+(pad.t+h)+'" stroke="#f59e0b" stroke-width="1.5" stroke-dasharray="4,4"/>';
-      html += '<text x="'+(mx+4)+'" y="'+(pad.t+12)+'" fill="#f59e0b" font-size="10" font-family="IBM Plex Sans,sans-serif">Max: '+maxBS+'</text>';
+      html += '<line x1="'+mx+'" y1="'+pad.t+'" x2="'+mx+'" y2="'+(pad.t+h)+'" stroke="#B45309" stroke-width="1.5" stroke-dasharray="4,4"/>';
+      html += '<text x="'+(mx+4)+'" y="'+(pad.t+12)+'" fill="#B45309" font-size="10" font-family="IBM Plex Sans,sans-serif">Max: '+maxBS+'</text>';
     }
 
-    html += '<text x="'+(pad.l-8)+'" y="'+(pad.t+4)+'" text-anchor="end" fill="#666" font-size="9" font-family="IBM Plex Mono,monospace">High</text>';
-    html += '<text x="'+(pad.l-8)+'" y="'+(pad.t+h+4)+'" text-anchor="end" fill="#666" font-size="9" font-family="IBM Plex Mono,monospace">Low</text>';
+    html += '<text x="'+(pad.l-8)+'" y="'+(pad.t+4)+'" text-anchor="end" fill="#6a6a6a" font-size="9" font-family="IBM Plex Mono,monospace">High</text>';
+    html += '<text x="'+(pad.l-8)+'" y="'+(pad.t+h+4)+'" text-anchor="end" fill="#6a6a6a" font-size="9" font-family="IBM Plex Mono,monospace">Low</text>';
 
     svg.innerHTML = html;
   }
@@ -520,16 +541,16 @@
     function sySpeed(v) { return pad.t + (1 - v / 64) * h; }
     function syBatch(v) { return pad.t + (1 - v / (64 * perGpuBatch)) * h; }
 
-    var html = '<rect width="700" height="280" fill="#141414"/>';
-    html += '<line x1="'+pad.l+'" y1="'+(pad.t+h)+'" x2="'+(pad.l+w)+'" y2="'+(pad.t+h)+'" stroke="#333" stroke-width="1"/>';
-    html += '<line x1="'+pad.l+'" y1="'+pad.t+'" x2="'+pad.l+'" y2="'+(pad.t+h)+'" stroke="#333" stroke-width="1"/>';
+    var html = '<rect width="700" height="280" fill="#FFFFFF"/>';
+    html += '<line x1="'+pad.l+'" y1="'+(pad.t+h)+'" x2="'+(pad.l+w)+'" y2="'+(pad.t+h)+'" stroke="#B8B8B6" stroke-width="1"/>';
+    html += '<line x1="'+pad.l+'" y1="'+pad.t+'" x2="'+pad.l+'" y2="'+(pad.t+h)+'" stroke="#B8B8B6" stroke-width="1"/>';
 
     for (var i = 0; i < gpuCounts.length; i++) {
       var x = sx(gpuCounts[i]);
-      html += '<text x="'+x+'" y="'+(pad.t+h+18)+'" text-anchor="middle" fill="#666" font-size="10" font-family="IBM Plex Mono,monospace">'+gpuCounts[i]+'</text>';
+      html += '<text x="'+x+'" y="'+(pad.t+h+18)+'" text-anchor="middle" fill="#6a6a6a" font-size="10" font-family="IBM Plex Mono,monospace">'+gpuCounts[i]+'</text>';
     }
-    html += '<text x="'+(pad.l+w/2)+'" y="'+(pad.t+h+40)+'" text-anchor="middle" fill="#aaa" font-size="11" font-family="IBM Plex Sans,sans-serif">Number of GPUs</text>';
-    html += '<text x="15" y="'+(pad.t+h/2)+'" text-anchor="middle" fill="#aaa" font-size="11" font-family="IBM Plex Sans,sans-serif" transform="rotate(-90,15,'+(pad.t+h/2)+')">Speedup Factor</text>';
+    html += '<text x="'+(pad.l+w/2)+'" y="'+(pad.t+h+40)+'" text-anchor="middle" fill="#6a6a6a" font-size="11" font-family="IBM Plex Sans,sans-serif">Number of GPUs</text>';
+    html += '<text x="15" y="'+(pad.t+h/2)+'" text-anchor="middle" fill="#6a6a6a" font-size="11" font-family="IBM Plex Sans,sans-serif" transform="rotate(-90,15,'+(pad.t+h/2)+')">Speedup Factor</text>';
 
     var idealPath = 'M', realPath = 'M', batchPath = 'M';
     for (var i = 0; i < gpuCounts.length; i++) {
@@ -543,16 +564,16 @@
       batchPath += (i>0?' L':'')+sx(g).toFixed(1)+' '+syBatch(effBatch).toFixed(1);
 
       if (i > 0) {
-        html += '<text x="'+(sx(g)+4)+'" y="'+(sySpeed(real)-4)+'" fill="#22c55e" font-size="9" font-family="IBM Plex Mono,monospace">'+real.toFixed(1)+'x</text>';
+        html += '<text x="'+(sx(g)+4)+'" y="'+(sySpeed(real)-4)+'" fill="#157F3B" font-size="9" font-family="IBM Plex Mono,monospace">'+real.toFixed(1)+'x</text>';
       }
     }
-    html += '<path d="'+idealPath+'" fill="none" stroke="#3b82f6" stroke-width="1.5" stroke-dasharray="4,2"/>';
-    html += '<path d="'+realPath+'" fill="none" stroke="#22c55e" stroke-width="2"/>';
-    html += '<path d="'+batchPath+'" fill="none" stroke="#a78bfa" stroke-width="1.5"/>';
+    html += '<path d="'+idealPath+'" fill="none" stroke="#2563EB" stroke-width="1.5" stroke-dasharray="4,2"/>';
+    html += '<path d="'+realPath+'" fill="none" stroke="#157F3B" stroke-width="2"/>';
+    html += '<path d="'+batchPath+'" fill="none" stroke="#7C3AED" stroke-width="1.5"/>';
 
     for (var i = 0; i < gpuCounts.length; i++) {
       var g = gpuCounts[i];
-      html += '<text x="'+(700-pad.r+4)+'" y="'+(syBatch(g*perGpuBatch)+4)+'" fill="#a78bfa" font-size="9" font-family="IBM Plex Mono,monospace">'+(g*perGpuBatch)+'</text>';
+      html += '<text x="'+(700-pad.r+4)+'" y="'+(syBatch(g*perGpuBatch)+4)+'" fill="#7C3AED" font-size="9" font-family="IBM Plex Mono,monospace">'+(g*perGpuBatch)+'</text>';
     }
 
     svg.innerHTML = html;

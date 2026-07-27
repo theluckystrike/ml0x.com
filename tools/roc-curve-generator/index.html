@@ -20,233 +20,150 @@
         "applicationCategory": "UtilityApplication"
     }
     </script>
+    <link rel="stylesheet" href="/assets/ml0x.css">
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        body {
-            background: #0a0a0a;
-            color: #ffffff;
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            line-height: 1.6;
-            padding: 20px;
-        }
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-        }
-        h1 {
-            color: #06b6d4;
-            margin-bottom: 10px;
-            font-size: 28px;
-        }
-        .subtitle {
-            color: #999;
-            margin-bottom: 30px;
-            font-size: 14px;
-        }
+        /* tool-specific structure only; every colour is a token */
         .layout {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 30px;
-            margin-bottom: 30px;
+            gap: 20px;
+            margin: 24px 0;
         }
         @media (max-width: 968px) {
-            .layout {
-                grid-template-columns: 1fr;
-            }
+            .layout { grid-template-columns: 1fr; }
         }
-        .panel {
-            background: #1a1a1a;
-            border: 1px solid #333;
-            border-radius: 8px;
-            padding: 20px;
-        }
-        .section-title {
-            color: #06b6d4;
-            font-size: 16px;
-            font-weight: 600;
-            margin-bottom: 15px;
-            border-bottom: 1px solid #333;
+        .layout > .panel { margin: 0; }
+        .panel .section-title {
+            font-family: var(--font-mono);
+            font-size: 12px;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--ink);
+            margin: 0 0 14px;
             padding-bottom: 10px;
+            border-bottom: 1px solid var(--line);
         }
-        .form-group {
-            margin-bottom: 15px;
-        }
-        label {
-            display: block;
-            font-size: 13px;
-            margin-bottom: 5px;
-            color: #ccc;
-        }
-        input, select, textarea {
-            width: 100%;
-            padding: 10px;
-            background: #0a0a0a;
-            border: 1px solid #333;
-            border-radius: 4px;
-            color: #fff;
-            font-size: 13px;
-        }
-        input:focus, select:focus, textarea:focus {
-            outline: none;
-            border-color: #06b6d4;
-            box-shadow: 0 0 0 2px rgba(6, 182, 212, 0.1);
-        }
-        button {
-            background: #06b6d4;
-            color: #000;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 4px;
-            font-weight: 600;
-            cursor: pointer;
-            font-size: 13px;
-            transition: all 0.2s;
-        }
-        button:hover {
-            background: #00d4ff;
-            transform: translateY(-1px);
-        }
-        .button-group {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 10px;
-        }
-        .button-secondary {
-            background: #333;
-            color: #fff;
-        }
-        .button-secondary:hover {
-            background: #444;
-        }
-        canvas {
+        #rocCanvas {
             width: 100%;
             height: 400px;
-            background: #0a0a0a;
-            border: 1px solid #333;
-            border-radius: 4px;
+            background: var(--surface);
+            border: 1px solid var(--line);
+            border-radius: var(--radius-sm);
             margin-bottom: 15px;
         }
-        .metrics-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 15px;
-            margin-top: 20px;
-        }
-        .metric-card {
-            background: #0a0a0a;
-            border: 1px solid #333;
-            padding: 15px;
-            border-radius: 4px;
-        }
-        .metric-label {
-            font-size: 12px;
-            color: #999;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            margin-bottom: 5px;
-        }
-        .metric-value {
-            font-size: 20px;
-            color: #06b6d4;
-            font-weight: 600;
-        }
+        .metrics-grid { grid-template-columns: 1fr 1fr; }
         .tabs {
             display: flex;
-            gap: 10px;
+            gap: 6px;
             margin-bottom: 15px;
-            border-bottom: 1px solid #333;
+            border-bottom: 1px solid var(--line);
         }
         .tab-button {
             background: none;
-            color: #999;
-            border: none;
-            padding: 10px 15px;
-            cursor: pointer;
-            font-size: 13px;
+            color: var(--ink-muted);
+            border: 0;
             border-bottom: 2px solid transparent;
-            transition: all 0.2s;
+            border-radius: 0;
+            padding: 9px 14px;
+            min-height: 40px;
+            width: auto;
+            font-family: var(--font-body);
+            font-size: 13px;
+            font-weight: 500;
         }
-        .tab-button.active {
-            color: #06b6d4;
-            border-bottom-color: #06b6d4;
+        .tab-button:hover { background: none; color: var(--ink); border-color: transparent; }
+        .tab-button.active { color: var(--ink); border-bottom-color: var(--ink); }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+        textarea { min-height: 110px; resize: vertical; }
+        .button-group { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .button-secondary {
+            background: var(--surface);
+            color: var(--ink);
+            border: 1px solid var(--line-strong);
         }
-        .tab-content {
-            display: none;
-        }
-        .tab-content.active {
-            display: block;
-        }
-        textarea {
-            height: 100px;
-            resize: vertical;
-        }
-        .slider {
-            width: 100%;
-            height: 4px;
-            border-radius: 2px;
-            background: #333;
-            outline: none;
-            -webkit-appearance: none;
-        }
-        .slider::-webkit-slider-thumb {
-            -webkit-appearance: none;
-            appearance: none;
-            width: 16px;
-            height: 16px;
-            border-radius: 50%;
-            background: #06b6d4;
-            cursor: pointer;
-        }
-        .slider::-moz-range-thumb {
-            width: 16px;
-            height: 16px;
-            border-radius: 50%;
-            background: #06b6d4;
-            cursor: pointer;
-            border: none;
-        }
+        .button-secondary:hover { background: var(--surface-2); color: var(--ink); border-color: var(--ink); }
         .preset-button {
-            background: #333;
-            color: #06b6d4;
-            padding: 8px 12px;
+            background: var(--surface);
+            color: var(--ink);
+            border: 1px solid var(--line-strong);
+            border-radius: var(--radius-pill);
+            padding: 8px 14px;
             margin: 5px 5px 5px 0;
-            border: 1px solid #06b6d4;
-            border-radius: 4px;
-            cursor: pointer;
+            min-height: 38px;
+            width: auto;
+            font-family: var(--font-body);
             font-size: 12px;
-            transition: all 0.2s;
+            font-weight: 500;
         }
-        .preset-button:hover {
-            background: #06b6d4;
-            color: #000;
-        }
+        .preset-button:hover { background: var(--surface-2); border-color: var(--ink); color: var(--ink); }
         .threshold-info {
-            background: #0a0a0a;
-            border: 1px solid #333;
-            padding: 12px;
-            border-radius: 4px;
-            margin-top: 10px;
-            font-size: 12px;
+            background: var(--surface-2);
+            border: 1px solid var(--line);
+            padding: 14px 16px;
+            border-radius: var(--radius-sm);
+            margin-top: 12px;
+            font-size: 13px;
+            color: var(--ink-2);
         }
-        footer {
+        .block-title {
+            font-family: var(--font-mono);
+            font-size: 11px;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            color: var(--ink-muted);
+            margin-bottom: 6px;
+        }
+        .interpretation {
+            margin-top: 20px;
+            padding: 16px 18px;
+            background: var(--surface-2);
+            border: 1px solid var(--line);
+            border-radius: var(--radius-sm);
+            font-size: 13px;
+            color: var(--ink-2);
+        }
+        .partner-card {
+            margin: 30px auto;
+            max-width: 728px;
             text-align: center;
-            margin-top: 40px;
-            padding-top: 20px;
-            border-top: 1px solid #333;
-            color: #666;
-            font-size: 12px;
+            padding: 18px 24px;
+            background: var(--surface);
+            border: 1px solid var(--line);
+            border-radius: var(--radius);
         }
+        .partner-card p { margin: 0 0 6px; color: var(--ink-muted); font-size: 0.85rem; }
+        .partner-card p + p { margin: 6px 0 0; color: var(--ink-2); font-size: 0.9rem; }
+        .partner-card a { color: var(--s1); font-weight: 600; font-size: 1.05rem; text-decoration: none; }
     </style>
 <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2241192243363112" crossorigin="anonymous"></script>
 </head>
 <body>
+<a class="skip-link" href="#main">Skip to content</a>
+<header class="site-nav">
+  <div class="site-nav__inner">
+    <div class="site-nav__left">
+      <a class="site-nav__logo" href="/">ml0x</a>
+      <nav class="site-nav__links" aria-label="Main">
+        <a href="/tools/" aria-current="page">Tools</a>
+        <a href="/calculators/">Calculators</a>
+        <a href="/guides/">Guides</a>
+        <a href="/answers/">Answers</a>
+        <a href="/research/">Research</a>
+      </nav>
+    </div>
+    <a class="nav-cta" href="https://zovo.one/pricing" target="_blank" rel="noopener">Full system, $99</a>
+  </div>
+</header>
+
+<main id="main">
     <div class="container">
-        <h1>ROC Curve Generator</h1>
-        <p class="subtitle">Plot ROC curves and calculate AUC from prediction probabilities</p>
+        <div class="page-head">
+            <h1>ROC Curve Generator</h1>
+            <p class="subtitle">Plot ROC curves and calculate AUC from prediction probabilities</p>
+        </div>
 
         <div class="layout">
             <div class="panel">
@@ -287,7 +204,7 @@
                 </div>
 
                 <div style="margin-top: 20px;">
-                    <div style="font-size: 13px; color: #999; margin-bottom: 10px;">Quick Presets:</div>
+                    <div class="block-title">Quick Presets:</div>
                     <button class="preset-button" onclick="generatePreset('medical')">Medical Test</button>
                     <button class="preset-button" onclick="generatePreset('spam')">Spam Filter</button>
                 </div>
@@ -303,7 +220,7 @@
                 </div>
 
                 <div class="threshold-info" id="thresholdInfo">
-                    <div style="color: #06b6d4; font-weight: 600; margin-bottom: 5px;">Optimal Threshold (Youden)</div>
+                    <div class="block-title">Optimal Threshold (Youden)</div>
                     <div>TPR: <span id="thresholdTpr">-</span></div>
                     <div>FPR: <span id="thresholdFpr">-</span></div>
                 </div>
@@ -331,13 +248,12 @@
                 </div>
             </div>
 
-            <div style="margin-top: 20px; padding: 15px; background: #0a0a0a; border-radius: 4px; border: 1px solid #333; font-size: 13px;">
-                <div style="color: #06b6d4; font-weight: 600; margin-bottom: 10px;">Interpretation</div>
+            <div class="interpretation">
+                <div class="block-title">Interpretation</div>
                 <div id="rocInterpretation">Load data to see interpretation</div>
             </div>
         </div>
 
-        <footer>© 2026 ml0x.com</footer>
 <div style="margin:20px auto;max-width:728px;text-align:center">
 <ins class="adsbygoogle" style="display:block" data-ad-client="ca-pub-2241192243363112" data-ad-slot="auto" data-ad-format="auto" data-full-width-responsive="true"></ins>
 <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
@@ -485,11 +401,11 @@
             const height = rect.height;
             const padding = 50;
 
-            ctx.fillStyle = '#0a0a0a';
+            ctx.fillStyle = '#FFFFFF';
             ctx.fillRect(0, 0, width, height);
 
             // Grid
-            ctx.strokeStyle = '#333';
+            ctx.strokeStyle = '#E8E8E6';
             ctx.lineWidth = 0.5;
             for (let i = 0; i <= 10; i++) {
                 const x = padding + (width - 2 * padding) * i / 10;
@@ -506,7 +422,7 @@
             }
 
             // Diagonal reference line
-            ctx.strokeStyle = '#555';
+            ctx.strokeStyle = '#B8B8B6';
             ctx.lineWidth = 2;
             ctx.setLineDash([5, 5]);
             ctx.beginPath();
@@ -516,7 +432,7 @@
             ctx.setLineDash([]);
 
             // AUC shaded region
-            ctx.fillStyle = 'rgba(6, 182, 212, 0.1)';
+            ctx.fillStyle = 'rgba(37, 99, 235, 0.10)';
             ctx.beginPath();
             ctx.moveTo(padding, height - padding);
             for (let point of rocPoints) {
@@ -529,7 +445,7 @@
             ctx.fill();
 
             // ROC curve
-            ctx.strokeStyle = '#06b6d4';
+            ctx.strokeStyle = '#2563EB';
             ctx.lineWidth = 2;
             ctx.beginPath();
             for (let i = 0; i < rocPoints.length; i++) {
@@ -547,14 +463,14 @@
             if (optimalPoint) {
                 const x = padding + (width - 2 * padding) * optimalPoint.fpr;
                 const y = height - padding - (height - 2 * padding) * optimalPoint.tpr;
-                ctx.fillStyle = '#06b6d4';
+                ctx.fillStyle = '#2563EB';
                 ctx.beginPath();
                 ctx.arc(x, y, 6, 0, 2 * Math.PI);
                 ctx.fill();
             }
 
             // Axes
-            ctx.strokeStyle = '#fff';
+            ctx.strokeStyle = '#B8B8B6';
             ctx.lineWidth = 1;
             ctx.beginPath();
             ctx.moveTo(padding, height - padding);
@@ -567,7 +483,7 @@
             ctx.stroke();
 
             // Labels
-            ctx.fillStyle = '#ccc';
+            ctx.fillStyle = '#6a6a6a';
             ctx.font = '12px sans-serif';
             ctx.textAlign = 'center';
             ctx.fillText('False Positive Rate', width / 2, height - 15);
@@ -631,10 +547,42 @@
         // Initialize
         generateAndCalculate();
     </script>
-<div style="margin:30px auto;max-width:728px;text-align:center;padding:18px 24px;background:linear-gradient(135deg,#0f172a,#1e293b);border:1px solid #334155;border-radius:10px">
-<p style="margin:0 0 6px;color:#94a3b8;font-size:0.85rem">Recommended by our team</p>
-<a href="https://www.belikenative.com?ref=satellite" target="_blank" rel="noopener" style="color:#38bdf8;font-weight:600;font-size:1.05rem;text-decoration:none">BeLikeNative.com</a>
-<p style="margin:6px 0 0;color:#cbd5e1;font-size:0.9rem">The #1 AI writing tool for freelancers — perfect grammar in any language, instantly.</p>
+<div class="partner-card">
+<p>Recommended by our team</p>
+<a href="https://www.belikenative.com?ref=satellite" target="_blank" rel="noopener">BeLikeNative.com</a>
+<p>The #1 AI writing tool for freelancers — perfect grammar in any language, instantly.</p>
 </div>
+</main>
+
+<footer class="site-footer">
+  <nav class="footer-links-seo" aria-label="ML tools and content">
+    <a href="/tools/">ML tools</a>
+    <a href="/tools/learning-rate-finder.html">Learning rate finder</a>
+    <a href="/tools/confusion-matrix-calculator.html">Confusion matrix calculator</a>
+    <a href="/tools/neural-network-playground.html">Neural network playground</a>
+    <a href="/tools/attention-mechanism-visualizer.html">Attention visualizer</a>
+    <a href="/tools/dataset-splitter.html">Dataset splitter</a>
+    <a href="/calculators/kv-cache-size-calculator.html">KV cache calculator</a>
+    <a href="/calculators/llm-memory-calculator.html">LLM memory calculator</a>
+    <a href="/guides/">Guides</a>
+    <a href="/guides/gradient-descent-explained.html">Gradient descent</a>
+    <a href="/answers/">Answers</a>
+    <a href="/answers/ml-algorithm-comparison.html">Algorithm comparison</a>
+    <a href="/research/">Research</a>
+    <a href="/research/ml-cheatsheet.html">ML cheat sheet</a>
+    <a href="/about.html">About</a>
+  </nav>
+  <div class="site-footer__inner">
+    <div class="site-footer__brand">
+      <span class="site-footer__logo">ml0x</span>
+      <span class="site-footer__meta">by <a href="https://github.com/theluckystrike" target="_blank" rel="noopener">@theluckystrike</a></span>
+    </div>
+    <div class="site-footer__links">
+      <a href="https://github.com/theluckystrike/100xagenticdev" target="_blank" rel="noopener">GitHub</a>
+      <a href="/research/">Research</a>
+      <a href="https://twitter.com/_alphashark_" target="_blank" rel="noopener">X</a>
+    </div>
+  </div>
+</footer>
 </body>
 </html>

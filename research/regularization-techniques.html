@@ -20,7 +20,7 @@
 <meta name="twitter:description" content="Interactive L1/L2/dropout comparison with coefficient path visualization and neuron deactivation demo.">
 <meta name="author" content="Michael Lip">
 <meta name="robots" content="index, follow">
-<link rel="stylesheet" href="/assets/style.css">
+<link rel="stylesheet" href="/assets/ml0x.css">
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
@@ -58,27 +58,32 @@
   ]
 }
 </script>
+<style>
+/* two visualisations side by side on desktop, stacked on a phone */
+.viz-pair { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 16px; }
+.viz-pair > .tool-card { margin: 0; }
+@media (max-width: 767px) { .viz-pair { grid-template-columns: 1fr; } }
+</style>
 </head>
 <body>
-
-<header>
-  <div class="container header-inner">
-    <a href="/" class="logo">ml0x</a>
-    <nav>
-      <a href="/">Home</a>
-      <a href="/research/">Research</a>
-      <a href="/tools/">Tools</a>
-      <a href="/guides/">Guides</a>
-      <a href="/answers/">Answers</a>
-      <div class="nav-right">
-        <a href="https://zovo.one/pricing?utm_source=ml0x.com&utm_medium=satellite&utm_campaign=nav-link" class="nav-pro" target="_blank">Go Pro &#10022;</a>
-        <a href="https://zovo.one/tools" class="nav-zovo">Zovo Tools</a>
-      </div>
-    </nav>
+<a class="skip-link" href="#main">Skip to content</a>
+<header class="site-nav">
+  <div class="site-nav__inner">
+    <div class="site-nav__left">
+      <a class="site-nav__logo" href="/">ml0x</a>
+      <nav class="site-nav__links" aria-label="Main">
+        <a href="/tools/">Tools</a>
+        <a href="/calculators/">Calculators</a>
+        <a href="/guides/">Guides</a>
+        <a href="/answers/">Answers</a>
+        <a href="/research/" aria-current="page">Research</a>
+      </nav>
+    </div>
+    <a class="nav-cta" href="https://zovo.one/pricing" target="_blank" rel="noopener">Full system, $99</a>
   </div>
 </header>
 
-<main class="container">
+<main id="main" class="container">
   <div class="breadcrumb">
     <a href="/">Home</a> <span>&rsaquo;</span> <a href="/research/">Research</a> <span>&rsaquo;</span> Regularization Techniques
   </div>
@@ -90,7 +95,7 @@
 
   <div class="tool-card">
     <h3>Coefficient Shrinkage Paths</h3>
-    <p style="color:#aaa;font-size:13px;margin-bottom:12px;">Move the lambda slider to see how L1 and L2 regularization shrink feature coefficients. L1 drives coefficients to zero (sparsity). L2 shrinks uniformly but never reaches zero.</p>
+    <p style="color:var(--ink-2);font-size:14px;margin-bottom:14px;">Move the lambda slider to see how L1 and L2 regularization shrink feature coefficients. L1 drives coefficients to zero (sparsity). L2 shrinks uniformly but never reaches zero.</p>
     <div class="control-row">
       <div class="control-group slider-group" style="flex:1;">
         <label>Lambda (&lambda;): <span class="slider-value" id="lambdaDisplay">0.50</span></label>
@@ -106,13 +111,13 @@
       </div>
       <button class="btn btn-secondary" id="regenerateBtn">New Coefficients</button>
     </div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:16px;">
+    <div class="viz-pair">
       <div>
-        <div style="text-align:center;color:#3b82f6;font-weight:600;font-size:14px;margin-bottom:8px;">L1 (Lasso)</div>
+        <div style="text-align:center;color:var(--s1);font-family:var(--font-mono);font-weight:700;font-size:13px;margin-bottom:8px;">L1 (Lasso)</div>
         <div class="viz-container"><svg id="l1Svg" width="350" height="280" viewBox="0 0 350 280"></svg></div>
       </div>
       <div>
-        <div style="text-align:center;color:#22c55e;font-weight:600;font-size:14px;margin-bottom:8px;">L2 (Ridge)</div>
+        <div style="text-align:center;color:var(--s3);font-family:var(--font-mono);font-weight:700;font-size:13px;margin-bottom:8px;">L2 (Ridge)</div>
         <div class="viz-container"><svg id="l2Svg" width="350" height="280" viewBox="0 0 350 280"></svg></div>
       </div>
     </div>
@@ -126,7 +131,7 @@
 
   <div class="tool-card">
     <h3>Dropout Visualization</h3>
-    <p style="color:#aaa;font-size:13px;margin-bottom:12px;">Each click of "Drop" randomly deactivates neurons at the specified dropout rate. Active neurons are blue; deactivated neurons are dim. This simulates one forward pass during training.</p>
+    <p style="color:var(--ink-2);font-size:14px;margin-bottom:14px;">Each click of "Drop" randomly deactivates neurons at the specified dropout rate. Active neurons are blue; deactivated neurons are dim. This simulates one forward pass during training.</p>
     <div class="control-row">
       <div class="control-group slider-group" style="flex:1;">
         <label>Dropout Rate: <span class="slider-value" id="dropoutDisplay">0.30</span></label>
@@ -148,59 +153,59 @@
 
   <div class="tool-card">
     <h3>Technique Comparison</h3>
-    <div style="overflow-x:auto;">
-      <table style="width:100%;border-collapse:collapse;font-size:14px;">
+    <div class="table-scroll">
+      <table>
         <thead>
-          <tr style="border-bottom:2px solid #333;">
-            <th style="text-align:left;padding:10px;color:#aaa;">Aspect</th>
-            <th style="text-align:left;padding:10px;color:#3b82f6;">L1 (Lasso)</th>
-            <th style="text-align:left;padding:10px;color:#22c55e;">L2 (Ridge)</th>
-            <th style="text-align:left;padding:10px;color:#f59e0b;">Elastic Net</th>
-            <th style="text-align:left;padding:10px;color:#a78bfa;">Dropout</th>
+          <tr>
+            <th>Aspect</th>
+            <th style="color:var(--s1);">L1 (Lasso)</th>
+            <th style="color:var(--s3);">L2 (Ridge)</th>
+            <th style="color:var(--s4);">Elastic Net</th>
+            <th style="color:var(--s5);">Dropout</th>
           </tr>
         </thead>
         <tbody>
-          <tr style="border-bottom:1px solid #222;">
-            <td style="padding:10px;color:#ccc;font-weight:600;">Penalty Term</td>
-            <td style="padding:10px;color:#ddd;">&lambda;&Sigma;|w<sub>i</sub>|</td>
-            <td style="padding:10px;color:#ddd;">&lambda;&Sigma;w<sub>i</sub>&sup2;</td>
-            <td style="padding:10px;color:#ddd;">&alpha;&lambda;&Sigma;|w|+(1-&alpha;)&lambda;&Sigma;w&sup2;</td>
-            <td style="padding:10px;color:#ddd;">Random neuron masking</td>
-          </tr>
-          <tr style="border-bottom:1px solid #222;">
-            <td style="padding:10px;color:#ccc;font-weight:600;">Sparsity</td>
-            <td style="padding:10px;color:#ddd;">Yes (exact zeros)</td>
-            <td style="padding:10px;color:#ddd;">No (small but non-zero)</td>
-            <td style="padding:10px;color:#ddd;">Partial sparsity</td>
-            <td style="padding:10px;color:#ddd;">Functional sparsity</td>
-          </tr>
-          <tr style="border-bottom:1px solid #222;">
-            <td style="padding:10px;color:#ccc;font-weight:600;">Feature Selection</td>
-            <td style="padding:10px;color:#ddd;">Automatic</td>
-            <td style="padding:10px;color:#ddd;">No</td>
-            <td style="padding:10px;color:#ddd;">Partial</td>
-            <td style="padding:10px;color:#ddd;">No</td>
-          </tr>
-          <tr style="border-bottom:1px solid #222;">
-            <td style="padding:10px;color:#ccc;font-weight:600;">Correlated Features</td>
-            <td style="padding:10px;color:#ddd;">Picks one randomly</td>
-            <td style="padding:10px;color:#ddd;">Distributes weight</td>
-            <td style="padding:10px;color:#ddd;">Groups correlated</td>
-            <td style="padding:10px;color:#ddd;">N/A</td>
-          </tr>
-          <tr style="border-bottom:1px solid #222;">
-            <td style="padding:10px;color:#ccc;font-weight:600;">Best For</td>
-            <td style="padding:10px;color:#ddd;">High-dim sparse signals</td>
-            <td style="padding:10px;color:#ddd;">Many small effects</td>
-            <td style="padding:10px;color:#ddd;">Correlated features</td>
-            <td style="padding:10px;color:#ddd;">Neural networks</td>
+          <tr>
+            <td style="color:var(--ink);font-weight:600;">Penalty Term</td>
+            <td>&lambda;&Sigma;|w<sub>i</sub>|</td>
+            <td>&lambda;&Sigma;w<sub>i</sub>&sup2;</td>
+            <td>&alpha;&lambda;&Sigma;|w|+(1-&alpha;)&lambda;&Sigma;w&sup2;</td>
+            <td>Random neuron masking</td>
           </tr>
           <tr>
-            <td style="padding:10px;color:#ccc;font-weight:600;">Typical Range</td>
-            <td style="padding:10px;color:#ddd;">&lambda;: 10<sup>-4</sup> to 10<sup>1</sup></td>
-            <td style="padding:10px;color:#ddd;">&lambda;: 10<sup>-4</sup> to 10<sup>1</sup></td>
-            <td style="padding:10px;color:#ddd;">&alpha;: 0.1-0.9</td>
-            <td style="padding:10px;color:#ddd;">Rate: 0.1-0.5</td>
+            <td style="color:var(--ink);font-weight:600;">Sparsity</td>
+            <td>Yes (exact zeros)</td>
+            <td>No (small but non-zero)</td>
+            <td>Partial sparsity</td>
+            <td>Functional sparsity</td>
+          </tr>
+          <tr>
+            <td style="color:var(--ink);font-weight:600;">Feature Selection</td>
+            <td>Automatic</td>
+            <td>No</td>
+            <td>Partial</td>
+            <td>No</td>
+          </tr>
+          <tr>
+            <td style="color:var(--ink);font-weight:600;">Correlated Features</td>
+            <td>Picks one randomly</td>
+            <td>Distributes weight</td>
+            <td>Groups correlated</td>
+            <td>N/A</td>
+          </tr>
+          <tr>
+            <td style="color:var(--ink);font-weight:600;">Best For</td>
+            <td>High-dim sparse signals</td>
+            <td>Many small effects</td>
+            <td>Correlated features</td>
+            <td>Neural networks</td>
+          </tr>
+          <tr>
+            <td style="color:var(--ink);font-weight:600;">Typical Range</td>
+            <td>&lambda;: 10<sup>-4</sup> to 10<sup>1</sup></td>
+            <td>&lambda;: 10<sup>-4</sup> to 10<sup>1</sup></td>
+            <td>&alpha;: 0.1-0.9</td>
+            <td>Rate: 0.1-0.5</td>
           </tr>
         </tbody>
       </table>
@@ -297,15 +302,35 @@
 </main>
 
 <footer class="site-footer">
-    <div class="footer-inner">
-        <div class="footer-brand">Zovo Tools</div>
-        <div class="footer-tagline">Free developer tools by a solo dev. No tracking.</div>
-        <a href="https://zovo.one/pricing?utm_source=ml0x.com&utm_medium=satellite&utm_campaign=footer-link" class="footer-cta">Zovo Lifetime — $99 once, free forever &rarr;</a>
-        <div class="footer-copy">&copy; 2026 <a href="https://zovo.one">Zovo</a> &middot; 47/500 founding spots</div>
+  <nav class="footer-links-seo" aria-label="ML tools and content">
+    <a href="/tools/">ML tools</a>
+    <a href="/tools/learning-rate-finder.html">Learning rate finder</a>
+    <a href="/tools/confusion-matrix-calculator.html">Confusion matrix calculator</a>
+    <a href="/tools/neural-network-playground.html">Neural network playground</a>
+    <a href="/tools/attention-mechanism-visualizer.html">Attention visualizer</a>
+    <a href="/tools/dataset-splitter.html">Dataset splitter</a>
+    <a href="/calculators/kv-cache-size-calculator.html">KV cache calculator</a>
+    <a href="/calculators/llm-memory-calculator.html">LLM memory calculator</a>
+    <a href="/guides/">Guides</a>
+    <a href="/guides/gradient-descent-explained.html">Gradient descent</a>
+    <a href="/answers/">Answers</a>
+    <a href="/answers/ml-algorithm-comparison.html">Algorithm comparison</a>
+    <a href="/research/">Research</a>
+    <a href="/research/ml-cheatsheet.html">ML cheat sheet</a>
+    <a href="/about.html">About</a>
+  </nav>
+  <div class="site-footer__inner">
+    <div class="site-footer__brand">
+      <span class="site-footer__logo">ml0x</span>
+      <span class="site-footer__meta">by <a href="https://github.com/theluckystrike" target="_blank" rel="noopener">@theluckystrike</a></span>
     </div>
-</footer>
-
-<nav class="zovo-network" aria-label="Zovo Tools Network">
+    <div class="site-footer__links">
+      <a href="https://github.com/theluckystrike/100xagenticdev" target="_blank" rel="noopener">GitHub</a>
+      <a href="/research/">Research</a>
+      <a href="https://twitter.com/_alphashark_" target="_blank" rel="noopener">X</a>
+    </div>
+  </div>
+  <nav class="zovo-network" aria-label="Zovo Tools Network">
     <div class="zovo-network-inner">
         <h3 class="zovo-network-title">Explore More Tools</h3>
         <div class="zovo-network-links">
@@ -346,12 +371,13 @@
     <a href="https://zovo.one" rel="nofollow">Zovo — AI Dev Tools</a>
   </div>
 </div>
+</footer>
 
 <script>
 (function() {
   /* Coefficient paths */
   var coeffs = [];
-  var featureColors = ['#3b82f6','#22c55e','#f59e0b','#ef4444','#a78bfa','#ec4899','#14b8a6','#f97316','#6366f1','#84cc16','#06b6d4','#e879f9'];
+  var featureColors = ['#2563EB','#157F3B','#B45309','#C53030','#7C3AED','#0E7490','#BE185D','#4D7C0F','#1D4ED8','#92400E','#5B21B6','#0F766E'];
 
   function generateCoeffs() {
     var n = parseInt(document.getElementById('featureCount').value);
@@ -382,16 +408,16 @@
     for (var i = 0; i < n; i++) maxAbs = Math.max(maxAbs, Math.abs(coeffs[i]));
     maxAbs = Math.max(maxAbs, 0.5);
 
-    var html = '<rect width="'+W+'" height="'+H+'" fill="#141414"/>';
+    var html = '<rect width="'+W+'" height="'+H+'" fill="#FFFFFF"/>';
 
     // Zero line
     var zeroY = pad + (H - 2 * pad) / 2;
-    html += '<line x1="'+pad+'" y1="'+zeroY+'" x2="'+(W-10)+'" y2="'+zeroY+'" stroke="#333" stroke-width="1" stroke-dasharray="3,3"/>';
+    html += '<line x1="'+pad+'" y1="'+zeroY+'" x2="'+(W-10)+'" y2="'+zeroY+'" stroke="#E8E8E6" stroke-width="1" stroke-dasharray="3,3"/>';
 
     // Y axis
-    html += '<line x1="'+pad+'" y1="'+pad+'" x2="'+pad+'" y2="'+(H-pad)+'" stroke="#333" stroke-width="1"/>';
-    html += '<text x="'+(pad-4)+'" y="'+(pad+4)+'" text-anchor="end" fill="#666" font-size="9" font-family="IBM Plex Mono,monospace">+'+maxAbs.toFixed(1)+'</text>';
-    html += '<text x="'+(pad-4)+'" y="'+(H-pad+4)+'" text-anchor="end" fill="#666" font-size="9" font-family="IBM Plex Mono,monospace">-'+maxAbs.toFixed(1)+'</text>';
+    html += '<line x1="'+pad+'" y1="'+pad+'" x2="'+pad+'" y2="'+(H-pad)+'" stroke="#B8B8B6" stroke-width="1"/>';
+    html += '<text x="'+(pad-4)+'" y="'+(pad+4)+'" text-anchor="end" fill="#6a6a6a" font-size="9" font-family="JetBrains Mono,monospace">+'+maxAbs.toFixed(1)+'</text>';
+    html += '<text x="'+(pad-4)+'" y="'+(H-pad+4)+'" text-anchor="end" fill="#6a6a6a" font-size="9" font-family="JetBrains Mono,monospace">-'+maxAbs.toFixed(1)+'</text>';
 
     // Bars for current lambda
     var barW = Math.min(28, Math.floor((W - pad - 20) / n) - 4);
@@ -415,7 +441,7 @@
       html += '<line x1="'+x+'" y1="'+origY+'" x2="'+(x+barW)+'" y2="'+origY+'" stroke="'+featureColors[i % featureColors.length]+'" stroke-width="1" stroke-dasharray="2,2" opacity="0.4"/>';
 
       // Label
-      html += '<text x="'+(x+barW/2)+'" y="'+(H-pad+14)+'" text-anchor="middle" fill="#888" font-size="9" font-family="IBM Plex Sans,sans-serif">w'+i+'</text>';
+      html += '<text x="'+(x+barW/2)+'" y="'+(H-pad+14)+'" text-anchor="middle" fill="#6a6a6a" font-size="9" font-family="Inter,sans-serif">w'+i+'</text>';
     }
 
     svg.innerHTML = html;
@@ -457,7 +483,7 @@
   function drawDropout() {
     var svg = document.getElementById('dropoutSvg');
     var W = 700, H = 260;
-    var html = '<rect width="'+W+'" height="'+H+'" fill="#141414"/>';
+    var html = '<rect width="'+W+'" height="'+H+'" fill="#FFFFFF"/>';
     var layerLabels = ['Input','Hidden 1','Hidden 2','Hidden 3','Hidden 4','Output'];
 
     var lSpacing = (W - 80) / (layers.length - 1);
@@ -471,7 +497,7 @@
       var startY = (H - n * nSpacing) / 2;
       var x = 40 + i * lSpacing;
 
-      html += '<text x="'+x+'" y="'+(H-6)+'" text-anchor="middle" fill="#666" font-size="10" font-family="IBM Plex Sans,sans-serif">'+layerLabels[i]+'</text>';
+      html += '<text x="'+x+'" y="'+(H-6)+'" text-anchor="middle" fill="#6a6a6a" font-size="10" font-family="Inter,sans-serif">'+layerLabels[i]+'</text>';
 
       for (var j = 0; j < n; j++) {
         var y = startY + j * nSpacing + nSpacing / 2;
@@ -488,7 +514,7 @@
       for (var j = 0; j < layers[i]; j++) {
         for (var k = 0; k < layers[i + 1]; k++) {
           var active = neuronStates[i][j] && neuronStates[i + 1][k];
-          html += '<line x1="'+positions[i][j].x+'" y1="'+positions[i][j].y+'" x2="'+positions[i+1][k].x+'" y2="'+positions[i+1][k].y+'" stroke="'+(active ? '#3b82f6' : '#222')+'" stroke-width="'+(active ? '0.5' : '0.3')+'" opacity="'+(active ? '0.3' : '0.1')+'"/>';
+          html += '<line x1="'+positions[i][j].x+'" y1="'+positions[i][j].y+'" x2="'+positions[i+1][k].x+'" y2="'+positions[i+1][k].y+'" stroke="'+(active ? '#2563EB' : '#D8D8D6')+'" stroke-width="'+(active ? '0.5' : '0.3')+'" opacity="'+(active ? '0.35' : '0.5')+'"/>';
         }
       }
     }
@@ -499,10 +525,10 @@
         var p = positions[i][j];
         var active = neuronStates[i][j];
         var isIO = (i === 0 || i === layers.length - 1);
-        html += '<circle cx="'+p.x+'" cy="'+p.y+'" r="'+(isIO ? 8 : 10)+'" fill="'+(active ? '#3b82f6' : '#1a1a1a')+'" stroke="'+(active ? '#60a5fa' : '#333')+'" stroke-width="'+(active ? 2 : 1)+'" opacity="'+(active ? 1 : 0.4)+'"/>';
+        html += '<circle cx="'+p.x+'" cy="'+p.y+'" r="'+(isIO ? 8 : 10)+'" fill="'+(active ? '#2563EB' : '#F2F2F0')+'" stroke="'+(active ? '#1D4ED8' : '#D8D8D6')+'" stroke-width="'+(active ? 2 : 1)+'" opacity="'+(active ? 1 : 0.9)+'"/>';
         if (!active && !isIO) {
-          html += '<line x1="'+(p.x-5)+'" y1="'+(p.y-5)+'" x2="'+(p.x+5)+'" y2="'+(p.y+5)+'" stroke="#ef4444" stroke-width="2" opacity="0.6"/>';
-          html += '<line x1="'+(p.x+5)+'" y1="'+(p.y-5)+'" x2="'+(p.x-5)+'" y2="'+(p.y+5)+'" stroke="#ef4444" stroke-width="2" opacity="0.6"/>';
+          html += '<line x1="'+(p.x-5)+'" y1="'+(p.y-5)+'" x2="'+(p.x+5)+'" y2="'+(p.y+5)+'" stroke="#C53030" stroke-width="2" opacity="0.7"/>';
+          html += '<line x1="'+(p.x+5)+'" y1="'+(p.y-5)+'" x2="'+(p.x-5)+'" y2="'+(p.y+5)+'" stroke="#C53030" stroke-width="2" opacity="0.7"/>';
         }
       }
     }

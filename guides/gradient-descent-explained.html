@@ -20,7 +20,7 @@
 <meta name="twitter:description" content="Interactive gradient descent visualizer with step-by-step animation. Learn SGD, Adam, momentum, and convergence.">
 <meta name="author" content="Michael Lip">
 <meta name="robots" content="index, follow">
-<link rel="stylesheet" href="/assets/style.css">
+<link rel="stylesheet" href="/assets/ml0x.css">
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
@@ -62,24 +62,24 @@
 </head>
 <body>
 
-<header>
-  <div class="container header-inner">
-    <a href="/" class="logo">ml0x</a>
-    <nav>
-      <a href="/">Home</a>
-      <a href="/research/">Research</a>
-      <a href="/tools/">Tools</a>
-      <a href="/guides/">Guides</a>
-      <a href="/answers/">Answers</a>
-      <div class="nav-right">
-        <a href="https://zovo.one/pricing?utm_source=ml0x.com&utm_medium=satellite&utm_campaign=nav-link" class="nav-pro" target="_blank">Go Pro &#10022;</a>
-        <a href="https://zovo.one/tools" class="nav-zovo">Zovo Tools</a>
-      </div>
-    </nav>
+<a class="skip-link" href="#main">Skip to content</a>
+<header class="site-nav">
+  <div class="site-nav__inner">
+    <div class="site-nav__left">
+      <a class="site-nav__logo" href="/">ml0x</a>
+      <nav class="site-nav__links" aria-label="Main">
+        <a href="/tools/">Tools</a>
+        <a href="/calculators/">Calculators</a>
+        <a href="/guides/" aria-current="page">Guides</a>
+        <a href="/answers/">Answers</a>
+        <a href="/research/">Research</a>
+      </nav>
+    </div>
+    <a class="nav-cta" href="https://zovo.one/pricing" target="_blank" rel="noopener">Full system, $99</a>
   </div>
 </header>
 
-<main class="container">
+<main id="main" class="container">
   <div class="breadcrumb">
     <a href="/">Home</a> <span>&rsaquo;</span> <a href="/guides/">Guides</a> <span>&rsaquo;</span> Gradient Descent Explained
   </div>
@@ -250,13 +250,34 @@ theta = theta - lr * m_hat / (sqrt(v_hat) + eps)</pre>
 </main>
 
 <footer class="site-footer">
-    <div class="footer-inner">
-        <div class="footer-brand">Zovo Tools</div>
-        <div class="footer-tagline">Free developer tools by a solo dev. No tracking.</div>
-        <a href="https://zovo.one/pricing?utm_source=ml0x.com&utm_medium=satellite&utm_campaign=footer-link" class="footer-cta">Zovo Lifetime — $99 once, free forever &rarr;</a>
-        <div class="footer-copy">&copy; 2026 <a href="https://zovo.one">Zovo</a> &middot; 47/500 founding spots</div>
+  <nav class="footer-links-seo" aria-label="ML tools and content">
+    <a href="/tools/">ML tools</a>
+    <a href="/tools/learning-rate-finder.html">Learning rate finder</a>
+    <a href="/tools/confusion-matrix-calculator.html">Confusion matrix calculator</a>
+    <a href="/tools/neural-network-playground.html">Neural network playground</a>
+    <a href="/tools/attention-mechanism-visualizer.html">Attention visualizer</a>
+    <a href="/tools/dataset-splitter.html">Dataset splitter</a>
+    <a href="/calculators/kv-cache-size-calculator.html">KV cache calculator</a>
+    <a href="/calculators/llm-memory-calculator.html">LLM memory calculator</a>
+    <a href="/guides/">Guides</a>
+    <a href="/guides/gradient-descent-explained.html">Gradient descent</a>
+    <a href="/answers/">Answers</a>
+    <a href="/answers/ml-algorithm-comparison.html">Algorithm comparison</a>
+    <a href="/research/">Research</a>
+    <a href="/research/ml-cheatsheet.html">ML cheat sheet</a>
+    <a href="/about.html">About</a>
+  </nav>
+  <div class="site-footer__inner">
+    <div class="site-footer__brand">
+      <span class="site-footer__logo">ml0x</span>
+      <span class="site-footer__meta">by <a href="https://github.com/theluckystrike" target="_blank" rel="noopener">@theluckystrike</a></span>
     </div>
-</footer>
+    <div class="site-footer__links">
+      <a href="https://github.com/theluckystrike/100xagenticdev" target="_blank" rel="noopener">GitHub</a>
+      <a href="/research/">Research</a>
+      <a href="https://twitter.com/_alphashark_" target="_blank" rel="noopener">X</a>
+    </div>
+  </div>
 
 <nav class="zovo-network" aria-label="Zovo Tools Network">
     <div class="zovo-network-inner">
@@ -299,6 +320,7 @@ theta = theta - lr * m_hat / (sqrt(v_hat) + eps)</pre>
     <a href="https://zovo.one" rel="nofollow">Zovo — AI Dev Tools</a>
   </div>
 </div>
+</footer>
 
 <script>
 (function() {
@@ -410,16 +432,16 @@ theta = theta - lr * m_hat / (sqrt(v_hat) + eps)</pre>
         const idx = (py * W + px) * 4;
         const norm = Math.min(losses[py * W + px] / (maxL * 0.5), 1);
         const t = Math.pow(norm, 0.5);
-        imgData.data[idx] = Math.floor(10 + t * 40);
-        imgData.data[idx + 1] = Math.floor(10 + (1 - t) * 80);
-        imgData.data[idx + 2] = Math.floor(30 + (1 - t) * 216);
+        imgData.data[idx] = Math.floor(250 - t * 103);
+        imgData.data[idx + 1] = Math.floor(250 - t * 67);
+        imgData.data[idx + 2] = Math.floor(249 - t * 3);
         imgData.data[idx + 3] = 255;
       }
     }
     ctx.putImageData(imgData, 0, 0);
 
     // Draw contour lines
-    ctx.strokeStyle = 'rgba(255,255,255,0.08)';
+    ctx.strokeStyle = 'rgba(26,26,26,0.18)';
     ctx.lineWidth = 0.5;
     const levels = 15;
     for (let i = 1; i <= levels; i++) {
@@ -442,9 +464,9 @@ theta = theta - lr * m_hat / (sqrt(v_hat) + eps)</pre>
     const minC = toCanvas(0, 0);
     ctx.beginPath();
     ctx.arc(minC.cx, minC.cy, 4, 0, Math.PI * 2);
-    ctx.fillStyle = '#22c55e';
+    ctx.fillStyle = '#157F3B';
     ctx.fill();
-    ctx.strokeStyle = '#22c55e';
+    ctx.strokeStyle = '#157F3B';
     ctx.lineWidth = 1;
     ctx.beginPath();
     ctx.arc(minC.cx, minC.cy, 8, 0, Math.PI * 2);
@@ -453,7 +475,7 @@ theta = theta - lr * m_hat / (sqrt(v_hat) + eps)</pre>
     // Draw path
     if (path.length > 1) {
       ctx.beginPath();
-      ctx.strokeStyle = 'rgba(251,146,60,0.7)';
+      ctx.strokeStyle = 'rgba(180,83,9,0.8)';
       ctx.lineWidth = 2;
       const p0 = toCanvas(path[0].x, path[0].y);
       ctx.moveTo(p0.cx, p0.cy);
@@ -468,7 +490,7 @@ theta = theta - lr * m_hat / (sqrt(v_hat) + eps)</pre>
         const p = toCanvas(path[i].x, path[i].y);
         ctx.beginPath();
         ctx.arc(p.cx, p.cy, 2, 0, Math.PI * 2);
-        ctx.fillStyle = 'rgba(251,146,60,0.5)';
+        ctx.fillStyle = 'rgba(180,83,9,0.6)';
         ctx.fill();
       }
     }
@@ -477,9 +499,9 @@ theta = theta - lr * m_hat / (sqrt(v_hat) + eps)</pre>
     const cur = toCanvas(pos.x, pos.y);
     ctx.beginPath();
     ctx.arc(cur.cx, cur.cy, 7, 0, Math.PI * 2);
-    ctx.fillStyle = '#3b82f6';
+    ctx.fillStyle = '#2563EB';
     ctx.fill();
-    ctx.strokeStyle = '#fff';
+    ctx.strokeStyle = '#1A1A1A';
     ctx.lineWidth = 2;
     ctx.stroke();
 
@@ -491,7 +513,7 @@ theta = theta - lr * m_hat / (sqrt(v_hat) + eps)</pre>
       const nx = -g.gx / gMag;
       const ny = -g.gy / gMag;
       ctx.beginPath();
-      ctx.strokeStyle = '#f87171';
+      ctx.strokeStyle = '#C53030';
       ctx.lineWidth = 2;
       ctx.moveTo(cur.cx, cur.cy);
       ctx.lineTo(cur.cx + nx * arrowLen, cur.cy + ny * arrowLen);
@@ -505,16 +527,16 @@ theta = theta - lr * m_hat / (sqrt(v_hat) + eps)</pre>
       ctx.lineTo(ax - 8 * Math.cos(angle - 0.4), ay - 8 * Math.sin(angle - 0.4));
       ctx.lineTo(ax - 8 * Math.cos(angle + 0.4), ay - 8 * Math.sin(angle + 0.4));
       ctx.closePath();
-      ctx.fillStyle = '#f87171';
+      ctx.fillStyle = '#C53030';
       ctx.fill();
     }
 
     // Legend
     ctx.font = '12px IBM Plex Sans, sans-serif';
-    ctx.fillStyle = '#888';
+    ctx.fillStyle = '#1A1A1A';
     ctx.fillText('Blue dot = current position', 10, H - 36);
     ctx.fillText('Red arrow = negative gradient direction', 10, H - 20);
-    ctx.fillStyle = '#22c55e';
+    ctx.fillStyle = '#157F3B';
     ctx.fillText('Green = minimum', 10, H - 52);
   }
 

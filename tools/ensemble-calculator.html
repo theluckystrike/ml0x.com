@@ -7,6 +7,11 @@
   <meta name="description" content="Interactive ensemble learning tool: combine up to 10 models via averaging, voting, stacking. Compute Fleiss' kappa, agreement, diversity-based accuracy estimate.">
   <meta name="keywords" content="ensemble, model averaging, weighted voting, Fleiss kappa, diversity, accuracy, ML">
   <link rel="canonical" href="https://ml0x.com/tools/ensemble-calculator">
+<meta property="og:title" content="Model Ensemble Calculator — Combine Predictions for">
+<meta property="og:description" content="Interactive ensemble learning tool: combine up to 10 models via averaging, voting, stacking. Compute Fleiss' kappa, agreement, diversity-based accuracy...">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://ml0x.com/tools/ensemble-calculator">
+  <link rel="stylesheet" href="/assets/ml0x.css">
   <!-- JSON-LD FAQ -->
   <script type="application/ld+json">
   {
@@ -41,255 +46,92 @@
   }
   </script>
   <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
-    body {
-      background: #0f172a;
-      color: #e2e8f0;
-      font-family: system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-      line-height: 1.5;
-      padding: 1.5rem 1rem;
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-    }
-    .container {
-      max-width: 1200px;
-      width: 100%;
-    }
-    header {
-      margin-bottom: 2rem;
-      text-align: center;
-    }
-    h1 {
-      font-size: 2rem;
-      font-weight: 600;
-      letter-spacing: -0.02em;
-      color: #f1f5f9;
-    }
-    h1 span {
-      color: #38bdf8;
-    }
-    .subhead {
-      color: #94a3b8;
-      margin-top: 0.25rem;
-      font-size: 1rem;
-    }
-    h2, h3 {
-      font-weight: 500;
-      color: #e2e8f0;
-    }
-    h2 {
-      font-size: 1.4rem;
-      border-bottom: 1px solid #1e293b;
-      padding-bottom: 0.3rem;
-      margin: 1.5rem 0 1rem;
-    }
-    .card {
-      background: #1e293b;
-      border-radius: 1rem;
-      padding: 1.5rem;
-      margin-bottom: 1.5rem;
-      box-shadow: 0 8px 20px rgba(0,0,0,0.5);
-    }
-    .flex-row {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 1.5rem;
-      align-items: flex-start;
-    }
-    .flex-col {
-      flex: 1 1 280px;
-      min-width: 200px;
-    }
-    label {
-      display: block;
-      font-size: 0.85rem;
-      font-weight: 500;
-      color: #94a3b8;
-      margin-bottom: 0.25rem;
-    }
-    input, select, button {
-      background: #0f172a;
-      border: 1px solid #334155;
-      color: #e2e8f0;
-      padding: 0.6rem 0.8rem;
-      border-radius: 0.6rem;
-      font-size: 0.95rem;
-      width: 100%;
-      transition: border 0.2s;
-    }
-    input:focus, select:focus {
-      outline: none;
-      border-color: #38bdf8;
-    }
-    button {
-      background: #38bdf8;
-      color: #0f172a;
-      font-weight: 600;
-      border: none;
-      cursor: pointer;
-      transition: background 0.2s, transform 0.1s;
-    }
-    button:hover {
-      background: #7dd3fc;
-    }
-    button:active {
-      transform: scale(0.97);
-    }
-    .btn-secondary {
-      background: #334155;
-      color: #e2e8f0;
-    }
-    .btn-secondary:hover {
-      background: #475569;
-    }
-    .btn-danger {
-      background: #b91c1c;
-      color: white;
-    }
-    .btn-danger:hover {
-      background: #dc2626;
-    }
+    /* structural only: the two-up card row, the per-model entry row, the chart box */
+    .flex-row { align-items: stretch; }
+    .flex-col { flex: 1 1 280px; min-width: 200px; }
+    /* markup puts the value before its caption; flex order restores label-on-top */
+    .stat-grid .stat-item { display: flex; flex-direction: column; }
+    .stat-grid .stat-item .label { order: -1; }
     .model-entry {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 0.6rem;
-      align-items: center;
-      margin-bottom: 0.8rem;
-      padding: 0.6rem 0.8rem;
-      background: #0f172a;
-      border-radius: 0.8rem;
+      display: flex; flex-wrap: wrap; gap: 10px; align-items: center;
+      margin-bottom: 10px; padding: 10px 12px;
+      background: var(--surface-2); border: 1px solid var(--line);
+      border-radius: var(--radius-sm);
     }
-    .model-entry input {
-      width: auto;
-      flex: 1 1 100px;
-    }
-    .model-entry .model-name {
-      flex: 2 1 120px;
-    }
-    .model-entry .model-acc {
-      flex: 1 1 80px;
-    }
-    .model-entry .model-weight {
-      flex: 1 1 70px;
-    }
+    .model-entry input { width: auto; flex: 1 1 100px; }
+    .model-entry .model-name { flex: 2 1 120px; }
+    .model-entry .model-acc { flex: 1 1 80px; }
+    .model-entry .model-weight { flex: 1 1 70px; }
     .model-entry .remove-btn {
-      flex: 0 0 40px;
-      background: #b91c1c;
-      color: white;
-      border: none;
-      padding: 0.4rem 0.6rem;
-      border-radius: 0.5rem;
-      font-size: 0.8rem;
-      cursor: pointer;
+      flex: 0 0 auto; width: auto; min-height: 40px; padding: 8px 14px;
+      background: var(--surface); color: var(--ink);
+      border: 1px solid var(--line-strong); border-radius: var(--radius-pill);
+      font-size: 13px; cursor: pointer;
     }
-    .model-entry .remove-btn:hover {
-      background: #ef4444;
-    }
-    .grid-2 {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 1rem;
-    }
-    .stat-box {
-      background: #0f172a;
-      border-radius: 0.8rem;
-      padding: 0.8rem 1rem;
-      text-align: center;
-    }
-    .stat-value {
-      font-size: 1.8rem;
-      font-weight: 700;
-      color: #38bdf8;
-      line-height: 1.2;
-    }
-    .stat-label {
-      font-size: 0.75rem;
-      color: #94a3b8;
-      text-transform: uppercase;
-      letter-spacing: 0.03em;
-    }
-    .agreement-badge {
-      display: inline-block;
-      background: #1e293b;
-      padding: 0.2rem 0.6rem;
-      border-radius: 1rem;
-      font-size: 0.75rem;
-      margin: 0.1rem;
-    }
-    .disagree {
-      background: #7f1d1d;
-      color: #fca5a5;
-    }
-    .agree {
-      background: #14532d;
-      color: #86efac;
-    }
+    .model-entry .remove-btn:hover { background: var(--surface-2); border-color: var(--ink); }
     .sample-pred-row {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 0.3rem 0.6rem;
-      align-items: center;
-      padding: 0.3rem 0;
-      border-bottom: 1px solid #1e293b;
+      display: flex; flex-wrap: wrap; gap: 6px 10px; align-items: center;
+      padding: 6px 0; border-bottom: 1px solid var(--line);
     }
-    .sample-pred-row span {
-      background: #0f172a;
-      padding: 0.2rem 0.6rem;
-      border-radius: 0.5rem;
-      font-size: 0.8rem;
-    }
+    /* the generated per-sample inputs are sized inline; keep them tap-safe and zoom-safe */
+    #sampleInputs input[type="text"] { font-size: 16px !important; width: 84px !important; }
+    #sampleInputs .remove-sample-btn { flex: 0 0 auto; width: auto; min-height: 36px; }
+    .card h3 { margin-top: 22px; }
     #diminishingChart {
-      background: #0f172a;
-      border-radius: 0.8rem;
-      padding: 0.5rem;
-      width: 100%;
-      max-height: 180px;
+      background: var(--surface); border: 1px solid var(--line);
+      border-radius: var(--radius-sm); padding: 4px;
+      width: 100%; max-height: 180px;
     }
-    footer {
-      margin-top: 3rem;
-      text-align: center;
-      color: #475569;
-      font-size: 0.85rem;
-      border-top: 1px solid #1e293b;
-      padding-top: 1.5rem;
-    }
+    .method-legend div { color: var(--ink-2); }
     @media (max-width: 640px) {
-      h1 { font-size: 1.6rem; }
       .flex-row { flex-direction: column; }
-      .grid-2 { grid-template-columns: 1fr; }
     }
+    /* .site-nav nav (0,1,1) outranks the system's mobile .site-nav__links rule (0,1,0),
+       so the canonical nav does not collapse at 375px without this override. */
   </style>
 </head>
 <body>
+<a class="skip-link" href="#main">Skip to content</a>
+<header class="site-nav">
+  <div class="site-nav__inner">
+    <div class="site-nav__left">
+      <a class="site-nav__logo" href="/">ml0x</a>
+      <nav class="site-nav__links" aria-label="Main">
+        <a href="/tools/" aria-current="page">Tools</a>
+        <a href="/calculators/">Calculators</a>
+        <a href="/guides/">Guides</a>
+        <a href="/answers/">Answers</a>
+        <a href="/research/">Research</a>
+      </nav>
+    </div>
+    <a class="nav-cta" href="https://zovo.one/pricing" target="_blank" rel="noopener">Full system, $99</a>
+  </div>
+</header>
+
+<main id="main">
 <div class="container">
-  <header>
-    <h1>⚡ <span>Ensemble</span> Calculator</h1>
-    <div class="subhead">Combine up to 10 models · averaging · voting · stacking concept · Fleiss’ κ</div>
-  </header>
+  <div class="page-head">
+    <h1><span>Ensemble</span> Calculator</h1>
+    <div class="subhead">Combine up to 10 models &middot; averaging &middot; voting &middot; stacking concept &middot; Fleiss&rsquo; &kappa;</div>
+  </div>
 
   <!-- Model management -->
   <div class="card">
-    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem;">
-      <h2 style="margin:0; border:none;">🤖 Models</h2>
-      <div style="display: flex; gap: 0.5rem;">
-        <button id="addModelBtn" class="btn-secondary" style="width:auto;">+ Add model</button>
-        <button id="resetModelsBtn" class="btn-danger" style="width:auto;">Reset</button>
+    <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px">
+      <h2 style="margin:0">Models</h2>
+      <div style="display:flex;gap:10px">
+        <button id="addModelBtn" class="btn-secondary" style="width:auto">+ Add model</button>
+        <button id="resetModelsBtn" class="btn-secondary" style="width:auto">Reset</button>
       </div>
     </div>
-    <div id="modelList" style="margin-top: 1rem;"></div>
-    <div style="margin-top: 0.8rem; font-size:0.85rem; color:#94a3b8;">Max 10 models. Accuracy 0–1 (e.g., 0.85).</div>
+    <div id="modelList" style="margin-top:16px"></div>
+    <div class="input-hint">Max 10 models. Accuracy 0–1 (e.g., 0.85).</div>
   </div>
 
   <!-- Ensemble method & sample predictions -->
   <div class="flex-row">
-    <div class="card flex-col" style="flex:2;">
-      <h2>⚙️ Method &amp; weights</h2>
+    <div class="card flex-col" style="flex:2">
+      <h2>Method &amp; weights</h2>
       <label for="methodSelect">Ensemble method</label>
       <select id="methodSelect">
         <option value="average">Simple averaging (probabilities)</option>
@@ -297,58 +139,55 @@
         <option value="majority">Majority voting (class labels)</option>
         <option value="stacking">Stacking (concept demo)</option>
       </select>
-      <div id="weightHint" style="margin-top:0.5rem; font-size:0.8rem; color:#94a3b8;">Weights will be normalized automatically.</div>
-      
-      <h3 style="margin-top:1.5rem;">📊 Sample predictions</h3>
+      <div id="weightHint" class="input-hint">Weights will be normalized automatically.</div>
+
+      <h3>Sample predictions</h3>
       <div id="sampleInputs">
-        <div class="sample-pred-row" id="sampleRowTemplate" style="display:none;"></div>
+        <div class="sample-pred-row" id="sampleRowTemplate" style="display:none"></div>
       </div>
-      <div style="display: flex; gap:0.5rem; margin-top:0.5rem;">
-        <button id="addSampleBtn" class="btn-secondary" style="width:auto;">+ Add sample</button>
-        <button id="computeBtn" style="width:auto; background:#38bdf8;">Compute ensemble</button>
+      <div style="display:flex;gap:10px;margin-top:12px">
+        <button id="addSampleBtn" class="btn-secondary" style="width:auto">+ Add sample</button>
+        <button id="computeBtn" style="width:auto">Compute ensemble</button>
       </div>
-      <div style="margin-top:0.5rem; font-size:0.8rem; color:#94a3b8;">Enter class labels (e.g., A/B) or probabilities (0–1). For voting use discrete labels.</div>
+      <div class="input-hint">Enter class labels (e.g., A/B) or probabilities (0–1). For voting use discrete labels.</div>
     </div>
 
     <!-- Results panel -->
-    <div class="card flex-col" style="flex:1.5;">
-      <h2>📈 Results</h2>
-      <div class="grid-2">
-        <div class="stat-box"><div class="stat-value" id="ensemblePred">—</div><div class="stat-label">Ensemble prediction</div></div>
-        <div class="stat-box"><div class="stat-value" id="accImprove">—</div><div class="stat-label">Expected accuracy gain</div></div>
-        <div class="stat-box"><div class="stat-value" id="agreeRate">—</div><div class="stat-label">Agreement rate</div></div>
-        <div class="stat-box"><div class="stat-value" id="fleissKappa">—</div><div class="stat-label">Fleiss' κ</div></div>
+    <div class="card flex-col" style="flex:1.5">
+      <h2>Results</h2>
+      <div class="stat-grid">
+        <div class="stat-item"><div class="value" id="ensemblePred">—</div><div class="label">Ensemble prediction</div></div>
+        <div class="stat-item"><div class="value" id="accImprove">—</div><div class="label">Expected accuracy gain</div></div>
+        <div class="stat-item"><div class="value" id="agreeRate">—</div><div class="label">Agreement rate</div></div>
+        <div class="stat-item"><div class="value" id="fleissKappa">—</div><div class="label">Fleiss' κ</div></div>
       </div>
-      <div style="margin-top:1rem;">
-        <h3 style="font-size:0.9rem;">🤝 Model agreement per sample</h3>
-        <div id="agreementDetail" style="max-height:180px; overflow-y:auto; font-size:0.8rem;"></div>
+      <div style="margin-top:16px">
+        <h3>Model agreement per sample</h3>
+        <div id="agreementDetail" style="max-height:180px;overflow-y:auto;font-size:13px"></div>
       </div>
     </div>
   </div>
 
   <!-- Diversity & diminishing returns -->
   <div class="flex-row">
-    <div class="card flex-col" style="flex:1;">
-      <h2>🧩 Diversity &amp; returns</h2>
-      <p style="font-size:0.9rem;">When ensembles help most: <strong style="color:#38bdf8;">diverse models</strong> (low agreement) with moderate accuracy. Below: simulated diminishing returns as more models are added (based on avg diversity).</p>
-      <canvas id="diminishingChart" width="300" height="120" style="width:100%; height:120px;"></canvas>
+    <div class="card flex-col" style="flex:1">
+      <h2>Diversity &amp; returns</h2>
+      <p>When ensembles help most: <strong>diverse models</strong> (low agreement) with moderate accuracy. Below: simulated diminishing returns as more models are added (based on avg diversity).</p>
+      <canvas id="diminishingChart" width="300" height="120" style="width:100%;height:120px"></canvas>
     </div>
-    <div class="card flex-col" style="flex:1;">
-      <h2>📋 Method comparison</h2>
-      <div style="font-size:0.9rem; line-height:1.6;">
-        <div><span style="color:#38bdf8;">● Simple avg</span> — equal weight, good for probabilities.</div>
-        <div><span style="color:#38bdf8;">● Weighted</span> — use accuracy or custom weights.</div>
-        <div><span style="color:#38bdf8;">● Majority</span> — hard voting, robust to outliers.</div>
-        <div><span style="color:#38bdf8;">● Stacking</span> — meta‑learner combines outputs (concept).</div>
-        <div style="margin-top:0.5rem; background:#0f172a; padding:0.4rem 0.8rem; border-radius:0.6rem;">
-          <span style="color:#94a3b8;">💡 Stacking concept: uses weighted average as meta‑prediction (demo).</span>
-        </div>
+    <div class="card flex-col" style="flex:1">
+      <h2>Method comparison</h2>
+      <div class="method-legend" style="font-size:14px;line-height:1.7">
+        <div><strong>Simple avg</strong> — equal weight, good for probabilities.</div>
+        <div><strong>Weighted</strong> — use accuracy or custom weights.</div>
+        <div><strong>Majority</strong> — hard voting, robust to outliers.</div>
+        <div><strong>Stacking</strong> — meta&#8209;learner combines outputs (concept).</div>
+        <div class="note" style="margin:12px 0 0">Stacking concept: uses weighted average as meta&#8209;prediction (demo).</div>
       </div>
     </div>
   </div>
-
-  <footer>© 2025 ml0x.com — Model Ensemble Calculator</footer>
 </div>
+</main>
 
 <script>
   (function() {
@@ -453,18 +292,18 @@
     // ----- SAMPLE INPUTS -----
     function renderSampleInputs() {
       if (models.length === 0) {
-        sampleInputsEl.innerHTML = `<div style="color:#94a3b8; padding:0.5rem;">Add at least one model to enter predictions.</div>`;
+        sampleInputsEl.innerHTML = `<div style="color:#6a6a6a; padding:0.5rem;">Add at least one model to enter predictions.</div>`;
         return;
       }
       let html = '';
       samples.forEach((sample, sIdx) => {
-        html += `<div class="sample-pred-row" style="display:flex; flex-wrap:wrap; gap:0.3rem; align-items:center; border-bottom:1px solid #1e293b; padding:0.3rem 0;">`;
+        html += `<div class="sample-pred-row" style="display:flex; flex-wrap:wrap; gap:0.3rem; align-items:center; border-bottom:1px solid #E8E8E6; padding:0.3rem 0;">`;
         html += `<span style="font-weight:500; min-width:2rem;">#${sIdx+1}</span>`;
         models.forEach((m, mIdx) => {
           const val = sample[mIdx] !== undefined ? sample[mIdx] : '';
           html += `<input type="text" style="width:70px; padding:0.2rem 0.4rem; font-size:0.8rem;" value="${val}" placeholder="${m.name}" data-sample="${sIdx}" data-model="${mIdx}">`;
         });
-        html += `<button class="remove-sample-btn" data-sample="${sIdx}" style="background:#b91c1c; color:white; border:none; border-radius:0.4rem; padding:0.2rem 0.5rem; font-size:0.7rem; cursor:pointer;">✕</button>`;
+        html += `<button class="remove-sample-btn" data-sample="${sIdx}" style="background:#1A1A1A; color:white; border:none; border-radius:0.4rem; padding:0.2rem 0.5rem; font-size:0.7rem; cursor:pointer;">✕</button>`;
         html += `</div>`;
       });
       sampleInputsEl.innerHTML = html;
@@ -495,7 +334,7 @@
         accImproveEl.textContent = '—';
         agreeRateEl.textContent = '—';
         fleissKappaEl.textContent = '—';
-        agreementDetailEl.innerHTML = '<span style="color:#94a3b8;">No data</span>';
+        agreementDetailEl.innerHTML = '<span style="color:#6a6a6a;">No data</span>';
         drawDiminishingChart([]);
         return;
       }
@@ -628,7 +467,7 @@
         const rate = ag.total > 0 ? (ag.agree / ag.total * 100).toFixed(0) : '—';
         detailHtml += `<div style="display:flex; gap:0.5rem; align-items:center;"><span style="min-width:2rem;">#${s+1}</span><span>agree ${rate}%</span><span>${ag.agree}/${ag.total} pairs</span></div>`;
       }
-      agreementDetailEl.innerHTML = detailHtml || '<span style="color:#94a3b8;">No pairs</span>';
+      agreementDetailEl.innerHTML = detailHtml || '<span style="color:#6a6a6a;">No pairs</span>';
 
       // Diminishing returns chart
       drawDiminishingChart(models.map(m => m.accuracy));
@@ -640,7 +479,7 @@
       const w = canvas.width, h = canvas.height;
       ctx.clearRect(0, 0, w, h);
       if (accs.length === 0) {
-        ctx.fillStyle = '#475569';
+        ctx.fillStyle = '#6a6a6a';
         ctx.font = '12px sans-serif';
         ctx.fillText('No models', 10, 20);
         return;
@@ -648,7 +487,7 @@
       const n = accs.length;
       const maxAcc = Math.max(...accs, 0.5);
       const steps = 10;
-      ctx.strokeStyle = '#38bdf8';
+      ctx.strokeStyle = '#2563EB';
       ctx.lineWidth = 2;
       ctx.beginPath();
       for (let i = 1; i <= steps; i++) {
@@ -660,7 +499,7 @@
         else ctx.lineTo(x, y);
       }
       ctx.stroke();
-      ctx.fillStyle = '#94a3b8';
+      ctx.fillStyle = '#6a6a6a';
       ctx.font = '9px sans-serif';
       ctx.fillText('returns diminish', 4, 14);
     }
@@ -724,5 +563,36 @@
     computeEnsemble();
   })();
 </script>
+
+<footer class="site-footer">
+  <nav class="footer-links-seo" aria-label="ML tools and content">
+    <a href="/tools/">ML tools</a>
+    <a href="/tools/learning-rate-finder.html">Learning rate finder</a>
+    <a href="/tools/confusion-matrix-calculator.html">Confusion matrix calculator</a>
+    <a href="/tools/neural-network-playground.html">Neural network playground</a>
+    <a href="/tools/attention-mechanism-visualizer.html">Attention visualizer</a>
+    <a href="/tools/dataset-splitter.html">Dataset splitter</a>
+    <a href="/calculators/kv-cache-size-calculator.html">KV cache calculator</a>
+    <a href="/calculators/llm-memory-calculator.html">LLM memory calculator</a>
+    <a href="/guides/">Guides</a>
+    <a href="/guides/gradient-descent-explained.html">Gradient descent</a>
+    <a href="/answers/">Answers</a>
+    <a href="/answers/ml-algorithm-comparison.html">Algorithm comparison</a>
+    <a href="/research/">Research</a>
+    <a href="/research/ml-cheatsheet.html">ML cheat sheet</a>
+    <a href="/about.html">About</a>
+  </nav>
+  <div class="site-footer__inner">
+    <div class="site-footer__brand">
+      <span class="site-footer__logo">ml0x</span>
+      <span class="site-footer__meta">by <a href="https://github.com/theluckystrike" target="_blank" rel="noopener">@theluckystrike</a></span>
+    </div>
+    <div class="site-footer__links">
+      <a href="https://github.com/theluckystrike/100xagenticdev" target="_blank" rel="noopener">GitHub</a>
+      <a href="/research/">Research</a>
+      <a href="https://twitter.com/_alphashark_" target="_blank" rel="noopener">X</a>
+    </div>
+  </div>
+</footer>
 </body>
 </html>

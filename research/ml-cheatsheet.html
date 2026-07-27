@@ -22,10 +22,7 @@
 <meta name="author" content="Michael Lip">
 <meta name="robots" content="index, follow">
 
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="/assets/style.css">
+<link rel="stylesheet" href="/assets/ml0x.css">
 
 <script type="application/ld+json">
 {
@@ -105,442 +102,189 @@
 </script>
 
 <style>
-:root {
-  --bg: #0a0e17;
-  --bg-card: #111827;
-  --bg-card-hover: #1a2332;
-  --border: #1e293b;
-  --border-accent: #3b82f6;
-  --text: #e2e8f0;
-  --text-muted: #94a3b8;
-  --text-dim: #64748b;
-  --accent: #3b82f6;
-  --accent-light: #60a5fa;
-  --green: #22c55e;
-  --green-dim: #16a34a;
-  --yellow: #eab308;
-  --orange: #f97316;
-  --red: #ef4444;
-  --purple: #a855f7;
-  --cyan: #06b6d4;
-  --font-sans: 'IBM Plex Sans', -apple-system, BlinkMacSystemFont, sans-serif;
-  --font-mono: 'Space Mono', 'Fira Code', monospace;
-  --max-width: 920px;
-  --radius: 8px;
-}
+/* Page-specific structure only. Every colour is a design-system token.
+   The shared system in /assets/ml0x.css supplies the rest. */
 
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-html { scroll-behavior: smooth; }
-body {
-  font-family: var(--font-sans);
-  background: var(--bg);
-  color: var(--text);
-  line-height: 1.7;
-  font-size: 16px;
-  -webkit-font-smoothing: antialiased;
-}
-
-/* Nav */
-.nav {
-  position: sticky;
-  top: 0;
-  z-index: 100;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0 24px;
-  height: 56px;
-  background: rgba(10,14,23,0.92);
-  backdrop-filter: blur(12px);
-  border-bottom: 1px solid var(--border);
-}
-.nav-logo {
-  font-family: var(--font-mono);
-  font-weight: 700;
-  font-size: 1.15rem;
-  color: var(--accent-light);
-  text-decoration: none;
-}
-.nav-links {
-  display: flex;
-  list-style: none;
-  gap: 24px;
-}
-.nav-links a {
-  color: var(--text-muted);
-  text-decoration: none;
-  font-size: 0.9rem;
-  font-weight: 500;
-  transition: color 0.2s;
-}
-.nav-links a:hover { color: var(--text); }
-.nav-right { display: flex; align-items: center; }
-.nav-zovo {
-  font-size: 0.8rem;
-  color: var(--text-dim);
-  text-decoration: none;
-  border: 1px solid var(--border);
-  padding: 4px 12px;
-  border-radius: 4px;
-  transition: border-color 0.2s, color 0.2s;
-}
-.nav-zovo:hover { border-color: var(--text-muted); color: var(--text-muted); }
-
-/* Layout */
-.container {
-  max-width: var(--max-width);
-  margin: 0 auto;
-  padding: 0 24px;
-}
-.hero {
-  padding: 64px 0 40px;
-  border-bottom: 1px solid var(--border);
-  margin-bottom: 48px;
-}
-.hero h1 {
-  font-size: 2.2rem;
-  font-weight: 700;
-  line-height: 1.25;
-  margin-bottom: 16px;
-  letter-spacing: -0.02em;
-}
-.hero h1 span { color: var(--accent-light); }
-.hero-sub {
-  font-size: 1.1rem;
-  color: var(--text-muted);
-  max-width: 640px;
-  line-height: 1.6;
-}
-.hero-meta {
-  margin-top: 16px;
-  font-size: 0.85rem;
-  color: var(--text-dim);
-}
-.hero-meta a { color: var(--accent); text-decoration: none; }
-.hero-meta a:hover { text-decoration: underline; }
-
-/* TOC */
+/* Table of contents */
 .toc {
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 24px 28px;
-  margin-bottom: 48px;
+  background: var(--surface); border: 1px solid var(--line);
+  border-radius: var(--radius); padding: 24px 28px; margin: 24px 0 48px;
 }
 .toc h2 {
-  font-size: 0.85rem;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  color: var(--text-dim);
-  margin-bottom: 12px;
+  font-family: var(--font-mono); font-size: 12px; font-weight: 500;
+  text-transform: uppercase; letter-spacing: 1px;
+  color: var(--ink-muted); margin: 0 0 12px;
 }
-.toc ol {
-  list-style: decimal;
-  padding-left: 20px;
-}
-.toc li {
-  margin-bottom: 6px;
-}
-.toc a {
-  color: var(--accent-light);
-  text-decoration: none;
-  font-size: 0.95rem;
-}
+.toc ol { list-style: decimal; padding-left: 20px; margin: 0; color: var(--ink-muted); }
+.toc li { margin-bottom: 6px; }
+.toc a { color: var(--ink); text-decoration: none; font-size: 14px; }
 .toc a:hover { text-decoration: underline; }
 
 /* Section headers */
 h2.section-title {
-  font-size: 1.6rem;
-  font-weight: 700;
-  margin: 56px 0 8px;
-  padding-top: 24px;
-  border-top: 1px solid var(--border);
-  letter-spacing: -0.01em;
+  font-family: var(--font-mono); font-weight: 700;
+  font-size: clamp(22px, 2.4vw, 28px); line-height: 1.2; letter-spacing: -1px;
+  color: var(--ink); margin: 56px 0 8px; padding-top: 24px;
+  border-top: 1px solid var(--line);
 }
 h3.sub-title {
-  font-size: 1.2rem;
-  font-weight: 600;
-  margin: 32px 0 12px;
-  color: var(--accent-light);
+  font-family: var(--font-body); font-weight: 600; font-size: 17px;
+  color: var(--ink); margin: 32px 0 12px; max-width: none; letter-spacing: -0.2px;
 }
-h4.algo-name {
-  font-size: 1.05rem;
-  font-weight: 600;
-  margin: 24px 0 8px;
-  color: var(--text);
-}
+h4.algo-name { font-family: var(--font-body); font-weight: 600; font-size: 15px; color: var(--ink); margin: 24px 0 8px; }
 
 /* Prose */
-p { margin-bottom: 16px; color: var(--text); }
-p.muted { color: var(--text-muted); }
-ul, ol { margin-bottom: 16px; padding-left: 24px; }
-li { margin-bottom: 6px; color: var(--text-muted); }
-li strong { color: var(--text); }
-strong { font-weight: 600; }
-a { color: var(--accent-light); }
+p.muted { color: var(--ink-muted); }
+.hero-sub { font-size: 16px; color: var(--ink-muted); max-width: 62ch; line-height: 1.65; margin: 0 0 12px; }
+.hero-meta { margin: 12px 0 0; font-family: var(--font-mono); font-size: 12px; color: var(--ink-faint); }
+.hero-meta a { color: var(--ink-faint); }
+.hero-meta a:hover { color: var(--ink); text-decoration: underline; }
 
-/* Code */
-code {
-  font-family: var(--font-mono);
-  font-size: 0.85em;
-  background: rgba(59,130,246,0.1);
-  color: var(--accent-light);
-  padding: 2px 6px;
-  border-radius: 4px;
-}
-pre {
-  background: #0d1117;
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 16px 20px;
-  overflow-x: auto;
-  margin-bottom: 20px;
-  font-size: 0.85rem;
-  line-height: 1.6;
-}
-pre code {
-  background: none;
-  padding: 0;
-  color: #c9d1d9;
-}
-.kw { color: #ff7b72; }
-.fn { color: #d2a8ff; }
-.str { color: #a5d6ff; }
-.cm { color: #8b949e; font-style: italic; }
-.num { color: #79c0ff; }
+/* Code. The system keeps <pre> on the dark surface, so the token palette
+   below stays a dark-background palette on purpose. */
+pre { background: var(--surface-dark); border: 0; }
+pre code { background: none; padding: 0; color: var(--on-dark); }
+.kw { color: #FF9492; }
+.fn { color: #D2A8FF; }
+.str { color: #A5D6FF; }
+.cm { color: #9AA4AE; font-style: italic; }
+.num { color: #79C0FF; }
 
-/* Algorithm Cards */
+/* Algorithm cards */
 .algo-card {
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 24px;
-  margin-bottom: 20px;
+  background: var(--surface); border: 1px solid var(--line);
+  border-radius: var(--radius); padding: 24px; margin-bottom: 20px;
   transition: border-color 0.2s;
 }
-.algo-card:hover { border-color: var(--border-accent); }
+.algo-card:hover { border-color: var(--line-strong); }
 .algo-card h4 {
-  margin: 0 0 4px;
-  font-size: 1.1rem;
-  color: var(--text);
+  font-family: var(--font-body); font-weight: 600; font-size: 16px;
+  margin: 0 0 4px; color: var(--ink); text-transform: none; letter-spacing: -0.2px;
 }
 .algo-card .algo-type {
-  font-size: 0.75rem;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  color: var(--text-dim);
-  margin-bottom: 12px;
+  font-family: var(--font-mono); font-size: 11px; font-weight: 500;
+  text-transform: uppercase; letter-spacing: 0.8px;
+  color: var(--ink-muted); margin-bottom: 12px;
 }
-.algo-card .when-to-use {
-  font-size: 0.9rem;
-  color: var(--text-muted);
-  margin-bottom: 12px;
-}
+.algo-card .when-to-use { font-family: var(--font-body); font-size: 14px; color: var(--ink-2); margin-bottom: 12px; }
 .algo-card .complexity {
-  font-size: 0.8rem;
-  font-family: var(--font-mono);
-  color: var(--cyan);
-  margin-bottom: 12px;
+  font-family: var(--font-mono); font-size: 12px; color: var(--s6); margin-bottom: 12px;
 }
-.algo-card .params {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-  margin-bottom: 14px;
-}
+.algo-card .params { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 14px; }
 .param-tag {
-  font-size: 0.75rem;
-  font-family: var(--font-mono);
-  background: rgba(168,85,247,0.12);
-  color: var(--purple);
-  padding: 3px 8px;
-  border-radius: 4px;
+  font-family: var(--font-mono); font-size: 11px;
+  background: var(--surface-2); border: 1px solid var(--line);
+  color: var(--ink-muted); padding: 3px 9px; border-radius: 5px; margin: 0;
 }
 
-/* Selector Tool */
+/* Selector tool */
 .selector-box {
-  background: var(--bg-card);
-  border: 2px solid var(--accent);
-  border-radius: 12px;
-  padding: 28px;
-  margin-bottom: 48px;
+  background: var(--surface); border: 1px solid var(--line-strong);
+  border-radius: var(--radius); padding: 28px; margin: 0 0 48px;
 }
 .selector-box h2 {
-  font-size: 1.25rem;
-  margin-bottom: 4px;
+  font-family: var(--font-mono); font-size: 12px; font-weight: 500;
+  text-transform: uppercase; letter-spacing: 1px; color: var(--ink); margin: 0 0 8px;
 }
-.selector-box p.muted {
-  font-size: 0.9rem;
-  margin-bottom: 20px;
-}
-.selector-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 16px;
-  margin-bottom: 20px;
-}
-.sel-group label {
-  display: block;
-  font-size: 0.8rem;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  color: var(--text-dim);
-  margin-bottom: 6px;
-}
-.sel-group select {
-  width: 100%;
-  padding: 10px 14px;
-  background: var(--bg);
-  border: 1px solid var(--border);
-  border-radius: 6px;
-  color: var(--text);
-  font-family: var(--font-sans);
-  font-size: 0.95rem;
-  cursor: pointer;
-  appearance: none;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%2364748b' stroke-width='1.5' fill='none'/%3E%3C/svg%3E");
-  background-repeat: no-repeat;
-  background-position: right 12px center;
-}
-.sel-group select:focus {
-  outline: none;
-  border-color: var(--accent);
-}
-#selector-results {
-  min-height: 60px;
-}
+.selector-box p.muted { font-size: 14px; margin-bottom: 20px; }
+.selector-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 20px; }
+#selector-results { min-height: 60px; }
 .result-item {
-  background: var(--bg);
-  border: 1px solid var(--border);
-  border-radius: 6px;
-  padding: 16px;
-  margin-bottom: 10px;
+  background: var(--surface-2); border: 1px solid var(--line);
+  border-radius: var(--radius-sm); padding: 16px; margin-bottom: 10px;
 }
-.result-item h4 {
-  margin: 0 0 4px;
-  font-size: 1rem;
-}
-.result-item .result-reason {
-  font-size: 0.85rem;
-  color: var(--text-muted);
-  margin: 0;
-}
+.result-item h4 { margin: 0 0 4px; font-size: 15px; color: var(--ink); }
+.result-item .result-reason { font-size: 14px; color: var(--ink-2); margin: 0; }
 .result-item .result-badge {
-  display: inline-block;
-  font-size: 0.7rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  padding: 2px 8px;
-  border-radius: 4px;
-  margin-bottom: 6px;
+  display: inline-block; font-family: var(--font-mono); font-size: 10px; font-weight: 500;
+  text-transform: uppercase; letter-spacing: 0.6px;
+  padding: 3px 9px; border-radius: 4px; margin-bottom: 8px; border: 1px solid transparent;
 }
-.badge-best { background: rgba(34,197,94,0.15); color: var(--green); }
-.badge-alt { background: rgba(249,115,22,0.15); color: var(--orange); }
-.badge-also { background: rgba(59,130,246,0.12); color: var(--accent-light); }
+.badge-best { background: rgba(21, 127, 59, 0.10); color: var(--ok); border-color: rgba(21, 127, 59, 0.25); }
+.badge-alt { background: rgba(180, 83, 9, 0.10); color: var(--warn); border-color: rgba(180, 83, 9, 0.25); }
+.badge-also { background: rgba(37, 99, 235, 0.10); color: var(--s1); border-color: rgba(37, 99, 235, 0.25); }
 
-/* Metric table */
-.metric-table {
-  width: 100%;
-  border-collapse: collapse;
-  margin-bottom: 24px;
-  font-size: 0.9rem;
-}
+/* Metric tables */
+.metric-table { width: 100%; border-collapse: collapse; margin-bottom: 24px; font-size: 14px; display: block; overflow-x: auto; }
 .metric-table th {
-  text-align: left;
-  padding: 10px 14px;
-  background: var(--bg-card);
-  border-bottom: 2px solid var(--border);
-  font-weight: 600;
-  font-size: 0.8rem;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  color: var(--text-dim);
+  text-align: left; padding: 12px 16px; background: var(--surface-2);
+  border-bottom: 1px solid var(--line);
+  font-family: var(--font-mono); font-size: 11px; font-weight: 500;
+  text-transform: uppercase; letter-spacing: 0.5px; color: var(--ink-muted);
 }
 .metric-table td {
-  padding: 10px 14px;
-  border-bottom: 1px solid var(--border);
-  color: var(--text-muted);
-  vertical-align: top;
+  padding: 12px 16px; border-bottom: 1px solid var(--line);
+  color: var(--ink-2); vertical-align: top;
 }
 .metric-table td:first-child {
-  font-family: var(--font-mono);
-  font-weight: 600;
-  color: var(--text);
-  white-space: nowrap;
+  font-family: var(--font-mono); font-weight: 500; color: var(--ink); white-space: nowrap;
 }
-.metric-table tr:hover td { background: rgba(59,130,246,0.04); }
+.metric-table tr:hover td { background: var(--surface-2); }
 
-/* Pitfall boxes */
+/* Pitfall and tip boxes */
 .pitfall {
-  background: var(--bg-card);
-  border-left: 3px solid var(--red);
-  border-radius: 0 var(--radius) var(--radius) 0;
-  padding: 20px 24px;
-  margin-bottom: 16px;
+  background: var(--surface-2); border: 1px solid var(--line);
+  border-left: 3px solid var(--bad);
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+  padding: 18px 22px; margin-bottom: 16px;
 }
-.pitfall h4 {
-  color: var(--red);
-  margin: 0 0 8px;
-  font-size: 0.95rem;
-}
-.pitfall p { margin: 0; font-size: 0.9rem; color: var(--text-muted); }
-
-/* Tip box */
+.pitfall h4 { color: var(--bad); margin: 0 0 8px; font-size: 15px; }
+.pitfall p { margin: 0; font-size: 14px; color: var(--ink-2); }
 .tip {
-  background: rgba(34,197,94,0.06);
-  border-left: 3px solid var(--green);
-  border-radius: 0 var(--radius) var(--radius) 0;
-  padding: 16px 20px;
-  margin-bottom: 16px;
+  background: var(--surface-2); border: 1px solid var(--line);
+  border-left: 3px solid var(--ok);
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+  padding: 16px 20px; margin-bottom: 16px;
 }
-.tip p { margin: 0; font-size: 0.9rem; color: var(--text-muted); }
-.tip strong { color: var(--green); }
+.tip p { margin: 0; font-size: 14px; color: var(--ink-2); }
+.tip strong { color: var(--ok); }
 
-/* Footer */
-.footer {
-  margin-top: 64px;
-  padding: 32px 0;
-  border-top: 1px solid var(--border);
-  text-align: center;
-  font-size: 0.8rem;
-  color: var(--text-dim);
+/* Related tools list */
+.related-tools {
+  margin-top: 48px; padding: 24px;
+  background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius);
 }
-.footer a { color: var(--text-muted); text-decoration: none; }
-.footer a:hover { color: var(--text); }
+.related-tools h2 {
+  font-family: var(--font-mono); font-size: 12px; font-weight: 500;
+  text-transform: uppercase; letter-spacing: 1px; color: var(--ink); margin: 0 0 16px;
+}
+.related-tools ul { list-style: none; padding: 0; margin: 0; display: grid; gap: 8px; }
+.related-tools a { color: var(--s1); text-decoration: underline; }
+.related-tools a:hover { color: var(--ink); }
 
-/* Responsive */
 @media (max-width: 640px) {
-  .hero h1 { font-size: 1.6rem; }
   .selector-grid { grid-template-columns: 1fr; }
-  .metric-table { font-size: 0.8rem; }
-  .metric-table th, .metric-table td { padding: 8px 10px; }
-  .nav { padding: 0 16px; }
-  .container { padding: 0 16px; }
+  .metric-table { font-size: 13px; }
+  .metric-table th, .metric-table td { padding: 10px 12px; }
 }
 </style>
 </head>
 <body>
-
-<nav class="nav">
-  <a href="/" class="nav-logo">ml0x</a>
-  <ul class="nav-links">
-    <li><a href="/">Tool</a></li>
-    <li><a href="/research/">Research</a></li>
-  </ul>
-  <div class="nav-right">
-    <a href="https://zovo.one/tools" class="nav-zovo">Zovo Tools</a>
+<a class="skip-link" href="#main">Skip to content</a>
+<header class="site-nav">
+  <div class="site-nav__inner">
+    <div class="site-nav__left">
+      <a class="site-nav__logo" href="/">ml0x</a>
+      <nav class="site-nav__links" aria-label="Main">
+        <a href="/tools/">Tools</a>
+        <a href="/calculators/">Calculators</a>
+        <a href="/guides/">Guides</a>
+        <a href="/answers/">Answers</a>
+        <a href="/research/" aria-current="page">Research</a>
+      </nav>
+    </div>
+    <a class="nav-cta" href="https://zovo.one/pricing" target="_blank" rel="noopener">Full system, $99</a>
   </div>
-</nav>
+</header>
 
-<div class="container">
+<main id="main" class="container">
 
 <!-- Hero -->
-<header class="hero">
+<div class="hero">
   <h1>Machine Learning Cheatsheet <span>2026</span></h1>
   <p class="hero-sub">The complete quick reference for ML algorithms, evaluation metrics, sklearn code snippets, hyperparameters, data preprocessing, and common pitfalls. One page. Everything you need.</p>
   <p class="hero-meta">By <a href="https://zovo.one">Michael Lip</a> &middot; Updated May 16, 2026 &middot; ~20 min read</p>
-</header>
+</div>
 
 <!-- TOC -->
 <div class="toc">
@@ -1452,25 +1196,17 @@ y_pred_adjusted = (y_prob >= threshold).<span class="fn">astype</span>(<span cla
 </div>
 </section>
 
-</div><!-- /container -->
-
-<section style="margin-top:48px;padding:24px;background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.06);border-radius:12px;">
-<h2 style="font-size:18px;margin-bottom:16px;">Related Tools</h2>
-<ul style="list-style:none;padding:0;display:grid;gap:8px;">
-<li><a href="/answers/ml-algorithm-comparison.html" style="color:#3b82f6;text-decoration:none;">ML Algorithm Comparison</a></li>
-<li><a href="/research/feature-engineering-checklist.html" style="color:#3b82f6;text-decoration:none;">Feature Engineering Checklist</a></li>
-<li><a href="/guides/overfitting-underfitting-guide.html" style="color:#3b82f6;text-decoration:none;">Overfitting vs Underfitting</a></li>
-<li><a href="/tools/confusion-matrix-calculator.html" style="color:#3b82f6;text-decoration:none;">Confusion Matrix Calculator</a></li>
+<section class="related-tools" aria-label="Related tools">
+<h2>Related Tools</h2>
+<ul>
+<li><a href="/answers/ml-algorithm-comparison.html">ML Algorithm Comparison</a></li>
+<li><a href="/research/feature-engineering-checklist.html">Feature Engineering Checklist</a></li>
+<li><a href="/guides/overfitting-underfitting-guide.html">Overfitting vs Underfitting</a></li>
+<li><a href="/tools/confusion-matrix-calculator.html">Confusion Matrix Calculator</a></li>
 </ul>
 </section>
 
-
-
-<footer class="footer">
-  <div class="container">
-    <p><a href="/">ml0x</a> &middot; A <a href="https://zovo.one/tools">Zovo Tools</a> project &middot; Machine Learning Cheatsheet 2026</p>
-  </div>
-</footer>
+</main>
 
 <script>
 // Algorithm recommendation engine
@@ -1580,7 +1316,7 @@ function updateRecommendations() {
   for (const m of matches) {
     html += `<div class="result-item">
       <span class="result-badge ${badgeClass[m.rank]}">${badgeLabel[m.rank]}</span>
-      <h4><a href="${m.link}" style="color:var(--text);text-decoration:none;">${m.name}</a></h4>
+      <h4><a href="${m.link}" style="color:var(--ink);text-decoration:none;">${m.name}</a></h4>
       <p class="result-reason">${m.reason}</p>
     </div>`;
   }
@@ -1592,6 +1328,35 @@ document.getElementById('goal').addEventListener('change', updateRecommendations
 </script>
 
 
+<footer class="site-footer">
+  <nav class="footer-links-seo" aria-label="ML tools and content">
+    <a href="/tools/">ML tools</a>
+    <a href="/tools/learning-rate-finder.html">Learning rate finder</a>
+    <a href="/tools/confusion-matrix-calculator.html">Confusion matrix calculator</a>
+    <a href="/tools/neural-network-playground.html">Neural network playground</a>
+    <a href="/tools/attention-mechanism-visualizer.html">Attention visualizer</a>
+    <a href="/tools/dataset-splitter.html">Dataset splitter</a>
+    <a href="/calculators/kv-cache-size-calculator.html">KV cache calculator</a>
+    <a href="/calculators/llm-memory-calculator.html">LLM memory calculator</a>
+    <a href="/guides/">Guides</a>
+    <a href="/guides/gradient-descent-explained.html">Gradient descent</a>
+    <a href="/answers/">Answers</a>
+    <a href="/answers/ml-algorithm-comparison.html">Algorithm comparison</a>
+    <a href="/research/">Research</a>
+    <a href="/research/ml-cheatsheet.html">ML cheat sheet</a>
+    <a href="/about.html">About</a>
+  </nav>
+  <div class="site-footer__inner">
+    <div class="site-footer__brand">
+      <span class="site-footer__logo">ml0x</span>
+      <span class="site-footer__meta">by <a href="https://github.com/theluckystrike" target="_blank" rel="noopener">@theluckystrike</a></span>
+    </div>
+    <div class="site-footer__links">
+      <a href="https://github.com/theluckystrike/100xagenticdev" target="_blank" rel="noopener">GitHub</a>
+      <a href="/research/">Research</a>
+      <a href="https://twitter.com/_alphashark_" target="_blank" rel="noopener">X</a>
+    </div>
+  </div>
 <nav class="zovo-network" aria-label="Zovo Tools Network">
     <div class="zovo-network-inner">
         <h3 class="zovo-network-title">Explore More Tools</h3>
@@ -1633,5 +1398,6 @@ document.getElementById('goal').addEventListener('change', updateRecommendations
     <a href="https://zovo.one" rel="nofollow">Zovo — AI Dev Tools</a>
   </div>
 </div>
+</footer>
 </body>
 </html>

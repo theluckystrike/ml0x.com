@@ -20,237 +20,126 @@
         "applicationCategory": "UtilityApplication"
     }
     </script>
+    <link rel="stylesheet" href="/assets/ml0x.css">
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
+        /* two-column tool layout */
+        .layout { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin: 24px 0; }
+        @media (max-width: 967px) { .layout { grid-template-columns: 1fr; } }
+
+        /* panel headers: the shared .section-title is a page-level heading size */
+        .panel .section-title {
+            font-family: var(--font-mono); font-size: 13px; font-weight: 700;
+            color: var(--ink); text-transform: uppercase; letter-spacing: 1px;
+            margin: 0 0 16px; padding-bottom: 12px; border-bottom: 1px solid var(--line);
         }
-        body {
-            background: #0a0a0a;
-            color: #ffffff;
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            line-height: 1.6;
-            padding: 20px;
+
+        /* the bar chart is sized from its CSS box, so the height must be explicit */
+        #comparisonChart {
+            width: 100%; height: 350px; margin-bottom: 14px;
+            background: var(--surface); border: 1px solid var(--line);
+            border-radius: var(--radius-sm);
         }
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-        }
-        h1 {
-            color: #06b6d4;
-            margin-bottom: 10px;
-            font-size: 28px;
-        }
-        .subtitle {
-            color: #999;
-            margin-bottom: 30px;
-            font-size: 14px;
-        }
-        .layout {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 30px;
-            margin-bottom: 30px;
-        }
-        @media (max-width: 968px) {
-            .layout {
-                grid-template-columns: 1fr;
-            }
-        }
-        .panel {
-            background: #1a1a1a;
-            border: 1px solid #333;
-            border-radius: 8px;
-            padding: 20px;
-        }
-        .section-title {
-            color: #06b6d4;
-            font-size: 16px;
-            font-weight: 600;
-            margin-bottom: 15px;
-            border-bottom: 1px solid #333;
-            padding-bottom: 10px;
-        }
-        .form-group {
-            margin-bottom: 15px;
-        }
-        label {
-            display: block;
-            font-size: 13px;
-            margin-bottom: 5px;
-            color: #ccc;
-        }
-        input, select {
-            width: 100%;
-            padding: 10px;
-            background: #0a0a0a;
-            border: 1px solid #333;
-            border-radius: 4px;
-            color: #fff;
-            font-size: 13px;
-        }
-        input:focus, select:focus {
-            outline: none;
-            border-color: #06b6d4;
-            box-shadow: 0 0 0 2px rgba(6, 182, 212, 0.1);
-        }
-        button {
-            background: #06b6d4;
-            color: #000;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 4px;
-            font-weight: 600;
-            cursor: pointer;
-            font-size: 13px;
-            transition: all 0.2s;
-        }
-        button:hover {
-            background: #00d4ff;
-            transform: translateY(-1px);
-        }
-        .button-group {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 10px;
-        }
+
+        .button-group { display: flex; flex-wrap: wrap; gap: 10px; }
+        .button-group button { flex: 1 1 140px; }
         .button-secondary {
-            background: #333;
-            color: #fff;
+            background: var(--surface); color: var(--ink); border: 1px solid var(--line-strong);
         }
         .button-secondary:hover {
-            background: #444;
+            background: var(--surface-2); color: var(--ink); border-color: var(--ink);
         }
-        canvas {
-            width: 100%;
-            height: 350px;
-            background: #0a0a0a;
-            border: 1px solid #333;
-            border-radius: 4px;
-            margin-bottom: 15px;
-        }
-        .metric-card {
-            background: #0a0a0a;
-            border: 1px solid #333;
-            padding: 15px;
-            border-radius: 4px;
-            margin-bottom: 15px;
-        }
-        .metric-label {
-            font-size: 12px;
-            color: #999;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            margin-bottom: 5px;
-        }
-        .metric-value {
-            font-size: 20px;
-            color: #06b6d4;
-            font-weight: 600;
-        }
-        .param-list {
-            background: #0a0a0a;
-            border: 1px solid #333;
-            border-radius: 4px;
-            padding: 15px;
-            max-height: 250px;
-            overflow-y: auto;
-        }
-        .param-item {
-            display: grid;
-            grid-template-columns: 1fr 1fr 1fr auto;
-            gap: 10px;
+        .field-note {
+            font-family: var(--font-mono); font-size: 11px; font-weight: 500;
+            color: var(--ink-muted); text-transform: uppercase; letter-spacing: 0.8px;
             margin-bottom: 10px;
-            padding: 10px;
-            background: #1a1a1a;
-            border-radius: 4px;
-            font-size: 12px;
         }
-        .param-item input {
-            padding: 5px;
-            margin: 0;
+
+        /* editable hyperparameter rows: name / type / min / remove */
+        .param-list {
+            background: var(--surface-2); border: 1px solid var(--line);
+            border-radius: var(--radius-sm); padding: 12px;
+            max-height: 280px; overflow-y: auto;
         }
+        /* two per row: the panel is too narrow to keep four fields legible */
+        .param-item {
+            display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px;
+            margin-bottom: 8px; padding: 10px;
+            background: var(--surface); border: 1px solid var(--line);
+            border-radius: var(--radius-sm);
+        }
+        .param-item:last-child { margin-bottom: 0; }
+        .param-item input, .param-item select {
+            min-height: 40px; padding: 8px 10px; font-size: 16px;
+        }
+        .param-item select { padding-right: 28px; background-position: right 10px center; }
         .param-item button {
-            padding: 5px 10px;
-            background: #d4063c;
+            min-height: 40px; padding: 8px 14px; width: auto; font-size: 13px;
+            background: var(--surface); color: var(--bad); border: 1px solid var(--line-strong);
         }
-        .comparison-table {
-            width: 100%;
-            font-size: 12px;
-            margin-top: 15px;
-            border-collapse: collapse;
-        }
+        .param-item button:hover { background: var(--surface-2); color: var(--bad); border-color: var(--bad); }
+
+        /* strategy comparison table */
+        .comparison-table { width: 100%; border-collapse: collapse; font-size: 13px; }
         .comparison-table th, .comparison-table td {
-            padding: 10px;
-            text-align: right;
-            border-bottom: 1px solid #333;
+            padding: 11px 12px; text-align: right; border-bottom: 1px solid var(--line);
         }
         .comparison-table th {
-            background: #0a0a0a;
-            color: #06b6d4;
-            text-align: left;
+            background: var(--surface-2); color: var(--ink-muted); text-align: left;
+            font-family: var(--font-mono); font-size: 11px; font-weight: 500;
+            text-transform: uppercase; letter-spacing: 0.5px;
         }
-        .comparison-table td:first-child {
-            text-align: left;
-            color: #ccc;
-        }
+        .comparison-table td { color: var(--ink); font-variant-numeric: tabular-nums; }
+        .comparison-table td:first-child { text-align: left; color: var(--ink-2); }
+        .comparison-table tr:last-child td { border-bottom: 0; }
+
         .recommendation {
-            background: #0a0a0a;
-            border: 1px solid #06b6d4;
-            padding: 15px;
-            border-radius: 4px;
-            margin-top: 15px;
-            font-size: 13px;
+            background: var(--surface-2); border: 1px solid var(--line);
+            border-left: 3px solid var(--ink); border-radius: var(--radius-sm);
+            padding: 16px 20px; margin-top: 4px; font-size: 14px; color: var(--ink-2);
         }
+        .recommendation p:last-child { margin-bottom: 0; }
         .recommendation-title {
-            color: #06b6d4;
-            font-weight: 600;
-            margin-bottom: 10px;
+            font-family: var(--font-mono); font-size: 12px; font-weight: 700;
+            color: var(--ink); text-transform: uppercase; letter-spacing: 0.8px;
+            margin-bottom: 8px;
         }
-        .slider {
-            width: 100%;
-            height: 4px;
-            border-radius: 2px;
-            background: #333;
-            outline: none;
-            -webkit-appearance: none;
+
+        /* inline "top N %" / "confidence N %" fields keep sentence form */
+        .trials-row { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        .label-inline {
+            display: flex; align-items: center; flex-wrap: wrap; gap: 8px;
+            font-family: var(--font-body); font-size: 14px; font-weight: 400;
+            color: var(--ink-2); text-transform: none; letter-spacing: 0;
         }
-        .slider::-webkit-slider-thumb {
-            -webkit-appearance: none;
-            appearance: none;
-            width: 16px;
-            height: 16px;
-            border-radius: 50%;
-            background: #06b6d4;
-            cursor: pointer;
-        }
-        .slider::-moz-range-thumb {
-            width: 16px;
-            height: 16px;
-            border-radius: 50%;
-            background: #06b6d4;
-            cursor: pointer;
-            border: none;
-        }
-        footer {
-            text-align: center;
-            margin-top: 40px;
-            padding-top: 20px;
-            border-top: 1px solid #333;
-            color: #666;
-            font-size: 12px;
-        }
-        .hidden {
-            display: none;
-        }
+        .label-inline input { width: 90px; min-height: 40px; }
+        @media (max-width: 767px) { .trials-row { grid-template-columns: 1fr; } }
     </style>
 <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2241192243363112" crossorigin="anonymous"></script>
 </head>
 <body>
+<a class="skip-link" href="#main">Skip to content</a>
+<header class="site-nav">
+  <div class="site-nav__inner">
+    <div class="site-nav__left">
+      <a class="site-nav__logo" href="/">ml0x</a>
+      <nav class="site-nav__links" aria-label="Main">
+        <a href="/tools/" aria-current="page">Tools</a>
+        <a href="/calculators/">Calculators</a>
+        <a href="/guides/">Guides</a>
+        <a href="/answers/">Answers</a>
+        <a href="/research/">Research</a>
+      </nav>
+    </div>
+    <a class="nav-cta" href="https://zovo.one/pricing" target="_blank" rel="noopener">Full system, $99</a>
+  </div>
+</header>
+
+<main id="main">
     <div class="container">
-        <h1>Hyperparameter Search Calculator</h1>
-        <p class="subtitle">Compare grid, random, and Bayesian search strategies</p>
+        <div class="page-head">
+            <h1>Hyperparameter Search Calculator</h1>
+            <p class="subtitle">Compare grid, random, and Bayesian search strategies</p>
+        </div>
 
         <div class="layout">
             <div class="panel">
@@ -277,9 +166,9 @@
                 </div>
 
                 <div style="margin-top: 20px; margin-bottom: 15px;">
-                    <div style="font-size: 13px; color: #999; margin-bottom: 10px;">Hyperparameters (max 10):</div>
+                    <div class="field-note">Hyperparameters (max 10):</div>
                     <div class="param-list" id="paramList"></div>
-                    <button style="margin-top: 10px; width: 100%;" onclick="addParameter()">Add Parameter</button>
+                    <button class="button-secondary" style="margin-top: 12px; width: 100%;" onclick="addParameter()">Add Parameter</button>
                 </div>
 
                 <div class="button-group">
@@ -333,12 +222,12 @@
 
         <div class="panel">
             <div class="section-title">Trials Calculator</div>
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+            <div class="trials-row">
                 <div class="form-group">
-                    <label>Target: Find top <input type="number" id="topPercent" value="1" min="0.1" max="10" step="0.1"> %</label>
+                    <label class="label-inline">Target: Find top <input type="number" id="topPercent" value="1" min="0.1" max="10" step="0.1"> %</label>
                 </div>
                 <div class="form-group">
-                    <label>With confidence <input type="number" id="confidence" value="95" min="50" max="99.9" step="0.1"> %</label>
+                    <label class="label-inline">With confidence <input type="number" id="confidence" value="95" min="50" max="99.9" step="0.1"> %</label>
                 </div>
             </div>
             <button onclick="calculateTrialsNeeded()" style="width: 100%;">Calculate Trials Needed</button>
@@ -355,7 +244,6 @@
             </div>
         </div>
 
-        <footer>© 2026 ml0x.com</footer>
 <div style="margin:20px auto;max-width:728px;text-align:center">
 <ins class="adsbygoogle" style="display:block" data-ad-client="ca-pub-2241192243363112" data-ad-slot="auto" data-ad-format="auto" data-full-width-responsive="true"></ins>
 <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
@@ -495,7 +383,7 @@
             const barWidth = (width - 2 * padding) / 3 / 1.5;
             const gap = (width - 2 * padding) / 3;
 
-            ctx.fillStyle = '#0a0a0a';
+            ctx.fillStyle = '#FFFFFF';
             ctx.fillRect(0, 0, width, height);
 
             const maxVal = Math.max(...data);
@@ -506,21 +394,21 @@
                 const barHeight = (height - 2 * padding) * (data[i] / maxVal);
                 const y = height - padding - barHeight;
 
-                ctx.fillStyle = '#06b6d4';
+                ctx.fillStyle = '#2563EB';
                 ctx.fillRect(x, y, barWidth, barHeight);
 
-                ctx.fillStyle = '#ccc';
+                ctx.fillStyle = '#4A4A4A';
                 ctx.font = '12px sans-serif';
                 ctx.textAlign = 'center';
                 ctx.fillText(strategies[i], x + barWidth / 2, height - 20);
 
-                ctx.fillStyle = '#06b6d4';
+                ctx.fillStyle = '#2563EB';
                 ctx.textAlign = 'center';
                 ctx.fillText(data[i].toFixed(1), x + barWidth / 2, y - 5);
             }
 
             // Labels
-            ctx.fillStyle = '#ccc';
+            ctx.fillStyle = '#4A4A4A';
             ctx.font = '13px sans-serif';
             ctx.textAlign = 'center';
             ctx.fillText(label, width / 2, height - 5);
@@ -572,10 +460,42 @@
         renderParameterList();
         calculateSearch();
     </script>
-<div style="margin:30px auto;max-width:728px;text-align:center;padding:18px 24px;background:linear-gradient(135deg,#0f172a,#1e293b);border:1px solid #334155;border-radius:10px">
-<p style="margin:0 0 6px;color:#94a3b8;font-size:0.85rem">Recommended by our team</p>
-<a href="https://www.belikenative.com?ref=satellite" target="_blank" rel="noopener" style="color:#38bdf8;font-weight:600;font-size:1.05rem;text-decoration:none">BeLikeNative.com</a>
-<p style="margin:6px 0 0;color:#cbd5e1;font-size:0.9rem">The #1 AI writing tool for freelancers — perfect grammar in any language, instantly.</p>
+<div style="margin:30px auto;max-width:728px;text-align:center;padding:18px 24px;background:var(--surface);border:1px solid var(--line);border-radius:10px">
+<p style="margin:0 0 6px;color:var(--ink-muted);font-size:0.85rem">Recommended by our team</p>
+<a href="https://www.belikenative.com?ref=satellite" target="_blank" rel="noopener" style="color:var(--s1);font-weight:600;font-size:1.05rem;text-decoration:none">BeLikeNative.com</a>
+<p style="margin:6px 0 0;color:var(--ink-2);font-size:0.9rem">The #1 AI writing tool for freelancers — perfect grammar in any language, instantly.</p>
 </div>
+</main>
+
+<footer class="site-footer">
+  <nav class="footer-links-seo" aria-label="ML tools and content">
+    <a href="/tools/">ML tools</a>
+    <a href="/tools/learning-rate-finder.html">Learning rate finder</a>
+    <a href="/tools/confusion-matrix-calculator.html">Confusion matrix calculator</a>
+    <a href="/tools/neural-network-playground.html">Neural network playground</a>
+    <a href="/tools/attention-mechanism-visualizer.html">Attention visualizer</a>
+    <a href="/tools/dataset-splitter.html">Dataset splitter</a>
+    <a href="/calculators/kv-cache-size-calculator.html">KV cache calculator</a>
+    <a href="/calculators/llm-memory-calculator.html">LLM memory calculator</a>
+    <a href="/guides/">Guides</a>
+    <a href="/guides/gradient-descent-explained.html">Gradient descent</a>
+    <a href="/answers/">Answers</a>
+    <a href="/answers/ml-algorithm-comparison.html">Algorithm comparison</a>
+    <a href="/research/">Research</a>
+    <a href="/research/ml-cheatsheet.html">ML cheat sheet</a>
+    <a href="/about.html">About</a>
+  </nav>
+  <div class="site-footer__inner">
+    <div class="site-footer__brand">
+      <span class="site-footer__logo">ml0x</span>
+      <span class="site-footer__meta">by <a href="https://github.com/theluckystrike" target="_blank" rel="noopener">@theluckystrike</a></span>
+    </div>
+    <div class="site-footer__links">
+      <a href="https://github.com/theluckystrike/100xagenticdev" target="_blank" rel="noopener">GitHub</a>
+      <a href="/research/">Research</a>
+      <a href="https://twitter.com/_alphashark_" target="_blank" rel="noopener">X</a>
+    </div>
+  </div>
+</footer>
 </body>
 </html>

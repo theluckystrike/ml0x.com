@@ -20,7 +20,7 @@
 <meta name="twitter:description" content="Build neural networks layer by layer. Calculate parameters, FLOPS, memory footprint. Compare popular architectures.">
 <meta name="author" content="Michael Lip">
 <meta name="robots" content="index, follow">
-<link rel="stylesheet" href="/assets/style.css">
+<link rel="stylesheet" href="/assets/ml0x.css">
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
@@ -64,24 +64,24 @@
 </head>
 <body>
 
-<header>
-  <div class="container header-inner">
-    <a href="/" class="logo">ml0x</a>
-    <nav>
-      <a href="/">Home</a>
-      <a href="/research/">Research</a>
-      <a href="/tools/">Tools</a>
-      <a href="/guides/">Guides</a>
-      <a href="/answers/">Answers</a>
-      <div class="nav-right">
-        <a href="https://zovo.one/pricing?utm_source=ml0x.com&utm_medium=satellite&utm_campaign=nav-link" class="nav-pro" target="_blank">Go Pro &#10022;</a>
-        <a href="https://zovo.one/tools" class="nav-zovo">Zovo Tools</a>
-      </div>
-    </nav>
+<a class="skip-link" href="#main">Skip to content</a>
+<header class="site-nav">
+  <div class="site-nav__inner">
+    <div class="site-nav__left">
+      <a class="site-nav__logo" href="/">ml0x</a>
+      <nav class="site-nav__links" aria-label="Main">
+        <a href="/tools/" aria-current="page">Tools</a>
+        <a href="/calculators/">Calculators</a>
+        <a href="/guides/">Guides</a>
+        <a href="/answers/">Answers</a>
+        <a href="/research/">Research</a>
+      </nav>
+    </div>
+    <a class="nav-cta" href="https://zovo.one/pricing" target="_blank" rel="noopener">Full system, $99</a>
   </div>
 </header>
 
-<main class="container">
+<main id="main" class="container">
   <div class="breadcrumb">
     <a href="/">Home</a> <span>&rsaquo;</span> <a href="/tools/">Tools</a> <span>&rsaquo;</span> Model Complexity Calculator
   </div>
@@ -128,13 +128,13 @@
     <div style="overflow-x:auto;margin-top:16px;">
       <table style="width:100%;border-collapse:collapse;font-size:13px;" id="layerTable">
         <thead>
-          <tr style="border-bottom:2px solid #333;">
-            <th style="text-align:left;padding:8px;color:#aaa;">#</th>
-            <th style="text-align:left;padding:8px;color:#aaa;">Layer</th>
-            <th style="text-align:left;padding:8px;color:#aaa;">Config</th>
-            <th style="text-align:right;padding:8px;color:#aaa;">Parameters</th>
-            <th style="text-align:right;padding:8px;color:#aaa;">FLOPS</th>
-            <th style="text-align:right;padding:8px;color:#aaa;">Output Shape</th>
+          <tr style="border-bottom:2px solid #E8E8E6;">
+            <th style="text-align:left;padding:8px;color:#6a6a6a;">#</th>
+            <th style="text-align:left;padding:8px;color:#6a6a6a;">Layer</th>
+            <th style="text-align:left;padding:8px;color:#6a6a6a;">Config</th>
+            <th style="text-align:right;padding:8px;color:#6a6a6a;">Parameters</th>
+            <th style="text-align:right;padding:8px;color:#6a6a6a;">FLOPS</th>
+            <th style="text-align:right;padding:8px;color:#6a6a6a;">Output Shape</th>
           </tr>
         </thead>
         <tbody id="layerBody"></tbody>
@@ -144,7 +144,7 @@
 
   <div class="tool-card" style="margin-top:16px;">
     <h3>Architecture Comparison</h3>
-    <p style="color:#aaa;font-size:13px;margin-bottom:12px;">Compare parameter count, FLOPS, and memory footprint of popular architectures.</p>
+    <p style="color:#6a6a6a;font-size:13px;margin-bottom:12px;">Compare parameter count, FLOPS, and memory footprint of popular architectures.</p>
     <div class="viz-container"><svg id="compareSvg" width="700" height="400" viewBox="0 0 700 400"></svg></div>
     <div class="control-row" style="margin-top:12px;">
       <div class="control-group">
@@ -250,13 +250,34 @@
 </main>
 
 <footer class="site-footer">
-    <div class="footer-inner">
-        <div class="footer-brand">Zovo Tools</div>
-        <div class="footer-tagline">Free developer tools by a solo dev. No tracking.</div>
-        <a href="https://zovo.one/pricing?utm_source=ml0x.com&utm_medium=satellite&utm_campaign=footer-link" class="footer-cta">Zovo Lifetime — $99 once, free forever &rarr;</a>
-        <div class="footer-copy">&copy; 2026 <a href="https://zovo.one">Zovo</a> &middot; 47/500 founding spots</div>
+  <nav class="footer-links-seo" aria-label="ML tools and content">
+    <a href="/tools/">ML tools</a>
+    <a href="/tools/learning-rate-finder.html">Learning rate finder</a>
+    <a href="/tools/confusion-matrix-calculator.html">Confusion matrix calculator</a>
+    <a href="/tools/neural-network-playground.html">Neural network playground</a>
+    <a href="/tools/attention-mechanism-visualizer.html">Attention visualizer</a>
+    <a href="/tools/dataset-splitter.html">Dataset splitter</a>
+    <a href="/calculators/kv-cache-size-calculator.html">KV cache calculator</a>
+    <a href="/calculators/llm-memory-calculator.html">LLM memory calculator</a>
+    <a href="/guides/">Guides</a>
+    <a href="/guides/gradient-descent-explained.html">Gradient descent</a>
+    <a href="/answers/">Answers</a>
+    <a href="/answers/ml-algorithm-comparison.html">Algorithm comparison</a>
+    <a href="/research/">Research</a>
+    <a href="/research/ml-cheatsheet.html">ML cheat sheet</a>
+    <a href="/about.html">About</a>
+  </nav>
+  <div class="site-footer__inner">
+    <div class="site-footer__brand">
+      <span class="site-footer__logo">ml0x</span>
+      <span class="site-footer__meta">by <a href="https://github.com/theluckystrike" target="_blank" rel="noopener">@theluckystrike</a></span>
     </div>
-</footer>
+    <div class="site-footer__links">
+      <a href="https://github.com/theluckystrike/100xagenticdev" target="_blank" rel="noopener">GitHub</a>
+      <a href="/research/">Research</a>
+      <a href="https://twitter.com/_alphashark_" target="_blank" rel="noopener">X</a>
+    </div>
+  </div>
 
 <nav class="zovo-network" aria-label="Zovo Tools Network">
     <div class="zovo-network-inner">
@@ -299,25 +320,26 @@
     <a href="https://zovo.one" rel="nofollow">Zovo — AI Dev Tools</a>
   </div>
 </div>
+</footer>
 
 <script>
 (function() {
   var layers = [];
   var architectures = [
-    {name:'VGG-16', params:138e6, flops:15.5e9, year:2014, color:'#ef4444'},
-    {name:'ResNet-50', params:25.6e6, flops:4.1e9, year:2015, color:'#f59e0b'},
-    {name:'ResNet-152', params:60.2e6, flops:11.6e9, year:2015, color:'#f97316'},
-    {name:'InceptionV3', params:23.8e6, flops:5.7e9, year:2015, color:'#eab308'},
-    {name:'EfficientNet-B0', params:5.3e6, flops:0.4e9, year:2019, color:'#22c55e'},
-    {name:'EfficientNet-B7', params:66e6, flops:37e9, year:2019, color:'#16a34a'},
-    {name:'ConvNeXt-T', params:28.6e6, flops:4.5e9, year:2022, color:'#06b6d4'},
-    {name:'ViT-B/16', params:86.6e6, flops:17.6e9, year:2020, color:'#3b82f6'},
-    {name:'BERT-base', params:110e6, flops:22e9, year:2018, color:'#8b5cf6'},
-    {name:'BERT-large', params:340e6, flops:78e9, year:2018, color:'#7c3aed'},
-    {name:'GPT-2 (S)', params:124e6, flops:25e9, year:2019, color:'#a78bfa'},
-    {name:'GPT-2 (XL)', params:1500e6, flops:300e9, year:2019, color:'#9333ea'},
-    {name:'GPT-3', params:175000e6, flops:314e12, year:2020, color:'#c026d3'},
-    {name:'LLaMA-7B', params:7000e6, flops:14e12, year:2023, color:'#ec4899'}
+    {name:'VGG-16', params:138e6, flops:15.5e9, year:2014, color:'#C53030'},
+    {name:'ResNet-50', params:25.6e6, flops:4.1e9, year:2015, color:'#B45309'},
+    {name:'ResNet-152', params:60.2e6, flops:11.6e9, year:2015, color:'#9A3412'},
+    {name:'InceptionV3', params:23.8e6, flops:5.7e9, year:2015, color:'#856404'},
+    {name:'EfficientNet-B0', params:5.3e6, flops:0.4e9, year:2019, color:'#157F3B'},
+    {name:'EfficientNet-B7', params:66e6, flops:37e9, year:2019, color:'#0F5F2C'},
+    {name:'ConvNeXt-T', params:28.6e6, flops:4.5e9, year:2022, color:'#0E7490'},
+    {name:'ViT-B/16', params:86.6e6, flops:17.6e9, year:2020, color:'#2563EB'},
+    {name:'BERT-base', params:110e6, flops:22e9, year:2018, color:'#7C3AED'},
+    {name:'BERT-large', params:340e6, flops:78e9, year:2018, color:'#5B21B6'},
+    {name:'GPT-2 (S)', params:124e6, flops:25e9, year:2019, color:'#8B5CF6'},
+    {name:'GPT-2 (XL)', params:1500e6, flops:300e9, year:2019, color:'#6D28D9'},
+    {name:'GPT-3', params:175000e6, flops:314e12, year:2020, color:'#A21CAF'},
+    {name:'LLaMA-7B', params:7000e6, flops:14e12, year:2023, color:'#BE185D'}
   ];
 
   function updateLayerParamInputs() {
@@ -325,26 +347,26 @@
     var container = document.getElementById('layerParams');
     var html = '';
     if (type === 'dense') {
-      html = '<div class="control-group"><label>Input Dim</label><input type="number" id="lpIn" value="768" min="1" style="width:100%;padding:8px;background:#1a1a1a;border:1px solid #333;border-radius:6px;color:#e0e0e0;"></div>';
-      html += '<div class="control-group"><label>Output Dim</label><input type="number" id="lpOut" value="3072" min="1" style="width:100%;padding:8px;background:#1a1a1a;border:1px solid #333;border-radius:6px;color:#e0e0e0;"></div>';
+      html = '<div class="control-group"><label>Input Dim</label><input type="number" id="lpIn" value="768" min="1" style="width:100%;padding:8px;background:#fff;border:1px solid #D8D8D6;border-radius:6px;color:#1A1A1A;"></div>';
+      html += '<div class="control-group"><label>Output Dim</label><input type="number" id="lpOut" value="3072" min="1" style="width:100%;padding:8px;background:#fff;border:1px solid #D8D8D6;border-radius:6px;color:#1A1A1A;"></div>';
     } else if (type === 'conv2d') {
-      html = '<div class="control-group"><label>In Channels</label><input type="number" id="lpCin" value="64" min="1" style="width:100%;padding:8px;background:#1a1a1a;border:1px solid #333;border-radius:6px;color:#e0e0e0;"></div>';
-      html += '<div class="control-group"><label>Out Channels</label><input type="number" id="lpCout" value="128" min="1" style="width:100%;padding:8px;background:#1a1a1a;border:1px solid #333;border-radius:6px;color:#e0e0e0;"></div>';
-      html += '<div class="control-group"><label>Kernel Size</label><input type="number" id="lpK" value="3" min="1" style="width:100%;padding:8px;background:#1a1a1a;border:1px solid #333;border-radius:6px;color:#e0e0e0;"></div>';
-      html += '<div class="control-group"><label>Feature Map Size</label><input type="number" id="lpFM" value="56" min="1" style="width:100%;padding:8px;background:#1a1a1a;border:1px solid #333;border-radius:6px;color:#e0e0e0;"></div>';
+      html = '<div class="control-group"><label>In Channels</label><input type="number" id="lpCin" value="64" min="1" style="width:100%;padding:8px;background:#fff;border:1px solid #D8D8D6;border-radius:6px;color:#1A1A1A;"></div>';
+      html += '<div class="control-group"><label>Out Channels</label><input type="number" id="lpCout" value="128" min="1" style="width:100%;padding:8px;background:#fff;border:1px solid #D8D8D6;border-radius:6px;color:#1A1A1A;"></div>';
+      html += '<div class="control-group"><label>Kernel Size</label><input type="number" id="lpK" value="3" min="1" style="width:100%;padding:8px;background:#fff;border:1px solid #D8D8D6;border-radius:6px;color:#1A1A1A;"></div>';
+      html += '<div class="control-group"><label>Feature Map Size</label><input type="number" id="lpFM" value="56" min="1" style="width:100%;padding:8px;background:#fff;border:1px solid #D8D8D6;border-radius:6px;color:#1A1A1A;"></div>';
     } else if (type === 'lstm') {
-      html = '<div class="control-group"><label>Input Dim</label><input type="number" id="lpIn" value="300" min="1" style="width:100%;padding:8px;background:#1a1a1a;border:1px solid #333;border-radius:6px;color:#e0e0e0;"></div>';
-      html += '<div class="control-group"><label>Hidden Dim</label><input type="number" id="lpHid" value="512" min="1" style="width:100%;padding:8px;background:#1a1a1a;border:1px solid #333;border-radius:6px;color:#e0e0e0;"></div>';
-      html += '<div class="control-group"><label>Seq Length</label><input type="number" id="lpSeq" value="128" min="1" style="width:100%;padding:8px;background:#1a1a1a;border:1px solid #333;border-radius:6px;color:#e0e0e0;"></div>';
+      html = '<div class="control-group"><label>Input Dim</label><input type="number" id="lpIn" value="300" min="1" style="width:100%;padding:8px;background:#fff;border:1px solid #D8D8D6;border-radius:6px;color:#1A1A1A;"></div>';
+      html += '<div class="control-group"><label>Hidden Dim</label><input type="number" id="lpHid" value="512" min="1" style="width:100%;padding:8px;background:#fff;border:1px solid #D8D8D6;border-radius:6px;color:#1A1A1A;"></div>';
+      html += '<div class="control-group"><label>Seq Length</label><input type="number" id="lpSeq" value="128" min="1" style="width:100%;padding:8px;background:#fff;border:1px solid #D8D8D6;border-radius:6px;color:#1A1A1A;"></div>';
     } else if (type === 'attention') {
-      html = '<div class="control-group"><label>Model Dim (d_model)</label><input type="number" id="lpDim" value="768" min="1" style="width:100%;padding:8px;background:#1a1a1a;border:1px solid #333;border-radius:6px;color:#e0e0e0;"></div>';
-      html += '<div class="control-group"><label>Num Heads</label><input type="number" id="lpHeads" value="12" min="1" style="width:100%;padding:8px;background:#1a1a1a;border:1px solid #333;border-radius:6px;color:#e0e0e0;"></div>';
-      html += '<div class="control-group"><label>Seq Length</label><input type="number" id="lpSeq" value="512" min="1" style="width:100%;padding:8px;background:#1a1a1a;border:1px solid #333;border-radius:6px;color:#e0e0e0;"></div>';
+      html = '<div class="control-group"><label>Model Dim (d_model)</label><input type="number" id="lpDim" value="768" min="1" style="width:100%;padding:8px;background:#fff;border:1px solid #D8D8D6;border-radius:6px;color:#1A1A1A;"></div>';
+      html += '<div class="control-group"><label>Num Heads</label><input type="number" id="lpHeads" value="12" min="1" style="width:100%;padding:8px;background:#fff;border:1px solid #D8D8D6;border-radius:6px;color:#1A1A1A;"></div>';
+      html += '<div class="control-group"><label>Seq Length</label><input type="number" id="lpSeq" value="512" min="1" style="width:100%;padding:8px;background:#fff;border:1px solid #D8D8D6;border-radius:6px;color:#1A1A1A;"></div>';
     } else if (type === 'batchnorm' || type === 'layernorm') {
-      html = '<div class="control-group"><label>Features</label><input type="number" id="lpFeat" value="256" min="1" style="width:100%;padding:8px;background:#1a1a1a;border:1px solid #333;border-radius:6px;color:#e0e0e0;"></div>';
+      html = '<div class="control-group"><label>Features</label><input type="number" id="lpFeat" value="256" min="1" style="width:100%;padding:8px;background:#fff;border:1px solid #D8D8D6;border-radius:6px;color:#1A1A1A;"></div>';
     } else if (type === 'embedding') {
-      html = '<div class="control-group"><label>Vocab Size</label><input type="number" id="lpVocab" value="30522" min="1" style="width:100%;padding:8px;background:#1a1a1a;border:1px solid #333;border-radius:6px;color:#e0e0e0;"></div>';
-      html += '<div class="control-group"><label>Embedding Dim</label><input type="number" id="lpDim" value="768" min="1" style="width:100%;padding:8px;background:#1a1a1a;border:1px solid #333;border-radius:6px;color:#e0e0e0;"></div>';
+      html = '<div class="control-group"><label>Vocab Size</label><input type="number" id="lpVocab" value="30522" min="1" style="width:100%;padding:8px;background:#fff;border:1px solid #D8D8D6;border-radius:6px;color:#1A1A1A;"></div>';
+      html += '<div class="control-group"><label>Embedding Dim</label><input type="number" id="lpDim" value="768" min="1" style="width:100%;padding:8px;background:#fff;border:1px solid #D8D8D6;border-radius:6px;color:#1A1A1A;"></div>';
     }
     container.innerHTML = html;
   }
@@ -439,17 +461,17 @@
       if (l.type === 'attention') typeLabel = 'Multi-Head Attention';
       if (l.type === 'batchnorm') typeLabel = 'BatchNorm';
       if (l.type === 'layernorm') typeLabel = 'LayerNorm';
-      html += '<tr style="border-bottom:1px solid #222;">';
-      html += '<td style="padding:6px;color:#666;">'+(i+1)+'</td>';
-      html += '<td style="padding:6px;color:#3b82f6;font-weight:600;">'+typeLabel+'</td>';
-      html += '<td style="padding:6px;color:#aaa;font-size:12px;">'+l.config+'</td>';
-      html += '<td style="padding:6px;text-align:right;color:#e0e0e0;font-family:IBM Plex Mono,monospace;">'+formatNum(l.params)+'</td>';
-      html += '<td style="padding:6px;text-align:right;color:#e0e0e0;font-family:IBM Plex Mono,monospace;">'+formatNum(l.flops)+'</td>';
-      html += '<td style="padding:6px;text-align:right;color:#aaa;font-size:12px;">'+l.output+'</td>';
+      html += '<tr style="border-bottom:1px solid #E8E8E6;">';
+      html += '<td style="padding:6px;color:#767676;">'+(i+1)+'</td>';
+      html += '<td style="padding:6px;color:#2563EB;font-weight:600;">'+typeLabel+'</td>';
+      html += '<td style="padding:6px;color:#6a6a6a;font-size:12px;">'+l.config+'</td>';
+      html += '<td style="padding:6px;text-align:right;color:#1A1A1A;font-family:IBM Plex Mono,monospace;">'+formatNum(l.params)+'</td>';
+      html += '<td style="padding:6px;text-align:right;color:#1A1A1A;font-family:IBM Plex Mono,monospace;">'+formatNum(l.flops)+'</td>';
+      html += '<td style="padding:6px;text-align:right;color:#6a6a6a;font-size:12px;">'+l.output+'</td>';
       html += '</tr>';
     }
     if (layers.length === 0) {
-      html = '<tr><td colspan="6" style="padding:20px;text-align:center;color:#666;">No layers added yet. Use the form above to add layers.</td></tr>';
+      html = '<tr><td colspan="6" style="padding:20px;text-align:center;color:#767676;">No layers added yet. Use the form above to add layers.</td></tr>';
     }
     tbody.innerHTML = html;
 
@@ -466,7 +488,7 @@
     var items = architectures.slice();
     var totalP = 0, totalF = 0;
     for (var i = 0; i < layers.length; i++) { totalP += layers[i].params; totalF += layers[i].flops; }
-    if (totalP > 0) items.push({name:'Your Model', params:totalP, flops:totalF, year:2026, color:'#fff'});
+    if (totalP > 0) items.push({name:'Your Model', params:totalP, flops:totalF, year:2026, color:'#1A1A1A'});
 
     items.sort(function(a, b) {
       if (metric === 'params') return b.params - a.params;
@@ -483,23 +505,23 @@
     var barH = Math.min(22, (h - items.length * 2) / items.length);
     var gap = 2;
 
-    var html = '<rect width="700" height="400" fill="#141414"/>';
+    var html = '<rect width="700" height="400" fill="#FFFFFF"/>';
     for (var i = 0; i < items.length; i++) {
       var val = metric === 'params' ? items[i].params : metric === 'flops' ? items[i].flops : items[i].params * 2;
       var barW = maxVal > 0 ? (val / maxVal) * w : 0;
       if (barW < 1 && val > 0) barW = 1;
       var y = pad.t + i * (barH + gap);
 
-      html += '<text x="'+(pad.l-6)+'" y="'+(y+barH/2+4)+'" text-anchor="end" fill="#ccc" font-size="10" font-family="IBM Plex Sans,sans-serif">'+items[i].name+'</text>';
+      html += '<text x="'+(pad.l-6)+'" y="'+(y+barH/2+4)+'" text-anchor="end" fill="#4A4A4A" font-size="10" font-family="IBM Plex Sans,sans-serif">'+items[i].name+'</text>';
       html += '<rect x="'+pad.l+'" y="'+y+'" width="'+barW+'" height="'+barH+'" fill="'+items[i].color+'" rx="2" opacity="0.7"/>';
 
       var label = formatNum(val);
       if (metric === 'memory') label = (val / (1024*1024)).toFixed(0) + ' MB';
-      html += '<text x="'+(pad.l+barW+6)+'" y="'+(y+barH/2+4)+'" fill="#aaa" font-size="9" font-family="IBM Plex Mono,monospace">'+label+'</text>';
+      html += '<text x="'+(pad.l+barW+6)+'" y="'+(y+barH/2+4)+'" fill="#6a6a6a" font-size="9" font-family="IBM Plex Mono,monospace">'+label+'</text>';
     }
 
     var title = metric === 'params' ? 'Parameters' : metric === 'flops' ? 'FLOPS (forward pass)' : 'Memory (fp16)';
-    html += '<text x="'+(pad.l+w/2)+'" y="'+(pad.t+items.length*(barH+gap)+20)+'" text-anchor="middle" fill="#aaa" font-size="11" font-family="IBM Plex Sans,sans-serif">'+title+'</text>';
+    html += '<text x="'+(pad.l+w/2)+'" y="'+(pad.t+items.length*(barH+gap)+20)+'" text-anchor="middle" fill="#6a6a6a" font-size="11" font-family="IBM Plex Sans,sans-serif">'+title+'</text>';
 
     svg.innerHTML = html;
   }
@@ -510,19 +532,19 @@
     var w = 700 - pad.l - pad.r, h = 280 - pad.t - pad.b;
 
     var precisions = [
-      {name:'fp32', bytes:4, color:'#ef4444'},
-      {name:'fp16 / bf16', bytes:2, color:'#f59e0b'},
-      {name:'int8', bytes:1, color:'#22c55e'},
-      {name:'int4 (NF4)', bytes:0.5, color:'#3b82f6'}
+      {name:'fp32', bytes:4, color:'#C53030'},
+      {name:'fp16 / bf16', bytes:2, color:'#B45309'},
+      {name:'int8', bytes:1, color:'#157F3B'},
+      {name:'int4 (NF4)', bytes:0.5, color:'#2563EB'}
     ];
 
     var maxMem = totalParams * 4;
     if (maxMem === 0) maxMem = 1;
     var barW = w / precisions.length - 20;
 
-    var html = '<rect width="700" height="280" fill="#141414"/>';
-    html += '<text x="350" y="18" text-anchor="middle" fill="#ccc" font-size="12" font-family="IBM Plex Sans,sans-serif">Memory Footprint at Different Precisions'+(totalParams > 0 ? ' ('+formatNum(totalParams)+' params)' : '')+'</text>';
-    html += '<line x1="'+pad.l+'" y1="'+(pad.t+h)+'" x2="'+(pad.l+w)+'" y2="'+(pad.t+h)+'" stroke="#333" stroke-width="1"/>';
+    var html = '<rect width="700" height="280" fill="#FFFFFF"/>';
+    html += '<text x="350" y="18" text-anchor="middle" fill="#4A4A4A" font-size="12" font-family="IBM Plex Sans,sans-serif">Memory Footprint at Different Precisions'+(totalParams > 0 ? ' ('+formatNum(totalParams)+' params)' : '')+'</text>';
+    html += '<line x1="'+pad.l+'" y1="'+(pad.t+h)+'" x2="'+(pad.l+w)+'" y2="'+(pad.t+h)+'" stroke="#B8B8B6" stroke-width="1"/>';
 
     for (var i = 0; i < precisions.length; i++) {
       var mem = totalParams * precisions[i].bytes;
@@ -530,9 +552,9 @@
       var x = pad.l + i * (barW + 20) + 10;
       var y = pad.t + h - barH;
       html += '<rect x="'+x+'" y="'+y+'" width="'+barW+'" height="'+barH+'" fill="'+precisions[i].color+'" rx="4" opacity="0.7"/>';
-      html += '<text x="'+(x+barW/2)+'" y="'+(y-6)+'" text-anchor="middle" fill="#e0e0e0" font-size="11" font-weight="600" font-family="IBM Plex Mono,monospace">'+(mem/(1024*1024)).toFixed(1)+' MB</text>';
-      html += '<text x="'+(x+barW/2)+'" y="'+(pad.t+h+18)+'" text-anchor="middle" fill="#ccc" font-size="11" font-family="IBM Plex Sans,sans-serif">'+precisions[i].name+'</text>';
-      html += '<text x="'+(x+barW/2)+'" y="'+(pad.t+h+34)+'" text-anchor="middle" fill="#888" font-size="10" font-family="IBM Plex Mono,monospace">'+precisions[i].bytes+' B/param</text>';
+      html += '<text x="'+(x+barW/2)+'" y="'+(y-6)+'" text-anchor="middle" fill="#1A1A1A" font-size="11" font-weight="600" font-family="IBM Plex Mono,monospace">'+(mem/(1024*1024)).toFixed(1)+' MB</text>';
+      html += '<text x="'+(x+barW/2)+'" y="'+(pad.t+h+18)+'" text-anchor="middle" fill="#4A4A4A" font-size="11" font-family="IBM Plex Sans,sans-serif">'+precisions[i].name+'</text>';
+      html += '<text x="'+(x+barW/2)+'" y="'+(pad.t+h+34)+'" text-anchor="middle" fill="#6a6a6a" font-size="10" font-family="IBM Plex Mono,monospace">'+precisions[i].bytes+' B/param</text>';
     }
 
     svg.innerHTML = html;

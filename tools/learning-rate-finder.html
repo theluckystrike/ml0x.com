@@ -20,7 +20,7 @@
 <meta name="twitter:description" content="Simulate an LR range test, visualize loss curves on log scale, and auto-detect optimal learning rate at the steepest descent point.">
 <meta name="author" content="Michael Lip">
 <meta name="robots" content="index, follow">
-<link rel="stylesheet" href="/assets/style.css">
+<link rel="stylesheet" href="/assets/ml0x.css">
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
@@ -64,24 +64,24 @@
 </head>
 <body>
 
-<header>
-  <div class="container header-inner">
-    <a href="/" class="logo">ml0x</a>
-    <nav>
-      <a href="/">Home</a>
-      <a href="/research/">Research</a>
-      <a href="/tools/">Tools</a>
-      <a href="/guides/">Guides</a>
-      <a href="/answers/">Answers</a>
-      <div class="nav-right">
-        <a href="https://zovo.one/pricing?utm_source=ml0x.com&utm_medium=satellite&utm_campaign=nav-link" class="nav-pro" target="_blank">Go Pro &#10022;</a>
-        <a href="https://zovo.one/tools" class="nav-zovo">Zovo Tools</a>
-      </div>
-    </nav>
+<a class="skip-link" href="#main">Skip to content</a>
+<header class="site-nav">
+  <div class="site-nav__inner">
+    <div class="site-nav__left">
+      <a class="site-nav__logo" href="/">ml0x</a>
+      <nav class="site-nav__links" aria-label="Main">
+        <a href="/tools/" aria-current="page">Tools</a>
+        <a href="/calculators/">Calculators</a>
+        <a href="/guides/">Guides</a>
+        <a href="/answers/">Answers</a>
+        <a href="/research/">Research</a>
+      </nav>
+    </div>
+    <a class="nav-cta" href="https://zovo.one/pricing" target="_blank" rel="noopener">Full system, $99</a>
   </div>
 </header>
 
-<main class="container">
+<main id="main" class="container">
   <div class="breadcrumb">
     <a href="/">Home</a> <span>&rsaquo;</span> <a href="/tools/">Tools</a> <span>&rsaquo;</span> Learning Rate Finder
   </div>
@@ -132,8 +132,8 @@
     <div class="control-row" style="margin-top:12px;">
       <div class="control-group">
         <label>Smoothing Factor</label>
-        <input type="range" id="smoothing" min="0" max="0.99" step="0.01" value="0.9" style="width:100%;">
-        <span id="smoothVal" style="color:#aaa;font-size:12px;">0.90</span>
+        <input type="range" id="smoothing" min="0" max="0.99" step="0.01" value="0.9">
+        <span id="smoothVal" class="slider-value">0.90</span>
       </div>
       <button class="btn" id="runBtn">Run LR Range Test</button>
       <button class="btn btn-secondary" id="resetBtn">Reset</button>
@@ -151,11 +151,11 @@
     <div class="tool-card" style="margin-top:16px;">
       <h3>Loss vs Learning Rate (Log Scale)</h3>
       <div class="viz-container"><svg id="lossSvg" width="700" height="400" viewBox="0 0 700 400"></svg></div>
-      <div style="display:flex;gap:16px;margin-top:8px;font-size:12px;color:#aaa;">
-        <span><span style="color:#ef4444;">&#9644;</span> Raw Loss</span>
-        <span><span style="color:#3b82f6;">&#9644;</span> Smoothed Loss</span>
-        <span><span style="color:#22c55e;">&#9679;</span> Optimal LR</span>
-        <span><span style="color:#f59e0b;">&#9679;</span> Suggested LR</span>
+      <div class="legend">
+        <span class="legend-item"><span style="color:#C53030;">&#9644;</span> Raw Loss</span>
+        <span class="legend-item"><span style="color:#2563EB;">&#9644;</span> Smoothed Loss</span>
+        <span class="legend-item"><span style="color:#157F3B;">&#9679;</span> Optimal LR</span>
+        <span class="legend-item"><span style="color:#B45309;">&#9679;</span> Suggested LR</span>
       </div>
     </div>
 
@@ -186,10 +186,10 @@
         <button class="btn btn-secondary" id="schedBtn">Compare Schedules</button>
       </div>
       <div class="viz-container"><svg id="schedSvg" width="700" height="300" viewBox="0 0 700 300"></svg></div>
-      <div style="display:flex;gap:16px;margin-top:8px;font-size:12px;color:#aaa;">
-        <span><span style="color:#3b82f6;">&#9644;</span> One-Cycle Policy</span>
-        <span><span style="color:#a78bfa;">&#9644;</span> Cosine Annealing + Warm Restarts</span>
-        <span><span style="color:#f59e0b;">&#9644;</span> Step Decay</span>
+      <div class="legend">
+        <span class="legend-item"><span style="color:#2563EB;">&#9644;</span> One-Cycle Policy</span>
+        <span class="legend-item"><span style="color:#7C3AED;">&#9644;</span> Cosine Annealing + Warm Restarts</span>
+        <span class="legend-item"><span style="color:#B45309;">&#9644;</span> Step Decay</span>
       </div>
     </div>
   </div>
@@ -282,13 +282,34 @@
 </main>
 
 <footer class="site-footer">
-    <div class="footer-inner">
-        <div class="footer-brand">Zovo Tools</div>
-        <div class="footer-tagline">Free developer tools by a solo dev. No tracking.</div>
-        <a href="https://zovo.one/pricing?utm_source=ml0x.com&utm_medium=satellite&utm_campaign=footer-link" class="footer-cta">Zovo Lifetime — $99 once, free forever &rarr;</a>
-        <div class="footer-copy">&copy; 2026 <a href="https://zovo.one">Zovo</a> &middot; 47/500 founding spots</div>
+  <nav class="footer-links-seo" aria-label="ML tools and content">
+    <a href="/tools/">ML tools</a>
+    <a href="/tools/learning-rate-finder.html">Learning rate finder</a>
+    <a href="/tools/confusion-matrix-calculator.html">Confusion matrix calculator</a>
+    <a href="/tools/neural-network-playground.html">Neural network playground</a>
+    <a href="/tools/attention-mechanism-visualizer.html">Attention visualizer</a>
+    <a href="/tools/dataset-splitter.html">Dataset splitter</a>
+    <a href="/calculators/kv-cache-size-calculator.html">KV cache calculator</a>
+    <a href="/calculators/llm-memory-calculator.html">LLM memory calculator</a>
+    <a href="/guides/">Guides</a>
+    <a href="/guides/gradient-descent-explained.html">Gradient descent</a>
+    <a href="/answers/">Answers</a>
+    <a href="/answers/ml-algorithm-comparison.html">Algorithm comparison</a>
+    <a href="/research/">Research</a>
+    <a href="/research/ml-cheatsheet.html">ML cheat sheet</a>
+    <a href="/about.html">About</a>
+  </nav>
+  <div class="site-footer__inner">
+    <div class="site-footer__brand">
+      <span class="site-footer__logo">ml0x</span>
+      <span class="site-footer__meta">by <a href="https://github.com/theluckystrike" target="_blank" rel="noopener">@theluckystrike</a></span>
     </div>
-</footer>
+    <div class="site-footer__links">
+      <a href="https://github.com/theluckystrike/100xagenticdev" target="_blank" rel="noopener">GitHub</a>
+      <a href="/research/">Research</a>
+      <a href="https://twitter.com/_alphashark_" target="_blank" rel="noopener">X</a>
+    </div>
+  </div>
 
 <nav class="zovo-network" aria-label="Zovo Tools Network">
     <div class="zovo-network-inner">
@@ -331,6 +352,7 @@
     <a href="https://zovo.one" rel="nofollow">Zovo — AI Dev Tools</a>
   </div>
 </div>
+</footer>
 
 <script>
 (function() {
@@ -420,55 +442,55 @@
     function sx(logLr) { return pad.l + (logLr - xMin) / (xMax - xMin) * w; }
     function sy(loss) { return pad.t + (1 - (loss - yMin) / (yMax - yMin)) * h; }
 
-    var html = '<rect width="700" height="400" fill="#141414"/>';
-    html += '<line x1="'+pad.l+'" y1="'+(pad.t+h)+'" x2="'+(pad.l+w)+'" y2="'+(pad.t+h)+'" stroke="#333" stroke-width="1"/>';
-    html += '<line x1="'+pad.l+'" y1="'+pad.t+'" x2="'+pad.l+'" y2="'+(pad.t+h)+'" stroke="#333" stroke-width="1"/>';
+    var html = '<rect width="700" height="400" fill="#FFFFFF"/>';
+    html += '<line x1="'+pad.l+'" y1="'+(pad.t+h)+'" x2="'+(pad.l+w)+'" y2="'+(pad.t+h)+'" stroke="#B8B8B6" stroke-width="1"/>';
+    html += '<line x1="'+pad.l+'" y1="'+pad.t+'" x2="'+pad.l+'" y2="'+(pad.t+h)+'" stroke="#B8B8B6" stroke-width="1"/>';
 
     var xTicks = [];
     for (var e = Math.ceil(xMin); e <= Math.floor(xMax); e++) xTicks.push(e);
     for (var i = 0; i < xTicks.length; i++) {
       var x = sx(xTicks[i]);
-      html += '<line x1="'+x+'" y1="'+(pad.t+h)+'" x2="'+x+'" y2="'+pad.t+'" stroke="#222" stroke-width="0.5"/>';
-      html += '<text x="'+x+'" y="'+(pad.t+h+18)+'" text-anchor="middle" fill="#666" font-size="10" font-family="IBM Plex Mono,monospace">1e'+xTicks[i]+'</text>';
+      html += '<line x1="'+x+'" y1="'+(pad.t+h)+'" x2="'+x+'" y2="'+pad.t+'" stroke="#E8E8E6" stroke-width="0.5"/>';
+      html += '<text x="'+x+'" y="'+(pad.t+h+18)+'" text-anchor="middle" fill="#6a6a6a" font-size="10" font-family="IBM Plex Mono,monospace">1e'+xTicks[i]+'</text>';
     }
 
     var yTicks = 5;
     for (var i = 0; i <= yTicks; i++) {
       var val = yMin + i * (yMax - yMin) / yTicks;
       var y = sy(val);
-      html += '<line x1="'+pad.l+'" y1="'+y+'" x2="'+(pad.l+w)+'" y2="'+y+'" stroke="#222" stroke-width="0.5"/>';
-      html += '<text x="'+(pad.l-8)+'" y="'+(y+4)+'" text-anchor="end" fill="#666" font-size="10" font-family="IBM Plex Mono,monospace">'+val.toFixed(2)+'</text>';
+      html += '<line x1="'+pad.l+'" y1="'+y+'" x2="'+(pad.l+w)+'" y2="'+y+'" stroke="#E8E8E6" stroke-width="0.5"/>';
+      html += '<text x="'+(pad.l-8)+'" y="'+(y+4)+'" text-anchor="end" fill="#6a6a6a" font-size="10" font-family="IBM Plex Mono,monospace">'+val.toFixed(2)+'</text>';
     }
 
-    html += '<text x="'+(pad.l+w/2)+'" y="'+(pad.t+h+40)+'" text-anchor="middle" fill="#aaa" font-size="11" font-family="IBM Plex Sans,sans-serif">Learning Rate (log scale)</text>';
-    html += '<text x="15" y="'+(pad.t+h/2)+'" text-anchor="middle" fill="#aaa" font-size="11" font-family="IBM Plex Sans,sans-serif" transform="rotate(-90,15,'+(pad.t+h/2)+')">Loss</text>';
+    html += '<text x="'+(pad.l+w/2)+'" y="'+(pad.t+h+40)+'" text-anchor="middle" fill="#6a6a6a" font-size="11" font-family="IBM Plex Sans,sans-serif">Learning Rate (log scale)</text>';
+    html += '<text x="15" y="'+(pad.t+h/2)+'" text-anchor="middle" fill="#6a6a6a" font-size="11" font-family="IBM Plex Sans,sans-serif" transform="rotate(-90,15,'+(pad.t+h/2)+')">Loss</text>';
 
     var rawPath = 'M';
     for (var i = 0; i < data.raw.length; i++) {
       rawPath += (i>0?' L':'')+sx(logLrs[i]).toFixed(1)+' '+sy(data.raw[i]).toFixed(1);
     }
-    html += '<path d="'+rawPath+'" fill="none" stroke="#ef4444" stroke-width="1" opacity="0.3"/>';
+    html += '<path d="'+rawPath+'" fill="none" stroke="#C53030" stroke-width="1" opacity="0.3"/>';
 
     var smoothPath = 'M';
     for (var i = 0; i < data.smooth.length; i++) {
       smoothPath += (i>0?' L':'')+sx(logLrs[i]).toFixed(1)+' '+sy(data.smooth[i]).toFixed(1);
     }
-    html += '<path d="'+smoothPath+'" fill="none" stroke="#3b82f6" stroke-width="2"/>';
+    html += '<path d="'+smoothPath+'" fill="none" stroke="#2563EB" stroke-width="2"/>';
 
     var optX = sx(logLrs[steepIdx]), optY = sy(data.smooth[steepIdx]);
-    html += '<circle cx="'+optX+'" cy="'+optY+'" r="8" fill="#22c55e" opacity="0.3"/>';
-    html += '<circle cx="'+optX+'" cy="'+optY+'" r="4" fill="#22c55e"/>';
-    html += '<text x="'+(optX+10)+'" y="'+(optY-10)+'" fill="#22c55e" font-size="10" font-family="IBM Plex Sans,sans-serif">Optimal: '+fmtLR(data.lrs[steepIdx])+'</text>';
+    html += '<circle cx="'+optX+'" cy="'+optY+'" r="8" fill="#157F3B" opacity="0.3"/>';
+    html += '<circle cx="'+optX+'" cy="'+optY+'" r="4" fill="#157F3B"/>';
+    html += '<text x="'+(optX+10)+'" y="'+(optY-10)+'" fill="#157F3B" font-size="10" font-family="IBM Plex Sans,sans-serif">Optimal: '+fmtLR(data.lrs[steepIdx])+'</text>';
 
     var sugIdx = Math.max(0, steepIdx - Math.floor(data.lrs.length * 0.08));
     var sugX = sx(logLrs[sugIdx]), sugY = sy(data.smooth[sugIdx]);
-    html += '<circle cx="'+sugX+'" cy="'+sugY+'" r="6" fill="#f59e0b" opacity="0.3"/>';
-    html += '<circle cx="'+sugX+'" cy="'+sugY+'" r="3" fill="#f59e0b"/>';
-    html += '<text x="'+(sugX+10)+'" y="'+(sugY+14)+'" fill="#f59e0b" font-size="10" font-family="IBM Plex Sans,sans-serif">Suggested: '+fmtLR(data.lrs[sugIdx])+'</text>';
+    html += '<circle cx="'+sugX+'" cy="'+sugY+'" r="6" fill="#B45309" opacity="0.3"/>';
+    html += '<circle cx="'+sugX+'" cy="'+sugY+'" r="3" fill="#B45309"/>';
+    html += '<text x="'+(sugX+10)+'" y="'+(sugY+14)+'" fill="#B45309" font-size="10" font-family="IBM Plex Sans,sans-serif">Suggested: '+fmtLR(data.lrs[sugIdx])+'</text>';
 
     var divX = sx(logLrs[divIdx]);
-    html += '<line x1="'+divX+'" y1="'+pad.t+'" x2="'+divX+'" y2="'+(pad.t+h)+'" stroke="#ef4444" stroke-width="1" stroke-dasharray="4,4" opacity="0.6"/>';
-    html += '<text x="'+(divX+4)+'" y="'+(pad.t+14)+'" fill="#ef4444" font-size="9" font-family="IBM Plex Sans,sans-serif" opacity="0.7">Divergence</text>';
+    html += '<line x1="'+divX+'" y1="'+pad.t+'" x2="'+divX+'" y2="'+(pad.t+h)+'" stroke="#C53030" stroke-width="1" stroke-dasharray="4,4" opacity="0.6"/>';
+    html += '<text x="'+(divX+4)+'" y="'+(pad.t+14)+'" fill="#C53030" font-size="9" font-family="IBM Plex Sans,sans-serif" opacity="0.7">Divergence</text>';
 
     svg.innerHTML = html;
     return sugIdx;
@@ -491,24 +513,24 @@
     function sx(logLr) { return pad.l + (logLr - xMin) / (xMax - xMin) * w; }
     function sy(g) { return pad.t + (1 - (g - gMin) / (gMax - gMin)) * h; }
 
-    var html = '<rect width="700" height="250" fill="#141414"/>';
-    html += '<line x1="'+pad.l+'" y1="'+(pad.t+h)+'" x2="'+(pad.l+w)+'" y2="'+(pad.t+h)+'" stroke="#333" stroke-width="1"/>';
-    html += '<line x1="'+pad.l+'" y1="'+pad.t+'" x2="'+pad.l+'" y2="'+(pad.t+h)+'" stroke="#333" stroke-width="1"/>';
-    html += '<line x1="'+pad.l+'" y1="'+sy(0)+'" x2="'+(pad.l+w)+'" y2="'+sy(0)+'" stroke="#555" stroke-width="0.5" stroke-dasharray="3,3"/>';
+    var html = '<rect width="700" height="250" fill="#FFFFFF"/>';
+    html += '<line x1="'+pad.l+'" y1="'+(pad.t+h)+'" x2="'+(pad.l+w)+'" y2="'+(pad.t+h)+'" stroke="#B8B8B6" stroke-width="1"/>';
+    html += '<line x1="'+pad.l+'" y1="'+pad.t+'" x2="'+pad.l+'" y2="'+(pad.t+h)+'" stroke="#B8B8B6" stroke-width="1"/>';
+    html += '<line x1="'+pad.l+'" y1="'+sy(0)+'" x2="'+(pad.l+w)+'" y2="'+sy(0)+'" stroke="#B8B8B6" stroke-width="0.5" stroke-dasharray="3,3"/>';
 
     var path = 'M';
     for (var i = 1; i < data.grads.length - 1; i++) {
       path += (i>1?' L':'')+sx(logLrs[i]).toFixed(1)+' '+sy(data.grads[i]).toFixed(1);
     }
-    html += '<path d="'+path+'" fill="none" stroke="#a78bfa" stroke-width="1.5"/>';
+    html += '<path d="'+path+'" fill="none" stroke="#7C3AED" stroke-width="1.5"/>';
 
     var optX = sx(logLrs[steepIdx]), optY = sy(data.grads[steepIdx]);
-    html += '<circle cx="'+optX+'" cy="'+optY+'" r="6" fill="#22c55e" opacity="0.3"/>';
-    html += '<circle cx="'+optX+'" cy="'+optY+'" r="3" fill="#22c55e"/>';
-    html += '<text x="'+(optX+8)+'" y="'+(optY-6)+'" fill="#22c55e" font-size="10" font-family="IBM Plex Sans,sans-serif">Min gradient</text>';
+    html += '<circle cx="'+optX+'" cy="'+optY+'" r="6" fill="#157F3B" opacity="0.3"/>';
+    html += '<circle cx="'+optX+'" cy="'+optY+'" r="3" fill="#157F3B"/>';
+    html += '<text x="'+(optX+8)+'" y="'+(optY-6)+'" fill="#157F3B" font-size="10" font-family="IBM Plex Sans,sans-serif">Min gradient</text>';
 
-    html += '<text x="'+(pad.l+w/2)+'" y="'+(pad.t+h+32)+'" text-anchor="middle" fill="#aaa" font-size="11" font-family="IBM Plex Sans,sans-serif">Learning Rate (log scale)</text>';
-    html += '<text x="15" y="'+(pad.t+h/2)+'" text-anchor="middle" fill="#aaa" font-size="11" font-family="IBM Plex Sans,sans-serif" transform="rotate(-90,15,'+(pad.t+h/2)+')">dLoss/dLR</text>';
+    html += '<text x="'+(pad.l+w/2)+'" y="'+(pad.t+h+32)+'" text-anchor="middle" fill="#6a6a6a" font-size="11" font-family="IBM Plex Sans,sans-serif">Learning Rate (log scale)</text>';
+    html += '<text x="15" y="'+(pad.t+h/2)+'" text-anchor="middle" fill="#6a6a6a" font-size="11" font-family="IBM Plex Sans,sans-serif" transform="rotate(-90,15,'+(pad.t+h/2)+')">dLoss/dLR</text>';
 
     svg.innerHTML = html;
   }
@@ -525,16 +547,16 @@
     function sx(step) { return pad.l + step / steps * w; }
     function sy(lr) { return pad.t + (1 - (lr - 0) / (maxLR * 1.15)) * h; }
 
-    var html = '<rect width="700" height="300" fill="#141414"/>';
-    html += '<line x1="'+pad.l+'" y1="'+(pad.t+h)+'" x2="'+(pad.l+w)+'" y2="'+(pad.t+h)+'" stroke="#333" stroke-width="1"/>';
-    html += '<line x1="'+pad.l+'" y1="'+pad.t+'" x2="'+pad.l+'" y2="'+(pad.t+h)+'" stroke="#333" stroke-width="1"/>';
+    var html = '<rect width="700" height="300" fill="#FFFFFF"/>';
+    html += '<line x1="'+pad.l+'" y1="'+(pad.t+h)+'" x2="'+(pad.l+w)+'" y2="'+(pad.t+h)+'" stroke="#B8B8B6" stroke-width="1"/>';
+    html += '<line x1="'+pad.l+'" y1="'+pad.t+'" x2="'+pad.l+'" y2="'+(pad.t+h)+'" stroke="#B8B8B6" stroke-width="1"/>';
 
     for (var e = 0; e <= epochs; e += Math.ceil(epochs / 10)) {
       var x = sx(e * 10);
-      html += '<text x="'+x+'" y="'+(pad.t+h+16)+'" text-anchor="middle" fill="#666" font-size="10" font-family="IBM Plex Mono,monospace">'+e+'</text>';
+      html += '<text x="'+x+'" y="'+(pad.t+h+16)+'" text-anchor="middle" fill="#6a6a6a" font-size="10" font-family="IBM Plex Mono,monospace">'+e+'</text>';
     }
-    html += '<text x="'+(pad.l+w/2)+'" y="'+(pad.t+h+38)+'" text-anchor="middle" fill="#aaa" font-size="11" font-family="IBM Plex Sans,sans-serif">Epoch</text>';
-    html += '<text x="15" y="'+(pad.t+h/2)+'" text-anchor="middle" fill="#aaa" font-size="11" font-family="IBM Plex Sans,sans-serif" transform="rotate(-90,15,'+(pad.t+h/2)+')">Learning Rate</text>';
+    html += '<text x="'+(pad.l+w/2)+'" y="'+(pad.t+h+38)+'" text-anchor="middle" fill="#6a6a6a" font-size="11" font-family="IBM Plex Sans,sans-serif">Epoch</text>';
+    html += '<text x="15" y="'+(pad.t+h/2)+'" text-anchor="middle" fill="#6a6a6a" font-size="11" font-family="IBM Plex Sans,sans-serif" transform="rotate(-90,15,'+(pad.t+h/2)+')">Learning Rate</text>';
 
     var oneCycle = 'M';
     var warmup = Math.floor(steps * 0.3);
@@ -544,7 +566,7 @@
       else lr = minLR + (maxLR - minLR) * 0.5 * (1 + Math.cos(Math.PI * (i - warmup) / (steps - warmup)));
       oneCycle += (i>0?' L':'')+sx(i).toFixed(1)+' '+sy(lr).toFixed(1);
     }
-    html += '<path d="'+oneCycle+'" fill="none" stroke="#3b82f6" stroke-width="2"/>';
+    html += '<path d="'+oneCycle+'" fill="none" stroke="#2563EB" stroke-width="2"/>';
 
     var warmRestart = 'M';
     var periodSteps = restartPeriod * 10;
@@ -553,7 +575,7 @@
       var lr = minLR + (maxLR - minLR) * 0.5 * (1 + Math.cos(Math.PI * posInCycle / periodSteps));
       warmRestart += (i>0?' L':'')+sx(i).toFixed(1)+' '+sy(lr).toFixed(1);
     }
-    html += '<path d="'+warmRestart+'" fill="none" stroke="#a78bfa" stroke-width="1.5"/>';
+    html += '<path d="'+warmRestart+'" fill="none" stroke="#7C3AED" stroke-width="1.5"/>';
 
     var stepDecay = 'M';
     var currentLR = maxLR;
@@ -562,7 +584,7 @@
       if (i > 0 && i % decayEvery === 0) currentLR *= 0.1;
       stepDecay += (i>0?' L':'')+sx(i).toFixed(1)+' '+sy(currentLR).toFixed(1);
     }
-    html += '<path d="'+stepDecay+'" fill="none" stroke="#f59e0b" stroke-width="1.5" stroke-dasharray="4,2"/>';
+    html += '<path d="'+stepDecay+'" fill="none" stroke="#B45309" stroke-width="1.5" stroke-dasharray="4,2"/>';
 
     svg.innerHTML = html;
   }

@@ -20,7 +20,7 @@
 <meta name="twitter:description" content="Calculate optimal train/val/test splits with stratification preview and class balance verification. Generate Python code instantly.">
 <meta name="author" content="Michael Lip">
 <meta name="robots" content="index, follow">
-<link rel="stylesheet" href="/assets/style.css">
+<link rel="stylesheet" href="/assets/ml0x.css">
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
@@ -64,24 +64,24 @@
 </head>
 <body>
 
-<header>
-  <div class="container header-inner">
-    <a href="/" class="logo">ml0x</a>
-    <nav>
-      <a href="/">Home</a>
-      <a href="/research/">Research</a>
-      <a href="/tools/">Tools</a>
-      <a href="/guides/">Guides</a>
-      <a href="/answers/">Answers</a>
-      <div class="nav-right">
-        <a href="https://zovo.one/pricing?utm_source=ml0x.com&utm_medium=satellite&utm_campaign=nav-link" class="nav-pro" target="_blank">Go Pro &#10022;</a>
-        <a href="https://zovo.one/tools" class="nav-zovo">Zovo Tools</a>
-      </div>
-    </nav>
+<a class="skip-link" href="#main">Skip to content</a>
+<header class="site-nav">
+  <div class="site-nav__inner">
+    <div class="site-nav__left">
+      <a class="site-nav__logo" href="/">ml0x</a>
+      <nav class="site-nav__links" aria-label="Main">
+        <a href="/tools/" aria-current="page">Tools</a>
+        <a href="/calculators/">Calculators</a>
+        <a href="/guides/">Guides</a>
+        <a href="/answers/">Answers</a>
+        <a href="/research/">Research</a>
+      </nav>
+    </div>
+    <a class="nav-cta" href="https://zovo.one/pricing" target="_blank" rel="noopener">Full system, $99</a>
   </div>
 </header>
 
-<main class="container">
+<main id="main" class="container">
   <div class="breadcrumb">
     <a href="/">Home</a> <span>&rsaquo;</span> <a href="/tools/">Tools</a> <span>&rsaquo;</span> Dataset Splitter Calculator
   </div>
@@ -96,7 +96,7 @@
     <div class="control-row">
       <div class="control-group">
         <label>Total Samples</label>
-        <input type="number" id="totalSamples" value="10000" min="10" max="10000000" style="width:120px;padding:8px;background:#1a1a1a;border:1px solid #333;border-radius:6px;color:#e0e0e0;font-size:14px;">
+        <input type="number" id="totalSamples" value="10000" min="10" max="10000000" style="width:120px;padding:8px;background:#fff;border:1px solid #D8D8D6;border-radius:6px;color:#1A1A1A;font-size:14px;">
       </div>
       <div class="control-group">
         <label>Number of Classes</label>
@@ -118,8 +118,8 @@
       </div>
     </div>
     <div id="customClassSection" style="display:none;margin-top:12px;">
-      <label style="color:#aaa;font-size:13px;">Custom class proportions (comma-separated, must sum to 100):</label>
-      <input type="text" id="customProportions" value="50,50" style="width:300px;padding:8px;background:#1a1a1a;border:1px solid #333;border-radius:6px;color:#e0e0e0;font-size:13px;margin-top:4px;">
+      <label style="color:#6a6a6a;font-size:13px;">Custom class proportions (comma-separated, must sum to 100):</label>
+      <input type="text" id="customProportions" value="50,50" style="width:300px;padding:8px;background:#fff;border:1px solid #D8D8D6;border-radius:6px;color:#1A1A1A;font-size:13px;margin-top:4px;">
     </div>
   </div>
 
@@ -151,7 +151,7 @@
       </div>
       <div class="control-group">
         <label>Random Seed</label>
-        <input type="number" id="randomSeed" value="42" min="0" style="width:80px;padding:8px;background:#1a1a1a;border:1px solid #333;border-radius:6px;color:#e0e0e0;font-size:14px;">
+        <input type="number" id="randomSeed" value="42" min="0" style="width:80px;padding:8px;background:#fff;border:1px solid #D8D8D6;border-radius:6px;color:#1A1A1A;font-size:14px;">
       </div>
     </div>
     <div id="ratioSection">
@@ -166,7 +166,7 @@
         </div>
         <div class="control-group">
           <label>Test: <strong id="testLabel">15%</strong></label>
-          <div style="padding:8px;color:#3b82f6;font-size:18px;font-weight:600;" id="testPct">15%</div>
+          <div style="padding:8px;color:#2563EB;font-size:18px;font-weight:600;" id="testPct">15%</div>
         </div>
       </div>
     </div>
@@ -189,7 +189,7 @@
       <div class="stat-card"><div class="value" id="metWarning">--</div><div class="label">Status</div></div>
     </div>
 
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:16px;">
+    <div class="grid-2">
       <div class="tool-card">
         <h3>Split Size Distribution</h3>
         <div class="viz-container"><svg id="splitSvg" width="400" height="300" viewBox="0 0 400 300"></svg></div>
@@ -205,14 +205,14 @@
       <div style="overflow-x:auto;">
         <table style="width:100%;border-collapse:collapse;font-size:14px;" id="classTable">
           <thead>
-            <tr style="border-bottom:2px solid #333;">
-              <th style="text-align:left;padding:8px;color:#aaa;">Class</th>
-              <th style="text-align:right;padding:8px;color:#aaa;">Total</th>
-              <th style="text-align:right;padding:8px;color:#aaa;">Train</th>
-              <th style="text-align:right;padding:8px;color:#aaa;">Validation</th>
-              <th style="text-align:right;padding:8px;color:#aaa;">Test</th>
-              <th style="text-align:right;padding:8px;color:#aaa;">Train %</th>
-              <th style="text-align:right;padding:8px;color:#aaa;">Test %</th>
+            <tr style="border-bottom:2px solid #E8E8E6;">
+              <th style="text-align:left;padding:8px;color:#6a6a6a;">Class</th>
+              <th style="text-align:right;padding:8px;color:#6a6a6a;">Total</th>
+              <th style="text-align:right;padding:8px;color:#6a6a6a;">Train</th>
+              <th style="text-align:right;padding:8px;color:#6a6a6a;">Validation</th>
+              <th style="text-align:right;padding:8px;color:#6a6a6a;">Test</th>
+              <th style="text-align:right;padding:8px;color:#6a6a6a;">Train %</th>
+              <th style="text-align:right;padding:8px;color:#6a6a6a;">Test %</th>
             </tr>
           </thead>
           <tbody id="classBody"></tbody>
@@ -221,13 +221,13 @@
     </div>
 
     <div class="tool-card" id="warningsCard" style="display:none;">
-      <h3 style="color:#f59e0b;">Warnings & Recommendations</h3>
-      <ul id="warningsList" style="color:#ddd;line-height:1.8;"></ul>
+      <h3 style="color:#B45309;">Warnings & Recommendations</h3>
+      <ul id="warningsList" style="color:#4A4A4A;line-height:1.8;"></ul>
     </div>
 
     <div class="tool-card">
       <h3>Generated Python Code</h3>
-      <pre id="codeOutput" style="background:#0d0d0d;border:1px solid #333;border-radius:8px;padding:16px;color:#e0e0e0;font-size:13px;font-family:'IBM Plex Mono',monospace;overflow-x:auto;white-space:pre;line-height:1.5;max-height:400px;overflow-y:auto;"></pre>
+      <pre id="codeOutput" style="white-space:pre;max-height:400px;overflow-y:auto;"></pre>
       <button class="btn btn-secondary" id="copyCodeBtn" style="margin-top:8px;">Copy Code</button>
     </div>
   </div>
@@ -328,13 +328,34 @@
 </main>
 
 <footer class="site-footer">
-    <div class="footer-inner">
-        <div class="footer-brand">Zovo Tools</div>
-        <div class="footer-tagline">Free developer tools by a solo dev. No tracking.</div>
-        <a href="https://zovo.one/pricing?utm_source=ml0x.com&utm_medium=satellite&utm_campaign=footer-link" class="footer-cta">Zovo Lifetime — $99 once, free forever &rarr;</a>
-        <div class="footer-copy">&copy; 2026 <a href="https://zovo.one">Zovo</a> &middot; 47/500 founding spots</div>
+  <nav class="footer-links-seo" aria-label="ML tools and content">
+    <a href="/tools/">ML tools</a>
+    <a href="/tools/learning-rate-finder.html">Learning rate finder</a>
+    <a href="/tools/confusion-matrix-calculator.html">Confusion matrix calculator</a>
+    <a href="/tools/neural-network-playground.html">Neural network playground</a>
+    <a href="/tools/attention-mechanism-visualizer.html">Attention visualizer</a>
+    <a href="/tools/dataset-splitter.html">Dataset splitter</a>
+    <a href="/calculators/kv-cache-size-calculator.html">KV cache calculator</a>
+    <a href="/calculators/llm-memory-calculator.html">LLM memory calculator</a>
+    <a href="/guides/">Guides</a>
+    <a href="/guides/gradient-descent-explained.html">Gradient descent</a>
+    <a href="/answers/">Answers</a>
+    <a href="/answers/ml-algorithm-comparison.html">Algorithm comparison</a>
+    <a href="/research/">Research</a>
+    <a href="/research/ml-cheatsheet.html">ML cheat sheet</a>
+    <a href="/about.html">About</a>
+  </nav>
+  <div class="site-footer__inner">
+    <div class="site-footer__brand">
+      <span class="site-footer__logo">ml0x</span>
+      <span class="site-footer__meta">by <a href="https://github.com/theluckystrike" target="_blank" rel="noopener">@theluckystrike</a></span>
     </div>
-</footer>
+    <div class="site-footer__links">
+      <a href="https://github.com/theluckystrike/100xagenticdev" target="_blank" rel="noopener">GitHub</a>
+      <a href="/research/">Research</a>
+      <a href="https://twitter.com/_alphashark_" target="_blank" rel="noopener">X</a>
+    </div>
+  </div>
 
 <nav class="zovo-network" aria-label="Zovo Tools Network">
     <div class="zovo-network-inner">
@@ -377,6 +398,7 @@
     <a href="https://zovo.one" rel="nofollow">Zovo — AI Dev Tools</a>
   </div>
 </div>
+</footer>
 
 <script>
 (function() {
@@ -395,7 +417,7 @@
     var testP = getTestPct();
     document.getElementById('testLabel').textContent = testP + '%';
     document.getElementById('testPct').textContent = testP + '%';
-    document.getElementById('testPct').style.color = testP < 5 ? '#ef4444' : (testP < 10 ? '#f59e0b' : '#3b82f6');
+    document.getElementById('testPct').style.color = testP < 5 ? '#C53030' : (testP < 10 ? '#B45309' : '#2563EB');
   }
 
   function getClassProportions() {
@@ -497,7 +519,7 @@
     }
 
     document.getElementById('metMinClass').textContent = minTestClass;
-    document.getElementById('metMinClass').style.color = minTestClass < 10 ? '#ef4444' : (minTestClass < 30 ? '#f59e0b' : '#22c55e');
+    document.getElementById('metMinClass').style.color = minTestClass < 10 ? '#C53030' : (minTestClass < 30 ? '#B45309' : '#157F3B');
     var imbalanceRatio = minProp > 0 ? (maxProp / minProp).toFixed(1) : 'Inf';
     document.getElementById('metImbalance').textContent = imbalanceRatio + ':1';
 
@@ -511,7 +533,7 @@
     if (!isStratified && parseFloat(imbalanceRatio) > 3) warnings.push('Non-stratified split with imbalanced classes. Some splits may have very few minority class samples. Enable stratification.');
     var status = warnings.length === 0 ? 'OK' : warnings.length + ' warning' + (warnings.length > 1 ? 's' : '');
     document.getElementById('metWarning').textContent = status;
-    document.getElementById('metWarning').style.color = warnings.length === 0 ? '#22c55e' : '#f59e0b';
+    document.getElementById('metWarning').style.color = warnings.length === 0 ? '#157F3B' : '#B45309';
 
     if (warnings.length > 0) {
       document.getElementById('warningsCard').style.display = 'block';
@@ -528,14 +550,14 @@
       var d = classData[i];
       var trainPctClass = d.total > 0 ? (d.train / d.total * 100).toFixed(1) : '0.0';
       var testPctClass = d.total > 0 ? (d.test / d.total * 100).toFixed(1) : '0.0';
-      var row = '<tr style="border-bottom:1px solid #222;">';
-      row += '<td style="padding:8px;color:#ccc;font-weight:600;">' + d.name + '</td>';
-      row += '<td style="padding:8px;text-align:right;color:#ddd;">' + d.total.toLocaleString() + '</td>';
-      row += '<td style="padding:8px;text-align:right;color:#3b82f6;">' + d.train.toLocaleString() + '</td>';
-      row += '<td style="padding:8px;text-align:right;color:#a78bfa;">' + (strategy === 'kfold' ? 'N/A' : d.val.toLocaleString()) + '</td>';
-      row += '<td style="padding:8px;text-align:right;color:#22c55e;">' + d.test.toLocaleString() + '</td>';
-      row += '<td style="padding:8px;text-align:right;color:#aaa;">' + trainPctClass + '%</td>';
-      row += '<td style="padding:8px;text-align:right;color:#aaa;">' + testPctClass + '%</td>';
+      var row = '<tr style="border-bottom:1px solid #E8E8E6;">';
+      row += '<td style="padding:8px;color:#1A1A1A;font-weight:600;">' + d.name + '</td>';
+      row += '<td style="padding:8px;text-align:right;color:#4A4A4A;">' + d.total.toLocaleString() + '</td>';
+      row += '<td style="padding:8px;text-align:right;color:#2563EB;">' + d.train.toLocaleString() + '</td>';
+      row += '<td style="padding:8px;text-align:right;color:#7C3AED;">' + (strategy === 'kfold' ? 'N/A' : d.val.toLocaleString()) + '</td>';
+      row += '<td style="padding:8px;text-align:right;color:#157F3B;">' + d.test.toLocaleString() + '</td>';
+      row += '<td style="padding:8px;text-align:right;color:#6a6a6a;">' + trainPctClass + '%</td>';
+      row += '<td style="padding:8px;text-align:right;color:#6a6a6a;">' + testPctClass + '%</td>';
       row += '</tr>';
       tbody.innerHTML += row;
     }
@@ -548,13 +570,13 @@
   function drawSplitChart(trainN, valN, testN, total, strategy) {
     var svg = document.getElementById('splitSvg');
     var pad = 50, w = 340, h = 220;
-    var html = '<rect width="400" height="300" fill="#141414"/>';
-    html += '<text x="200" y="25" text-anchor="middle" fill="#aaa" font-size="12" font-family="IBM Plex Sans,sans-serif">Split Sizes</text>';
+    var html = '<rect width="400" height="300" fill="#FFFFFF"/>';
+    html += '<text x="200" y="25" text-anchor="middle" fill="#6a6a6a" font-size="12" font-family="IBM Plex Sans,sans-serif">Split Sizes</text>';
 
-    var splits = [{name:'Train', val:trainN, color:'#3b82f6'}];
-    if (strategy === 'train_val_test') splits.push({name:'Validation', val:valN, color:'#a78bfa'});
-    if (strategy !== 'kfold') splits.push({name:'Test', val:testN, color:'#22c55e'});
-    else splits.push({name:'Fold (Test)', val:testN, color:'#22c55e'});
+    var splits = [{name:'Train', val:trainN, color:'#2563EB'}];
+    if (strategy === 'train_val_test') splits.push({name:'Validation', val:valN, color:'#7C3AED'});
+    if (strategy !== 'kfold') splits.push({name:'Test', val:testN, color:'#157F3B'});
+    else splits.push({name:'Fold (Test)', val:testN, color:'#157F3B'});
 
     var barW = Math.min(80, (w - 40) / splits.length);
     var maxVal = Math.max(trainN, valN, testN, 1);
@@ -563,10 +585,10 @@
       var bx = pad + 20 + i * (barW + 30);
       var by = h + 20 - barH;
       html += '<rect x="'+bx+'" y="'+by+'" width="'+barW+'" height="'+barH+'" fill="'+splits[i].color+'" rx="4" opacity="0.8"/>';
-      html += '<text x="'+(bx+barW/2)+'" y="'+(by-8)+'" text-anchor="middle" fill="#e0e0e0" font-size="13" font-weight="600" font-family="IBM Plex Mono,monospace">'+splits[i].val.toLocaleString()+'</text>';
+      html += '<text x="'+(bx+barW/2)+'" y="'+(by-8)+'" text-anchor="middle" fill="#1A1A1A" font-size="13" font-weight="600" font-family="IBM Plex Mono,monospace">'+splits[i].val.toLocaleString()+'</text>';
       html += '<text x="'+(bx+barW/2)+'" y="'+(h+38)+'" text-anchor="middle" fill="'+splits[i].color+'" font-size="11" font-family="IBM Plex Sans,sans-serif">'+splits[i].name+'</text>';
       var pct = total > 0 ? (splits[i].val / total * 100).toFixed(1) : '0';
-      html += '<text x="'+(bx+barW/2)+'" y="'+(h+52)+'" text-anchor="middle" fill="#888" font-size="10" font-family="IBM Plex Mono,monospace">'+pct+'%</text>';
+      html += '<text x="'+(bx+barW/2)+'" y="'+(h+52)+'" text-anchor="middle" fill="#6a6a6a" font-size="10" font-family="IBM Plex Mono,monospace">'+pct+'%</text>';
     }
 
     var stackY = h + 70;
@@ -576,7 +598,7 @@
       var segW = total > 0 ? (splits[i].val / total) * stackW : stackW / splits.length;
       html += '<rect x="'+sx+'" y="'+stackY+'" width="'+segW+'" height="24" fill="'+splits[i].color+'" opacity="0.7" '+(i===0?'rx="4"':'')+(i===splits.length-1?' rx="4"':'')+'/>';
       if (segW > 30) {
-        html += '<text x="'+(sx+segW/2)+'" y="'+(stackY+16)+'" text-anchor="middle" fill="#fff" font-size="10" font-weight="600" font-family="IBM Plex Sans,sans-serif">'+(total>0?(splits[i].val/total*100).toFixed(0)+'%':'')+'</text>';
+        html += '<text x="'+(sx+segW/2)+'" y="'+(stackY+16)+'" text-anchor="middle" fill="#FFFFFF" font-size="10" font-weight="600" font-family="IBM Plex Sans,sans-serif">'+(total>0?(splits[i].val/total*100).toFixed(0)+'%':'')+'</text>';
       }
       sx += segW;
     }
@@ -586,13 +608,13 @@
   function drawStratChart(classData, strategy) {
     var svg = document.getElementById('stratSvg');
     var pad = 60, w = 340, h = 240;
-    var html = '<rect width="400" height="300" fill="#141414"/>';
-    html += '<text x="200" y="20" text-anchor="middle" fill="#aaa" font-size="12" font-family="IBM Plex Sans,sans-serif">Class Distribution per Split</text>';
+    var html = '<rect width="400" height="300" fill="#FFFFFF"/>';
+    html += '<text x="200" y="20" text-anchor="middle" fill="#6a6a6a" font-size="12" font-family="IBM Plex Sans,sans-serif">Class Distribution per Split</text>';
 
     var nClasses = classData.length;
     var groupW = Math.min(100, (w - pad) / (strategy === 'train_val_test' ? 3 : 2));
     var barW = Math.max(4, Math.min(16, (groupW - 10) / nClasses));
-    var colors = ['#3b82f6','#22c55e','#f59e0b','#ef4444','#a78bfa','#06b6d4','#f97316','#84cc16','#e879f9','#fbbf24'];
+    var colors = ['#2563EB','#157F3B','#B45309','#C53030','#7C3AED','#0E7490','#9A3412','#0F5F2C','#A21CAF','#856404'];
 
     var splitNames = ['Train'];
     if (strategy === 'train_val_test') splitNames.push('Val');
@@ -603,12 +625,12 @@
       if (classData[i].train > maxCount) maxCount = classData[i].train;
     }
 
-    html += '<line x1="'+pad+'" y1="'+h+'" x2="'+w+'" y2="'+h+'" stroke="#555" stroke-width="1"/>';
-    html += '<line x1="'+pad+'" y1="35" x2="'+pad+'" y2="'+h+'" stroke="#555" stroke-width="1"/>';
+    html += '<line x1="'+pad+'" y1="'+h+'" x2="'+w+'" y2="'+h+'" stroke="#B8B8B6" stroke-width="1"/>';
+    html += '<line x1="'+pad+'" y1="35" x2="'+pad+'" y2="'+h+'" stroke="#B8B8B6" stroke-width="1"/>';
 
     for (var s = 0; s < splitNames.length; s++) {
       var gx = pad + 10 + s * (groupW + 20);
-      html += '<text x="'+(gx+groupW/2)+'" y="'+(h+18)+'" text-anchor="middle" fill="#aaa" font-size="11" font-family="IBM Plex Sans,sans-serif">'+splitNames[s]+'</text>';
+      html += '<text x="'+(gx+groupW/2)+'" y="'+(h+18)+'" text-anchor="middle" fill="#6a6a6a" font-size="11" font-family="IBM Plex Sans,sans-serif">'+splitNames[s]+'</text>';
 
       for (var c = 0; c < nClasses; c++) {
         var val;
@@ -627,7 +649,7 @@
     for (var c = 0; c < Math.min(nClasses, 5); c++) {
       var lx = pad + c * 65;
       html += '<rect x="'+lx+'" y="'+legendY+'" width="10" height="10" fill="'+colors[c]+'" rx="2"/>';
-      html += '<text x="'+(lx+14)+'" y="'+(legendY+9)+'" fill="#aaa" font-size="9" font-family="IBM Plex Sans,sans-serif">C'+c+'</text>';
+      html += '<text x="'+(lx+14)+'" y="'+(legendY+9)+'" fill="#6a6a6a" font-size="9" font-family="IBM Plex Sans,sans-serif">C'+c+'</text>';
     }
 
     svg.innerHTML = html;

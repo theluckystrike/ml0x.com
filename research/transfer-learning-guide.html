@@ -20,7 +20,7 @@
 <meta name="twitter:description" content="Interactive decision tree for transfer learning strategy selection. Model compatibility matrix and layer freezing calculator.">
 <meta name="author" content="Michael Lip">
 <meta name="robots" content="index, follow">
-<link rel="stylesheet" href="/assets/style.css">
+<link rel="stylesheet" href="/assets/ml0x.css">
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
@@ -60,25 +60,24 @@
 </script>
 </head>
 <body>
-
-<header>
-  <div class="container header-inner">
-    <a href="/" class="logo">ml0x</a>
-    <nav>
-      <a href="/">Home</a>
-      <a href="/research/">Research</a>
-      <a href="/tools/">Tools</a>
-      <a href="/guides/">Guides</a>
-      <a href="/answers/">Answers</a>
-      <div class="nav-right">
-        <a href="https://zovo.one/pricing?utm_source=ml0x.com&utm_medium=satellite&utm_campaign=nav-link" class="nav-pro" target="_blank">Go Pro &#10022;</a>
-        <a href="https://zovo.one/tools" class="nav-zovo">Zovo Tools</a>
-      </div>
-    </nav>
+<a class="skip-link" href="#main">Skip to content</a>
+<header class="site-nav">
+  <div class="site-nav__inner">
+    <div class="site-nav__left">
+      <a class="site-nav__logo" href="/">ml0x</a>
+      <nav class="site-nav__links" aria-label="Main">
+        <a href="/tools/">Tools</a>
+        <a href="/calculators/">Calculators</a>
+        <a href="/guides/">Guides</a>
+        <a href="/answers/">Answers</a>
+        <a href="/research/" aria-current="page">Research</a>
+      </nav>
+    </div>
+    <a class="nav-cta" href="https://zovo.one/pricing" target="_blank" rel="noopener">Full system, $99</a>
   </div>
 </header>
 
-<main class="container">
+<main id="main" class="container">
   <div class="breadcrumb">
     <a href="/">Home</a> <span>&rsaquo;</span> <a href="/research/">Research</a> <span>&rsaquo;</span> Transfer Learning Guide
   </div>
@@ -147,9 +146,9 @@
 
   <div class="tool-card" style="margin-top:16px;">
     <h3>Model Compatibility Matrix</h3>
-    <p style="color:#aaa;font-size:13px;margin-bottom:12px;">Compatibility score (1-5 stars) for pretrained models across target tasks. Higher = better expected transfer performance.</p>
-    <div style="overflow-x:auto;">
-      <table id="compatMatrix" style="width:100%;border-collapse:collapse;font-size:12px;"></table>
+    <p style="color:var(--ink-2);font-size:14px;margin-bottom:14px;">Compatibility score (1-5 stars) for pretrained models across target tasks. Higher = better expected transfer performance.</p>
+    <div class="table-scroll">
+      <table id="compatMatrix" style="font-size:12px;"></table>
     </div>
   </div>
 
@@ -158,26 +157,26 @@
     <div class="control-row">
       <div class="control-group">
         <label>Total Model Layers</label>
-        <input type="number" id="totalLayers" value="50" min="2" max="1000" style="width:100%;padding:8px;background:#1a1a1a;border:1px solid #333;border-radius:6px;color:#e0e0e0;">
+        <input type="number" id="totalLayers" value="50" min="2" max="1000">
       </div>
       <div class="control-group">
         <label>Domain Similarity (1-10)</label>
         <input type="range" id="domainSim" min="1" max="10" value="7" style="width:100%;">
-        <span id="domSimVal" style="color:#aaa;font-size:12px;">7 (High)</span>
+        <span id="domSimVal" style="color:var(--ink-muted);font-family:var(--font-mono);font-size:12px;">7 (High)</span>
       </div>
       <div class="control-group">
         <label>Dataset Size Factor (1-10)</label>
         <input type="range" id="dataFactor" min="1" max="10" value="5" style="width:100%;">
-        <span id="dataFactVal" style="color:#aaa;font-size:12px;">5 (Medium)</span>
+        <span id="dataFactVal" style="color:var(--ink-muted);font-family:var(--font-mono);font-size:12px;">5 (Medium)</span>
       </div>
       <button class="btn btn-secondary" id="freezeBtn">Calculate Freezing</button>
     </div>
     <div id="freezeResult" style="margin-top:16px;">
       <div class="viz-container"><svg id="freezeSvg" width="700" height="200" viewBox="0 0 700 200"></svg></div>
-      <div style="display:flex;gap:16px;margin-top:8px;font-size:12px;color:#aaa;">
-        <span><span style="color:#3b82f6;">&#9632;</span> Frozen (keep pretrained weights)</span>
-        <span><span style="color:#22c55e;">&#9632;</span> Fine-tuned (low LR)</span>
-        <span><span style="color:#f59e0b;">&#9632;</span> Trained (full LR)</span>
+      <div style="display:flex;flex-wrap:wrap;gap:8px 20px;margin-top:10px;font-family:var(--font-mono);font-size:11px;color:var(--ink-muted);">
+        <span><span style="color:var(--s1);">&#9632;</span> Frozen (keep pretrained weights)</span>
+        <span><span style="color:var(--s3);">&#9632;</span> Fine-tuned (low LR)</span>
+        <span><span style="color:var(--s4);">&#9632;</span> Trained (full LR)</span>
       </div>
     </div>
   </div>
@@ -286,15 +285,35 @@
 </main>
 
 <footer class="site-footer">
-    <div class="footer-inner">
-        <div class="footer-brand">Zovo Tools</div>
-        <div class="footer-tagline">Free developer tools by a solo dev. No tracking.</div>
-        <a href="https://zovo.one/pricing?utm_source=ml0x.com&utm_medium=satellite&utm_campaign=footer-link" class="footer-cta">Zovo Lifetime — $99 once, free forever &rarr;</a>
-        <div class="footer-copy">&copy; 2026 <a href="https://zovo.one">Zovo</a> &middot; 47/500 founding spots</div>
+  <nav class="footer-links-seo" aria-label="ML tools and content">
+    <a href="/tools/">ML tools</a>
+    <a href="/tools/learning-rate-finder.html">Learning rate finder</a>
+    <a href="/tools/confusion-matrix-calculator.html">Confusion matrix calculator</a>
+    <a href="/tools/neural-network-playground.html">Neural network playground</a>
+    <a href="/tools/attention-mechanism-visualizer.html">Attention visualizer</a>
+    <a href="/tools/dataset-splitter.html">Dataset splitter</a>
+    <a href="/calculators/kv-cache-size-calculator.html">KV cache calculator</a>
+    <a href="/calculators/llm-memory-calculator.html">LLM memory calculator</a>
+    <a href="/guides/">Guides</a>
+    <a href="/guides/gradient-descent-explained.html">Gradient descent</a>
+    <a href="/answers/">Answers</a>
+    <a href="/answers/ml-algorithm-comparison.html">Algorithm comparison</a>
+    <a href="/research/">Research</a>
+    <a href="/research/ml-cheatsheet.html">ML cheat sheet</a>
+    <a href="/about.html">About</a>
+  </nav>
+  <div class="site-footer__inner">
+    <div class="site-footer__brand">
+      <span class="site-footer__logo">ml0x</span>
+      <span class="site-footer__meta">by <a href="https://github.com/theluckystrike" target="_blank" rel="noopener">@theluckystrike</a></span>
     </div>
-</footer>
-
-<nav class="zovo-network" aria-label="Zovo Tools Network">
+    <div class="site-footer__links">
+      <a href="https://github.com/theluckystrike/100xagenticdev" target="_blank" rel="noopener">GitHub</a>
+      <a href="/research/">Research</a>
+      <a href="https://twitter.com/_alphashark_" target="_blank" rel="noopener">X</a>
+    </div>
+  </div>
+  <nav class="zovo-network" aria-label="Zovo Tools Network">
     <div class="zovo-network-inner">
         <h3 class="zovo-network-title">Explore More Tools</h3>
         <div class="zovo-network-links">
@@ -335,6 +354,7 @@
     <a href="https://zovo.one" rel="nofollow">Zovo — AI Dev Tools</a>
   </div>
 </div>
+</footer>
 
 <script>
 (function() {
@@ -368,18 +388,18 @@
 
   function buildCompatMatrix() {
     var table = document.getElementById('compatMatrix');
-    var html = '<thead><tr style="border-bottom:2px solid #333;"><th style="padding:8px;text-align:left;color:#aaa;font-size:11px;">Model</th><th style="padding:4px;color:#aaa;font-size:10px;">Params</th>';
-    for (var t = 0; t < tasks.length; t++) html += '<th style="padding:4px;text-align:center;color:#aaa;font-size:10px;max-width:70px;">'+tasks[t]+'</th>';
+    var html = '<thead><tr style="border-bottom:2px solid #D8D8D6;"><th style="padding:8px;text-align:left;color:#6a6a6a;font-size:11px;">Model</th><th style="padding:4px;color:#6a6a6a;font-size:10px;">Params</th>';
+    for (var t = 0; t < tasks.length; t++) html += '<th style="padding:4px;text-align:center;color:#6a6a6a;font-size:10px;max-width:70px;white-space:normal;">'+tasks[t]+'</th>';
     html += '</tr></thead><tbody>';
     for (var m = 0; m < models.length; m++) {
-      html += '<tr style="border-bottom:1px solid #222;">';
-      html += '<td style="padding:6px;color:#e0e0e0;font-weight:600;font-size:12px;white-space:nowrap;">'+models[m].name+'</td>';
-      html += '<td style="padding:4px;color:#888;font-size:11px;">'+models[m].params+'</td>';
+      html += '<tr style="border-bottom:1px solid #E8E8E6;">';
+      html += '<td style="padding:6px;color:#1A1A1A;font-weight:600;font-size:12px;white-space:nowrap;">'+models[m].name+'</td>';
+      html += '<td style="padding:4px;color:#6a6a6a;font-size:11px;">'+models[m].params+'</td>';
       for (var t = 0; t < tasks.length; t++) {
         var score = compatibility[m][t];
-        var color = score >= 4 ? '#22c55e' : score >= 3 ? '#f59e0b' : score >= 2 ? '#ef4444' : '#666';
+        var color = score >= 4 ? '#157F3B' : score >= 3 ? '#B45309' : score >= 2 ? '#C53030' : '#767676';
         var stars = '';
-        for (var s = 0; s < 5; s++) stars += s < score ? '<span style="color:'+color+';">&#9733;</span>' : '<span style="color:#333;">&#9733;</span>';
+        for (var s = 0; s < 5; s++) stars += s < score ? '<span style="color:'+color+';">&#9733;</span>' : '<span style="color:#D8D8D6;">&#9733;</span>';
         html += '<td style="padding:4px;text-align:center;font-size:10px;">'+stars+'</td>';
       }
       html += '</tr>';
@@ -459,17 +479,17 @@
     var baseLR = isNLPTarget ? '2e-5' : '1e-4';
     var backboneLR = isNLPTarget ? '5e-6' : '1e-5';
 
-    var html = '<div style="background:#0d1117;border:1px solid #3b82f6;border-radius:8px;padding:20px;margin-bottom:16px;">';
+    var html = '<div style="background:#F2F2F0;border:1px solid #E8E8E6;border-left:3px solid #2563EB;border-radius:8px;padding:20px;margin-bottom:16px;">';
     html += '<div style="display:flex;align-items:center;gap:12px;margin-bottom:12px;">';
-    html += '<span style="background:#3b82f6;color:#fff;padding:4px 12px;border-radius:4px;font-weight:700;font-size:14px;">'+strategy+'</span>';
-    html += '<span style="color:#aaa;font-size:13px;">Freeze '+freezePct+'% of layers</span>';
+    html += '<span style="background:#2563EB;color:#fff;padding:4px 12px;border-radius:4px;font-weight:700;font-size:14px;">'+strategy+'</span>';
+    html += '<span style="color:#6a6a6a;font-size:13px;">Freeze '+freezePct+'% of layers</span>';
     html += '</div>';
-    html += '<p style="color:#e0e0e0;font-size:14px;margin:0 0 12px;">'+details+'</p>';
+    html += '<p style="color:#1A1A1A;font-size:14px;margin:0 0 12px;">'+details+'</p>';
     html += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">';
-    html += '<div><strong style="color:#3b82f6;">Recommended Model:</strong> <span style="color:#e0e0e0;">'+model+'</span></div>';
-    html += '<div><strong style="color:#3b82f6;">Head Learning Rate:</strong> <span style="color:#e0e0e0;">'+baseLR+'</span></div>';
-    html += '<div><strong style="color:#3b82f6;">Backbone Learning Rate:</strong> <span style="color:#e0e0e0;">'+backboneLR+'</span></div>';
-    html += '<div><strong style="color:#3b82f6;">Warmup:</strong> <span style="color:#e0e0e0;">6-10% of total steps</span></div>';
+    html += '<div><strong style="color:#2563EB;">Recommended Model:</strong> <span style="color:#1A1A1A;">'+model+'</span></div>';
+    html += '<div><strong style="color:#2563EB;">Head Learning Rate:</strong> <span style="color:#1A1A1A;">'+baseLR+'</span></div>';
+    html += '<div><strong style="color:#2563EB;">Backbone Learning Rate:</strong> <span style="color:#1A1A1A;">'+backboneLR+'</span></div>';
+    html += '<div><strong style="color:#2563EB;">Warmup:</strong> <span style="color:#1A1A1A;">6-10% of total steps</span></div>';
     html += '</div></div>';
 
     document.getElementById('recommendResult').innerHTML = html;
@@ -510,34 +530,34 @@
     var totalW = total * (layerW + gap);
     var startX = pad.l + (w - totalW) / 2;
 
-    var html = '<rect width="700" height="200" fill="#141414"/>';
-    html += '<text x="350" y="18" text-anchor="middle" fill="#ccc" font-size="12" font-family="IBM Plex Sans,sans-serif">Layer Freezing Strategy ('+total+' layers: '+frozen+' frozen, '+fineTuned+' fine-tuned, '+trained+' full LR)</text>';
+    var html = '<rect width="700" height="200" fill="#FFFFFF"/>';
+    html += '<text x="350" y="18" text-anchor="middle" fill="#1A1A1A" font-size="12" font-family="Inter,sans-serif">Layer Freezing Strategy ('+total+' layers: '+frozen+' frozen, '+fineTuned+' fine-tuned, '+trained+' full LR)</text>';
 
     for (var i = 0; i < total; i++) {
       var x = startX + i * (layerW + gap);
       var color;
-      if (i < frozen) color = '#3b82f6';
-      else if (i < frozen + fineTuned) color = '#22c55e';
-      else color = '#f59e0b';
+      if (i < frozen) color = '#2563EB';
+      else if (i < frozen + fineTuned) color = '#157F3B';
+      else color = '#B45309';
       html += '<rect x="'+x+'" y="'+pad.t+'" width="'+layerW+'" height="'+h+'" fill="'+color+'" opacity="0.7" rx="1"/>';
     }
 
     var frozenEnd = startX + frozen * (layerW + gap);
     var ftEnd = frozenEnd + fineTuned * (layerW + gap);
     if (frozen > 0) {
-      html += '<text x="'+(startX + frozenEnd)/2+'" y="'+(pad.t+h+20)+'" text-anchor="middle" fill="#3b82f6" font-size="10" font-family="IBM Plex Sans,sans-serif">Frozen ('+frozen+')</text>';
+      html += '<text x="'+(startX + frozenEnd)/2+'" y="'+(pad.t+h+20)+'" text-anchor="middle" fill="#2563EB" font-size="10" font-family="Inter,sans-serif">Frozen ('+frozen+')</text>';
     }
     if (fineTuned > 0) {
-      html += '<text x="'+(frozenEnd + ftEnd)/2+'" y="'+(pad.t+h+20)+'" text-anchor="middle" fill="#22c55e" font-size="10" font-family="IBM Plex Sans,sans-serif">Fine-tuned ('+fineTuned+')</text>';
+      html += '<text x="'+(frozenEnd + ftEnd)/2+'" y="'+(pad.t+h+20)+'" text-anchor="middle" fill="#157F3B" font-size="10" font-family="Inter,sans-serif">Fine-tuned ('+fineTuned+')</text>';
     }
     if (trained > 0) {
-      html += '<text x="'+(ftEnd + startX + totalW)/2+'" y="'+(pad.t+h+20)+'" text-anchor="middle" fill="#f59e0b" font-size="10" font-family="IBM Plex Sans,sans-serif">Full LR ('+trained+')</text>';
+      html += '<text x="'+(ftEnd + startX + totalW)/2+'" y="'+(pad.t+h+20)+'" text-anchor="middle" fill="#B45309" font-size="10" font-family="Inter,sans-serif">Full LR ('+trained+')</text>';
     }
 
-    html += '<text x="'+startX+'" y="'+(pad.t+h+36)+'" fill="#666" font-size="9" font-family="IBM Plex Sans,sans-serif">Input</text>';
-    html += '<text x="'+(startX+totalW)+'" y="'+(pad.t+h+36)+'" text-anchor="end" fill="#666" font-size="9" font-family="IBM Plex Sans,sans-serif">Output/Head</text>';
-    html += '<line x1="'+startX+'" y1="'+(pad.t+h+40)+'" x2="'+(startX+totalW)+'" y2="'+(pad.t+h+40)+'" stroke="#444" stroke-width="1" marker-end="url(#arrow)"/>';
-    html += '<defs><marker id="arrow" markerWidth="6" markerHeight="4" refX="6" refY="2" orient="auto"><path d="M0,0 L6,2 L0,4" fill="#444"/></marker></defs>';
+    html += '<text x="'+startX+'" y="'+(pad.t+h+36)+'" fill="#6a6a6a" font-size="9" font-family="Inter,sans-serif">Input</text>';
+    html += '<text x="'+(startX+totalW)+'" y="'+(pad.t+h+36)+'" text-anchor="end" fill="#6a6a6a" font-size="9" font-family="Inter,sans-serif">Output/Head</text>';
+    html += '<line x1="'+startX+'" y1="'+(pad.t+h+40)+'" x2="'+(startX+totalW)+'" y2="'+(pad.t+h+40)+'" stroke="#B8B8B6" stroke-width="1" marker-end="url(#arrow)"/>';
+    html += '<defs><marker id="arrow" markerWidth="6" markerHeight="4" refX="6" refY="2" orient="auto"><path d="M0,0 L6,2 L0,4" fill="#B8B8B6"/></marker></defs>';
 
     svg.innerHTML = html;
   }

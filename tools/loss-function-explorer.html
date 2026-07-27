@@ -20,7 +20,7 @@
 <meta name="twitter:description" content="Compare 8+ ML loss functions on interactive canvas plots with parameter sliders. MSE, MAE, Huber, Cross-Entropy, Hinge, Focal, Log-Cosh, Quantile. Browser-only.">
 <meta name="author" content="Michael Lip">
 <meta name="robots" content="index, follow">
-<link rel="stylesheet" href="/assets/style.css">
+<link rel="stylesheet" href="/assets/ml0x.css">
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
@@ -62,57 +62,71 @@
 }
 </script>
 <style>
+/* tool-specific structure only; every colour is a token */
 .loss-toggle-grid {
   display: flex; flex-wrap: wrap; gap: 8px; margin: 12px 0;
 }
 .loss-toggle {
-  display: flex; align-items: center; gap: 6px;
-  background: #141414; border: 1px solid #1e1e1e; border-radius: 4px;
-  padding: 5px 10px; cursor: pointer; font-size: 0.82rem; color: #888;
-  user-select: none; transition: border-color 0.15s, color 0.15s;
+  display: flex; align-items: center; gap: 7px;
+  background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius-pill);
+  padding: 7px 14px; cursor: pointer; font-size: 12px; color: var(--ink-muted);
+  min-height: 36px; user-select: none; transition: border-color 0.15s, color 0.15s;
 }
-.loss-toggle.active { color: #e8e8e8; }
+.loss-toggle.active { color: var(--ink); background: var(--surface-2); }
 .loss-toggle .dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
-.param-row { display: flex; gap: 24px; flex-wrap: wrap; margin: 12px 0; align-items: center; }
-.param-item { display: flex; flex-direction: column; gap: 4px; min-width: 160px; }
-.param-item label { font-size: 0.78rem; color: #888; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600; }
-.param-item input[type="range"] { width: 160px; appearance: none; height: 5px; background: #1e1e1e; border-radius: 3px; outline: none; }
-.param-item input[type="range"]::-webkit-slider-thumb { appearance: none; width: 16px; height: 16px; background: #22c55e; border-radius: 50%; cursor: pointer; }
-.param-val { font-family: 'IBM Plex Mono', monospace; font-size: 0.85rem; color: #22c55e; }
+.param-row { display: flex; gap: 24px; flex-wrap: wrap; margin: 12px 0; align-items: flex-end; }
+.param-item { display: flex; flex-direction: column; gap: 5px; min-width: 160px; }
+.param-item label { font-family: var(--font-mono); font-size: 11px; font-weight: 500;
+  color: var(--ink-muted); text-transform: uppercase; letter-spacing: 0.8px; margin: 0; }
+.param-item input[type="range"] { width: 160px; max-width: 100%; }
+.param-val { font-family: var(--font-mono); font-size: 13px; font-weight: 500;
+  color: var(--ink); font-variant-numeric: tabular-nums; }
 .probe-row { display: flex; gap: 16px; align-items: center; flex-wrap: wrap; margin: 12px 0; }
-.probe-row label { font-size: 0.8rem; color: #888; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600; }
-.probe-val { font-family: 'IBM Plex Mono', monospace; font-size: 0.85rem; color: #22c55e; min-width: 40px; }
-.probe-container { display: flex; flex-direction: column; gap: 4px; }
-.loss-table { width: 100%; border-collapse: collapse; font-size: 0.82rem; margin-top: 8px; }
-.loss-table th { text-align: left; padding: 8px 10px; border-bottom: 1px solid #1e1e1e; color: #888; font-size: 0.75rem; text-transform: uppercase; }
-.loss-table td { padding: 7px 10px; border-bottom: 1px solid #141414; color: #aaa; }
-.loss-table tr:hover td { background: #141414; }
+.probe-row label { font-family: var(--font-mono); font-size: 11px; font-weight: 500;
+  color: var(--ink-muted); text-transform: uppercase; letter-spacing: 0.8px; margin: 0; }
+.probe-val { font-family: var(--font-mono); font-size: 13px; color: var(--ink);
+  min-width: 40px; font-variant-numeric: tabular-nums; }
+.probe-container { display: flex; flex-direction: column; gap: 5px; }
+#probeSlider { width: 200px; max-width: 100%; }
+.loss-table { width: 100%; border-collapse: collapse; font-size: 13px; margin-top: 8px; }
+.loss-table th { text-align: left; padding: 12px 12px; border-bottom: 1px solid var(--line);
+  background: var(--surface-2); color: var(--ink-muted); font-family: var(--font-mono);
+  font-size: 11px; letter-spacing: 0.5px; text-transform: uppercase; }
+.loss-table td { padding: 11px 12px; border-bottom: 1px solid var(--line); color: var(--ink-2); }
+.loss-table tr:hover td { background: var(--surface-2); }
 .loss-table .loss-name { font-weight: 600; }
-.tab-bar { display: flex; gap: 4px; margin-bottom: 16px; flex-wrap: wrap; }
-.tab-btn { padding: 6px 16px; background: #141414; border: 1px solid #1e1e1e; border-radius: 4px; color: #888; font-size: 0.82rem; cursor: pointer; font-family: inherit; transition: all 0.15s; }
-.tab-btn.active { background: #22c55e; color: #0a0a0a; border-color: #22c55e; font-weight: 700; }
+.tab-bar { display: flex; gap: 6px; margin-bottom: 16px; flex-wrap: wrap; }
+.tab-btn { padding: 9px 18px; background: var(--surface); border: 1px solid var(--line-strong);
+  border-radius: var(--radius-pill); color: var(--ink-muted); font-size: 13px; cursor: pointer;
+  font-family: var(--font-body); min-height: 40px; width: auto; transition: all 0.15s; }
+.tab-btn:hover { background: var(--surface-2); color: var(--ink); border-color: var(--ink); }
+.tab-btn.active { background: var(--ink); color: #fff; border-color: var(--ink); font-weight: 500; }
+.tab-btn.active:hover { background: #333; color: #fff; border-color: #333; }
+.canvas-note { font-size: 12px; color: var(--ink-faint); margin-top: 8px; }
+#compCanvas, #detailCanvas { background: var(--surface); border: 1px solid var(--line);
+  border-radius: var(--radius-sm); }
 </style>
 </head>
 <body>
 
-<header>
-  <div class="container header-inner">
-    <a href="/" class="logo">ml0x</a>
-    <nav>
-      <a href="/">Home</a>
-      <a href="/research/">Research</a>
-      <a href="/tools/">Tools</a>
-      <a href="/guides/">Guides</a>
-      <a href="/answers/">Answers</a>
-      <div class="nav-right">
-        <a href="https://zovo.one/pricing?utm_source=ml0x.com&utm_medium=satellite&utm_campaign=nav-link" class="nav-pro" target="_blank">Go Pro &#10022;</a>
-        <a href="https://zovo.one/tools" class="nav-zovo">Zovo Tools</a>
-      </div>
-    </nav>
+<a class="skip-link" href="#main">Skip to content</a>
+<header class="site-nav">
+  <div class="site-nav__inner">
+    <div class="site-nav__left">
+      <a class="site-nav__logo" href="/">ml0x</a>
+      <nav class="site-nav__links" aria-label="Main">
+        <a href="/tools/" aria-current="page">Tools</a>
+        <a href="/calculators/">Calculators</a>
+        <a href="/guides/">Guides</a>
+        <a href="/answers/">Answers</a>
+        <a href="/research/">Research</a>
+      </nav>
+    </div>
+    <a class="nav-cta" href="https://zovo.one/pricing" target="_blank" rel="noopener">Full system, $99</a>
   </div>
 </header>
 
-<main class="container">
+<main id="main" class="container">
   <div class="breadcrumb">
     <a href="/">Home</a> <span>&rsaquo;</span> <a href="/tools/">Tools</a> <span>&rsaquo;</span> Loss Function Explorer
   </div>
@@ -133,7 +147,7 @@
     <div id="panelComparison">
       <div class="loss-toggle-grid" id="toggleGrid"></div>
       <canvas id="compCanvas" width="700" height="400" style="display:block;max-width:100%;margin-top:8px;"></canvas>
-      <div style="font-size:0.78rem;color:#555;margin-top:6px;">x-axis: residual error (prediction &minus; target) &nbsp;|&nbsp; y-axis: loss value</div>
+      <div class="canvas-note">x-axis: residual error (prediction &minus; target) &nbsp;|&nbsp; y-axis: loss value</div>
     </div>
 
     <div id="panelDetail" style="display:none;">
@@ -151,7 +165,7 @@
         <div class="probe-container">
           <label>Probe: residual error</label>
           <div style="display:flex;align-items:center;gap:10px;">
-            <input type="range" id="probeSlider" min="-4" max="4" step="0.05" value="1.5" style="width:200px;appearance:none;height:5px;background:#1e1e1e;border-radius:3px;outline:none;">
+            <input type="range" id="probeSlider" min="-4" max="4" step="0.05" value="1.5">
             <span class="probe-val" id="probeVal">1.50</span>
           </div>
         </div>
@@ -270,13 +284,34 @@
 </main>
 
 <footer class="site-footer">
-  <div class="footer-inner">
-    <div class="footer-brand">Zovo Tools</div>
-    <div class="footer-tagline">Free developer tools by a solo dev. No tracking.</div>
-    <a href="https://zovo.one/pricing?utm_source=ml0x.com&utm_medium=satellite&utm_campaign=footer-link" class="footer-cta" target="_blank">Zovo Lifetime — $99 once, free forever &rarr;</a>
-    <div class="footer-copy">&copy; 2026 <a href="https://zovo.one">Zovo</a> &middot; 47/500 founding spots</div>
+  <nav class="footer-links-seo" aria-label="ML tools and content">
+    <a href="/tools/">ML tools</a>
+    <a href="/tools/learning-rate-finder.html">Learning rate finder</a>
+    <a href="/tools/confusion-matrix-calculator.html">Confusion matrix calculator</a>
+    <a href="/tools/neural-network-playground.html">Neural network playground</a>
+    <a href="/tools/attention-mechanism-visualizer.html">Attention visualizer</a>
+    <a href="/tools/dataset-splitter.html">Dataset splitter</a>
+    <a href="/calculators/kv-cache-size-calculator.html">KV cache calculator</a>
+    <a href="/calculators/llm-memory-calculator.html">LLM memory calculator</a>
+    <a href="/guides/">Guides</a>
+    <a href="/guides/gradient-descent-explained.html">Gradient descent</a>
+    <a href="/answers/">Answers</a>
+    <a href="/answers/ml-algorithm-comparison.html">Algorithm comparison</a>
+    <a href="/research/">Research</a>
+    <a href="/research/ml-cheatsheet.html">ML cheat sheet</a>
+    <a href="/about.html">About</a>
+  </nav>
+  <div class="site-footer__inner">
+    <div class="site-footer__brand">
+      <span class="site-footer__logo">ml0x</span>
+      <span class="site-footer__meta">by <a href="https://github.com/theluckystrike" target="_blank" rel="noopener">@theluckystrike</a></span>
+    </div>
+    <div class="site-footer__links">
+      <a href="https://github.com/theluckystrike/100xagenticdev" target="_blank" rel="noopener">GitHub</a>
+      <a href="/research/">Research</a>
+      <a href="https://twitter.com/_alphashark_" target="_blank" rel="noopener">X</a>
+    </div>
   </div>
-</footer>
 
 <nav class="zovo-network" aria-label="Zovo Tools Network">
     <div class="zovo-network-inner">
@@ -319,27 +354,28 @@
     <a href="https://zovo.one" rel="nofollow">Zovo — AI Dev Tools</a>
   </div>
 </div>
+</footer>
 
 <script>
 (function() {
   // ── Loss function definitions ──────────────────────────────────────────
   var LOSSES = [
     {
-      id: 'mse', name: 'MSE', color: '#3b82f6', active: true,
+      id: 'mse', name: 'MSE', color: '#2563EB', active: true,
       formula: '(y_pred - y_true)²',
       useCase: 'Regression, Gaussian noise',
       fn: function(r, p) { return r * r; },
       grad: function(r, p) { return 2 * r; }
     },
     {
-      id: 'mae', name: 'MAE', color: '#f59e0b', active: true,
+      id: 'mae', name: 'MAE', color: '#C53030', active: true,
       formula: '|y_pred - y_true|',
       useCase: 'Robust regression, Laplacian noise',
       fn: function(r, p) { return Math.abs(r); },
       grad: function(r, p) { return r >= 0 ? 1 : -1; }
     },
     {
-      id: 'huber', name: 'Huber', color: '#22c55e', active: true,
+      id: 'huber', name: 'Huber', color: '#157F3B', active: true,
       formula: 'MSE if |r|≤δ, else δ(|r|-δ/2)',
       useCase: 'Outlier-robust regression',
       fn: function(r, p) {
@@ -352,14 +388,14 @@
       }
     },
     {
-      id: 'logcosh', name: 'Log-Cosh', color: '#a78bfa', active: true,
+      id: 'logcosh', name: 'Log-Cosh', color: '#B45309', active: true,
       formula: 'log(cosh(y_pred - y_true))',
       useCase: 'Smooth robust regression',
       fn: function(r, p) { return Math.log(Math.cosh(r)); },
       grad: function(r, p) { return Math.tanh(r); }
     },
     {
-      id: 'quantile', name: 'Quantile', color: '#fb923c', active: false,
+      id: 'quantile', name: 'Quantile', color: '#7C3AED', active: false,
       formula: 'τ·r if r≥0, else (τ-1)·r',
       useCase: 'Quantile regression, prediction intervals',
       fn: function(r, p) {
@@ -371,7 +407,7 @@
       }
     },
     {
-      id: 'xent', name: 'Cross-Entropy', color: '#ef4444', active: true,
+      id: 'xent', name: 'Cross-Entropy', color: '#0E7490', active: true,
       formula: '-[y·log(p) + (1-y)·log(1-p)]',
       useCase: 'Binary/multi-class classification',
       fn: function(r, p) {
@@ -387,14 +423,14 @@
       }
     },
     {
-      id: 'hinge', name: 'Hinge', color: '#38bdf8', active: false,
+      id: 'hinge', name: 'Hinge', color: '#1A1A1A', active: false,
       formula: 'max(0, 1 - y·score)',
       useCase: 'SVM, max-margin classifiers',
       fn: function(r, p) { return Math.max(0, 1 - r); },
       grad: function(r, p) { return r < 1 ? -1 : 0; }
     },
     {
-      id: 'focal', name: 'Focal', color: '#f472b6', active: false,
+      id: 'focal', name: 'Focal', color: '#BE185D', active: false,
       formula: '-(1-p_t)^γ · log(p_t)',
       useCase: 'Class imbalance, object detection',
       fn: function(r, p) {
@@ -421,12 +457,12 @@
     var btn = document.createElement('div');
     btn.className = 'loss-toggle' + (loss.active ? ' active' : '');
     btn.dataset.id = loss.id;
-    btn.style.borderColor = loss.active ? loss.color : '#1e1e1e';
+    btn.style.borderColor = loss.active ? loss.color : '#E8E8E6';
     btn.innerHTML = '<span class="dot" style="background:' + loss.color + ';opacity:' + (loss.active ? '1' : '0.3') + ';"></span>' + loss.name;
     btn.addEventListener('click', function() {
       loss.active = !loss.active;
       btn.classList.toggle('active', loss.active);
-      btn.style.borderColor = loss.active ? loss.color : '#1e1e1e';
+      btn.style.borderColor = loss.active ? loss.color : '#E8E8E6';
       btn.querySelector('.dot').style.opacity = loss.active ? '1' : '0.3';
       redraw();
     });
@@ -445,7 +481,7 @@
 
   // ── Canvas helpers ─────────────────────────────────────────────────────
   function makeAxes(ctx, W, H, pad, xR, yMax, xLabel, yLabel) {
-    ctx.fillStyle = '#0a0a0a';
+    ctx.fillStyle = '#FFFFFF';
     ctx.fillRect(0, 0, W, H);
 
     var gW = W - pad.l - pad.r, gH = H - pad.t - pad.b;
@@ -453,35 +489,35 @@
     function sy(v) { return pad.t + (1 - v / yMax) * gH; }
 
     // Grid lines
-    ctx.strokeStyle = '#1a1a1a';
+    ctx.strokeStyle = '#E8E8E6';
     ctx.lineWidth = 0.5;
     for (var xi = -Math.floor(xR); xi <= Math.floor(xR); xi++) {
       var x = sx(xi);
       ctx.beginPath(); ctx.moveTo(x, pad.t); ctx.lineTo(x, pad.t + gH); ctx.stroke();
-      ctx.fillStyle = '#444'; ctx.font = '10px IBM Plex Mono,monospace'; ctx.textAlign = 'center';
+      ctx.fillStyle = '#6a6a6a'; ctx.font = '10px JetBrains Mono,monospace'; ctx.textAlign = 'center';
       ctx.fillText(xi, x, pad.t + gH + 14);
     }
     var yStep = yMax <= 2 ? 0.5 : yMax <= 5 ? 1 : 2;
     for (var yi = 0; yi <= yMax; yi += yStep) {
       var y = sy(yi);
       ctx.beginPath(); ctx.moveTo(pad.l, y); ctx.lineTo(pad.l + gW, y); ctx.stroke();
-      ctx.fillStyle = '#444'; ctx.font = '10px IBM Plex Mono,monospace'; ctx.textAlign = 'right';
+      ctx.fillStyle = '#6a6a6a'; ctx.font = '10px JetBrains Mono,monospace'; ctx.textAlign = 'right';
       ctx.fillText(yi.toFixed(yi < 1 ? 1 : 0), pad.l - 6, y + 3);
     }
 
     // Axes
-    ctx.strokeStyle = '#333'; ctx.lineWidth = 1;
+    ctx.strokeStyle = '#B8B8B6'; ctx.lineWidth = 1;
     ctx.beginPath(); ctx.moveTo(pad.l, pad.t); ctx.lineTo(pad.l, pad.t + gH); ctx.stroke();
     ctx.beginPath(); ctx.moveTo(pad.l, pad.t + gH); ctx.lineTo(pad.l + gW, pad.t + gH); ctx.stroke();
 
     // Zero line
-    ctx.strokeStyle = '#2a2a2a'; ctx.lineWidth = 1; ctx.setLineDash([4, 4]);
+    ctx.strokeStyle = '#D8D8D6'; ctx.lineWidth = 1; ctx.setLineDash([4, 4]);
     var x0 = sx(0);
     ctx.beginPath(); ctx.moveTo(x0, pad.t); ctx.lineTo(x0, pad.t + gH); ctx.stroke();
     ctx.setLineDash([]);
 
     // Labels
-    ctx.fillStyle = '#555'; ctx.font = '11px IBM Plex Sans,sans-serif'; ctx.textAlign = 'center';
+    ctx.fillStyle = '#6a6a6a'; ctx.font = '11px Inter,sans-serif'; ctx.textAlign = 'center';
     ctx.fillText(xLabel, pad.l + gW / 2, H - 4);
     ctx.save(); ctx.translate(12, pad.t + gH / 2); ctx.rotate(-Math.PI / 2);
     ctx.fillText(yLabel, 0, 0); ctx.restore();
@@ -535,11 +571,11 @@
     // Legend
     var legX = pad.l + 8, legY = pad.t + 8;
     active.forEach(function(loss, idx) {
-      ctx.fillStyle = 'rgba(10,10,10,0.7)';
+      ctx.fillStyle = 'rgba(255,255,255,0.85)';
       ctx.fillRect(legX - 2, legY + idx * 18 - 10, 90, 14);
       ctx.strokeStyle = loss.color; ctx.lineWidth = 2; ctx.setLineDash([]);
       ctx.beginPath(); ctx.moveTo(legX, legY + idx * 18 - 3); ctx.lineTo(legX + 18, legY + idx * 18 - 3); ctx.stroke();
-      ctx.fillStyle = loss.color; ctx.font = '600 11px IBM Plex Sans,sans-serif'; ctx.textAlign = 'left';
+      ctx.fillStyle = loss.color; ctx.font = '600 11px Inter,sans-serif'; ctx.textAlign = 'left';
       ctx.fillText(loss.name, legX + 22, legY + idx * 18);
     });
   }
@@ -585,25 +621,25 @@
     if (isFinite(lossVal)) {
       var px = axes.sx(probe), py = axes.sy(Math.min(lossVal, yMax));
       ctx.beginPath(); ctx.arc(px, py, 6, 0, Math.PI * 2);
-      ctx.fillStyle = '#22c55e'; ctx.fill();
-      ctx.strokeStyle = '#0a0a0a'; ctx.lineWidth = 2; ctx.stroke();
+      ctx.fillStyle = '#157F3B'; ctx.fill();
+      ctx.strokeStyle = '#FFFFFF'; ctx.lineWidth = 2; ctx.stroke();
 
-      ctx.fillStyle = '#22c55e'; ctx.font = '600 11px IBM Plex Sans,sans-serif'; ctx.textAlign = 'left';
+      ctx.fillStyle = '#157F3B'; ctx.font = '600 11px Inter,sans-serif'; ctx.textAlign = 'left';
       ctx.fillText('r=' + probe.toFixed(2) + '  L=' + lossVal.toFixed(4), px + 10, py - 6);
     }
 
     // Formula annotation
-    ctx.fillStyle = '#555'; ctx.font = '12px IBM Plex Mono,monospace'; ctx.textAlign = 'left';
+    ctx.fillStyle = '#6a6a6a'; ctx.font = '12px JetBrains Mono,monospace'; ctx.textAlign = 'left';
     ctx.fillText(loss.formula, pad.l + axes.gW + 6, pad.t + 20);
-    ctx.fillStyle = '#3b82f6'; ctx.font = '600 13px IBM Plex Sans,sans-serif';
+    ctx.fillStyle = '#2563EB'; ctx.font = '600 13px Inter,sans-serif';
     ctx.fillText(loss.name, pad.l + axes.gW + 6, pad.t + 8);
-    ctx.fillStyle = '#333'; ctx.font = '11px IBM Plex Sans,sans-serif';
+    ctx.fillStyle = '#6a6a6a'; ctx.font = '11px Inter,sans-serif';
     ctx.fillText('— loss', pad.l + axes.gW + 6, pad.t + 50);
-    ctx.fillStyle = '#333'; ctx.setLineDash([5, 3]);
+    ctx.fillStyle = '#6a6a6a'; ctx.setLineDash([5, 3]);
     ctx.strokeStyle = loss.color; ctx.lineWidth = 1.5;
     ctx.beginPath(); ctx.moveTo(pad.l + axes.gW + 6, pad.t + 62); ctx.lineTo(pad.l + axes.gW + 22, pad.t + 62); ctx.stroke();
     ctx.setLineDash([]);
-    ctx.fillStyle = '#333'; ctx.font = '11px IBM Plex Sans,sans-serif'; ctx.textAlign = 'left';
+    ctx.fillStyle = '#6a6a6a'; ctx.font = '11px Inter,sans-serif'; ctx.textAlign = 'left';
     ctx.fillText('— grad (scaled)', pad.l + axes.gW + 26, pad.t + 65);
   }
 
@@ -618,10 +654,10 @@
       var tr = document.createElement('tr');
       tr.innerHTML =
         '<td class="loss-name" style="color:' + loss.color + '">' + loss.name + '</td>' +
-        '<td style="font-family:IBM Plex Mono,monospace;font-size:0.78rem;color:#666;">' + loss.formula + '</td>' +
-        '<td style="font-family:IBM Plex Mono,monospace;">' + (isFinite(lv) ? lv.toFixed(6) : 'N/A') + '</td>' +
-        '<td style="font-family:IBM Plex Mono,monospace;">' + (isFinite(gv) ? gv.toFixed(6) : 'N/A') + '</td>' +
-        '<td style="color:#555;font-size:0.8rem;">' + loss.useCase + '</td>';
+        '<td style="font-family:var(--font-mono);font-size:12px;color:#767676;">' + loss.formula + '</td>' +
+        '<td style="font-family:var(--font-mono);">' + (isFinite(lv) ? lv.toFixed(6) : 'N/A') + '</td>' +
+        '<td style="font-family:var(--font-mono);">' + (isFinite(gv) ? gv.toFixed(6) : 'N/A') + '</td>' +
+        '<td style="color:#767676;font-size:12px;">' + loss.useCase + '</td>';
       tbody.appendChild(tr);
     });
   }
