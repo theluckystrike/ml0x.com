@@ -198,43 +198,45 @@
 
     // Canvas refs
     const canvas = document.getElementById('plotCanvas');
-    const ctx = canvas.getContext('2d');
+    const ctx = canvas ? canvas.getContext('2d') : null;
     const chartArea = document.getElementById('chartArea');
+    const funcListDiv0 = document.getElementById('funcList');
+    if (!ctx || !chartArea || !funcListDiv0) return;
 
     // Zoom state
     let xMin = -5, xMax = 5, yMin = -2, yMax = 6;
     let isDragging = false, dragStart = {x:0,y:0};
+    // A zoom rectangle can only ever narrow the window, but a degenerate span
+    // would divide by zero and send every plotted point to Infinity.
+    const MIN_SPAN = 1e-4;
+    // grid lines are one per integer across the visible span; the span is bounded
+    // by the reset window, this is the explicit ceiling on the loop regardless
+    const MAX_GRID_LINES = 200;
 
     function resizeCanvas() {
       const rect = chartArea.getBoundingClientRect();
-      canvas.width = rect.width * window.devicePixelRatio;
-      canvas.height = rect.height * window.devicePixelRatio;
-      canvas.style.width = rect.width + 'px';
-      canvas.style.height = rect.height + 'px';
+      const cssW = Math.max(1, rect.width), cssH = Math.max(1, rect.height);
+      canvas.width = cssW * window.devicePixelRatio;
+      canvas.height = cssH * window.devicePixelRatio;
+      canvas.style.width = cssW + 'px';
+      canvas.style.height = cssH + 'px';
       draw();
     }
     window.addEventListener('resize', resizeCanvas);
 
     // ---- drawing ----
-    function draw() {
-      const w = canvas.width, h = canvas.height;
-      const dpr = window.devicePixelRatio || 1;
-      const rect = canvas.getBoundingClientRect();
-      const W = rect.width, H = rect.height;
-      ctx.clearRect(0,0,w,h);
-      ctx.scale(dpr, dpr);
-      // background
-      ctx.fillStyle = '#FFFFFF';
-      ctx.fillRect(0,0,W,H);
-      
-      // grid
+    function drawGridAndAxes(W, H) {
       ctx.strokeStyle = '#E8E8E6';
       ctx.lineWidth = 0.5;
+      let lines = 0;
       for (let x = Math.ceil(xMin); x <= xMax; x++) {
+        if (++lines > MAX_GRID_LINES) break;
         const px = (x - xMin)/(xMax - xMin)*W;
         ctx.beginPath(); ctx.moveTo(px,0); ctx.lineTo(px,H); ctx.stroke();
       }
+      lines = 0;
       for (let y = Math.ceil(yMin); y <= yMax; y++) {
+        if (++lines > MAX_GRID_LINES) break;
         const py = H - (y - yMin)/(yMax - yMin)*H;
         ctx.beginPath(); ctx.moveTo(0,py); ctx.lineTo(W,py); ctx.stroke();
       }
@@ -249,6 +251,20 @@
         const py = H - (0 - yMin)/(yMax - yMin)*H;
         ctx.beginPath(); ctx.moveTo(0,py); ctx.lineTo(W,py); ctx.stroke();
       }
+    }
+
+    function draw() {
+      const w = canvas.width, h = canvas.height;
+      const dpr = window.devicePixelRatio || 1;
+      const rect = canvas.getBoundingClientRect();
+      const W = rect.width, H = rect.height;
+      ctx.clearRect(0,0,w,h);
+      ctx.scale(dpr, dpr);
+      // background
+      ctx.fillStyle = '#FFFFFF';
+      ctx.fillRect(0,0,W,H);
+
+      drawGridAndAxes(W, H);
 
       // draw functions
       const colors = ['#2563EB','#C53030','#157F3B','#B45309','#7C3AED','#0E7490','#BE185D','#4D7C0F','#1E3A8A','#92400E','#6D28D9','#0F766E','#9D174D','#0369A1','#A16207','#047857','#4338CA','#A21CAF'];
@@ -281,6 +297,12 @@
 
     // hover crosshair
     let mouseX = -1, mouseY = -1;
+    function setHover(xText, yText) {
+      const hx = document.getElementById('hoverX');
+      const hy = document.getElementById('hoverY');
+      if (hx) hx.innerText = xText;
+      if (hy) hy.innerText = yText;
+    }
     canvas.addEventListener('mousemove', (e) => {
       const rect = canvas.getBoundingClientRect();
       const scaleX = canvas.width / rect.width;
@@ -291,8 +313,7 @@
       // update hover values
       const xVal = xMin + (mx / canvas.width) * (xMax - xMin);
       const yVal = yMin + (1 - my / canvas.height) * (yMax - yMin);
-      document.getElementById('hoverX').innerText = `x: ${xVal.toFixed(3)}`;
-      document.getElementById('hoverY').innerText = `y: ${yVal.toFixed(3)}`;
+      setHover(`x: ${xVal.toFixed(3)}`, `y: ${yVal.toFixed(3)}`);
       // redraw with crosshair
       draw();
       // draw crosshair
@@ -308,8 +329,7 @@
     });
     canvas.addEventListener('mouseleave', () => {
       mouseX = -1; mouseY = -1;
-      document.getElementById('hoverX').innerText = 'x: —';
-      document.getElementById('hoverY').innerText = 'y: —';
+      setHover('x: —', 'y: —');
       draw();
     });
 
@@ -339,6 +359,9 @@
           const y2 = yMin + endY * (yMax - yMin);
           xMin = Math.min(x1,x2); xMax = Math.max(x1,x2);
           yMin = Math.min(y1,y2); yMax = Math.max(y1,y2);
+          // never let a span collapse: every plot coordinate divides by it
+          if (xMax - xMin < MIN_SPAN) xMax = xMin + MIN_SPAN;
+          if (yMax - yMin < MIN_SPAN) yMax = yMin + MIN_SPAN;
           draw();
         }
         isDragging = false;

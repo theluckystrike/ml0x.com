@@ -151,7 +151,7 @@
         </div>
         <div class="input-group">
           <label for="thresholdInput">Clipping threshold</label>
-          <input type="number" id="thresholdInput" value="1.0" step="0.1" min="0.1" lang="en">
+          <input type="number" id="thresholdInput" value="1.0" step="0.1" min="0.1" inputmode="decimal" lang="en">
         </div>
         <div class="flex-row">
           <button class="btn" id="computeBtn">Compute clipping</button>
@@ -212,6 +212,14 @@
 
 <script>
   (function() {
+    'use strict';
+
+    /* NASA 1.2 — the gradient vector arrives from a free-text field, so every loop
+       that walks it carries an explicit ceiling. 1000 is far above any real paste and
+       keeps maxOf() away from engine argument limits. */
+    const MAX_GRADIENTS = 1000;
+    const DEFAULT_GRADS = '2.5, -1.2, 0.8, -3.4, 5.1, -0.7, 2.0, -4.0';
+
     const gradInput = document.getElementById('gradInput');
     const methodSelect = document.getElementById('methodSelect');
     const thresholdInput = document.getElementById('thresholdInput');
@@ -225,85 +233,93 @@
     const barChartContainer = document.getElementById('barChartContainer');
     const codeSnippet = document.getElementById('codeSnippet');
 
+    /* NASA 1.3 — one guard for the whole tool instead of throwing on the first null
+       dereference if any part of the markup is missing. */
+    if (!gradInput || !methodSelect || !thresholdInput || !computeBtn || !resetBtn ||
+        !origGlobalNormEl || !clippedGlobalNormEl || !scalingFactorEl ||
+        !methodDisplayEl || !barChartContainer || !codeSnippet) {
+      return;
+    }
+
     // helpers
     function parseGrads(str) {
-      return str.split(',').map(s => parseFloat(s.trim())).filter(v => !isNaN(v));
+      const parts = String(str).split(',');
+      const out = [];
+      for (let i = 0; i < parts.length && out.length < MAX_GRADIENTS; i++) {
+        const v = parseFloat(parts[i].trim());
+        if (isFinite(v)) out.push(v);
+      }
+      return out;
     }
 
     function l2Norm(arr) {
-      return Math.sqrt(arr.reduce((sum, v) => sum + v*v, 0));
+      let sum = 0;
+      for (let i = 0; i < arr.length; i++) sum += arr[i] * arr[i];
+      return Math.sqrt(sum);
     }
 
-    function compute() {
-      const raw = gradInput.value;
-      const grads = parseGrads(raw);
-      if (grads.length === 0) {
-        barChartContainer.innerHTML = `<div style="color:#C53030; padding:0.5rem 0;">Please enter valid comma-separated numbers.</div>`;
-        origGlobalNormEl.textContent = '—';
-        clippedGlobalNormEl.textContent = '—';
-        scalingFactorEl.textContent = '—';
-        methodDisplayEl.textContent = '—';
-        codeSnippet.textContent = '# waiting for valid input';
-        return;
-      }
+    // bounded stand-in for Math.max(...a, ...b, floor)
+    function maxOf(a, b, floor) {
+      let m = floor;
+      for (let i = 0; i < a.length; i++) { if (a[i] > m) m = a[i]; }
+      for (let i = 0; i < b.length; i++) { if (b[i] > m) m = b[i]; }
+      return m;
+    }
 
-      const method = methodSelect.value;
-      const threshold = parseFloat(thresholdInput.value);
-      if (isNaN(threshold) || threshold <= 0) {
-        barChartContainer.innerHTML = `<div style="color:#C53030;">Threshold must be positive.</div>`;
-        return;
-      }
+    /* Returns the threshold, or null for anything the control cannot express: empty,
+       non-numeric, +/-Infinity, or non-positive. The magnitude the user typed is never
+       rewritten — clipping at a threshold nobody asked for would be a wrong answer,
+       which PHASE 2 rates more serious than an unclamped one. */
+    function readThreshold() {
+      const t = parseFloat(thresholdInput.value);
+      if (!isFinite(t) || t <= 0) return null;
+      return t;
+    }
 
-      // compute original per-param norms
-      const perParamNorms = grads.map(g => Math.abs(g));
-      const globalNorm = l2Norm(grads);
+    function clearStats() {
+      origGlobalNormEl.textContent = '—';
+      clippedGlobalNormEl.textContent = '—';
+      scalingFactorEl.textContent = '—';
+      methodDisplayEl.textContent = '—';
+    }
 
-      let clippedGrads = [];
-      let scalingFactor = 1.0;
-      let clippedGlobal = 0;
-
+    function clipGradients(grads, method, threshold) {
       if (method === 'clip_by_value') {
         // clip each element to [-threshold, threshold]
-        clippedGrads = grads.map(g => Math.min(Math.max(g, -threshold), threshold));
-        clippedGlobal = l2Norm(clippedGrads);
-        // scaling factor is not uniform; we compute effective scaling per element? show average factor?
-        // For display: we compute factor as ratio of norms (global clipped / original global) if original >0
-        scalingFactor = globalNorm > 1e-12 ? (clippedGlobal / globalNorm) : 1.0;
-      } else if (method === 'clip_by_norm') {
-        const norm = l2Norm(grads);
-        if (norm > threshold && norm > 1e-12) {
-          scalingFactor = threshold / norm;
-          clippedGrads = grads.map(g => g * scalingFactor);
-        } else {
-          clippedGrads = grads.slice();
-          scalingFactor = 1.0;
-        }
-        clippedGlobal = l2Norm(clippedGrads);
-      } else if (method === 'clip_by_global_norm') {
-        // global norm: treat all grads as single vector, scale if norm > threshold
-        const norm = l2Norm(grads);
-        if (norm > threshold && norm > 1e-12) {
-          scalingFactor = threshold / norm;
-          clippedGrads = grads.map(g => g * scalingFactor);
-        } else {
-          clippedGrads = grads.slice();
-          scalingFactor = 1.0;
-        }
-        clippedGlobal = l2Norm(clippedGrads);
+        const clipped = grads.map(g => Math.min(Math.max(g, -threshold), threshold));
+        // the per-element factor is not uniform, so report the ratio of the two norms
+        const globalNorm = l2Norm(grads);
+        const factor = globalNorm > 1e-12 ? (l2Norm(clipped) / globalNorm) : 1.0;
+        return { clipped: clipped, factor: factor };
       }
+      if (method === 'clip_by_norm' || method === 'clip_by_global_norm') {
+        // both treat the gradients as one vector and scale it if the L2 norm is too long
+        const norm = l2Norm(grads);
+        if (norm > threshold && norm > 1e-12) {
+          const factor = threshold / norm;
+          return { clipped: grads.map(g => g * factor), factor: factor };
+        }
+        return { clipped: grads.slice(), factor: 1.0 };
+      }
+      return { clipped: grads.slice(), factor: 1.0 };  // unreachable from the select
+    }
 
-      // update stats
+    function renderStats(method, globalNorm, clippedGlobal, factor) {
       origGlobalNormEl.textContent = globalNorm.toFixed(4);
       clippedGlobalNormEl.textContent = clippedGlobal.toFixed(4);
-      scalingFactorEl.textContent = scalingFactor.toFixed(4);
+      scalingFactorEl.textContent = factor.toFixed(4);
       methodDisplayEl.textContent = method.replace(/_/g,' ');
+    }
 
-      // bar chart: per-parameter original vs clipped magnitude
-      const maxNorm = Math.max(...perParamNorms, ...clippedGrads.map(g => Math.abs(g)), 0.001);
+    // bar chart: per-parameter original vs clipped magnitude
+    function renderBars(grads, clippedGrads) {
+      const perParamNorms = grads.map(g => Math.abs(g));
+      const clippedNorms = clippedGrads.map(g => Math.abs(g));
+      const maxNorm = maxOf(perParamNorms, clippedNorms, 0.001);
       let barsHtml = '';
-      for (let i = 0; i < grads.length; i++) {
+      for (let i = 0; i < grads.length && i < MAX_GRADIENTS; i++) {
         const origVal = perParamNorms[i];
-        const clipVal = Math.abs(clippedGrads[i]);
+        const clipVal = clippedNorms[i];
         const origPct = (origVal / maxNorm) * 100;
         const clipPct = (clipVal / maxNorm) * 100;
         const label = `p${i+1}`;
@@ -319,8 +335,9 @@
         `;
       }
       barChartContainer.innerHTML = barsHtml;
+    }
 
-      // update code snippet
+    function renderSnippet(method, threshold) {
       let snippet = '';
       if (method === 'clip_by_value') {
         snippet = `# PyTorch (clip by value)\ntorch.nn.utils.clip_grad_value_(model.parameters(), clip_value=${threshold.toFixed(1)})\n\n# TensorFlow\ntf.clip_by_value(gradients, -${threshold.toFixed(1)}, ${threshold.toFixed(1)})`;
@@ -332,8 +349,30 @@
       codeSnippet.textContent = snippet;
     }
 
+    function compute() {
+      const grads = parseGrads(gradInput.value);
+      if (grads.length === 0) {
+        barChartContainer.innerHTML = `<div style="color:#C53030; padding:0.5rem 0;">Please enter valid comma-separated numbers.</div>`;
+        clearStats();
+        codeSnippet.textContent = '# waiting for valid input';
+        return;
+      }
+
+      const method = methodSelect.value;
+      const threshold = readThreshold();
+      if (threshold === null) {
+        barChartContainer.innerHTML = `<div style="color:#C53030;">Threshold must be positive.</div>`;
+        return;
+      }
+
+      const result = clipGradients(grads, method, threshold);
+      renderStats(method, l2Norm(grads), l2Norm(result.clipped), result.factor);
+      renderBars(grads, result.clipped);
+      renderSnippet(method, threshold);
+    }
+
     function resetDefaults() {
-      gradInput.value = '2.5, -1.2, 0.8, -3.4, 5.1, -0.7, 2.0, -4.0';
+      gradInput.value = DEFAULT_GRADS;
       methodSelect.value = 'clip_by_norm';
       thresholdInput.value = '1.0';
       compute();
@@ -345,17 +384,10 @@
     // initial compute
     compute();
 
-    // extra: auto compute on change? but keep button as primary
-    // but we add for threshold/method change? easier: user click compute.
-    // but also recompute on enter? we add for better UX
+    // the button stays primary; Enter and a committed change are conveniences
     gradInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') compute(); });
     thresholdInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') compute(); });
     methodSelect.addEventListener('change', compute);
-    thresholdInput.addEventListener('input', function() {
-      // optional: but we keep compute button primary. we can auto compute after short delay?
-      // we'll just rely on button, but also on change for method.
-    });
-    // also compute on threshold change? we add for convenience
     thresholdInput.addEventListener('change', compute);
   })();
 </script>

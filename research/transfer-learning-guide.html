@@ -357,7 +357,8 @@
 </footer>
 
 <script>
-(function() {
+(() => {
+  'use strict';
   var models = [
     {name:'ResNet-50', type:'vision', params:'25M'},
     {name:'EfficientNet-B3', type:'vision', params:'12M'},
@@ -386,8 +387,43 @@
     [1,1,1,5,5,5,2,1]
   ];
 
+  // #totalLayers declares min="2" max="1000"; the same bounds are the explicit
+  // ceiling on the one loop that draws a rect per layer.
+  var LAYERS_MIN = 2, LAYERS_MAX = 1000;
+
+  function el(id) { return document.getElementById(id); }
+
+  function setText(id, value) {
+    var node = el(id);
+    if (node) node.textContent = value;
+  }
+
+  function val(id, fallback) {
+    var node = el(id);
+    return node ? node.value : fallback;
+  }
+
+  /* Read a numeric control, always inside the range it declares. Letters and an
+     empty field fall back to the value the tool has always defaulted to; a
+     negative or an out-of-range magnitude is clamped instead of reaching the
+     layer arithmetic, where it produced a negative layer count on screen. */
+  function numIn(id, fallback, lo, hi) {
+    var node = el(id);
+    var v = parseInt(node ? node.value : '', 10);
+    if (!Number.isFinite(v)) v = fallback;
+    return Math.min(hi, Math.max(lo, v));
+  }
+
+  function starCell(score) {
+    var color = score >= 4 ? '#157F3B' : score >= 3 ? '#B45309' : score >= 2 ? '#C53030' : '#767676';
+    var stars = '';
+    for (var s = 0; s < 5; s++) stars += s < score ? '<span style="color:'+color+';">&#9733;</span>' : '<span style="color:#D8D8D6;">&#9733;</span>';
+    return '<td style="padding:4px;text-align:center;font-size:10px;">'+stars+'</td>';
+  }
+
   function buildCompatMatrix() {
-    var table = document.getElementById('compatMatrix');
+    var table = el('compatMatrix');
+    if (!table) return;
     var html = '<thead><tr style="border-bottom:2px solid #D8D8D6;"><th style="padding:8px;text-align:left;color:#6a6a6a;font-size:11px;">Model</th><th style="padding:4px;color:#6a6a6a;font-size:10px;">Params</th>';
     for (var t = 0; t < tasks.length; t++) html += '<th style="padding:4px;text-align:center;color:#6a6a6a;font-size:10px;max-width:70px;white-space:normal;">'+tasks[t]+'</th>';
     html += '</tr></thead><tbody>';
@@ -395,24 +431,88 @@
       html += '<tr style="border-bottom:1px solid #E8E8E6;">';
       html += '<td style="padding:6px;color:#1A1A1A;font-weight:600;font-size:12px;white-space:nowrap;">'+models[m].name+'</td>';
       html += '<td style="padding:4px;color:#6a6a6a;font-size:11px;">'+models[m].params+'</td>';
-      for (var t = 0; t < tasks.length; t++) {
-        var score = compatibility[m][t];
-        var color = score >= 4 ? '#157F3B' : score >= 3 ? '#B45309' : score >= 2 ? '#C53030' : '#767676';
-        var stars = '';
-        for (var s = 0; s < 5; s++) stars += s < score ? '<span style="color:'+color+';">&#9733;</span>' : '<span style="color:#D8D8D6;">&#9733;</span>';
-        html += '<td style="padding:4px;text-align:center;font-size:10px;">'+stars+'</td>';
-      }
+      for (var t2 = 0; t2 < tasks.length; t2++) html += starCell(compatibility[m][t2]);
       html += '</tr>';
     }
     html += '</tbody>';
     table.innerHTML = html;
   }
 
+  function chooseStrategySmall(highSimilarity, domainMatch) {
+    if (highSimilarity) {
+      return { strategy: 'Feature Extraction', freezePct: 95,
+        details: 'Your dataset is small and the domains are well-matched. Freeze the entire pretrained backbone and train only the classification head. This prevents overfitting while leveraging the strong pretrained features.' };
+    }
+    if (domainMatch) {
+      return { strategy: 'Feature Extraction + Light Fine-Tuning', freezePct: 80,
+        details: 'Small dataset with moderate domain match. Start with feature extraction for 5-10 epochs, then unfreeze the last 2-3 blocks and fine-tune with a very low learning rate. Use strong regularization (dropout 0.3+, weight decay 0.1).' };
+    }
+    return { strategy: 'Feature Extraction (with caution)', freezePct: 90,
+      details: 'Domain mismatch with limited data is challenging. Use feature extraction as a baseline, but consider intermediate pretraining on unlabeled target-domain data if available. Data augmentation is critical to prevent overfitting.' };
+  }
+
+  function chooseStrategyLarge(domainMatch, compute) {
+    if (domainMatch) {
+      return { strategy: 'Full Fine-Tuning', freezePct: 10,
+        details: 'Large dataset with matching domain. Unfreeze all layers and fine-tune end-to-end. The pretrained initialization still helps optimization find better minima faster. Use standard training LR with warmup.' };
+    }
+    if (compute === 'unlimited') {
+      return { strategy: 'Training from Scratch (or Full Fine-Tuning)', freezePct: 0,
+        details: 'Large dataset, different domain, and unlimited compute. You can afford to train from scratch, but fine-tuning from a pretrained checkpoint typically still converges faster and to a better minimum. Try both and compare.' };
+    }
+    return { strategy: 'Full Fine-Tuning', freezePct: 5,
+      details: 'Large dataset but limited compute favors fine-tuning over training from scratch. The pretrained initialization saves significant training time. Unfreeze all layers with discriminative learning rates.' };
+  }
+
+  function chooseStrategy(dataSize, highSimilarity, domainMatch, compute) {
+    if (dataSize === 'tiny' || dataSize === 'small') {
+      return chooseStrategySmall(highSimilarity, domainMatch);
+    }
+    if (dataSize === 'medium') {
+      if (domainMatch) {
+        return { strategy: 'Fine-Tuning (Discriminative LR)', freezePct: 50,
+          details: 'Medium dataset with matching domain is the sweet spot for fine-tuning. Unfreeze the top 40-60% of layers. Use discriminative learning rates: 10x lower for early layers than for the head. This is the most common transfer learning scenario.' };
+      }
+      return { strategy: 'Full Fine-Tuning with Warmup', freezePct: 30,
+        details: 'Medium dataset with domain gap. Unfreeze most layers but start with aggressive warmup (10% of total steps). Use a low base LR and discriminative rates. Consider intermediate pretraining if domain gap is large.' };
+    }
+    return chooseStrategyLarge(domainMatch, compute);
+  }
+
+  function chooseModel(isVisionTarget, target, compute) {
+    if (isVisionTarget) {
+      if (compute === 'minimal') return 'EfficientNet-B0 or ResNet-34';
+      if (target === 'obj_detect') return 'YOLOv8 or DETR (COCO pretrained)';
+      if (target === 'segmentation') return 'ResNet-50 + DeepLabv3 or SegFormer';
+      if (target === 'medical_img') return 'ResNet-50 (RadImageNet) or BiomedCLIP';
+      return 'EfficientNet-B3, ConvNeXt-T, or ViT-B/16';
+    }
+    if (target === 'generation') return 'GPT-2 (124M) or LLaMA-2 (7B)';
+    if (target === 'qa') return 'DeBERTa-v3 or RoBERTa-large';
+    return 'BERT-base, RoBERTa-base, or DeBERTa-v3';
+  }
+
+  function recommendationHtml(pick, model, baseLR, backboneLR) {
+    var html = '<div style="background:#F2F2F0;border:1px solid #E8E8E6;border-left:3px solid #2563EB;border-radius:8px;padding:20px;margin-bottom:16px;">';
+    html += '<div style="display:flex;align-items:center;gap:12px;margin-bottom:12px;">';
+    html += '<span style="background:#2563EB;color:#fff;padding:4px 12px;border-radius:4px;font-weight:700;font-size:14px;">'+pick.strategy+'</span>';
+    html += '<span style="color:#6a6a6a;font-size:13px;">Freeze '+pick.freezePct+'% of layers</span>';
+    html += '</div>';
+    html += '<p style="color:#1A1A1A;font-size:14px;margin:0 0 12px;">'+pick.details+'</p>';
+    html += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">';
+    html += '<div><strong style="color:#2563EB;">Recommended Model:</strong> <span style="color:#1A1A1A;">'+model+'</span></div>';
+    html += '<div><strong style="color:#2563EB;">Head Learning Rate:</strong> <span style="color:#1A1A1A;">'+baseLR+'</span></div>';
+    html += '<div><strong style="color:#2563EB;">Backbone Learning Rate:</strong> <span style="color:#1A1A1A;">'+backboneLR+'</span></div>';
+    html += '<div><strong style="color:#2563EB;">Warmup:</strong> <span style="color:#1A1A1A;">6-10% of total steps</span></div>';
+    html += '</div></div>';
+    return html;
+  }
+
   function getRecommendation() {
-    var source = document.getElementById('sourceDomain').value;
-    var target = document.getElementById('targetTask').value;
-    var dataSize = document.getElementById('datasetSize').value;
-    var compute = document.getElementById('computeBudget').value;
+    var source = val('sourceDomain', 'imagenet');
+    var target = val('targetTask', 'img_classify');
+    var dataSize = val('datasetSize', 'medium');
+    var compute = val('computeBudget', 'moderate');
 
     var isVisionSource = (source === 'imagenet' || source === 'coco' || source === 'medical');
     var isNLPSource = (source === 'nlp_general' || source === 'code');
@@ -422,84 +522,22 @@
     var domainMatch = (isVisionSource && isVisionTarget) || (isNLPSource && isNLPTarget);
     var highSimilarity = domainMatch && ((source === 'imagenet' && target === 'img_classify') || (source === 'nlp_general' && (target === 'text_classify' || target === 'ner')));
 
-    var strategy, model, details, lr, epochs, freezePct;
-
-    if (dataSize === 'tiny' || dataSize === 'small') {
-      if (highSimilarity) {
-        strategy = 'Feature Extraction';
-        freezePct = 95;
-        details = 'Your dataset is small and the domains are well-matched. Freeze the entire pretrained backbone and train only the classification head. This prevents overfitting while leveraging the strong pretrained features.';
-      } else if (domainMatch) {
-        strategy = 'Feature Extraction + Light Fine-Tuning';
-        freezePct = 80;
-        details = 'Small dataset with moderate domain match. Start with feature extraction for 5-10 epochs, then unfreeze the last 2-3 blocks and fine-tune with a very low learning rate. Use strong regularization (dropout 0.3+, weight decay 0.1).';
-      } else {
-        strategy = 'Feature Extraction (with caution)';
-        freezePct = 90;
-        details = 'Domain mismatch with limited data is challenging. Use feature extraction as a baseline, but consider intermediate pretraining on unlabeled target-domain data if available. Data augmentation is critical to prevent overfitting.';
-      }
-    } else if (dataSize === 'medium') {
-      if (domainMatch) {
-        strategy = 'Fine-Tuning (Discriminative LR)';
-        freezePct = 50;
-        details = 'Medium dataset with matching domain is the sweet spot for fine-tuning. Unfreeze the top 40-60% of layers. Use discriminative learning rates: 10x lower for early layers than for the head. This is the most common transfer learning scenario.';
-      } else {
-        strategy = 'Full Fine-Tuning with Warmup';
-        freezePct = 30;
-        details = 'Medium dataset with domain gap. Unfreeze most layers but start with aggressive warmup (10% of total steps). Use a low base LR and discriminative rates. Consider intermediate pretraining if domain gap is large.';
-      }
-    } else {
-      if (domainMatch) {
-        strategy = 'Full Fine-Tuning';
-        freezePct = 10;
-        details = 'Large dataset with matching domain. Unfreeze all layers and fine-tune end-to-end. The pretrained initialization still helps optimization find better minima faster. Use standard training LR with warmup.';
-      } else if (compute === 'unlimited') {
-        strategy = 'Training from Scratch (or Full Fine-Tuning)';
-        freezePct = 0;
-        details = 'Large dataset, different domain, and unlimited compute. You can afford to train from scratch, but fine-tuning from a pretrained checkpoint typically still converges faster and to a better minimum. Try both and compare.';
-      } else {
-        strategy = 'Full Fine-Tuning';
-        freezePct = 5;
-        details = 'Large dataset but limited compute favors fine-tuning over training from scratch. The pretrained initialization saves significant training time. Unfreeze all layers with discriminative learning rates.';
-      }
-    }
-
-    if (isVisionTarget) {
-      if (compute === 'minimal') model = 'EfficientNet-B0 or ResNet-34';
-      else if (target === 'obj_detect') model = 'YOLOv8 or DETR (COCO pretrained)';
-      else if (target === 'segmentation') model = 'ResNet-50 + DeepLabv3 or SegFormer';
-      else if (target === 'medical_img') model = 'ResNet-50 (RadImageNet) or BiomedCLIP';
-      else model = 'EfficientNet-B3, ConvNeXt-T, or ViT-B/16';
-    } else {
-      if (target === 'generation') model = 'GPT-2 (124M) or LLaMA-2 (7B)';
-      else if (target === 'qa') model = 'DeBERTa-v3 or RoBERTa-large';
-      else model = 'BERT-base, RoBERTa-base, or DeBERTa-v3';
-    }
+    var pick = chooseStrategy(dataSize, highSimilarity, domainMatch, compute);
+    var model = chooseModel(isVisionTarget, target, compute);
 
     var baseLR = isNLPTarget ? '2e-5' : '1e-4';
     var backboneLR = isNLPTarget ? '5e-6' : '1e-5';
 
-    var html = '<div style="background:#F2F2F0;border:1px solid #E8E8E6;border-left:3px solid #2563EB;border-radius:8px;padding:20px;margin-bottom:16px;">';
-    html += '<div style="display:flex;align-items:center;gap:12px;margin-bottom:12px;">';
-    html += '<span style="background:#2563EB;color:#fff;padding:4px 12px;border-radius:4px;font-weight:700;font-size:14px;">'+strategy+'</span>';
-    html += '<span style="color:#6a6a6a;font-size:13px;">Freeze '+freezePct+'% of layers</span>';
-    html += '</div>';
-    html += '<p style="color:#1A1A1A;font-size:14px;margin:0 0 12px;">'+details+'</p>';
-    html += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">';
-    html += '<div><strong style="color:#2563EB;">Recommended Model:</strong> <span style="color:#1A1A1A;">'+model+'</span></div>';
-    html += '<div><strong style="color:#2563EB;">Head Learning Rate:</strong> <span style="color:#1A1A1A;">'+baseLR+'</span></div>';
-    html += '<div><strong style="color:#2563EB;">Backbone Learning Rate:</strong> <span style="color:#1A1A1A;">'+backboneLR+'</span></div>';
-    html += '<div><strong style="color:#2563EB;">Warmup:</strong> <span style="color:#1A1A1A;">6-10% of total steps</span></div>';
-    html += '</div></div>';
-
-    document.getElementById('recommendResult').innerHTML = html;
-    document.getElementById('recommendSection').style.display = 'block';
+    var result = el('recommendResult');
+    if (result) result.innerHTML = recommendationHtml(pick, model, baseLR, backboneLR);
+    var section = el('recommendSection');
+    if (section) section.style.display = 'block';
   }
 
   function calculateFreezing() {
-    var total = parseInt(document.getElementById('totalLayers').value) || 50;
-    var sim = parseInt(document.getElementById('domainSim').value);
-    var dataF = parseInt(document.getElementById('dataFactor').value);
+    var total = numIn('totalLayers', 50, LAYERS_MIN, LAYERS_MAX);
+    var sim = numIn('domainSim', 7, 1, 10);
+    var dataF = numIn('dataFactor', 5, 1, 10);
 
     var unfreezeRatio = (1 - sim/10) * 0.5 + (dataF/10) * 0.5;
     unfreezeRatio = Math.max(0.05, Math.min(0.95, unfreezeRatio));
@@ -513,19 +551,35 @@
     var middleLR = baseLR * 0.1;
     var headLR = baseLR;
 
-    document.getElementById('lrFrozen').textContent = frozenLR === 0 ? '0 (frozen)' : middleLR.toExponential(1);
-    document.getElementById('lrMiddle').textContent = middleLR.toExponential(1);
-    document.getElementById('lrHead').textContent = headLR.toExponential(1);
-    document.getElementById('lrWarmup').textContent = '500-1000';
+    setText('lrFrozen', frozenLR === 0 ? '0 (frozen)' : middleLR.toExponential(1));
+    setText('lrMiddle', middleLR.toExponential(1));
+    setText('lrHead', headLR.toExponential(1));
+    setText('lrWarmup', '500-1000');
 
     drawFreezeVisualization(total, frozenLayers, fineTunedLayers, trainedLayers);
   }
 
+  function layerRects(total, frozen, fineTuned, startX, layerW, gap, padTop, h) {
+    var html = '';
+    for (var i = 0; i < total && i < LAYERS_MAX; i++) {
+      var x = startX + i * (layerW + gap);
+      var color;
+      if (i < frozen) color = '#2563EB';
+      else if (i < frozen + fineTuned) color = '#157F3B';
+      else color = '#B45309';
+      html += '<rect x="'+x+'" y="'+padTop+'" width="'+layerW+'" height="'+h+'" fill="'+color+'" opacity="0.7" rx="1"/>';
+    }
+    return html;
+  }
+
   function drawFreezeVisualization(total, frozen, fineTuned, trained) {
-    var svg = document.getElementById('freezeSvg');
+    var svg = el('freezeSvg');
+    if (!svg) return;
     var pad = {l:30, r:30, t:30, b:60};
     var w = 700 - pad.l - pad.r, h = 200 - pad.t - pad.b;
-    var layerW = Math.min(12, (w - total) / total);
+    // a layer count wider than the plot makes this negative; an SVG width must
+    // not be negative, so floor it at zero
+    var layerW = Math.max(0, Math.min(12, (w - total) / total));
     var gap = 1;
     var totalW = total * (layerW + gap);
     var startX = pad.l + (w - totalW) / 2;
@@ -533,14 +587,7 @@
     var html = '<rect width="700" height="200" fill="#FFFFFF"/>';
     html += '<text x="350" y="18" text-anchor="middle" fill="#1A1A1A" font-size="12" font-family="Inter,sans-serif">Layer Freezing Strategy ('+total+' layers: '+frozen+' frozen, '+fineTuned+' fine-tuned, '+trained+' full LR)</text>';
 
-    for (var i = 0; i < total; i++) {
-      var x = startX + i * (layerW + gap);
-      var color;
-      if (i < frozen) color = '#2563EB';
-      else if (i < frozen + fineTuned) color = '#157F3B';
-      else color = '#B45309';
-      html += '<rect x="'+x+'" y="'+pad.t+'" width="'+layerW+'" height="'+h+'" fill="'+color+'" opacity="0.7" rx="1"/>';
-    }
+    html += layerRects(total, frozen, fineTuned, startX, layerW, gap, pad.t, h);
 
     var frozenEnd = startX + frozen * (layerW + gap);
     var ftEnd = frozenEnd + fineTuned * (layerW + gap);
@@ -562,20 +609,25 @@
     svg.innerHTML = html;
   }
 
-  document.getElementById('domainSim').addEventListener('input', function() {
-    var v = parseInt(this.value);
+  function on(id, evt, fn) {
+    var node = el(id);
+    if (node) node.addEventListener(evt, fn);
+  }
+
+  on('domainSim', 'input', function() {
+    var v = numIn('domainSim', 7, 1, 10);
     var label = v <= 3 ? 'Low' : v <= 6 ? 'Medium' : 'High';
-    document.getElementById('domSimVal').textContent = v + ' (' + label + ')';
+    setText('domSimVal', v + ' (' + label + ')');
   });
 
-  document.getElementById('dataFactor').addEventListener('input', function() {
-    var v = parseInt(this.value);
+  on('dataFactor', 'input', function() {
+    var v = numIn('dataFactor', 5, 1, 10);
     var label = v <= 3 ? 'Small' : v <= 6 ? 'Medium' : 'Large';
-    document.getElementById('dataFactVal').textContent = v + ' (' + label + ')';
+    setText('dataFactVal', v + ' (' + label + ')');
   });
 
-  document.getElementById('decideBtn').addEventListener('click', getRecommendation);
-  document.getElementById('freezeBtn').addEventListener('click', calculateFreezing);
+  on('decideBtn', 'click', getRecommendation);
+  on('freezeBtn', 'click', calculateFreezing);
 
   buildCompatMatrix();
   getRecommendation();

@@ -320,14 +320,38 @@
 
 <script>
 (function() {
+  'use strict';
   const bCanvas = document.getElementById('boundaryCanvas');
   const lCanvas = document.getElementById('lossCanvas');
+  if (!bCanvas || !bCanvas.getContext) return;
+  if (!lCanvas || !lCanvas.getContext) return;
   const bCtx = bCanvas.getContext('2d');
   const lCtx = lCanvas.getContext('2d');
   const BW = bCanvas.width, BH = bCanvas.height;
   const LW = lCanvas.width, LH = lCanvas.height;
 
+  // Ceilings: the loss curve keeps at most MAX_HISTORY points and one Train
+  // click can never run more than MAX_EPOCHS_PER_CALL epochs (NASA 1.2).
+  const MAX_HISTORY = 20000;
+  const MAX_EPOCHS_PER_CALL = 1000;
+  const MAX_EPOCHS = 5000;
+
   let data = [], network = null, epoch = 0, lossHistory = [], autoInt = null;
+
+  function selValue(id, fallback) {
+    const el = document.getElementById(id);
+    return el ? el.value : fallback;
+  }
+
+  function selInt(id, fallback) {
+    const raw = parseInt(selValue(id, ''), 10);
+    return isFinite(raw) && raw >= 0 ? raw : fallback;
+  }
+
+  function setText(id, value) {
+    const el = document.getElementById(id);
+    if (el) el.textContent = value;
+  }
 
   function relu(x) { return x > 0 ? x : 0; }
   function reluDeriv(x) { return x > 0 ? 1 : 0; }
@@ -337,14 +361,14 @@
   function tanhDeriv(x) { const t = Math.tanh(x); return 1 - t * t; }
 
   function getAct() {
-    const a = document.getElementById('activationSelect').value;
+    const a = selValue('activationSelect', 'relu');
     if (a === 'relu') return [relu, reluDeriv];
     if (a === 'sigmoid') return [sigmoid, sigmoidDeriv];
     return [tanhFn, tanhDeriv];
   }
 
   function generateData() {
-    const ds = document.getElementById('datasetSelect').value;
+    const ds = selValue('datasetSelect', 'xor');
     const pts = [];
     const N = 200;
     if (ds === 'circle') {
@@ -385,9 +409,9 @@
 
   function buildNetwork() {
     const layers = [2];
-    const l1 = parseInt(document.getElementById('layer1').value);
-    const l2 = parseInt(document.getElementById('layer2').value);
-    const l3 = parseInt(document.getElementById('layer3').value);
+    const l1 = selInt('layer1', 4);
+    const l2 = selInt('layer2', 0);
+    const l3 = selInt('layer3', 0);
     if (l1 > 0) layers.push(l1);
     if (l2 > 0) layers.push(l2);
     if (l3 > 0) layers.push(l3);
@@ -412,7 +436,7 @@
       for (let j = 0; j < fan_out; j++) { b.push(0); totalParams++; }
       biases.push(b);
     }
-    document.getElementById('nnParams').textContent = totalParams;
+    setText('nnParams', totalParams);
     return {layers, weights, biases};
   }
 
@@ -438,10 +462,13 @@
   }
 
   function train(net, epochs) {
-    const lr = parseInt(document.getElementById('nnLrSlider').value) / 1000;
+    if (!net) return;
+    const rawLr = parseInt(selValue('nnLrSlider', ''), 10);
+    const lr = (isFinite(rawLr) ? Math.min(100, Math.max(1, rawLr)) : 30) / 1000;
     const [act, actDeriv] = getAct();
+    const rounds = Math.min(epochs, MAX_EPOCHS_PER_CALL);
 
-    for (let e = 0; e < epochs; e++) {
+    for (let e = 0; e < rounds; e++) {
       let totalLoss = 0;
       // Shuffle data
       const shuffled = data.slice().sort(() => Math.random() - 0.5);
@@ -482,11 +509,13 @@
         }
       }
       epoch++;
-      lossHistory.push(totalLoss / data.length);
+      if (data.length > 0) lossHistory.push(totalLoss / data.length);
+      if (lossHistory.length > MAX_HISTORY) lossHistory.shift();
     }
   }
 
   function drawBoundary() {
+    if (!network) return;
     const imgData = bCtx.createImageData(BW, BH);
     const step = 4;
     for (let py = 0; py < BH; py += step) {
@@ -543,7 +572,11 @@
     }
 
     const pad = 40;
-    const maxL = Math.max(...lossHistory) * 1.1;
+    let peak = 0;
+    for (let i = 0; i < lossHistory.length && i < MAX_HISTORY; i++) {
+      if (lossHistory[i] > peak) peak = lossHistory[i];
+    }
+    const maxL = peak > 0 ? peak * 1.1 : 1;
     const minL = 0;
 
     // Axes
@@ -580,6 +613,7 @@
   }
 
   function computeAccuracy() {
+    if (!network || data.length === 0) return '0.0';
     let correct = 0;
     for (const pt of data) {
       const {output} = forward(network, pt.x, pt.y);
@@ -592,13 +626,23 @@
   function updateDisplay() {
     drawBoundary();
     drawLoss();
-    document.getElementById('nnEpoch').textContent = epoch;
-    document.getElementById('nnLoss').textContent = lossHistory.length > 0 ? lossHistory[lossHistory.length - 1].toFixed(4) : '--';
-    document.getElementById('nnAcc').textContent = computeAccuracy() + '%';
+    setText('nnEpoch', epoch);
+    setText('nnLoss', lossHistory.length > 0 ? lossHistory[lossHistory.length - 1].toFixed(4) : '--');
+    setText('nnAcc', computeAccuracy() + '%');
+  }
+
+  function stopAutoTrain() {
+    if (autoInt) { clearInterval(autoInt); autoInt = null; }
+    setText('autoTrainBtn', 'Auto-Train');
+  }
+
+  function on(id, event, handler) {
+    const el = document.getElementById(id);
+    if (el) el.addEventListener(event, handler);
   }
 
   function reset() {
-    if (autoInt) { clearInterval(autoInt); autoInt = null; document.getElementById('autoTrainBtn').textContent = 'Auto-Train'; }
+    if (autoInt) { stopAutoTrain(); }
     data = generateData();
     network = buildNetwork();
     epoch = 0;
@@ -606,30 +650,30 @@
     updateDisplay();
   }
 
-  document.getElementById('trainBtn').addEventListener('click', function() {
+  on('trainBtn', 'click', function() {
     train(network, 100);
     updateDisplay();
   });
 
-  document.getElementById('autoTrainBtn').addEventListener('click', function() {
+  on('autoTrainBtn', 'click', function() {
     if (autoInt) {
-      clearInterval(autoInt);
-      autoInt = null;
-      this.textContent = 'Auto-Train';
+      stopAutoTrain();
     } else {
       autoInt = setInterval(function() {
         train(network, 20);
         updateDisplay();
-        if (epoch > 5000) { clearInterval(autoInt); autoInt = null; document.getElementById('autoTrainBtn').textContent = 'Auto-Train'; }
+        if (epoch > MAX_EPOCHS) { stopAutoTrain(); }
       }, 80);
       this.textContent = 'Pause';
     }
   });
 
-  document.getElementById('nnResetBtn').addEventListener('click', reset);
-  document.getElementById('datasetSelect').addEventListener('change', reset);
-  document.getElementById('nnLrSlider').addEventListener('input', function() {
-    document.getElementById('nnLrDisplay').textContent = (this.value / 1000).toFixed(3);
+  on('nnResetBtn', 'click', reset);
+  on('datasetSelect', 'change', reset);
+  on('nnLrSlider', 'input', function() {
+    const raw = parseInt(this.value, 10);
+    const lr = (isFinite(raw) ? Math.min(100, Math.max(1, raw)) : 30) / 1000;
+    setText('nnLrDisplay', lr.toFixed(3));
   });
 
   reset();

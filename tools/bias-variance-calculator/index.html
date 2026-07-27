@@ -159,9 +159,10 @@
 </main>
 
 <script>
-  (function() {
+  (() => {
+    'use strict';
     const canvas = document.getElementById('chartCanvas');
-    const ctx = canvas.getContext('2d');
+    const ctx = canvas ? canvas.getContext('2d') : null;
 
     // DOM elements
     const complexitySlider = document.getElementById('complexitySlider');
@@ -176,48 +177,59 @@
     const varValSpan = document.getElementById('varVal');
     const noiseStatSpan = document.getElementById('noiseStat');
 
-    function updateUI() {
-      const complexity = parseFloat(complexitySlider.value);
-      const noise = parseFloat(noiseSlider.value);
-      const sampleSize = parseFloat(sizeSlider.value);
+    /* Nothing below can run without a canvas and the controls it reads, so every
+       binding above is null checked once, here, before any of them is used. */
+    const ready = canvas && complexitySlider && noiseSlider && sizeSlider &&
+                  complexityVal && noiseVal && sizeVal && optDegreeSpan &&
+                  minTestErrorSpan && biasValSpan && varValSpan && noiseStatSpan && ctx;
+    if (!ready) return;
 
-      complexityVal.textContent = complexity;
-      noiseVal.textContent = noise.toFixed(2);
-      sizeVal.textContent = sampleSize;
-      noiseStatSpan.textContent = noise.toFixed(2);
+    // The complexity axis is fixed at degrees 1..20, so every draw loop has a
+    // constant, statically known ceiling.
+    const N_POINTS = 20;
+    // margins
+    const PAD = { top: 25, bottom: 35, left: 45, right: 30 };
+
+    function setText(el, value) {
+      if (el) el.textContent = value;
+    }
+
+    /* Read one slider as a number that is always inside the range the control
+       itself declares. A range input normally cannot hold a non-numeric value,
+       but a script or an autofill can set .value directly, and a NaN here would
+       reach every downstream formula and render "NaN" in the stat cards. */
+    function readRange(input, fallback) {
+      let v = parseFloat(input.value);
+      if (!Number.isFinite(v)) v = fallback;
+      const min = parseFloat(input.min);
+      const max = parseFloat(input.max);
+      if (Number.isFinite(min)) v = Math.max(min, v);
+      if (Number.isFinite(max)) v = Math.min(max, v);
+      return v;
+    }
+
+    function updateUI() {
+      const complexity = readRange(complexitySlider, 8);
+      const noise = readRange(noiseSlider, 0.8);
+      const sampleSize = readRange(sizeSlider, 120);
+
+      setText(complexityVal, complexity);
+      setText(noiseVal, noise.toFixed(2));
+      setText(sizeVal, sampleSize);
+      setText(noiseStatSpan, noise.toFixed(2));
 
       drawChart(complexity, noise, sampleSize);
     }
 
-    function drawChart(complexity, noise, sampleSize) {
-      const w = canvas.width, h = canvas.height;
-      ctx.clearRect(0, 0, w, h);
-
-      // margins
-      const pad = { top: 25, bottom: 35, left: 45, right: 30 };
-      const plotW = w - pad.left - pad.right;
-      const plotH = h - pad.top - pad.bottom;
-
-      // x-axis: complexity 1..20
-      const xMin = 1, xMax = 20;
-      const xScale = (d) => pad.left + (d - xMin) / (xMax - xMin) * plotW;
-
-      // y-axis: error 0 .. maxError (adaptive)
-      let maxError = 1.8 + noise * 0.9;
-      if (maxError < 1.2) maxError = 1.2;
-      const yScale = (v) => pad.top + plotH - (v / maxError) * plotH;
-
+    // compute errors based on complexity, noise, sampleSize
+    // bias^2 = 0.6 * exp(-0.25 * (complexity-1)) + 0.05 * (complexity>12 ? 0.02*(complexity-12) : 0)
+    // variance = 0.02 * exp(0.25 * (complexity-1)) - 0.02 + sampleSize factor
+    // noise irreducible = noise (constant)
+    // training error = bias^2 + 0.2 * (1 - exp(-0.3*(complexity-1))) + noise*0.2
+    // test error = bias^2 + variance + noise + 0.1 * sin(complexity*0.3)*0.1
+    function computeSeries(noise, sampleSize, maxError) {
       // generate data points (complexity from 1 to 20)
-      const nPoints = 20;
-      const complexities = Array.from({ length: nPoints }, (_, i) => i + 1);
-
-      // compute errors based on complexity, noise, sampleSize
-      // bias^2 = 0.6 * exp(-0.25 * (complexity-1)) + 0.05 * (complexity>12 ? 0.02*(complexity-12) : 0)
-      // variance = 0.02 * exp(0.25 * (complexity-1)) - 0.02 + sampleSize factor
-      // noise irreducible = noise (constant)
-      // training error = bias^2 + 0.2 * (1 - exp(-0.3*(complexity-1))) + noise*0.2
-      // test error = bias^2 + variance + noise + 0.1 * sin(complexity*0.3)*0.1
-
+      const complexities = Array.from({ length: N_POINTS }, (_, i) => i + 1);
       const biasArr = [];
       const varArr = [];
       const trainArr = [];
@@ -260,35 +272,39 @@
         totalArr.push(totalErr);
       });
 
-      // find optimal (minimum test error)
-      let minTest = Infinity;
-      let optIdx = 0;
-      testArr.forEach((v, i) => {
-        if (v < minTest) { minTest = v; optIdx = i; }
-      });
-      const optComplexity = complexities[optIdx];
+      return { complexities, biasArr, varArr, trainArr, testArr, totalArr };
+    }
 
-      // update stats
-      optDegreeSpan.textContent = optComplexity;
-      minTestErrorSpan.textContent = minTest.toFixed(3);
-      biasValSpan.textContent = biasArr[optIdx].toFixed(3);
-      varValSpan.textContent = varArr[optIdx].toFixed(3);
+    /* Plot geometry for one draw. x-axis: complexity 1..20.
+       y-axis: error 0 .. maxError (adaptive). */
+    function makeScales(maxError) {
+      const w = canvas.width, h = canvas.height;
+      const plotW = w - PAD.left - PAD.right;
+      const plotH = h - PAD.top - PAD.bottom;
+      const xMin = 1, xMax = 20;
+      return {
+        w: w, h: h, plotW: plotW, plotH: plotH,
+        xScale: (d) => PAD.left + (d - xMin) / (xMax - xMin) * plotW,
+        yScale: (v) => PAD.top + plotH - (v / maxError) * plotH
+      };
+    }
 
+    function drawGridAndAxes(g, maxError) {
       // draw grid
       ctx.strokeStyle = '#E8E8E6';
       ctx.lineWidth = 0.8;
       for (let i = 0; i <= 5; i++) {
-        const y = pad.top + (i / 5) * plotH;
+        const y = PAD.top + (i / 5) * g.plotH;
         ctx.beginPath();
-        ctx.moveTo(pad.left, y);
-        ctx.lineTo(pad.left + plotW, y);
+        ctx.moveTo(PAD.left, y);
+        ctx.lineTo(PAD.left + g.plotW, y);
         ctx.stroke();
       }
-      for (let i = 1; i <= 20; i+=2) {
-        const x = xScale(i);
+      for (let i = 1; i <= N_POINTS; i+=2) {
+        const x = g.xScale(i);
         ctx.beginPath();
-        ctx.moveTo(x, pad.top);
-        ctx.lineTo(x, pad.top + plotH);
+        ctx.moveTo(x, PAD.top);
+        ctx.lineTo(x, PAD.top + g.plotH);
         ctx.stroke();
       }
 
@@ -296,51 +312,55 @@
       ctx.strokeStyle = '#B8B8B6';
       ctx.lineWidth = 1.5;
       ctx.beginPath();
-      ctx.moveTo(pad.left, pad.top);
-      ctx.lineTo(pad.left, pad.top + plotH);
-      ctx.lineTo(pad.left + plotW, pad.top + plotH);
+      ctx.moveTo(PAD.left, PAD.top);
+      ctx.lineTo(PAD.left, PAD.top + g.plotH);
+      ctx.lineTo(PAD.left + g.plotW, PAD.top + g.plotH);
       ctx.stroke();
 
       // axis labels
       ctx.fillStyle = '#6a6a6a';
       ctx.font = '11px system-ui, sans-serif';
       ctx.textAlign = 'center';
-      for (let i = 1; i <= 20; i+=2) {
-        ctx.fillText(i, xScale(i), pad.top + plotH + 18);
+      for (let i = 1; i <= N_POINTS; i+=2) {
+        ctx.fillText(i, g.xScale(i), PAD.top + g.plotH + 18);
       }
       ctx.textAlign = 'right';
       for (let i = 0; i <= 4; i++) {
         const val = (i / 4) * maxError;
-        ctx.fillText(val.toFixed(1), pad.left - 8, yScale(val) + 4);
+        ctx.fillText(val.toFixed(1), PAD.left - 8, g.yScale(val) + 4);
       }
       ctx.textAlign = 'left';
-      ctx.fillText('Complexity (degree)', pad.left + plotW/2 - 20, h - 4);
-      ctx.fillText('Error', 8, pad.top + 12);
+      ctx.fillText('Complexity (degree)', PAD.left + g.plotW/2 - 20, g.h - 4);
+      ctx.fillText('Error', 8, PAD.top + 12);
+    }
 
-      // draw curves
-      function drawCurve(data, color, lineWidth = 2.5, dash = []) {
-        ctx.beginPath();
-        ctx.strokeStyle = color;
-        ctx.lineWidth = lineWidth;
-        ctx.setLineDash(dash);
-        complexities.forEach((c, i) => {
-          const x = xScale(c);
-          const y = yScale(data[i]);
-          i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
-        });
-        ctx.stroke();
-        ctx.setLineDash([]);
-      }
+    // draw curves
+    function drawCurve(g, complexities, data, color, lineWidth = 2.5, dash = []) {
+      ctx.beginPath();
+      ctx.strokeStyle = color;
+      ctx.lineWidth = lineWidth;
+      ctx.setLineDash(dash);
+      complexities.forEach((c, i) => {
+        const x = g.xScale(c);
+        const y = g.yScale(data[i]);
+        i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+      });
+      ctx.stroke();
+      ctx.setLineDash([]);
+    }
 
-      drawCurve(trainArr, '#B45309', 2.2);
-      drawCurve(testArr, '#2563EB', 2.8);
-      drawCurve(biasArr, '#7C3AED', 2.2, [6, 4]);
-      drawCurve(varArr, '#C53030', 2.2, [4, 4]);
-      drawCurve(totalArr, '#157F3B', 2.2, [2, 4]);
+    function drawSeries(g, s) {
+      drawCurve(g, s.complexities, s.trainArr, '#B45309', 2.2);
+      drawCurve(g, s.complexities, s.testArr, '#2563EB', 2.8);
+      drawCurve(g, s.complexities, s.biasArr, '#7C3AED', 2.2, [6, 4]);
+      drawCurve(g, s.complexities, s.varArr, '#C53030', 2.2, [4, 4]);
+      drawCurve(g, s.complexities, s.totalArr, '#157F3B', 2.2, [2, 4]);
+    }
 
+    function drawOptimal(g, s, optIdx) {
       // highlight optimal point
-      const optX = xScale(optComplexity);
-      const optY = yScale(testArr[optIdx]);
+      const optX = g.xScale(s.complexities[optIdx]);
+      const optY = g.yScale(s.testArr[optIdx]);
       ctx.beginPath();
       ctx.arc(optX, optY, 8, 0, 2 * Math.PI);
       ctx.fillStyle = '#0E7490';
@@ -356,19 +376,47 @@
       ctx.fillStyle = '#767676';
       ctx.font = '10px system-ui';
       ctx.textAlign = 'left';
-      ctx.fillText('← underfitting', pad.left + 8, pad.top + plotH - 10);
+      ctx.fillText('← underfitting', PAD.left + 8, PAD.top + g.plotH - 10);
       ctx.textAlign = 'right';
-      ctx.fillText('overfitting →', pad.left + plotW - 8, pad.top + plotH - 10);
+      ctx.fillText('overfitting →', PAD.left + g.plotW - 8, PAD.top + g.plotH - 10);
 
       // draw vertical line at optimal
       ctx.beginPath();
       ctx.strokeStyle = 'rgba(14,116,144,0.35)';
       ctx.lineWidth = 1;
       ctx.setLineDash([4, 6]);
-      ctx.moveTo(optX, pad.top);
-      ctx.lineTo(optX, pad.top + plotH);
+      ctx.moveTo(optX, PAD.top);
+      ctx.lineTo(optX, PAD.top + g.plotH);
       ctx.stroke();
       ctx.setLineDash([]);
+    }
+
+    function drawChart(complexity, noise, sampleSize) {
+      // y-axis: error 0 .. maxError (adaptive)
+      let maxError = 1.8 + noise * 0.9;
+      if (maxError < 1.2) maxError = 1.2;
+
+      const g = makeScales(maxError);
+      ctx.clearRect(0, 0, g.w, g.h);
+
+      const s = computeSeries(noise, sampleSize, maxError);
+
+      // find optimal (minimum test error)
+      let minTest = Infinity;
+      let optIdx = 0;
+      s.testArr.forEach((v, i) => {
+        if (v < minTest) { minTest = v; optIdx = i; }
+      });
+
+      // update stats
+      setText(optDegreeSpan, s.complexities[optIdx]);
+      setText(minTestErrorSpan, minTest.toFixed(3));
+      setText(biasValSpan, s.biasArr[optIdx].toFixed(3));
+      setText(varValSpan, s.varArr[optIdx].toFixed(3));
+
+      drawGridAndAxes(g, maxError);
+      drawSeries(g, s);
+      drawOptimal(g, s, optIdx);
     }
 
     // event listeners

@@ -190,7 +190,8 @@
 </main>
 
 <script>
-  (function() {
+  (() => {
+    'use strict';
     // ----- STATE -----
     let models = []; // { id, name, accuracy, weight }
     let samples = []; // array of arrays (each sample: array of model predictions)
@@ -213,58 +214,90 @@
     const fleissKappaEl = document.getElementById('fleissKappa');
     const agreementDetailEl = document.getElementById('agreementDetail');
     const canvas = document.getElementById('diminishingChart');
-    const ctx = canvas.getContext('2d');
+    const ctx = canvas ? canvas.getContext('2d') : null;
+
+    /* Every branch below writes into these, so each binding is null checked once,
+       here, before any of them is used. The optional buttons and the chart are
+       guarded individually at their use sites instead. */
+    const ready = modelListEl && sampleInputsEl && methodSelect && ensemblePredEl &&
+                  accImproveEl && agreeRateEl && fleissKappaEl && agreementDetailEl &&
+                  canvas;
+    if (!ready) return;
+
+    // Explicit ceilings. MAX_MODELS is the cap the page already advertised;
+    // MAX_SAMPLES bounds the O(samples x models^2) pairwise agreement loop, which
+    // otherwise grew without limit as rows were added.
+    const MAX_MODELS = 10;
+    const MAX_SAMPLES = 200;
+    // ranges declared by the generated inputs, kept in one place so the JS clamp
+    // and the HTML attributes cannot drift apart
+    const ACC_MIN = 0, ACC_MAX = 1;
+    const WEIGHT_MIN = 0, WEIGHT_MAX = 10;
 
     // ----- HELPERS -----
     function clamp(v, min, max) { return Math.min(max, Math.max(min, v)); }
 
+    /* Model names and per-sample predictions are user text and are interpolated
+       into HTML attributes below. Without escaping, a quote character ends the
+       attribute and the row stops rendering. */
+    const ESCAPES = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' };
+    function esc(s) {
+      return String(s).replace(/[&<>"']/g, function(c) { return ESCAPES[c]; });
+    }
+
+    function setText(el, value) { if (el) el.textContent = value; }
+
+    /* Read a numeric field that a user typed into. Letters, an empty field and
+       Infinity all land on the fallback instead of reaching the arithmetic. */
+    function readNumber(raw, fallback, min, max) {
+      const v = parseFloat(raw);
+      if (!Number.isFinite(v)) return fallback;
+      return clamp(v, min, max);
+    }
+
+    function modelIndexOf(el) {
+      const idx = parseInt(el.dataset.idx, 10);
+      return Number.isInteger(idx) && models[idx] ? idx : -1;
+    }
+
     // ----- RENDER MODELS -----
-    function renderModels() {
-      let html = '';
-      models.forEach((m, idx) => {
-        html += `
+    function modelRowHtml(m, idx) {
+      return `
           <div class="model-entry" data-id="${m.id}">
-            <input class="model-name" type="text" value="${m.name}" placeholder="Model name" data-idx="${idx}">
+            <input class="model-name" type="text" value="${esc(m.name)}" placeholder="Model name" data-idx="${idx}">
             <input class="model-acc" type="number" step="0.01" min="0" max="1" value="${m.accuracy}" placeholder="Acc" data-idx="${idx}">
             <input class="model-weight" type="number" step="0.1" min="0" max="10" value="${m.weight}" placeholder="Weight" data-idx="${idx}">
             <button class="remove-btn" data-id="${m.id}">✕</button>
           </div>
         `;
-      });
-      modelListEl.innerHTML = html;
+    }
 
-      // attach events
+    function bindModelInputs() {
       document.querySelectorAll('.model-name').forEach(inp => {
         inp.addEventListener('change', function() {
-          const idx = parseInt(this.dataset.idx);
-          if (models[idx]) models[idx].name = this.value.trim() || `M${idx+1}`;
+          const idx = modelIndexOf(this);
+          if (idx >= 0) models[idx].name = this.value.trim() || `M${idx+1}`;
         });
       });
       document.querySelectorAll('.model-acc').forEach(inp => {
         inp.addEventListener('change', function() {
-          const idx = parseInt(this.dataset.idx);
-          if (models[idx]) {
-            let val = parseFloat(this.value);
-            if (isNaN(val)) val = 0.5;
-            models[idx].accuracy = clamp(val, 0, 1);
-            this.value = models[idx].accuracy;
-          }
+          const idx = modelIndexOf(this);
+          if (idx < 0) return;
+          models[idx].accuracy = readNumber(this.value, 0.5, ACC_MIN, ACC_MAX);
+          this.value = models[idx].accuracy;
         });
       });
       document.querySelectorAll('.model-weight').forEach(inp => {
         inp.addEventListener('change', function() {
-          const idx = parseInt(this.dataset.idx);
-          if (models[idx]) {
-            let val = parseFloat(this.value);
-            if (isNaN(val) || val < 0) val = 1;
-            models[idx].weight = val;
-            this.value = models[idx].weight;
-          }
+          const idx = modelIndexOf(this);
+          if (idx < 0) return;
+          models[idx].weight = readNumber(this.value, 1, WEIGHT_MIN, WEIGHT_MAX);
+          this.value = models[idx].weight;
         });
       });
       document.querySelectorAll('.remove-btn').forEach(btn => {
         btn.addEventListener('click', function() {
-          const id = parseInt(this.dataset.id);
+          const id = parseInt(this.dataset.id, 10);
           models = models.filter(m => m.id !== id);
           // remove corresponding sample entries
           if (samples.length > 0 && models.length > 0) {
@@ -278,7 +311,10 @@
           computeEnsemble();
         });
       });
-      // sync sample inputs if model count changed
+    }
+
+    // sync sample inputs if model count changed
+    function syncSamplesToModels() {
       if (samples.length > 0 && models.length > 0) {
         samples = samples.map(s => {
           if (s.length > models.length) return s.slice(0, models.length);
@@ -286,40 +322,44 @@
           return s;
         });
       } else if (models.length === 0) samples = [];
+    }
+
+    function renderModels() {
+      let html = '';
+      models.forEach((m, idx) => { html += modelRowHtml(m, idx); });
+      modelListEl.innerHTML = html;
+      bindModelInputs();
+      syncSamplesToModels();
       renderSampleInputs();
     }
 
     // ----- SAMPLE INPUTS -----
-    function renderSampleInputs() {
-      if (models.length === 0) {
-        sampleInputsEl.innerHTML = `<div style="color:#6a6a6a; padding:0.5rem;">Add at least one model to enter predictions.</div>`;
-        return;
-      }
-      let html = '';
-      samples.forEach((sample, sIdx) => {
-        html += `<div class="sample-pred-row" style="display:flex; flex-wrap:wrap; gap:0.3rem; align-items:center; border-bottom:1px solid #E8E8E6; padding:0.3rem 0;">`;
-        html += `<span style="font-weight:500; min-width:2rem;">#${sIdx+1}</span>`;
-        models.forEach((m, mIdx) => {
-          const val = sample[mIdx] !== undefined ? sample[mIdx] : '';
-          html += `<input type="text" style="width:70px; padding:0.2rem 0.4rem; font-size:0.8rem;" value="${val}" placeholder="${m.name}" data-sample="${sIdx}" data-model="${mIdx}">`;
-        });
-        html += `<button class="remove-sample-btn" data-sample="${sIdx}" style="background:#1A1A1A; color:white; border:none; border-radius:0.4rem; padding:0.2rem 0.5rem; font-size:0.7rem; cursor:pointer;">✕</button>`;
-        html += `</div>`;
+    function sampleRowHtml(sample, sIdx) {
+      let html = `<div class="sample-pred-row" style="display:flex; flex-wrap:wrap; gap:0.3rem; align-items:center; border-bottom:1px solid #E8E8E6; padding:0.3rem 0;">`;
+      html += `<span style="font-weight:500; min-width:2rem;">#${sIdx+1}</span>`;
+      models.forEach((m, mIdx) => {
+        const val = sample[mIdx] !== undefined ? sample[mIdx] : '';
+        html += `<input type="text" style="width:70px; padding:0.2rem 0.4rem; font-size:0.8rem;" value="${esc(val)}" placeholder="${esc(m.name)}" data-sample="${sIdx}" data-model="${mIdx}">`;
       });
-      sampleInputsEl.innerHTML = html;
+      html += `<button class="remove-sample-btn" data-sample="${sIdx}" style="background:#1A1A1A; color:white; border:none; border-radius:0.4rem; padding:0.2rem 0.5rem; font-size:0.7rem; cursor:pointer;">✕</button>`;
+      html += `</div>`;
+      return html;
+    }
 
-      // attach sample input events
+    function bindSampleInputs() {
       document.querySelectorAll('#sampleInputs input[type="text"]').forEach(inp => {
         inp.addEventListener('change', function() {
-          const sIdx = parseInt(this.dataset.sample);
-          const mIdx = parseInt(this.dataset.model);
+          const sIdx = parseInt(this.dataset.sample, 10);
+          const mIdx = parseInt(this.dataset.model, 10);
+          if (!Number.isInteger(sIdx) || !Number.isInteger(mIdx)) return;
           if (!samples[sIdx]) samples[sIdx] = new Array(models.length).fill('');
           samples[sIdx][mIdx] = this.value;
         });
       });
       document.querySelectorAll('.remove-sample-btn').forEach(btn => {
         btn.addEventListener('click', function() {
-          const sIdx = parseInt(this.dataset.sample);
+          const sIdx = parseInt(this.dataset.sample, 10);
+          if (!Number.isInteger(sIdx)) return;
           samples.splice(sIdx, 1);
           renderSampleInputs();
           computeEnsemble();
@@ -327,33 +367,27 @@
       });
     }
 
-    // ----- COMPUTE ENSEMBLE -----
-    function computeEnsemble() {
-      if (models.length === 0 || samples.length === 0) {
-        ensemblePredEl.textContent = '—';
-        accImproveEl.textContent = '—';
-        agreeRateEl.textContent = '—';
-        fleissKappaEl.textContent = '—';
-        agreementDetailEl.innerHTML = '<span style="color:#6a6a6a;">No data</span>';
-        drawDiminishingChart([]);
+    function renderSampleInputs() {
+      if (models.length === 0) {
+        sampleInputsEl.innerHTML = `<div style="color:#6a6a6a; padding:0.5rem;">Add at least one model to enter predictions.</div>`;
         return;
       }
+      let html = '';
+      samples.forEach((sample, sIdx) => { html += sampleRowHtml(sample, sIdx); });
+      sampleInputsEl.innerHTML = html;
+      bindSampleInputs();
+    }
 
-      const method = methodSelect.value;
-      const numModels = models.length;
-      const numSamples = samples.length;
-
-      // parse predictions: for each sample, array of strings
-      const preds = samples.map(s => s.map(v => (v || '').trim()));
-
-      // compute agreement per sample (pairwise)
+    // ----- AGREEMENT -----
+    // compute agreement per sample (pairwise)
+    function computeAgreement(preds) {
       let totalPairs = 0;
       let agreeCount = 0;
       const sampleAgreements = [];
-      for (let s = 0; s < numSamples; s++) {
+      for (let s = 0; s < preds.length; s++) {
         let pairAgree = 0, pairTotal = 0;
-        for (let i = 0; i < numModels; i++) {
-          for (let j = i+1; j < numModels; j++) {
+        for (let i = 0; i < models.length; i++) {
+          for (let j = i+1; j < models.length; j++) {
             if (preds[s][i] !== '' && preds[s][j] !== '') {
               pairTotal++;
               if (preds[s][i] === preds[s][j]) pairAgree++;
@@ -364,106 +398,106 @@
         agreeCount += pairAgree;
         sampleAgreements.push({ total: pairTotal, agree: pairAgree });
       }
-      const agreementRate = totalPairs > 0 ? agreeCount / totalPairs : 0;
+      return {
+        sampleAgreements: sampleAgreements,
+        agreementRate: totalPairs > 0 ? agreeCount / totalPairs : 0
+      };
+    }
 
-      // Fleiss' kappa (multi-rater)
-      let fleissKappa = 0;
-      if (numSamples > 0 && numModels > 1) {
-        // gather unique labels across all samples
-        const labelSet = new Set();
-        preds.forEach(s => s.forEach(v => { if (v !== '') labelSet.add(v); }));
-        const labels = Array.from(labelSet);
-        const N = numSamples;
-        const n = numModels;
-        // matrix: samples x labels
-        let totalAgree = 0;
-        let p_i = 0;
-        for (let s = 0; s < N; s++) {
-          let rowSum = 0;
-          for (let l of labels) {
-            let count = preds[s].filter(v => v === l).length;
-            rowSum += count * count;
-          }
-          totalAgree += rowSum;
-        }
-        const Pbar = (totalAgree - N * n) / (N * n * (n - 1));
-        // Pe: sum over labels of (proportion)^2
-        let totalAssign = N * n;
-        let Pe = 0;
+    // Fleiss' kappa (multi-rater)
+    function computeFleissKappa(preds) {
+      const N = preds.length;
+      const n = models.length;
+      if (N === 0 || n <= 1) return 0;
+      // gather unique labels across all samples
+      const labelSet = new Set();
+      preds.forEach(s => s.forEach(v => { if (v !== '') labelSet.add(v); }));
+      const labels = Array.from(labelSet);
+      // matrix: samples x labels
+      let totalAgree = 0;
+      for (let s = 0; s < N; s++) {
+        let rowSum = 0;
         for (let l of labels) {
-          let count = 0;
-          preds.forEach(s => { count += s.filter(v => v === l).length; });
-          const p = count / totalAssign;
-          Pe += p * p;
+          let count = preds[s].filter(v => v === l).length;
+          rowSum += count * count;
         }
-        if (Pe < 1) {
-          fleissKappa = (Pbar - Pe) / (1 - Pe);
-        } else {
-          fleissKappa = 0;
-        }
-        fleissKappa = clamp(fleissKappa, -1, 1);
+        totalAgree += rowSum;
       }
-
-      // Ensemble prediction (per sample) based on method
-      let ensembleResults = [];
-      for (let s = 0; s < numSamples; s++) {
-        const vals = preds[s];
-        if (method === 'majority') {
-          // voting
-          const freq = {};
-          vals.forEach(v => { if (v !== '') freq[v] = (freq[v] || 0) + 1; });
-          let maxCount = 0, best = '';
-          for (let [k, cnt] of Object.entries(freq)) {
-            if (cnt > maxCount) { maxCount = cnt; best = k; }
-          }
-          ensembleResults.push(best || '—');
-        } else {
-          // averaging / weighted / stacking (weighted avg as stacking concept)
-          let weights = models.map(m => m.weight);
-          if (method === 'average') weights = weights.map(() => 1);
-          // normalize weights
-          const sumW = weights.reduce((a,b)=>a+b,0);
-          const normW = sumW > 0 ? weights.map(w => w/sumW) : weights.map(() => 1/numModels);
-          // try to parse as numbers (probabilities) else fallback to majority
-          let numeric = true;
-          const numVals = vals.map(v => parseFloat(v));
-          if (numVals.some(isNaN)) numeric = false;
-          if (numeric) {
-            let weightedSum = 0;
-            for (let i=0; i<numModels; i++) {
-              if (vals[i] !== '') weightedSum += normW[i] * numVals[i];
-            }
-            ensembleResults.push(weightedSum.toFixed(4));
-          } else {
-            // fallback to majority
-            const freq = {};
-            vals.forEach(v => { if (v !== '') freq[v] = (freq[v] || 0) + 1; });
-            let maxCount = 0, best = '';
-            for (let [k, cnt] of Object.entries(freq)) {
-              if (cnt > maxCount) { maxCount = cnt; best = k; }
-            }
-            ensembleResults.push(best || '—');
-          }
-        }
+      const Pbar = (totalAgree - N * n) / (N * n * (n - 1));
+      // Pe: sum over labels of (proportion)^2
+      const totalAssign = N * n;
+      let Pe = 0;
+      for (let l of labels) {
+        let count = 0;
+        preds.forEach(s => { count += s.filter(v => v === l).length; });
+        const p = count / totalAssign;
+        Pe += p * p;
       }
+      const kappa = Pe < 1 ? (Pbar - Pe) / (1 - Pe) : 0;
+      return clamp(kappa, -1, 1);
+    }
 
+    // ----- ENSEMBLE PREDICTION -----
+    function majorityOf(vals) {
+      const freq = {};
+      vals.forEach(v => { if (v !== '') freq[v] = (freq[v] || 0) + 1; });
+      let maxCount = 0, best = '';
+      for (let [k, cnt] of Object.entries(freq)) {
+        if (cnt > maxCount) { maxCount = cnt; best = k; }
+      }
+      return best || '—';
+    }
+
+    function normalizedWeights(method) {
+      let weights = models.map(m => m.weight);
+      if (method === 'average') weights = weights.map(() => 1);
+      // normalize weights
+      const sumW = weights.reduce((a,b)=>a+b,0);
+      return sumW > 0 ? weights.map(w => w/sumW) : weights.map(() => 1/models.length);
+    }
+
+    // Ensemble prediction (per sample) based on method
+    function ensembleForSample(vals, method, normW) {
+      if (method === 'majority') return majorityOf(vals);
+      // averaging / weighted / stacking (weighted avg as stacking concept)
+      // try to parse as numbers (probabilities) else fallback to majority
+      const numVals = vals.map(v => parseFloat(v));
+      if (numVals.some(isNaN)) return majorityOf(vals);
+      let weightedSum = 0;
+      for (let i=0; i<models.length; i++) {
+        if (vals[i] !== '') weightedSum += normW[i] * numVals[i];
+      }
+      return weightedSum.toFixed(4);
+    }
+
+    function resetResults() {
+      setText(ensemblePredEl, '—');
+      setText(accImproveEl, '—');
+      setText(agreeRateEl, '—');
+      setText(fleissKappaEl, '—');
+      agreementDetailEl.innerHTML = '<span style="color:#6a6a6a;">No data</span>';
+      drawDiminishingChart([]);
+    }
+
+    function renderResults(ensembleResults, agreement, fleissKappa) {
       // Expected accuracy improvement (diversity-based)
-      const avgAcc = models.reduce((sum, m) => sum + m.accuracy, 0) / numModels;
-      const diversity = 1 - agreementRate;
+      const avgAcc = models.reduce((sum, m) => sum + m.accuracy, 0) / models.length;
+      const diversity = 1 - agreement.agreementRate;
       const accImprove = diversity * (1 - avgAcc) * 0.5; // heuristic
       const accImproveClamped = clamp(accImprove, 0, 0.5);
 
       // Update UI
-      ensemblePredEl.textContent = ensembleResults.length > 0 ? ensembleResults[0] : '—';
-      if (ensembleResults.length > 1) ensemblePredEl.textContent += ` … (${ensembleResults.length} samples)`;
-      accImproveEl.textContent = (accImproveClamped * 100).toFixed(1) + '%';
-      agreeRateEl.textContent = (agreementRate * 100).toFixed(1) + '%';
-      fleissKappaEl.textContent = fleissKappa.toFixed(3);
+      let predText = ensembleResults.length > 0 ? ensembleResults[0] : '—';
+      if (ensembleResults.length > 1) predText += ` … (${ensembleResults.length} samples)`;
+      setText(ensemblePredEl, predText);
+      setText(accImproveEl, (accImproveClamped * 100).toFixed(1) + '%');
+      setText(agreeRateEl, (agreement.agreementRate * 100).toFixed(1) + '%');
+      setText(fleissKappaEl, fleissKappa.toFixed(3));
 
       // Agreement detail per sample
       let detailHtml = '';
-      for (let s = 0; s < numSamples; s++) {
-        const ag = sampleAgreements[s];
+      for (let s = 0; s < agreement.sampleAgreements.length; s++) {
+        const ag = agreement.sampleAgreements[s];
         const rate = ag.total > 0 ? (ag.agree / ag.total * 100).toFixed(0) : '—';
         detailHtml += `<div style="display:flex; gap:0.5rem; align-items:center;"><span style="min-width:2rem;">#${s+1}</span><span>agree ${rate}%</span><span>${ag.agree}/${ag.total} pairs</span></div>`;
       }
@@ -471,6 +505,27 @@
 
       // Diminishing returns chart
       drawDiminishingChart(models.map(m => m.accuracy));
+    }
+
+    // ----- COMPUTE ENSEMBLE -----
+    function computeEnsemble() {
+      if (models.length === 0 || samples.length === 0) {
+        resetResults();
+        return;
+      }
+
+      const method = methodSelect.value;
+
+      // parse predictions: for each sample, array of strings
+      const preds = samples.map(s => s.map(v => (v || '').trim()));
+
+      const agreement = computeAgreement(preds);
+      const fleissKappa = computeFleissKappa(preds);
+
+      const normW = normalizedWeights(method);
+      const ensembleResults = preds.map(vals => ensembleForSample(vals, method, normW));
+
+      renderResults(ensembleResults, agreement, fleissKappa);
     }
 
     // ----- CHART: diminishing returns -----
@@ -484,7 +539,6 @@
         ctx.fillText('No models', 10, 20);
         return;
       }
-      const n = accs.length;
       const maxAcc = Math.max(...accs, 0.5);
       const steps = 10;
       ctx.strokeStyle = '#2563EB';
@@ -505,8 +559,8 @@
     }
 
     // ----- EVENT LISTENERS -----
-    addModelBtn.addEventListener('click', function() {
-      if (models.length >= 10) { alert('Maximum 10 models.'); return; }
+    if (addModelBtn) addModelBtn.addEventListener('click', function() {
+      if (models.length >= MAX_MODELS) { alert('Maximum ' + MAX_MODELS + ' models.'); return; }
       const newModel = {
         id: nextModelId++,
         name: `M${models.length+1}`,
@@ -521,7 +575,7 @@
       computeEnsemble();
     });
 
-    resetModelsBtn.addEventListener('click', function() {
+    if (resetModelsBtn) resetModelsBtn.addEventListener('click', function() {
       models = [];
       samples = [];
       nextModelId = 1;
@@ -530,20 +584,23 @@
       computeEnsemble();
     });
 
-    addSampleBtn.addEventListener('click', function() {
+    if (addSampleBtn) addSampleBtn.addEventListener('click', function() {
       if (models.length === 0) { alert('Add at least one model first.'); return; }
+      if (samples.length >= MAX_SAMPLES) { alert('Maximum ' + MAX_SAMPLES + ' samples.'); return; }
       const newSample = new Array(models.length).fill('');
       samples.push(newSample);
       renderSampleInputs();
       computeEnsemble();
     });
 
-    computeBtn.addEventListener('click', computeEnsemble);
+    if (computeBtn) computeBtn.addEventListener('click', computeEnsemble);
     methodSelect.addEventListener('change', function() {
-      if (this.value === 'weighted') weightHint.textContent = 'Weights will be normalized automatically.';
-      else if (this.value === 'average') weightHint.textContent = 'Equal weights for all models.';
-      else if (this.value === 'majority') weightHint.textContent = 'Hard voting (class labels).';
-      else weightHint.textContent = 'Stacking concept: weighted average as meta-prediction.';
+      if (weightHint) {
+        if (this.value === 'weighted') weightHint.textContent = 'Weights will be normalized automatically.';
+        else if (this.value === 'average') weightHint.textContent = 'Equal weights for all models.';
+        else if (this.value === 'majority') weightHint.textContent = 'Hard voting (class labels).';
+        else weightHint.textContent = 'Stacking concept: weighted average as meta-prediction.';
+      }
       computeEnsemble();
     });
 

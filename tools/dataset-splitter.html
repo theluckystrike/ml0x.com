@@ -151,7 +151,7 @@
       </div>
       <div class="control-group">
         <label>Random Seed</label>
-        <input type="number" id="randomSeed" value="42" min="0" style="width:80px;padding:8px;background:#fff;border:1px solid #D8D8D6;border-radius:6px;color:#1A1A1A;font-size:14px;">
+        <input type="number" id="randomSeed" value="42" min="0" max="4294967295" step="1" inputmode="numeric" style="width:80px;padding:8px;background:#fff;border:1px solid #D8D8D6;border-radius:6px;color:#1A1A1A;font-size:14px;">
       </div>
     </div>
     <div id="ratioSection">
@@ -401,151 +401,224 @@
 </footer>
 
 <script>
-(function() {
+(() => {
+  'use strict';
   var trainPct = 70, valPct = 15;
 
+  // Explicit ceilings for every loop below. The class count comes from a <select>
+  // whose largest option is 10; the custom-proportion field is free text, so the
+  // number of comma fields it is allowed to contribute is capped too.
+  var MAX_CLASSES = 10;
+  var MAX_CUSTOM_PARTS = 64;
+  // declared ranges of the two free-typed number fields, kept next to the code
+  // that reads them. The seed ceiling is sklearn's random_state limit, which is
+  // what the generated code block feeds it to.
+  var TOTAL_MIN = 10, TOTAL_MAX = 10000000;
+  var SEED_MIN = 0, SEED_MAX = 4294967295;
+
+  function el(id) { return document.getElementById(id); }
+
+  function txt(id, value) {
+    var node = el(id);
+    if (node) node.textContent = value;
+  }
+
+  function col(id, value) {
+    var node = el(id);
+    if (node) node.style.color = value;
+  }
+
+  function show(id, value) {
+    var node = el(id);
+    if (node) node.style.display = value;
+  }
+
+  function val(id, fallback) {
+    var node = el(id);
+    return node ? node.value : fallback;
+  }
+
+  function clamp(v, lo, hi) { return Math.min(hi, Math.max(lo, v)); }
+
+  /* Read a user-typed integer. parseInt already yields NaN for letters and for an
+     empty field, and the || fallback each caller passes preserves the value the
+     tool has always used there; the clamp is what keeps a negative or an absurd
+     magnitude out of the arithmetic and the loop bounds. */
+  function intIn(id, fallback, lo, hi) {
+    var v = parseInt(val(id, ''), 10) || fallback;
+    if (!Number.isFinite(v)) v = fallback;
+    return clamp(v, lo, hi);
+  }
+
   function getTestPct() {
-    var strategy = document.getElementById('splitStrategy').value;
+    var strategy = val('splitStrategy', 'train_val_test');
     if (strategy === 'train_test') return 100 - trainPct;
     return Math.max(0, 100 - trainPct - valPct);
   }
 
   function updateSliderLabels() {
-    var strategy = document.getElementById('splitStrategy').value;
-    document.getElementById('trainLabel').textContent = trainPct + '%';
-    document.getElementById('valLabel').textContent = valPct + '%';
+    txt('trainLabel', trainPct + '%');
+    txt('valLabel', valPct + '%');
     var testP = getTestPct();
-    document.getElementById('testLabel').textContent = testP + '%';
-    document.getElementById('testPct').textContent = testP + '%';
-    document.getElementById('testPct').style.color = testP < 5 ? '#C53030' : (testP < 10 ? '#B45309' : '#2563EB');
+    txt('testLabel', testP + '%');
+    txt('testPct', testP + '%');
+    col('testPct', testP < 5 ? '#C53030' : (testP < 10 ? '#B45309' : '#2563EB'));
   }
 
-  function getClassProportions() {
-    var nClasses = parseInt(document.getElementById('numClasses').value);
-    var dist = document.getElementById('classDist').value;
+  function customProportions(nClasses) {
+    var raw = String(val('customProportions', '')).split(',');
+    // only the first nClasses entries are ever used as proportions; the rest only
+    // contribute to the normalising sum, so an explicit ceiling costs nothing
+    if (raw.length > MAX_CUSTOM_PARTS) raw = raw.slice(0, MAX_CUSTOM_PARTS);
+    var parts = raw.map(function(s) { return parseFloat(s.trim()); });
+    var props = [];
+    var sum = 0;
+    for (var i = 0; i < parts.length; i++) sum += (parts[i] || 0);
+    if (parts.length < nClasses) {
+      for (var j = parts.length; j < nClasses; j++) parts.push(0);
+      sum = 0; for (var k = 0; k < parts.length; k++) sum += parts[k];
+    }
+    for (var c = 0; c < nClasses; c++) props.push(sum > 0 ? (parts[c] || 0) / sum : 1/nClasses);
+    return props;
+  }
+
+  function getClassProportions(nClasses) {
+    var dist = val('classDist', 'balanced');
     var props = [];
     if (dist === 'balanced') {
       for (var i = 0; i < nClasses; i++) props.push(1 / nClasses);
     } else if (dist === 'moderate') {
       props.push(0.7);
       var rem = 0.3 / (nClasses - 1);
-      for (var i = 1; i < nClasses; i++) props.push(rem);
+      for (var m = 1; m < nClasses; m++) props.push(rem);
     } else if (dist === 'severe') {
       props.push(0.95);
-      var rem = 0.05 / (nClasses - 1);
-      for (var i = 1; i < nClasses; i++) props.push(rem);
+      var remS = 0.05 / (nClasses - 1);
+      for (var s = 1; s < nClasses; s++) props.push(remS);
     } else {
-      var parts = document.getElementById('customProportions').value.split(',').map(function(s) { return parseFloat(s.trim()); });
-      var sum = 0;
-      for (var i = 0; i < parts.length; i++) sum += (parts[i] || 0);
-      if (parts.length < nClasses) {
-        for (var i = parts.length; i < nClasses; i++) parts.push(0);
-        sum = 0; for (var i = 0; i < parts.length; i++) sum += parts[i];
-      }
-      for (var i = 0; i < nClasses; i++) props.push(sum > 0 ? (parts[i] || 0) / sum : 1/nClasses);
+      props = customProportions(nClasses);
     }
     return props;
   }
 
-  function compute() {
-    var total = parseInt(document.getElementById('totalSamples').value) || 1000;
-    var nClasses = parseInt(document.getElementById('numClasses').value);
-    var strategy = document.getElementById('splitStrategy').value;
-    var isStratified = document.getElementById('stratified').value === 'yes';
-    var seed = parseInt(document.getElementById('randomSeed').value) || 42;
-    var props = getClassProportions();
+  function readConfig() {
+    var nClasses = clamp(parseInt(val('numClasses', '2'), 10) || 2, 2, MAX_CLASSES);
+    return {
+      total: intIn('totalSamples', 1000, TOTAL_MIN, TOTAL_MAX),
+      nClasses: nClasses,
+      strategy: val('splitStrategy', 'train_val_test'),
+      isStratified: val('stratified', 'yes') === 'yes',
+      seed: intIn('randomSeed', 42, SEED_MIN, SEED_MAX),
+      k: clamp(parseInt(val('numFolds', '5'), 10) || 5, 2, 100),
+      props: getClassProportions(nClasses),
+      testP: getTestPct()
+    };
+  }
 
-    var testP = getTestPct();
+  function computeSplitSizes(cfg) {
     var trainN, valN, testN;
-    if (strategy === 'kfold') {
-      var k = parseInt(document.getElementById('numFolds').value);
-      testN = Math.round(total / k);
+    if (cfg.strategy === 'kfold') {
+      testN = Math.round(cfg.total / cfg.k);
       valN = 0;
-      trainN = total - testN;
-    } else if (strategy === 'train_test') {
-      trainN = Math.round(total * trainPct / 100);
+      trainN = cfg.total - testN;
+    } else if (cfg.strategy === 'train_test') {
+      trainN = Math.round(cfg.total * trainPct / 100);
       valN = 0;
-      testN = total - trainN;
+      testN = cfg.total - trainN;
     } else {
-      trainN = Math.round(total * trainPct / 100);
-      valN = Math.round(total * valPct / 100);
-      testN = total - trainN - valN;
+      trainN = Math.round(cfg.total * trainPct / 100);
+      valN = Math.round(cfg.total * valPct / 100);
+      testN = cfg.total - trainN - valN;
     }
+    return { trainN: trainN, valN: valN, testN: testN };
+  }
 
-    document.getElementById('resultsSection').style.display = 'block';
-    document.getElementById('metTrain').textContent = trainN.toLocaleString();
-    document.getElementById('metVal').textContent = strategy === 'kfold' ? 'N/A' : valN.toLocaleString();
-    document.getElementById('metTest').textContent = testN.toLocaleString();
+  function splitOneClass(cfg, cTotal, c) {
+    var cTrain, cVal, cTest;
+    if (cfg.isStratified) {
+      cTrain = Math.round(cTotal * trainPct / 100);
+      if (cfg.strategy === 'train_val_test') {
+        cVal = Math.round(cTotal * valPct / 100);
+        cTest = cTotal - cTrain - cVal;
+      } else if (cfg.strategy === 'kfold') {
+        cTest = Math.round(cTotal / cfg.k);
+        cVal = 0;
+        cTrain = cTotal - cTest;
+      } else {
+        cVal = 0;
+        cTest = cTotal - cTrain;
+      }
+    } else {
+      var rng = cfg.seed + c * 137;
+      var fudge = ((Math.sin(rng) * 10000) % 1);
+      var noise = (fudge - 0.5) * 0.1;
+      cTrain = Math.round(cTotal * (trainPct/100 + noise));
+      cTrain = Math.max(1, Math.min(cTotal - 1, cTrain));
+      if (cfg.strategy === 'train_val_test') {
+        cVal = Math.round((cTotal - cTrain) * valPct / (valPct + cfg.testP));
+        cTest = cTotal - cTrain - cVal;
+      } else {
+        cVal = 0;
+        cTest = cTotal - cTrain;
+      }
+    }
+    /* valPct + testP is non-zero for every reachable slider combination, but a
+       0/0 there would put NaN into three table columns at once, so each figure
+       is proved finite before it can be rendered. */
+    if (!Number.isFinite(cTrain)) cTrain = 0;
+    if (!Number.isFinite(cVal)) cVal = 0;
+    if (!Number.isFinite(cTest)) cTest = 0;
+    cTest = Math.max(0, cTest);
+    return { name: 'Class ' + c, total: cTotal, train: cTrain, val: cVal, test: cTest, prop: cfg.props[c] };
+  }
 
+  function computeClassData(cfg) {
     var classData = [];
     var minTestClass = Infinity;
     var maxProp = 0, minProp = 1;
-    for (var c = 0; c < nClasses; c++) {
-      var cTotal = Math.round(total * props[c]);
-      var cTrain, cVal, cTest;
-      if (isStratified) {
-        cTrain = Math.round(cTotal * trainPct / 100);
-        if (strategy === 'train_val_test') {
-          cVal = Math.round(cTotal * valPct / 100);
-          cTest = cTotal - cTrain - cVal;
-        } else if (strategy === 'kfold') {
-          var k = parseInt(document.getElementById('numFolds').value);
-          cTest = Math.round(cTotal / k);
-          cVal = 0;
-          cTrain = cTotal - cTest;
-        } else {
-          cVal = 0;
-          cTest = cTotal - cTrain;
-        }
-      } else {
-        var rng = seed + c * 137;
-        var fudge = ((Math.sin(rng) * 10000) % 1);
-        var noise = (fudge - 0.5) * 0.1;
-        cTrain = Math.round(cTotal * (trainPct/100 + noise));
-        cTrain = Math.max(1, Math.min(cTotal - 1, cTrain));
-        if (strategy === 'train_val_test') {
-          cVal = Math.round((cTotal - cTrain) * valPct / (valPct + testP));
-          cTest = cTotal - cTrain - cVal;
-        } else {
-          cVal = 0;
-          cTest = cTotal - cTrain;
-        }
-      }
-      cTest = Math.max(0, cTest);
-      classData.push({name: 'Class ' + c, total: cTotal, train: cTrain, val: cVal, test: cTest, prop: props[c]});
-      if (cTest < minTestClass) minTestClass = cTest;
-      if (props[c] > maxProp) maxProp = props[c];
-      if (props[c] < minProp) minProp = props[c];
+    for (var c = 0; c < cfg.nClasses; c++) {
+      var cTotal = Math.round(cfg.total * cfg.props[c]);
+      var d = splitOneClass(cfg, cTotal, c);
+      classData.push(d);
+      if (d.test < minTestClass) minTestClass = d.test;
+      if (cfg.props[c] > maxProp) maxProp = cfg.props[c];
+      if (cfg.props[c] < minProp) minProp = cfg.props[c];
     }
+    return { classData: classData, minTestClass: minTestClass, maxProp: maxProp, minProp: minProp };
+  }
 
-    document.getElementById('metMinClass').textContent = minTestClass;
-    document.getElementById('metMinClass').style.color = minTestClass < 10 ? '#C53030' : (minTestClass < 30 ? '#B45309' : '#157F3B');
-    var imbalanceRatio = minProp > 0 ? (maxProp / minProp).toFixed(1) : 'Inf';
-    document.getElementById('metImbalance').textContent = imbalanceRatio + ':1';
-
+  function buildWarnings(cfg, sizes, cd, imbalanceRatio) {
     var warnings = [];
-    if (minTestClass < 10) warnings.push('Minority class has fewer than 10 test samples. Metrics will be unreliable. Consider collecting more data or using cross-validation.');
-    if (minTestClass < 30 && minTestClass >= 10) warnings.push('Minority class has fewer than 30 test samples. Precision and recall confidence intervals will be wide.');
-    if (testN < 100) warnings.push('Test set has fewer than 100 samples. Consider using cross-validation for more reliable estimates.');
-    if (testP < 5) warnings.push('Test set is less than 5% of data. This may not be representative of the true distribution.');
+    if (cd.minTestClass < 10) warnings.push('Minority class has fewer than 10 test samples. Metrics will be unreliable. Consider collecting more data or using cross-validation.');
+    if (cd.minTestClass < 30 && cd.minTestClass >= 10) warnings.push('Minority class has fewer than 30 test samples. Precision and recall confidence intervals will be wide.');
+    if (sizes.testN < 100) warnings.push('Test set has fewer than 100 samples. Consider using cross-validation for more reliable estimates.');
+    if (cfg.testP < 5) warnings.push('Test set is less than 5% of data. This may not be representative of the true distribution.');
     if (parseFloat(imbalanceRatio) > 20) warnings.push('Severe class imbalance detected (>' + imbalanceRatio + ':1). Consider oversampling (SMOTE), undersampling, or class-weighted loss functions.');
-    if (strategy !== 'kfold' && total < 1000) warnings.push('Dataset has fewer than 1,000 samples. Consider using K-fold cross-validation instead of a single holdout split for more reliable evaluation.');
-    if (!isStratified && parseFloat(imbalanceRatio) > 3) warnings.push('Non-stratified split with imbalanced classes. Some splits may have very few minority class samples. Enable stratification.');
+    if (cfg.strategy !== 'kfold' && cfg.total < 1000) warnings.push('Dataset has fewer than 1,000 samples. Consider using K-fold cross-validation instead of a single holdout split for more reliable evaluation.');
+    if (!cfg.isStratified && parseFloat(imbalanceRatio) > 3) warnings.push('Non-stratified split with imbalanced classes. Some splits may have very few minority class samples. Enable stratification.');
+    return warnings;
+  }
+
+  function renderWarnings(warnings) {
     var status = warnings.length === 0 ? 'OK' : warnings.length + ' warning' + (warnings.length > 1 ? 's' : '');
-    document.getElementById('metWarning').textContent = status;
-    document.getElementById('metWarning').style.color = warnings.length === 0 ? '#157F3B' : '#B45309';
+    txt('metWarning', status);
+    col('metWarning', warnings.length === 0 ? '#157F3B' : '#B45309');
 
     if (warnings.length > 0) {
-      document.getElementById('warningsCard').style.display = 'block';
+      show('warningsCard', 'block');
       var wHtml = '';
       for (var i = 0; i < warnings.length; i++) wHtml += '<li style="margin-bottom:8px;">' + warnings[i] + '</li>';
-      document.getElementById('warningsList').innerHTML = wHtml;
+      var list = el('warningsList');
+      if (list) list.innerHTML = wHtml;
     } else {
-      document.getElementById('warningsCard').style.display = 'none';
+      show('warningsCard', 'none');
     }
+  }
 
-    var tbody = document.getElementById('classBody');
-    tbody.innerHTML = '';
+  function renderClassTable(classData, strategy) {
+    var tbody = el('classBody');
+    if (!tbody) return;
+    var html = '';
     for (var i = 0; i < classData.length; i++) {
       var d = classData[i];
       var trainPctClass = d.total > 0 ? (d.train / d.total * 100).toFixed(1) : '0.0';
@@ -559,16 +632,38 @@
       row += '<td style="padding:8px;text-align:right;color:#6a6a6a;">' + trainPctClass + '%</td>';
       row += '<td style="padding:8px;text-align:right;color:#6a6a6a;">' + testPctClass + '%</td>';
       row += '</tr>';
-      tbody.innerHTML += row;
+      html += row;
     }
+    tbody.innerHTML = html;
+  }
 
-    drawSplitChart(trainN, valN, testN, total, strategy);
-    drawStratChart(classData, strategy);
-    generateCode(total, trainPct, valPct, testP, strategy, isStratified, seed, nClasses);
+  function compute() {
+    var cfg = readConfig();
+    var sizes = computeSplitSizes(cfg);
+
+    show('resultsSection', 'block');
+    txt('metTrain', sizes.trainN.toLocaleString());
+    txt('metVal', cfg.strategy === 'kfold' ? 'N/A' : sizes.valN.toLocaleString());
+    txt('metTest', sizes.testN.toLocaleString());
+
+    var cd = computeClassData(cfg);
+
+    txt('metMinClass', cd.minTestClass);
+    col('metMinClass', cd.minTestClass < 10 ? '#C53030' : (cd.minTestClass < 30 ? '#B45309' : '#157F3B'));
+    var imbalanceRatio = cd.minProp > 0 ? (cd.maxProp / cd.minProp).toFixed(1) : 'Inf';
+    txt('metImbalance', imbalanceRatio + ':1');
+
+    renderWarnings(buildWarnings(cfg, sizes, cd, imbalanceRatio));
+    renderClassTable(cd.classData, cfg.strategy);
+
+    drawSplitChart(sizes.trainN, sizes.valN, sizes.testN, cfg.total, cfg.strategy);
+    drawStratChart(cd.classData, cfg.strategy);
+    generateCode(cfg.total, trainPct, valPct, cfg.testP, cfg.strategy, cfg.isStratified, cfg.seed, cfg.nClasses);
   }
 
   function drawSplitChart(trainN, valN, testN, total, strategy) {
-    var svg = document.getElementById('splitSvg');
+    var svg = el('splitSvg');
+    if (!svg) return;
     var pad = 50, w = 340, h = 220;
     var html = '<rect width="400" height="300" fill="#FFFFFF"/>';
     html += '<text x="200" y="25" text-anchor="middle" fill="#6a6a6a" font-size="12" font-family="IBM Plex Sans,sans-serif">Split Sizes</text>';
@@ -594,19 +689,41 @@
     var stackY = h + 70;
     var stackW = w - 20;
     var sx = pad;
-    for (var i = 0; i < splits.length; i++) {
-      var segW = total > 0 ? (splits[i].val / total) * stackW : stackW / splits.length;
-      html += '<rect x="'+sx+'" y="'+stackY+'" width="'+segW+'" height="24" fill="'+splits[i].color+'" opacity="0.7" '+(i===0?'rx="4"':'')+(i===splits.length-1?' rx="4"':'')+'/>';
+    for (var j = 0; j < splits.length; j++) {
+      var segW = total > 0 ? (splits[j].val / total) * stackW : stackW / splits.length;
+      html += '<rect x="'+sx+'" y="'+stackY+'" width="'+segW+'" height="24" fill="'+splits[j].color+'" opacity="0.7" '+(j===0?'rx="4"':'')+(j===splits.length-1?' rx="4"':'')+'/>';
       if (segW > 30) {
-        html += '<text x="'+(sx+segW/2)+'" y="'+(stackY+16)+'" text-anchor="middle" fill="#FFFFFF" font-size="10" font-weight="600" font-family="IBM Plex Sans,sans-serif">'+(total>0?(splits[i].val/total*100).toFixed(0)+'%':'')+'</text>';
+        html += '<text x="'+(sx+segW/2)+'" y="'+(stackY+16)+'" text-anchor="middle" fill="#FFFFFF" font-size="10" font-weight="600" font-family="IBM Plex Sans,sans-serif">'+(total>0?(splits[j].val/total*100).toFixed(0)+'%':'')+'</text>';
       }
       sx += segW;
     }
     svg.innerHTML = html;
   }
 
+  function stratBars(classData, splitNames, geom) {
+    var html = '';
+    for (var s = 0; s < splitNames.length; s++) {
+      var gx = geom.pad + 10 + s * (geom.groupW + 20);
+      html += '<text x="'+(gx+geom.groupW/2)+'" y="'+(geom.h+18)+'" text-anchor="middle" fill="#6a6a6a" font-size="11" font-family="IBM Plex Sans,sans-serif">'+splitNames[s]+'</text>';
+
+      for (var c = 0; c < classData.length; c++) {
+        var v;
+        if (s === 0) v = classData[c].train;
+        else if (splitNames[s] === 'Val') v = classData[c].val;
+        else v = classData[c].test;
+
+        var barH = geom.maxCount > 0 ? (v / geom.maxCount) * (geom.h - 50) : 0;
+        var bx = gx + c * (geom.barW + 2);
+        var by = geom.h - barH;
+        html += '<rect x="'+bx+'" y="'+by+'" width="'+geom.barW+'" height="'+barH+'" fill="'+geom.colors[c % geom.colors.length]+'" rx="1" opacity="0.8"/>';
+      }
+    }
+    return html;
+  }
+
   function drawStratChart(classData, strategy) {
-    var svg = document.getElementById('stratSvg');
+    var svg = el('stratSvg');
+    if (!svg) return;
     var pad = 60, w = 340, h = 240;
     var html = '<rect width="400" height="300" fill="#FFFFFF"/>';
     html += '<text x="200" y="20" text-anchor="middle" fill="#6a6a6a" font-size="12" font-family="IBM Plex Sans,sans-serif">Class Distribution per Split</text>';
@@ -628,22 +745,9 @@
     html += '<line x1="'+pad+'" y1="'+h+'" x2="'+w+'" y2="'+h+'" stroke="#B8B8B6" stroke-width="1"/>';
     html += '<line x1="'+pad+'" y1="35" x2="'+pad+'" y2="'+h+'" stroke="#B8B8B6" stroke-width="1"/>';
 
-    for (var s = 0; s < splitNames.length; s++) {
-      var gx = pad + 10 + s * (groupW + 20);
-      html += '<text x="'+(gx+groupW/2)+'" y="'+(h+18)+'" text-anchor="middle" fill="#6a6a6a" font-size="11" font-family="IBM Plex Sans,sans-serif">'+splitNames[s]+'</text>';
-
-      for (var c = 0; c < nClasses; c++) {
-        var val;
-        if (s === 0) val = classData[c].train;
-        else if (splitNames[s] === 'Val') val = classData[c].val;
-        else val = classData[c].test;
-
-        var barH = maxCount > 0 ? (val / maxCount) * (h - 50) : 0;
-        var bx = gx + c * (barW + 2);
-        var by = h - barH;
-        html += '<rect x="'+bx+'" y="'+by+'" width="'+barW+'" height="'+barH+'" fill="'+colors[c % colors.length]+'" rx="1" opacity="0.8"/>';
-      }
-    }
+    html += stratBars(classData, splitNames, {
+      pad: pad, h: h, groupW: groupW, barW: barW, maxCount: maxCount, colors: colors
+    });
 
     var legendY = h + 32;
     for (var c = 0; c < Math.min(nClasses, 5); c++) {
@@ -655,160 +759,210 @@
     svg.innerHTML = html;
   }
 
-  function generateCode(total, tPct, vPct, testPct, strategy, isStratified, seed, nClasses) {
-    var code = '';
-    if (strategy === 'kfold') {
-      var k = parseInt(document.getElementById('numFolds').value);
-      code = 'import numpy as np\nfrom sklearn.model_selection import ';
-      code += isStratified ? 'StratifiedKFold' : 'KFold';
-      code += '\n\n# Dataset: ' + total + ' samples, ' + nClasses + ' classes\nX = np.load("features.npy")  # shape: (' + total + ', n_features)\ny = np.load("labels.npy")    # shape: (' + total + ',)\n\n';
-      if (isStratified) {
-        code += 'kfold = StratifiedKFold(\n    n_splits=' + k + ',\n    shuffle=True,\n    random_state=' + seed + '\n)\n\n';
-        code += 'for fold, (train_idx, test_idx) in enumerate(kfold.split(X, y)):\n';
-      } else {
-        code += 'kfold = KFold(\n    n_splits=' + k + ',\n    shuffle=True,\n    random_state=' + seed + '\n)\n\n';
-        code += 'for fold, (train_idx, test_idx) in enumerate(kfold.split(X)):\n';
-      }
-      code += '    X_train, X_test = X[train_idx], X[test_idx]\n';
-      code += '    y_train, y_test = y[train_idx], y[test_idx]\n';
-      code += '    print(f"Fold {fold}: train={len(train_idx)}, test={len(test_idx)}")\n';
-      code += '    # Train and evaluate your model here\n';
-    } else if (strategy === 'train_test') {
-      code = 'import numpy as np\nfrom sklearn.model_selection import train_test_split\n\n';
-      code += '# Dataset: ' + total + ' samples, ' + nClasses + ' classes\nX = np.load("features.npy")  # shape: (' + total + ', n_features)\ny = np.load("labels.npy")    # shape: (' + total + ',)\n\n';
-      code += 'X_train, X_test, y_train, y_test = train_test_split(\n';
-      code += '    X, y,\n';
-      code += '    test_size=' + (testPct / 100).toFixed(2) + ',\n';
-      if (isStratified) code += '    stratify=y,\n';
-      code += '    random_state=' + seed + '\n)\n\n';
-      code += 'print(f"Train: {X_train.shape[0]}, Test: {X_test.shape[0]}")\n';
-      code += 'print(f"Train class dist: {np.bincount(y_train)}")\n';
-      code += 'print(f"Test  class dist: {np.bincount(y_test)}")';
+  function kfoldCode(total, strategy, isStratified, seed, nClasses, k) {
+    var code = 'import numpy as np\nfrom sklearn.model_selection import ';
+    code += isStratified ? 'StratifiedKFold' : 'KFold';
+    code += '\n\n# Dataset: ' + total + ' samples, ' + nClasses + ' classes\nX = np.load("features.npy")  # shape: (' + total + ', n_features)\ny = np.load("labels.npy")    # shape: (' + total + ',)\n\n';
+    if (isStratified) {
+      code += 'kfold = StratifiedKFold(\n    n_splits=' + k + ',\n    shuffle=True,\n    random_state=' + seed + '\n)\n\n';
+      code += 'for fold, (train_idx, test_idx) in enumerate(kfold.split(X, y)):\n';
     } else {
-      code = 'import numpy as np\nfrom sklearn.model_selection import train_test_split\n\n';
-      code += '# Dataset: ' + total + ' samples, ' + nClasses + ' classes\nX = np.load("features.npy")  # shape: (' + total + ', n_features)\ny = np.load("labels.npy")    # shape: (' + total + ',)\n\n';
-      code += '# Step 1: Split off test set\n';
-      var testFrac = (testPct / 100).toFixed(2);
-      code += 'X_temp, X_test, y_temp, y_test = train_test_split(\n';
-      code += '    X, y,\n';
-      code += '    test_size=' + testFrac + ',\n';
-      if (isStratified) code += '    stratify=y,\n';
-      code += '    random_state=' + seed + '\n)\n\n';
-      code += '# Step 2: Split remaining into train and validation\n';
-      var valOfRemaining = (vPct / (tPct + vPct)).toFixed(4);
-      code += 'X_train, X_val, y_train, y_val = train_test_split(\n';
-      code += '    X_temp, y_temp,\n';
-      code += '    test_size=' + valOfRemaining + ',  # ' + vPct + '% of total\n';
-      if (isStratified) code += '    stratify=y_temp,\n';
-      code += '    random_state=' + seed + '\n)\n\n';
-      code += 'print(f"Train: {X_train.shape[0]} ({X_train.shape[0]/len(X)*100:.1f}%)")\n';
-      code += 'print(f"Val:   {X_val.shape[0]} ({X_val.shape[0]/len(X)*100:.1f}%)")\n';
-      code += 'print(f"Test:  {X_test.shape[0]} ({X_test.shape[0]/len(X)*100:.1f}%)")\n';
-      code += 'print(f"\\nTrain classes: {np.bincount(y_train)}")\n';
-      code += 'print(f"Val   classes: {np.bincount(y_val)}")\n';
-      code += 'print(f"Test  classes: {np.bincount(y_test)}")';
+      code += 'kfold = KFold(\n    n_splits=' + k + ',\n    shuffle=True,\n    random_state=' + seed + '\n)\n\n';
+      code += 'for fold, (train_idx, test_idx) in enumerate(kfold.split(X)):\n';
     }
-    document.getElementById('codeOutput').textContent = code;
+    code += '    X_train, X_test = X[train_idx], X[test_idx]\n';
+    code += '    y_train, y_test = y[train_idx], y[test_idx]\n';
+    code += '    print(f"Fold {fold}: train={len(train_idx)}, test={len(test_idx)}")\n';
+    code += '    # Train and evaluate your model here\n';
+    return code;
   }
 
-  document.getElementById('trainSlider').addEventListener('input', function() {
-    trainPct = parseInt(this.value);
-    var strategy = document.getElementById('splitStrategy').value;
+  function trainTestCode(total, testPct, isStratified, seed, nClasses) {
+    var code = 'import numpy as np\nfrom sklearn.model_selection import train_test_split\n\n';
+    code += '# Dataset: ' + total + ' samples, ' + nClasses + ' classes\nX = np.load("features.npy")  # shape: (' + total + ', n_features)\ny = np.load("labels.npy")    # shape: (' + total + ',)\n\n';
+    code += 'X_train, X_test, y_train, y_test = train_test_split(\n';
+    code += '    X, y,\n';
+    code += '    test_size=' + (testPct / 100).toFixed(2) + ',\n';
+    if (isStratified) code += '    stratify=y,\n';
+    code += '    random_state=' + seed + '\n)\n\n';
+    code += 'print(f"Train: {X_train.shape[0]}, Test: {X_test.shape[0]}")\n';
+    code += 'print(f"Train class dist: {np.bincount(y_train)}")\n';
+    code += 'print(f"Test  class dist: {np.bincount(y_test)}")';
+    return code;
+  }
+
+  function trainValTestCode(total, tPct, vPct, testPct, isStratified, seed, nClasses) {
+    var code = 'import numpy as np\nfrom sklearn.model_selection import train_test_split\n\n';
+    code += '# Dataset: ' + total + ' samples, ' + nClasses + ' classes\nX = np.load("features.npy")  # shape: (' + total + ', n_features)\ny = np.load("labels.npy")    # shape: (' + total + ',)\n\n';
+    code += '# Step 1: Split off test set\n';
+    var testFrac = (testPct / 100).toFixed(2);
+    code += 'X_temp, X_test, y_temp, y_test = train_test_split(\n';
+    code += '    X, y,\n';
+    code += '    test_size=' + testFrac + ',\n';
+    if (isStratified) code += '    stratify=y,\n';
+    code += '    random_state=' + seed + '\n)\n\n';
+    code += '# Step 2: Split remaining into train and validation\n';
+    var valOfRemaining = (vPct / (tPct + vPct)).toFixed(4);
+    code += 'X_train, X_val, y_train, y_val = train_test_split(\n';
+    code += '    X_temp, y_temp,\n';
+    code += '    test_size=' + valOfRemaining + ',  # ' + vPct + '% of total\n';
+    if (isStratified) code += '    stratify=y_temp,\n';
+    code += '    random_state=' + seed + '\n)\n\n';
+    code += 'print(f"Train: {X_train.shape[0]} ({X_train.shape[0]/len(X)*100:.1f}%)")\n';
+    code += 'print(f"Val:   {X_val.shape[0]} ({X_val.shape[0]/len(X)*100:.1f}%)")\n';
+    code += 'print(f"Test:  {X_test.shape[0]} ({X_test.shape[0]/len(X)*100:.1f}%)")\n';
+    code += 'print(f"\\nTrain classes: {np.bincount(y_train)}")\n';
+    code += 'print(f"Val   classes: {np.bincount(y_val)}")\n';
+    code += 'print(f"Test  classes: {np.bincount(y_test)}")';
+    return code;
+  }
+
+  function generateCode(total, tPct, vPct, testPct, strategy, isStratified, seed, nClasses) {
+    var code;
+    if (strategy === 'kfold') {
+      var k = clamp(parseInt(val('numFolds', '5'), 10) || 5, 2, 100);
+      code = kfoldCode(total, strategy, isStratified, seed, nClasses, k);
+    } else if (strategy === 'train_test') {
+      code = trainTestCode(total, testPct, isStratified, seed, nClasses);
+    } else {
+      code = trainValTestCode(total, tPct, vPct, testPct, isStratified, seed, nClasses);
+    }
+    txt('codeOutput', code);
+  }
+
+  /* A range input reports a value inside [min,max] on its own, but reading it
+     back through parseInt still has to survive a value set by script. */
+  function readSlider(id, fallback) {
+    var node = el(id);
+    if (!node) return fallback;
+    var v = parseInt(node.value, 10);
+    if (!Number.isFinite(v)) return fallback;
+    var lo = parseInt(node.min, 10), hi = parseInt(node.max, 10);
+    if (Number.isFinite(lo)) v = Math.max(lo, v);
+    if (Number.isFinite(hi)) v = Math.min(hi, v);
+    return v;
+  }
+
+  function on(id, evt, fn) {
+    var node = el(id);
+    if (node) node.addEventListener(evt, fn);
+  }
+
+  on('trainSlider', 'input', function() {
+    trainPct = readSlider('trainSlider', 70);
+    var strategy = val('splitStrategy', 'train_val_test');
     if (strategy === 'train_test') {
       /* test auto-adjusts */
     } else {
       if (trainPct + valPct > 95) valPct = 95 - trainPct;
-      document.getElementById('valSlider').value = valPct;
+      var vs = el('valSlider');
+      if (vs) vs.value = valPct;
     }
     updateSliderLabels();
   });
 
-  document.getElementById('valSlider').addEventListener('input', function() {
-    valPct = parseInt(this.value);
+  on('valSlider', 'input', function() {
+    valPct = readSlider('valSlider', 15);
     if (trainPct + valPct > 95) {
       trainPct = 95 - valPct;
-      document.getElementById('trainSlider').value = trainPct;
+      var ts = el('trainSlider');
+      if (ts) ts.value = trainPct;
     }
     updateSliderLabels();
   });
 
-  document.getElementById('splitStrategy').addEventListener('change', function() {
+  on('splitStrategy', 'change', function() {
     var v = this.value;
-    document.getElementById('valGroup').style.display = v === 'train_val_test' ? '' : 'none';
-    document.getElementById('kfoldGroup').style.display = v === 'kfold' ? '' : 'none';
-    document.getElementById('ratioSection').style.display = v === 'kfold' ? 'none' : '';
-    if (v === 'train_test') { trainPct = 80; document.getElementById('trainSlider').value = 80; }
+    show('valGroup', v === 'train_val_test' ? '' : 'none');
+    show('kfoldGroup', v === 'kfold' ? '' : 'none');
+    show('ratioSection', v === 'kfold' ? 'none' : '');
+    if (v === 'train_test') {
+      trainPct = 80;
+      var ts = el('trainSlider');
+      if (ts) ts.value = 80;
+    }
     updateSliderLabels();
   });
 
-  document.getElementById('classDist').addEventListener('change', function() {
-    document.getElementById('customClassSection').style.display = this.value === 'custom' ? 'block' : 'none';
-    var nClasses = parseInt(document.getElementById('numClasses').value);
-    if (this.value === 'custom') {
-      var parts = [];
-      for (var i = 0; i < nClasses; i++) parts.push(Math.round(100 / nClasses));
-      document.getElementById('customProportions').value = parts.join(',');
+  function fillCustomProportions(n) {
+    var parts = [];
+    for (var i = 0; i < n; i++) parts.push(Math.round(100 / n));
+    var node = el('customProportions');
+    if (node) node.value = parts.join(',');
+  }
+
+  on('classDist', 'change', function() {
+    show('customClassSection', this.value === 'custom' ? 'block' : 'none');
+    var nClasses = clamp(parseInt(val('numClasses', '2'), 10) || 2, 2, MAX_CLASSES);
+    if (this.value === 'custom') fillCustomProportions(nClasses);
+  });
+
+  on('numClasses', 'change', function() {
+    var n = clamp(parseInt(this.value, 10) || 2, 2, MAX_CLASSES);
+    if (val('classDist', 'balanced') === 'custom') fillCustomProportions(n);
+  });
+
+  on('computeBtn', 'click', compute);
+
+  function applyPreset(strategy, tPct, vPct) {
+    var strat = el('splitStrategy');
+    if (strat) {
+      strat.value = strategy;
+      strat.dispatchEvent(new Event('change'));
     }
-  });
-
-  document.getElementById('numClasses').addEventListener('change', function() {
-    var n = parseInt(this.value);
-    if (document.getElementById('classDist').value === 'custom') {
-      var parts = [];
-      for (var i = 0; i < n; i++) parts.push(Math.round(100 / n));
-      document.getElementById('customProportions').value = parts.join(',');
+    trainPct = tPct;
+    var ts = el('trainSlider');
+    if (ts) ts.value = tPct;
+    if (vPct !== null) {
+      valPct = vPct;
+      var vs = el('valSlider');
+      if (vs) vs.value = vPct;
     }
-  });
-
-  document.getElementById('computeBtn').addEventListener('click', compute);
-
-  document.getElementById('presetBtn1').addEventListener('click', function() {
-    document.getElementById('splitStrategy').value = 'train_test';
-    document.getElementById('splitStrategy').dispatchEvent(new Event('change'));
-    trainPct = 80; document.getElementById('trainSlider').value = 80;
-    updateSliderLabels(); compute();
-  });
-  document.getElementById('presetBtn2').addEventListener('click', function() {
-    document.getElementById('splitStrategy').value = 'train_val_test';
-    document.getElementById('splitStrategy').dispatchEvent(new Event('change'));
-    trainPct = 70; valPct = 15;
-    document.getElementById('trainSlider').value = 70;
-    document.getElementById('valSlider').value = 15;
-    updateSliderLabels(); compute();
-  });
-  document.getElementById('presetBtn3').addEventListener('click', function() {
-    document.getElementById('splitStrategy').value = 'train_val_test';
-    document.getElementById('splitStrategy').dispatchEvent(new Event('change'));
-    trainPct = 60; valPct = 20;
-    document.getElementById('trainSlider').value = 60;
-    document.getElementById('valSlider').value = 20;
-    updateSliderLabels(); compute();
-  });
-
-  document.getElementById('resetBtn').addEventListener('click', function() {
-    document.getElementById('totalSamples').value = 10000;
-    document.getElementById('numClasses').value = '2';
-    document.getElementById('classDist').value = 'balanced';
-    document.getElementById('customClassSection').style.display = 'none';
-    document.getElementById('splitStrategy').value = 'train_val_test';
-    document.getElementById('splitStrategy').dispatchEvent(new Event('change'));
-    trainPct = 70; valPct = 15;
-    document.getElementById('trainSlider').value = 70;
-    document.getElementById('valSlider').value = 15;
-    document.getElementById('stratified').value = 'yes';
-    document.getElementById('randomSeed').value = 42;
     updateSliderLabels();
-    document.getElementById('resultsSection').style.display = 'none';
+    compute();
+  }
+
+  on('presetBtn1', 'click', function() { applyPreset('train_test', 80, null); });
+  on('presetBtn2', 'click', function() { applyPreset('train_val_test', 70, 15); });
+  on('presetBtn3', 'click', function() { applyPreset('train_val_test', 60, 20); });
+
+  on('resetBtn', 'click', function() {
+    var totalEl = el('totalSamples');
+    if (totalEl) totalEl.value = 10000;
+    var classesEl = el('numClasses');
+    if (classesEl) classesEl.value = '2';
+    var distEl = el('classDist');
+    if (distEl) distEl.value = 'balanced';
+    show('customClassSection', 'none');
+    var strat = el('splitStrategy');
+    if (strat) {
+      strat.value = 'train_val_test';
+      strat.dispatchEvent(new Event('change'));
+    }
+    trainPct = 70; valPct = 15;
+    var ts = el('trainSlider');
+    if (ts) ts.value = 70;
+    var vs = el('valSlider');
+    if (vs) vs.value = 15;
+    var strEl = el('stratified');
+    if (strEl) strEl.value = 'yes';
+    var seedEl = el('randomSeed');
+    if (seedEl) seedEl.value = 42;
+    updateSliderLabels();
+    show('resultsSection', 'none');
   });
 
-  document.getElementById('copyCodeBtn').addEventListener('click', function() {
-    var code = document.getElementById('codeOutput').textContent;
-    if (navigator.clipboard) {
-      navigator.clipboard.writeText(code).then(function() {
-        document.getElementById('copyCodeBtn').textContent = 'Copied!';
-        setTimeout(function() { document.getElementById('copyCodeBtn').textContent = 'Copy Code'; }, 1500);
-      });
-    }
+  on('copyCodeBtn', 'click', function() {
+    var out = el('codeOutput');
+    if (!out || !navigator.clipboard) return;
+    navigator.clipboard.writeText(out.textContent).then(function() {
+      txt('copyCodeBtn', 'Copied!');
+      setTimeout(function() { txt('copyCodeBtn', 'Copy Code'); }, 1500);
+    }).catch(function() {
+      // clipboard permission can be refused; say so instead of failing silently
+      txt('copyCodeBtn', 'Copy failed');
+      setTimeout(function() { txt('copyCodeBtn', 'Copy Code'); }, 1500);
+    });
   });
 
   updateSliderLabels();

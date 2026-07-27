@@ -331,211 +331,330 @@
 </footer>
 
 <script>
-(function() {
-  var origCanvas = document.getElementById('originalCanvas');
-  var augCanvas = document.getElementById('augCanvas');
-  var origCtx = origCanvas.getContext('2d');
-  var augCtx = augCanvas.getContext('2d');
-  var sourceImg = null;
-  var codeMode = 'pytorch';
+'use strict';
+// NASA Power of 10 profile for this browser tool: strict mode, no recursion, every loop
+// bounded by a fixed ceiling, every DOM read null checked, every control validated against
+// the min and max its own markup declares, and no function over 60 lines. The drawing
+// pipeline and the generated PyTorch and TensorFlow code are the ones that shipped, term
+// for term; the guards only decide what happens on a missing element, a garbage value or a
+// file that is not an image, where the honest answer is the declared default, never NaN,
+// never a crash and never a hung tab.
 
-  function generateSampleImage() {
-    var c = document.createElement('canvas');
-    c.width = 320; c.height = 320;
-    var ctx = c.getContext('2d');
-    var grad = ctx.createLinearGradient(0, 0, 320, 320);
-    grad.addColorStop(0, '#1e3a5f'); grad.addColorStop(0.5, '#2d6a4f'); grad.addColorStop(1, '#5f1e3a');
-    ctx.fillStyle = grad; ctx.fillRect(0, 0, 320, 320);
-    ctx.fillStyle = '#e74c3c'; ctx.beginPath(); ctx.arc(110, 130, 50, 0, Math.PI * 2); ctx.fill();
-    ctx.fillStyle = '#3498db'; ctx.fillRect(180, 90, 80, 80);
-    ctx.fillStyle = '#f1c40f'; ctx.beginPath(); ctx.moveTo(160, 230); ctx.lineTo(200, 290); ctx.lineTo(120, 290); ctx.closePath(); ctx.fill();
-    ctx.fillStyle = '#2ecc71'; ctx.beginPath(); ctx.arc(250, 240, 35, 0, Math.PI * 2); ctx.fill();
-    for (var i = 0; i < 20; i++) {
-      ctx.fillStyle = 'rgba(255,255,255,' + (0.3 + Math.random() * 0.5) + ')';
-      ctx.beginPath(); ctx.arc(Math.random()*320, Math.random()*320, 1+Math.random()*3, 0, Math.PI*2); ctx.fill();
-    }
-    ctx.strokeStyle = '#fff'; ctx.lineWidth = 2;
-    ctx.strokeRect(40, 40, 240, 240);
-    ctx.font = '16px IBM Plex Sans, sans-serif'; ctx.fillStyle = '#fff'; ctx.textAlign = 'center';
-    ctx.fillText('Sample Image', 160, 30);
-    return c;
+// Fixed geometry. Every pixel loop below is bounded by one of these ceilings.
+var CANVAS_PX = 320;
+var MAX_PIXEL_BYTES = CANVAS_PX * CANVAS_PX * 4;
+var MAX_SPARKLES = 20;
+var MAX_CHAIN_BOXES = 64;
+var MAX_UPLOAD_BYTES = 25 * 1024 * 1024;
+var COPY_RESET_MS = 2000;
+var COPY_IDLE = 'Copy to Clipboard';
+var COPY_DONE = 'Copied!';
+var COPY_UNAVAILABLE = 'Clipboard blocked, select the code and copy it';
+
+// One entry per range control, mirroring the min, max and value attributes in the markup
+// above. trunc marks the controls the shipped build read with parseInt.
+var CONTROLS = {
+  rotation:   { min: -180, max: 180, def: '0',   trunc: true,  span: 'rotVal' },
+  brightness: { min: 20,   max: 200, def: '100', trunc: true,  span: 'briVal' },
+  contrast:   { min: 20,   max: 300, def: '100', trunc: true,  span: 'conVal' },
+  blur:       { min: 0,    max: 10,  def: '0',   trunc: false, span: 'blurVal' },
+  noise:      { min: 0,    max: 100, def: '0',   trunc: true,  span: 'noiseVal' },
+  hueShift:   { min: -180, max: 180, def: '0',   trunc: true,  span: 'hueVal' },
+  saturation: { min: 0,    max: 300, def: '100', trunc: true,  span: 'satVal' },
+  crop:       { min: 50,   max: 100, def: '100', trunc: true,  span: 'cropVal' }
+};
+var CONTROL_IDS = ['rotation', 'brightness', 'contrast', 'blur', 'noise', 'hueShift',
+                   'saturation', 'crop'];
+
+var sourceImg = null;
+var origCanvas = null;
+var augCanvas = null;
+var origCtx = null;
+var augCtx = null;
+
+function el(id) { return document.getElementById(id); }
+
+function setText(id, value) {
+  var node = el(id);
+  if (node) node.textContent = value;
+}
+
+function isChecked(id) {
+  var node = el(id);
+  return !!(node && node.checked);
+}
+
+function context2d(canvas) {
+  if (!canvas || typeof canvas.getContext !== 'function') return null;
+  return canvas.getContext('2d');
+}
+
+// Clamped, null safe control read. Letters, a blank field, a pasted 1e9 and anything past
+// the declared minimum or maximum all resolve inside [min, max]. Never returns NaN.
+function ctl(id) {
+  var spec = CONTROLS[id];
+  if (!spec) return 0;
+  var node = el(id);
+  var value = parseFloat(node ? node.value : spec.def);
+  if (!isFinite(value)) value = parseFloat(spec.def);
+  if (value < spec.min) value = spec.min;
+  if (value > spec.max) value = spec.max;
+  return spec.trunc ? Math.trunc(value) : value;
+}
+
+function generateSampleImage() {
+  var c = document.createElement('canvas');
+  c.width = CANVAS_PX; c.height = CANVAS_PX;
+  var ctx = context2d(c);
+  if (!ctx) return c;
+  var grad = ctx.createLinearGradient(0, 0, 320, 320);
+  grad.addColorStop(0, '#1e3a5f'); grad.addColorStop(0.5, '#2d6a4f'); grad.addColorStop(1, '#5f1e3a');
+  ctx.fillStyle = grad; ctx.fillRect(0, 0, 320, 320);
+  ctx.fillStyle = '#e74c3c'; ctx.beginPath(); ctx.arc(110, 130, 50, 0, Math.PI * 2); ctx.fill();
+  ctx.fillStyle = '#3498db'; ctx.fillRect(180, 90, 80, 80);
+  ctx.fillStyle = '#f1c40f'; ctx.beginPath(); ctx.moveTo(160, 230); ctx.lineTo(200, 290); ctx.lineTo(120, 290); ctx.closePath(); ctx.fill();
+  ctx.fillStyle = '#2ecc71'; ctx.beginPath(); ctx.arc(250, 240, 35, 0, Math.PI * 2); ctx.fill();
+  for (var i = 0; i < MAX_SPARKLES; i++) {
+    ctx.fillStyle = 'rgba(255,255,255,' + (0.3 + Math.random() * 0.5) + ')';
+    ctx.beginPath(); ctx.arc(Math.random()*320, Math.random()*320, 1+Math.random()*3, 0, Math.PI*2); ctx.fill();
   }
+  ctx.strokeStyle = '#fff'; ctx.lineWidth = 2;
+  ctx.strokeRect(40, 40, 240, 240);
+  ctx.font = '16px IBM Plex Sans, sans-serif'; ctx.fillStyle = '#fff'; ctx.textAlign = 'center';
+  ctx.fillText('Sample Image', 160, 30);
+  return c;
+}
 
-  function loadSource(canvas) {
-    sourceImg = canvas;
-    origCtx.clearRect(0, 0, 320, 320);
-    origCtx.drawImage(canvas, 0, 0, 320, 320);
+function loadSource(canvas) {
+  if (!canvas) return;
+  sourceImg = canvas;
+  if (origCtx) {
+    origCtx.clearRect(0, 0, CANVAS_PX, CANVAS_PX);
+    origCtx.drawImage(canvas, 0, 0, CANVAS_PX, CANVAS_PX);
+  }
+  applyAugmentations();
+}
+
+// Filter string, flips and rotation, exactly as the shipped build composed them.
+function drawTransformed() {
+  var w = CANVAS_PX, h = CANVAS_PX;
+  var bri = ctl('brightness') / 100;
+  var con = ctl('contrast') / 100;
+  var sat = ctl('saturation') / 100;
+  var hue = ctl('hueShift');
+  var blurPx = ctl('blur');
+  augCtx.clearRect(0, 0, w, h);
+  augCtx.save();
+  augCtx.filter = 'brightness('+bri+') contrast('+con+') saturate('+sat+') hue-rotate('+hue+'deg)' + (blurPx > 0 ? ' blur('+blurPx+'px)' : '');
+  augCtx.translate(w/2, h/2);
+  if (isChecked('flipH')) augCtx.scale(-1, 1);
+  if (isChecked('flipV')) augCtx.scale(1, -1);
+  augCtx.rotate(ctl('rotation') * Math.PI / 180);
+  augCtx.drawImage(sourceImg, -w/2, -h/2, w, h);
+  augCtx.restore();
+}
+
+function applyCrop(cropPct) {
+  if (cropPct >= 1) return;
+  var w = CANVAS_PX, h = CANVAS_PX;
+  var cs = Math.floor(w * cropPct);
+  if (cs < 1) return;
+  var tempC = document.createElement('canvas');
+  tempC.width = w; tempC.height = h;
+  var tempCtx = context2d(tempC);
+  if (!tempCtx) return;
+  var cx = Math.floor((w - cs) / 2), cy = Math.floor((h - cs) / 2);
+  tempCtx.drawImage(augCanvas, cx, cy, cs, cs, 0, 0, w, h);
+  augCtx.clearRect(0, 0, w, h);
+  augCtx.drawImage(tempC, 0, 0);
+}
+
+function applyNoise(noisePct) {
+  if (noisePct <= 0) return;
+  var imageData = null;
+  try {
+    imageData = augCtx.getImageData(0, 0, CANVAS_PX, CANVAS_PX);
+  } catch (err) {
+    // Reading pixels back fails only on a canvas tainted by a cross-origin image. The
+    // filtered draw already on screen still stands, so the noise pass is skipped rather
+    // than letting a SecurityError take the whole page down.
+    return;
+  }
+  var data = imageData.data;
+  var strength = noisePct * 2.55;
+  var limit = Math.min(data.length, MAX_PIXEL_BYTES);
+  for (var i = 0; i < limit; i += 4) {
+    var n = (Math.random() - 0.5) * strength;
+    data[i] = Math.max(0, Math.min(255, data[i] + n));
+    data[i+1] = Math.max(0, Math.min(255, data[i+1] + n));
+    data[i+2] = Math.max(0, Math.min(255, data[i+2] + n));
+  }
+  augCtx.putImageData(imageData, 0, 0);
+}
+
+function applyAugmentations() {
+  if (!sourceImg || !augCanvas || !augCtx) return;
+  drawTransformed();
+  applyCrop(ctl('crop') / 100);
+  applyNoise(ctl('noise'));
+}
+
+function pytorchCode() {
+  var rot = ctl('rotation'), bri = ctl('brightness'), con = ctl('contrast');
+  var blurV = ctl('blur'), noiseV = ctl('noise'), hue = ctl('hueShift');
+  var sat = ctl('saturation'), cropV = ctl('crop');
+  var code = 'import torchvision.transforms as T\n\ntransform = T.Compose([\n';
+  if (isChecked('chkCrop') && cropV < 100) code += '    T.RandomResizedCrop(224, scale=('+(cropV/100).toFixed(2)+', 1.0)),\n';
+  if (isChecked('chkFlipH')) code += '    T.RandomHorizontalFlip(p=0.5),\n';
+  if (isChecked('chkFlipV')) code += '    T.RandomVerticalFlip(p=0.5),\n';
+  if (isChecked('chkRotation') && rot !== 0) code += '    T.RandomRotation(degrees='+Math.abs(rot)+'),\n';
+  var cjArgs = [];
+  if (isChecked('chkBrightness') && bri !== 100) cjArgs.push('brightness='+(Math.abs(bri-100)/100).toFixed(2));
+  if (isChecked('chkContrast') && con !== 100) cjArgs.push('contrast='+(Math.abs(con-100)/100).toFixed(2));
+  if (isChecked('chkSaturation') && sat !== 100) cjArgs.push('saturation='+(Math.abs(sat-100)/100).toFixed(2));
+  if (isChecked('chkHue') && hue !== 0) cjArgs.push('hue='+(Math.abs(hue)/360).toFixed(2));
+  if (cjArgs.length > 0) code += '    T.ColorJitter('+cjArgs.join(', ')+'),\n';
+  if (isChecked('chkBlur') && blurV > 0) code += '    T.GaussianBlur(kernel_size='+((Math.round(blurV)*2+1))+', sigma='+blurV.toFixed(1)+'),\n';
+  code += '    T.ToTensor(),\n';
+  code += '    T.Normalize(mean=[0.485, 0.456, 0.406],\n                 std=[0.229, 0.224, 0.225]),\n';
+  if (isChecked('chkNoise') && noiseV > 0) code += '    # Add Gaussian noise: use a custom transform\n    # AddGaussianNoise(mean=0, std='+(noiseV/100*0.1).toFixed(3)+'),\n';
+  code += '])\n';
+  return code;
+}
+
+function tensorflowCode() {
+  var rot = ctl('rotation'), bri = ctl('brightness'), con = ctl('contrast');
+  var blurV = ctl('blur'), noiseV = ctl('noise'), hue = ctl('hueShift');
+  var sat = ctl('saturation'), cropV = ctl('crop');
+  var code = 'import tensorflow as tf\n\ndef augment(image, label):\n    image = tf.cast(image, tf.float32) / 255.0\n';
+  if (isChecked('chkFlipH')) code += '    image = tf.image.random_flip_left_right(image)\n';
+  if (isChecked('chkFlipV')) code += '    image = tf.image.random_flip_up_down(image)\n';
+  if (isChecked('chkBrightness') && bri !== 100) code += '    image = tf.image.random_brightness(image, max_delta='+(Math.abs(bri-100)/100*0.3).toFixed(2)+')\n';
+  if (isChecked('chkContrast') && con !== 100) code += '    image = tf.image.random_contrast(image, lower='+Math.max(0.5, 1-(con-100)/200).toFixed(2)+', upper='+Math.min(1.5, 1+(con-100)/200).toFixed(2)+')\n';
+  if (isChecked('chkSaturation') && sat !== 100) code += '    image = tf.image.random_saturation(image, lower=0.8, upper=1.2)\n';
+  if (isChecked('chkHue') && hue !== 0) code += '    image = tf.image.random_hue(image, max_delta='+(Math.abs(hue)/360*0.1).toFixed(2)+')\n';
+  if (isChecked('chkCrop') && cropV < 100) code += '    image = tf.image.random_crop(image, size=['+Math.round(224*cropV/100)+', '+Math.round(224*cropV/100)+', 3])\n    image = tf.image.resize(image, [224, 224])\n';
+  if (isChecked('chkRotation') && rot !== 0) code += '    # Rotation: use tf.image.rot90 or tfa.image.rotate\n    # image = tfa.image.rotate(image, angles=tf.random.uniform([], -'+((Math.abs(rot)*Math.PI/180).toFixed(3))+', '+((Math.abs(rot)*Math.PI/180).toFixed(3))+'))\n';
+  if (isChecked('chkNoise') && noiseV > 0) code += '    noise = tf.random.normal(shape=tf.shape(image), stddev='+(noiseV/100*0.05).toFixed(3)+')\n    image = tf.clip_by_value(image + noise, 0.0, 1.0)\n';
+  code += '    image = tf.clip_by_value(image, 0.0, 1.0)\n    return image, label\n\n';
+  code += '# dataset = dataset.map(augment, num_parallel_calls=tf.data.AUTOTUNE)\n';
+  return code;
+}
+
+function generateCode(framework) {
+  return framework === 'pytorch' ? pytorchCode() : tensorflowCode();
+}
+
+function resetAll() {
+  var i = 0;
+  for (i = 0; i < CONTROL_IDS.length; i++) {
+    var spec = CONTROLS[CONTROL_IDS[i]];
+    var node = el(CONTROL_IDS[i]);
+    if (node) node.value = spec.def;
+    setText(spec.span, spec.def);
+  }
+  var flipH = el('flipH'); if (flipH) flipH.checked = false;
+  var flipV = el('flipV'); if (flipV) flipV.checked = false;
+  var checks = document.querySelectorAll('[id^="chk"]');
+  var limit = Math.min(checks.length, MAX_CHAIN_BOXES);
+  for (i = 0; i < limit; i++) checks[i].checked = false;
+  applyAugmentations();
+}
+
+function drawUploaded(img) {
+  if (!img.width || !img.height) return;
+  var c = document.createElement('canvas');
+  c.width = CANVAS_PX; c.height = CANVAS_PX;
+  var ctx = context2d(c);
+  if (!ctx) return;
+  var scale = Math.max(CANVAS_PX / img.width, CANVAS_PX / img.height);
+  var sw = img.width * scale, sh = img.height * scale;
+  ctx.drawImage(img, (CANVAS_PX - sw) / 2, (CANVAS_PX - sh) / 2, sw, sh);
+  loadSource(c);
+}
+
+function handleUpload(e) {
+  var input = e ? e.target : null;
+  var file = (input && input.files) ? input.files[0] : null;
+  if (!file) return;
+  // accept="image/*" is advisory only, so the type and the size are checked here. A file
+  // that is not an image, or one large enough to stall the decoder, is ignored and the
+  // image already on screen stays put.
+  if (typeof file.type !== 'string' || file.type.indexOf('image/') !== 0) return;
+  if (file.size > MAX_UPLOAD_BYTES) return;
+  var url = URL.createObjectURL(file);
+  var img = new Image();
+  img.onload = function () {
+    URL.revokeObjectURL(url);
+    drawUploaded(img);
+  };
+  img.onerror = function () {
+    // Undecodable file. Release the blob URL and keep the current image.
+    URL.revokeObjectURL(url);
+  };
+  img.src = url;
+}
+
+function restoreCopyLabel() {
+  setText('copyCode', COPY_IDLE);
+}
+
+function copyCode() {
+  var out = el('codeOutput');
+  if (!out) return;
+  if (!navigator.clipboard || typeof navigator.clipboard.writeText !== 'function') {
+    setText('copyCode', COPY_UNAVAILABLE);
+    setTimeout(restoreCopyLabel, COPY_RESET_MS);
+    return;
+  }
+  navigator.clipboard.writeText(out.textContent).then(function () {
+    setText('copyCode', COPY_DONE);
+    setTimeout(restoreCopyLabel, COPY_RESET_MS);
+  }).catch(function () {
+    // Denied permission or a non-secure context. Say so instead of failing silently.
+    setText('copyCode', COPY_UNAVAILABLE);
+    setTimeout(restoreCopyLabel, COPY_RESET_MS);
+  });
+}
+
+function bindSlider(id) {
+  var node = el(id);
+  var spec = CONTROLS[id];
+  if (!node || !spec) return;
+  node.addEventListener('input', function () {
+    setText(spec.span, node.value);
     applyAugmentations();
-  }
-
-  document.getElementById('sampleBtn').addEventListener('click', function() {
-    loadSource(generateSampleImage());
   });
+}
 
-  document.getElementById('uploadInput').addEventListener('change', function(e) {
-    var file = e.target.files[0];
-    if (!file) return;
-    var img = new Image();
-    img.onload = function() {
-      var c = document.createElement('canvas');
-      c.width = 320; c.height = 320;
-      var ctx = c.getContext('2d');
-      var scale = Math.max(320 / img.width, 320 / img.height);
-      var sw = img.width * scale, sh = img.height * scale;
-      ctx.drawImage(img, (320 - sw) / 2, (320 - sh) / 2, sw, sh);
-      loadSource(c);
-    };
-    img.src = URL.createObjectURL(file);
-  });
+function bindButton(id, type, handler) {
+  var node = el(id);
+  if (node) node.addEventListener(type, handler);
+}
 
-  function applyAugmentations() {
-    if (!sourceImg) return;
-    var w = 320, h = 320;
-    augCtx.clearRect(0, 0, w, h);
-    augCtx.save();
+function bindEvents() {
+  var i = 0;
+  for (i = 0; i < CONTROL_IDS.length; i++) bindSlider(CONTROL_IDS[i]);
+  bindButton('sampleBtn', 'click', function () { loadSource(generateSampleImage()); });
+  bindButton('uploadInput', 'change', handleUpload);
+  bindButton('resetAugBtn', 'click', resetAll);
+  bindButton('flipH', 'change', applyAugmentations);
+  bindButton('flipV', 'change', applyAugmentations);
+  bindButton('genPytorch', 'click', function () { setText('codeOutput', generateCode('pytorch')); });
+  bindButton('genTF', 'click', function () { setText('codeOutput', generateCode('tensorflow')); });
+  bindButton('copyCode', 'click', copyCode);
+}
 
-    var rot = parseInt(document.getElementById('rotation').value);
-    var bri = parseInt(document.getElementById('brightness').value) / 100;
-    var con = parseInt(document.getElementById('contrast').value) / 100;
-    var blurVal = parseFloat(document.getElementById('blur').value);
-    var noiseVal = parseInt(document.getElementById('noise').value);
-    var hue = parseInt(document.getElementById('hueShift').value);
-    var sat = parseInt(document.getElementById('saturation').value) / 100;
-    var cropPct = parseInt(document.getElementById('crop').value) / 100;
-    var fH = document.getElementById('flipH').checked;
-    var fV = document.getElementById('flipV').checked;
-
-    augCtx.filter = 'brightness('+bri+') contrast('+con+') saturate('+sat+') hue-rotate('+hue+'deg)' + (blurVal > 0 ? ' blur('+blurVal+'px)' : '');
-
-    augCtx.translate(w/2, h/2);
-    if (fH) augCtx.scale(-1, 1);
-    if (fV) augCtx.scale(1, -1);
-    augCtx.rotate(rot * Math.PI / 180);
-
-    var cropSize = w * cropPct;
-    var offset = (w - cropSize) / 2;
-    augCtx.drawImage(sourceImg, -w/2, -h/2, w, h);
-    augCtx.restore();
-
-    if (cropPct < 1) {
-      var tempC = document.createElement('canvas');
-      tempC.width = w; tempC.height = h;
-      var tempCtx = tempC.getContext('2d');
-      var cs = Math.floor(w * cropPct);
-      var cx = Math.floor((w - cs) / 2), cy = Math.floor((h - cs) / 2);
-      tempCtx.drawImage(augCanvas, cx, cy, cs, cs, 0, 0, w, h);
-      augCtx.clearRect(0, 0, w, h);
-      augCtx.drawImage(tempC, 0, 0);
-    }
-
-    if (noiseVal > 0) {
-      var imageData = augCtx.getImageData(0, 0, w, h);
-      var data = imageData.data;
-      var strength = noiseVal * 2.55;
-      for (var i = 0; i < data.length; i += 4) {
-        var n = (Math.random() - 0.5) * strength;
-        data[i] = Math.max(0, Math.min(255, data[i] + n));
-        data[i+1] = Math.max(0, Math.min(255, data[i+1] + n));
-        data[i+2] = Math.max(0, Math.min(255, data[i+2] + n));
-      }
-      augCtx.putImageData(imageData, 0, 0);
-    }
-  }
-
-  var sliders = ['rotation','brightness','contrast','blur','noise','hueShift','saturation','crop'];
-  var valSpans = ['rotVal','briVal','conVal','blurVal','noiseVal','hueVal','satVal','cropVal'];
-  for (var i = 0; i < sliders.length; i++) {
-    (function(idx) {
-      document.getElementById(sliders[idx]).addEventListener('input', function() {
-        document.getElementById(valSpans[idx]).textContent = this.value;
-        applyAugmentations();
-      });
-    })(i);
-  }
-
-  document.getElementById('flipH').addEventListener('change', applyAugmentations);
-  document.getElementById('flipV').addEventListener('change', applyAugmentations);
-
-  document.getElementById('resetAugBtn').addEventListener('click', function() {
-    document.getElementById('rotation').value = 0; document.getElementById('rotVal').textContent = '0';
-    document.getElementById('brightness').value = 100; document.getElementById('briVal').textContent = '100';
-    document.getElementById('contrast').value = 100; document.getElementById('conVal').textContent = '100';
-    document.getElementById('blur').value = 0; document.getElementById('blurVal').textContent = '0';
-    document.getElementById('noise').value = 0; document.getElementById('noiseVal').textContent = '0';
-    document.getElementById('hueShift').value = 0; document.getElementById('hueVal').textContent = '0';
-    document.getElementById('saturation').value = 100; document.getElementById('satVal').textContent = '100';
-    document.getElementById('crop').value = 100; document.getElementById('cropVal').textContent = '100';
-    document.getElementById('flipH').checked = false;
-    document.getElementById('flipV').checked = false;
-    var checks = document.querySelectorAll('[id^="chk"]');
-    for (var i = 0; i < checks.length; i++) checks[i].checked = false;
-    applyAugmentations();
-  });
-
-  function generateCode(framework) {
-    codeMode = framework;
-    var transforms = [];
-    var rot = parseInt(document.getElementById('rotation').value);
-    var bri = parseInt(document.getElementById('brightness').value);
-    var con = parseInt(document.getElementById('contrast').value);
-    var blurV = parseFloat(document.getElementById('blur').value);
-    var noiseV = parseInt(document.getElementById('noise').value);
-    var hue = parseInt(document.getElementById('hueShift').value);
-    var sat = parseInt(document.getElementById('saturation').value);
-    var cropV = parseInt(document.getElementById('crop').value);
-
-    if (framework === 'pytorch') {
-      var code = 'import torchvision.transforms as T\n\ntransform = T.Compose([\n';
-      if (document.getElementById('chkCrop').checked && cropV < 100) code += '    T.RandomResizedCrop(224, scale=('+( cropV/100).toFixed(2)+', 1.0)),\n';
-      if (document.getElementById('chkFlipH').checked) code += '    T.RandomHorizontalFlip(p=0.5),\n';
-      if (document.getElementById('chkFlipV').checked) code += '    T.RandomVerticalFlip(p=0.5),\n';
-      if (document.getElementById('chkRotation').checked && rot !== 0) code += '    T.RandomRotation(degrees='+Math.abs(rot)+'),\n';
-      var cjArgs = [];
-      if (document.getElementById('chkBrightness').checked && bri !== 100) cjArgs.push('brightness='+(Math.abs(bri-100)/100).toFixed(2));
-      if (document.getElementById('chkContrast').checked && con !== 100) cjArgs.push('contrast='+(Math.abs(con-100)/100).toFixed(2));
-      if (document.getElementById('chkSaturation').checked && sat !== 100) cjArgs.push('saturation='+(Math.abs(sat-100)/100).toFixed(2));
-      if (document.getElementById('chkHue').checked && hue !== 0) cjArgs.push('hue='+(Math.abs(hue)/360).toFixed(2));
-      if (cjArgs.length > 0) code += '    T.ColorJitter('+cjArgs.join(', ')+'),\n';
-      if (document.getElementById('chkBlur').checked && blurV > 0) code += '    T.GaussianBlur(kernel_size='+((Math.round(blurV)*2+1))+', sigma='+blurV.toFixed(1)+'),\n';
-      code += '    T.ToTensor(),\n';
-      code += '    T.Normalize(mean=[0.485, 0.456, 0.406],\n                 std=[0.229, 0.224, 0.225]),\n';
-      if (document.getElementById('chkNoise').checked && noiseV > 0) code += '    # Add Gaussian noise: use a custom transform\n    # AddGaussianNoise(mean=0, std='+(noiseV/100*0.1).toFixed(3)+'),\n';
-      code += '])\n';
-      return code;
-    } else {
-      var code = 'import tensorflow as tf\n\ndef augment(image, label):\n    image = tf.cast(image, tf.float32) / 255.0\n';
-      if (document.getElementById('chkFlipH').checked) code += '    image = tf.image.random_flip_left_right(image)\n';
-      if (document.getElementById('chkFlipV').checked) code += '    image = tf.image.random_flip_up_down(image)\n';
-      if (document.getElementById('chkBrightness').checked && bri !== 100) code += '    image = tf.image.random_brightness(image, max_delta='+(Math.abs(bri-100)/100*0.3).toFixed(2)+')\n';
-      if (document.getElementById('chkContrast').checked && con !== 100) code += '    image = tf.image.random_contrast(image, lower='+Math.max(0.5, 1-(con-100)/200).toFixed(2)+', upper='+Math.min(1.5, 1+(con-100)/200).toFixed(2)+')\n';
-      if (document.getElementById('chkSaturation').checked && sat !== 100) code += '    image = tf.image.random_saturation(image, lower=0.8, upper=1.2)\n';
-      if (document.getElementById('chkHue').checked && hue !== 0) code += '    image = tf.image.random_hue(image, max_delta='+(Math.abs(hue)/360*0.1).toFixed(2)+')\n';
-      if (document.getElementById('chkCrop').checked && cropV < 100) code += '    image = tf.image.random_crop(image, size=['+Math.round(224*cropV/100)+', '+Math.round(224*cropV/100)+', 3])\n    image = tf.image.resize(image, [224, 224])\n';
-      if (document.getElementById('chkRotation').checked && rot !== 0) code += '    # Rotation: use tf.image.rot90 or tfa.image.rotate\n    # image = tfa.image.rotate(image, angles=tf.random.uniform([], -'+((Math.abs(rot)*Math.PI/180).toFixed(3))+', '+((Math.abs(rot)*Math.PI/180).toFixed(3))+'))\n';
-      if (document.getElementById('chkNoise').checked && noiseV > 0) code += '    noise = tf.random.normal(shape=tf.shape(image), stddev='+(noiseV/100*0.05).toFixed(3)+')\n    image = tf.clip_by_value(image + noise, 0.0, 1.0)\n';
-      code += '    image = tf.clip_by_value(image, 0.0, 1.0)\n    return image, label\n\n';
-      code += '# dataset = dataset.map(augment, num_parallel_calls=tf.data.AUTOTUNE)\n';
-      return code;
-    }
-  }
-
-  document.getElementById('genPytorch').addEventListener('click', function() {
-    document.getElementById('codeOutput').textContent = generateCode('pytorch');
-  });
-  document.getElementById('genTF').addEventListener('click', function() {
-    document.getElementById('codeOutput').textContent = generateCode('tensorflow');
-  });
-  document.getElementById('copyCode').addEventListener('click', function() {
-    var text = document.getElementById('codeOutput').textContent;
-    navigator.clipboard.writeText(text).then(function() {
-      var btn = document.getElementById('copyCode');
-      btn.textContent = 'Copied!';
-      setTimeout(function() { btn.textContent = 'Copy to Clipboard'; }, 2000);
-    });
-  });
-
+function initGallery() {
+  origCanvas = el('originalCanvas');
+  augCanvas = el('augCanvas');
+  origCtx = context2d(origCanvas);
+  augCtx = context2d(augCanvas);
+  bindEvents();
   loadSource(generateSampleImage());
-})();
+}
+
+initGallery();
 </script>
 </body>
 </html>

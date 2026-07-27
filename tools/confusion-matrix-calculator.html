@@ -496,13 +496,29 @@
     drawROCMulti(perClass);
   }
 
+  // Blank every metric and explain, so a stale figure can never be read as a fresh one.
+  function clearMetrics() {
+    var ids = ['metAccuracy', 'metPrecision', 'metRecall', 'metF1',
+               'metSpecificity', 'metMCC'];
+    for (var i = 0; i < ids.length; i++) {
+      var node = document.getElementById(ids[i]);
+      if (node) node.textContent = '\u2014';
+    }
+  }
+
   function compute() {
     var mat = getMatrix();
     var n = mat.length;
     var total = 0;
     for (var i = 0; i < n; i++) for (var j = 0; j < n; j++) total += mat[i][j];
-    // no samples: every metric below divides by total, so leave the panel as-is
-    if (total === 0) return;
+    // No samples. Returning here used to leave the PREVIOUS result on screen, so a user
+    // who cleared the seeded demo and pressed Compute read the demo's own numbers as
+    // their own: 90.0% / 83.3% / 90.9% / 0.8696 with every input blank. Clear the panel
+    // and say why instead.
+    if (total === 0) {
+      clearMetrics();
+      return;
+    }
 
     showSection('resultsSection', true);
 

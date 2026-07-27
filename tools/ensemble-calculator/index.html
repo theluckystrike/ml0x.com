@@ -202,11 +202,19 @@
 
 <script>
   (function() {
+    'use strict';
+
+    /* NASA 1.2 — explicit ceilings for both user-growable collections. Models were
+       already capped in the UI; samples had no bound at all, and every agreement loop
+       below is O(samples x models^2). Neither ceiling is reachable by the shipped
+       demo data, so nothing this page renders by default changes. */
+    const MAX_MODELS = 10;
+    const MAX_SAMPLES = 200;
+
     // ----- STATE -----
     let models = []; // { id, name, accuracy, weight }
     let samples = []; // array of arrays (each sample: array of model predictions)
     let nextModelId = 1;
-    let nextSampleId = 0;
 
     // DOM refs
     const modelListEl = document.getElementById('modelList');
@@ -224,58 +232,84 @@
     const fleissKappaEl = document.getElementById('fleissKappa');
     const agreementDetailEl = document.getElementById('agreementDetail');
     const canvas = document.getElementById('diminishingChart');
+
+    /* NASA 1.3 — stop as a unit when the tool markup is absent. canvas.getContext used
+       to run unguarded at load, so a missing canvas took the whole script down. */
+    if (!modelListEl || !sampleInputsEl || !methodSelect || !weightHint || !addModelBtn ||
+        !resetModelsBtn || !addSampleBtn || !computeBtn || !ensemblePredEl ||
+        !accImproveEl || !agreeRateEl || !fleissKappaEl || !agreementDetailEl || !canvas) {
+      return;
+    }
     const ctx = canvas.getContext('2d');
 
     // ----- HELPERS -----
     function clamp(v, min, max) { return Math.min(max, Math.max(min, v)); }
 
+    /* Model names and predictions are free user text and are interpolated into
+       value="..." / placeholder="..." attributes below, where a bare quote would
+       escape the attribute. */
+    function escapeAttr(s) {
+      return String(s)
+        .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+    }
+
+    function modelIdxOf(el) {
+      const n = parseInt(el.dataset.idx, 10);
+      return (Number.isInteger(n) && n >= 0 && n < models.length) ? n : -1;
+    }
+
     // ----- RENDER MODELS -----
-    function renderModels() {
-      let html = '';
-      models.forEach((m, idx) => {
-        html += `
+    function modelRowHtml(m, idx) {
+      return `
           <div class="model-entry" data-id="${m.id}">
-            <input class="model-name" type="text" value="${m.name}" placeholder="Model name" data-idx="${idx}">
-            <input class="model-acc" type="number" step="0.01" min="0" max="1" value="${m.accuracy}" placeholder="Acc" data-idx="${idx}">
-            <input class="model-weight" type="number" step="0.1" min="0" max="10" value="${m.weight}" placeholder="Weight" data-idx="${idx}">
+            <input class="model-name" type="text" value="${escapeAttr(m.name)}" placeholder="Model name" data-idx="${idx}">
+            <input class="model-acc" type="number" step="0.01" min="0" max="1" value="${escapeAttr(m.accuracy)}" placeholder="Acc" data-idx="${idx}">
+            <input class="model-weight" type="number" step="0.1" min="0" max="10" value="${escapeAttr(m.weight)}" placeholder="Weight" data-idx="${idx}">
             <button class="remove-btn" data-id="${m.id}">✕</button>
           </div>
         `;
-      });
-      modelListEl.innerHTML = html;
+    }
 
-      // attach events
+    function bindModelNameInputs() {
       document.querySelectorAll('.model-name').forEach(inp => {
         inp.addEventListener('change', function() {
-          const idx = parseInt(this.dataset.idx);
-          if (models[idx]) models[idx].name = this.value.trim() || `M${idx+1}`;
+          const idx = modelIdxOf(this);
+          if (idx < 0) return;
+          models[idx].name = this.value.trim() || `M${idx+1}`;
         });
       });
+    }
+
+    // both numeric fields clamp to the min/max declared on the input itself
+    function bindModelNumberInputs() {
       document.querySelectorAll('.model-acc').forEach(inp => {
         inp.addEventListener('change', function() {
-          const idx = parseInt(this.dataset.idx);
-          if (models[idx]) {
-            let val = parseFloat(this.value);
-            if (isNaN(val)) val = 0.5;
-            models[idx].accuracy = clamp(val, 0, 1);
-            this.value = models[idx].accuracy;
-          }
+          const idx = modelIdxOf(this);
+          if (idx < 0) return;
+          let val = parseFloat(this.value);
+          if (isNaN(val)) val = 0.5;
+          models[idx].accuracy = clamp(val, 0, 1);
+          this.value = models[idx].accuracy;
         });
       });
       document.querySelectorAll('.model-weight').forEach(inp => {
         inp.addEventListener('change', function() {
-          const idx = parseInt(this.dataset.idx);
-          if (models[idx]) {
-            let val = parseFloat(this.value);
-            if (isNaN(val) || val < 0) val = 1;
-            models[idx].weight = val;
-            this.value = models[idx].weight;
-          }
+          const idx = modelIdxOf(this);
+          if (idx < 0) return;
+          let val = parseFloat(this.value);
+          if (isNaN(val) || val < 0) val = 1;
+          models[idx].weight = clamp(val, 0, 10);
+          this.value = models[idx].weight;
         });
       });
+    }
+
+    function bindRemoveModelButtons() {
       document.querySelectorAll('.remove-btn').forEach(btn => {
         btn.addEventListener('click', function() {
-          const id = parseInt(this.dataset.id);
+          const id = parseInt(this.dataset.id, 10);
+          if (!Number.isInteger(id)) return;
           models = models.filter(m => m.id !== id);
           // remove corresponding sample entries
           if (samples.length > 0 && models.length > 0) {
@@ -289,48 +323,63 @@
           computeEnsemble();
         });
       });
-      // sync sample inputs if model count changed
+    }
+
+    // sync sample inputs if model count changed
+    function syncSamplesToModels() {
       if (samples.length > 0 && models.length > 0) {
         samples = samples.map(s => {
           if (s.length > models.length) return s.slice(0, models.length);
-          while (s.length < models.length) s.push('');
+          for (let k = s.length; k < models.length && k < MAX_MODELS; k++) s.push('');
           return s;
         });
       } else if (models.length === 0) samples = [];
+    }
+
+    function renderModels() {
+      let html = '';
+      for (let idx = 0; idx < models.length && idx < MAX_MODELS; idx++) {
+        html += modelRowHtml(models[idx], idx);
+      }
+      modelListEl.innerHTML = html;
+
+      // attach events
+      bindModelNameInputs();
+      bindModelNumberInputs();
+      bindRemoveModelButtons();
+      syncSamplesToModels();
       renderSampleInputs();
     }
 
     // ----- SAMPLE INPUTS -----
-    function renderSampleInputs() {
-      if (models.length === 0) {
-        sampleInputsEl.innerHTML = `<div style="color:#6a6a6a; padding:0.5rem;">Add at least one model to enter predictions.</div>`;
-        return;
+    function sampleRowHtml(sample, sIdx) {
+      let html = `<div class="sample-pred-row" style="display:flex; flex-wrap:wrap; gap:0.3rem; align-items:center; border-bottom:1px solid #E8E8E6; padding:0.3rem 0;">`;
+      html += `<span style="font-weight:500; min-width:2rem;">#${sIdx+1}</span>`;
+      for (let mIdx = 0; mIdx < models.length && mIdx < MAX_MODELS; mIdx++) {
+        const val = sample[mIdx] !== undefined ? sample[mIdx] : '';
+        html += `<input type="text" style="width:70px; padding:0.2rem 0.4rem; font-size:0.8rem;" value="${escapeAttr(val)}" placeholder="${escapeAttr(models[mIdx].name)}" data-sample="${sIdx}" data-model="${mIdx}">`;
       }
-      let html = '';
-      samples.forEach((sample, sIdx) => {
-        html += `<div class="sample-pred-row" style="display:flex; flex-wrap:wrap; gap:0.3rem; align-items:center; border-bottom:1px solid #E8E8E6; padding:0.3rem 0;">`;
-        html += `<span style="font-weight:500; min-width:2rem;">#${sIdx+1}</span>`;
-        models.forEach((m, mIdx) => {
-          const val = sample[mIdx] !== undefined ? sample[mIdx] : '';
-          html += `<input type="text" style="width:70px; padding:0.2rem 0.4rem; font-size:0.8rem;" value="${val}" placeholder="${m.name}" data-sample="${sIdx}" data-model="${mIdx}">`;
-        });
-        html += `<button class="remove-sample-btn" data-sample="${sIdx}" style="background:#1A1A1A; color:white; border:none; border-radius:0.4rem; padding:0.2rem 0.5rem; font-size:0.7rem; cursor:pointer;">✕</button>`;
-        html += `</div>`;
-      });
-      sampleInputsEl.innerHTML = html;
+      html += `<button class="remove-sample-btn" data-sample="${sIdx}" style="background:#1A1A1A; color:white; border:none; border-radius:0.4rem; padding:0.2rem 0.5rem; font-size:0.7rem; cursor:pointer;">✕</button>`;
+      html += `</div>`;
+      return html;
+    }
 
-      // attach sample input events
+    // attach sample input events
+    function bindSampleInputs() {
       document.querySelectorAll('#sampleInputs input[type="text"]').forEach(inp => {
         inp.addEventListener('change', function() {
-          const sIdx = parseInt(this.dataset.sample);
-          const mIdx = parseInt(this.dataset.model);
+          const sIdx = parseInt(this.dataset.sample, 10);
+          const mIdx = parseInt(this.dataset.model, 10);
+          if (!Number.isInteger(sIdx) || !Number.isInteger(mIdx)) return;
+          if (sIdx < 0 || sIdx >= MAX_SAMPLES || mIdx < 0 || mIdx >= models.length) return;
           if (!samples[sIdx]) samples[sIdx] = new Array(models.length).fill('');
           samples[sIdx][mIdx] = this.value;
         });
       });
       document.querySelectorAll('.remove-sample-btn').forEach(btn => {
         btn.addEventListener('click', function() {
-          const sIdx = parseInt(this.dataset.sample);
+          const sIdx = parseInt(this.dataset.sample, 10);
+          if (!Number.isInteger(sIdx) || sIdx < 0 || sIdx >= samples.length) return;
           samples.splice(sIdx, 1);
           renderSampleInputs();
           computeEnsemble();
@@ -338,30 +387,26 @@
       });
     }
 
-    // ----- COMPUTE ENSEMBLE -----
-    function computeEnsemble() {
-      if (models.length === 0 || samples.length === 0) {
-        ensemblePredEl.textContent = '—';
-        accImproveEl.textContent = '—';
-        agreeRateEl.textContent = '—';
-        fleissKappaEl.textContent = '—';
-        agreementDetailEl.innerHTML = '<span style="color:#6a6a6a;">No data</span>';
-        drawDiminishingChart([]);
+    function renderSampleInputs() {
+      if (models.length === 0) {
+        sampleInputsEl.innerHTML = `<div style="color:#6a6a6a; padding:0.5rem;">Add at least one model to enter predictions.</div>`;
         return;
       }
+      let html = '';
+      for (let sIdx = 0; sIdx < samples.length && sIdx < MAX_SAMPLES; sIdx++) {
+        html += sampleRowHtml(samples[sIdx], sIdx);
+      }
+      sampleInputsEl.innerHTML = html;
+      bindSampleInputs();
+    }
 
-      const method = methodSelect.value;
-      const numModels = models.length;
-      const numSamples = samples.length;
-
-      // parse predictions: for each sample, array of strings
-      const preds = samples.map(s => s.map(v => (v || '').trim()));
-
-      // compute agreement per sample (pairwise)
+    // ----- COMPUTE ENSEMBLE -----
+    // pairwise agreement per sample, plus the pooled rate
+    function computeAgreement(preds, numModels) {
       let totalPairs = 0;
       let agreeCount = 0;
       const sampleAgreements = [];
-      for (let s = 0; s < numSamples; s++) {
+      for (let s = 0; s < preds.length && s < MAX_SAMPLES; s++) {
         let pairAgree = 0, pairTotal = 0;
         for (let i = 0; i < numModels; i++) {
           for (let j = i+1; j < numModels; j++) {
@@ -375,110 +420,132 @@
         agreeCount += pairAgree;
         sampleAgreements.push({ total: pairTotal, agree: pairAgree });
       }
-      const agreementRate = totalPairs > 0 ? agreeCount / totalPairs : 0;
+      return {
+        detail: sampleAgreements,
+        rate: totalPairs > 0 ? agreeCount / totalPairs : 0
+      };
+    }
 
-      // Fleiss' kappa (multi-rater)
-      let fleissKappa = 0;
-      if (numSamples > 0 && numModels > 1) {
-        // gather unique labels across all samples
-        const labelSet = new Set();
-        preds.forEach(s => s.forEach(v => { if (v !== '') labelSet.add(v); }));
-        const labels = Array.from(labelSet);
-        const N = numSamples;
-        const n = numModels;
-        // matrix: samples x labels
-        let totalAgree = 0;
-        let p_i = 0;
-        for (let s = 0; s < N; s++) {
-          let rowSum = 0;
-          for (let l of labels) {
-            let count = preds[s].filter(v => v === l).length;
-            rowSum += count * count;
-          }
-          totalAgree += rowSum;
-        }
-        const Pbar = (totalAgree - N * n) / (N * n * (n - 1));
-        // Pe: sum over labels of (proportion)^2
-        let totalAssign = N * n;
-        let Pe = 0;
+    // Fleiss' kappa (multi-rater)
+    function computeFleissKappa(preds, numSamples, numModels) {
+      if (!(numSamples > 0 && numModels > 1)) return 0;
+      // gather unique labels across all samples
+      const labelSet = new Set();
+      preds.forEach(s => s.forEach(v => { if (v !== '') labelSet.add(v); }));
+      const labels = Array.from(labelSet);
+      const N = numSamples;
+      const n = numModels;
+      // matrix: samples x labels
+      let totalAgree = 0;
+      for (let s = 0; s < N; s++) {
+        let rowSum = 0;
         for (let l of labels) {
-          let count = 0;
-          preds.forEach(s => { count += s.filter(v => v === l).length; });
-          const p = count / totalAssign;
-          Pe += p * p;
+          let count = preds[s].filter(v => v === l).length;
+          rowSum += count * count;
         }
-        if (Pe < 1) {
-          fleissKappa = (Pbar - Pe) / (1 - Pe);
-        } else {
-          fleissKappa = 0;
-        }
-        fleissKappa = clamp(fleissKappa, -1, 1);
+        totalAgree += rowSum;
       }
+      const Pbar = (totalAgree - N * n) / (N * n * (n - 1));
+      // Pe: sum over labels of (proportion)^2
+      let totalAssign = N * n;
+      let Pe = 0;
+      for (let l of labels) {
+        let count = 0;
+        preds.forEach(s => { count += s.filter(v => v === l).length; });
+        const p = count / totalAssign;
+        Pe += p * p;
+      }
+      const kappa = Pe < 1 ? (Pbar - Pe) / (1 - Pe) : 0;
+      return clamp(kappa, -1, 1);
+    }
 
-      // Ensemble prediction (per sample) based on method
-      let ensembleResults = [];
-      for (let s = 0; s < numSamples; s++) {
+    // hard voting
+    function majorityOf(vals) {
+      const freq = {};
+      vals.forEach(v => { if (v !== '') freq[v] = (freq[v] || 0) + 1; });
+      let maxCount = 0, best = '';
+      for (let [k, cnt] of Object.entries(freq)) {
+        if (cnt > maxCount) { maxCount = cnt; best = k; }
+      }
+      return best || '—';
+    }
+
+    function normalizedWeights(method, numModels) {
+      let weights = models.map(m => m.weight);
+      if (method === 'average') weights = weights.map(() => 1);
+      // normalize weights
+      const sumW = weights.reduce((a,b)=>a+b,0);
+      return sumW > 0 ? weights.map(w => w/sumW) : weights.map(() => 1/numModels);
+    }
+
+    // Ensemble prediction (per sample) based on method
+    function computeEnsembleResults(preds, method, numModels) {
+      const ensembleResults = [];
+      for (let s = 0; s < preds.length && s < MAX_SAMPLES; s++) {
         const vals = preds[s];
-        if (method === 'majority') {
-          // voting
-          const freq = {};
-          vals.forEach(v => { if (v !== '') freq[v] = (freq[v] || 0) + 1; });
-          let maxCount = 0, best = '';
-          for (let [k, cnt] of Object.entries(freq)) {
-            if (cnt > maxCount) { maxCount = cnt; best = k; }
-          }
-          ensembleResults.push(best || '—');
-        } else {
-          // averaging / weighted / stacking (weighted avg as stacking concept)
-          let weights = models.map(m => m.weight);
-          if (method === 'average') weights = weights.map(() => 1);
-          // normalize weights
-          const sumW = weights.reduce((a,b)=>a+b,0);
-          const normW = sumW > 0 ? weights.map(w => w/sumW) : weights.map(() => 1/numModels);
-          // try to parse as numbers (probabilities) else fallback to majority
-          let numeric = true;
-          const numVals = vals.map(v => parseFloat(v));
-          if (numVals.some(isNaN)) numeric = false;
-          if (numeric) {
-            let weightedSum = 0;
-            for (let i=0; i<numModels; i++) {
-              if (vals[i] !== '') weightedSum += normW[i] * numVals[i];
-            }
-            ensembleResults.push(weightedSum.toFixed(4));
-          } else {
-            // fallback to majority
-            const freq = {};
-            vals.forEach(v => { if (v !== '') freq[v] = (freq[v] || 0) + 1; });
-            let maxCount = 0, best = '';
-            for (let [k, cnt] of Object.entries(freq)) {
-              if (cnt > maxCount) { maxCount = cnt; best = k; }
-            }
-            ensembleResults.push(best || '—');
-          }
+        if (method === 'majority') { ensembleResults.push(majorityOf(vals)); continue; }
+        // averaging / weighted / stacking (weighted avg as stacking concept)
+        // try to parse as numbers (probabilities) else fallback to majority
+        const numVals = vals.map(v => parseFloat(v));
+        if (numVals.some(isNaN)) { ensembleResults.push(majorityOf(vals)); continue; }
+        const normW = normalizedWeights(method, numModels);
+        let weightedSum = 0;
+        for (let i=0; i<numModels; i++) {
+          if (vals[i] !== '') weightedSum += normW[i] * numVals[i];
         }
+        ensembleResults.push(weightedSum.toFixed(4));
       }
+      return ensembleResults;
+    }
 
-      // Expected accuracy improvement (diversity-based)
-      const avgAcc = models.reduce((sum, m) => sum + m.accuracy, 0) / numModels;
-      const diversity = 1 - agreementRate;
-      const accImprove = diversity * (1 - avgAcc) * 0.5; // heuristic
-      const accImproveClamped = clamp(accImprove, 0, 0.5);
+    function clearResults() {
+      ensemblePredEl.textContent = '—';
+      accImproveEl.textContent = '—';
+      agreeRateEl.textContent = '—';
+      fleissKappaEl.textContent = '—';
+      agreementDetailEl.innerHTML = '<span style="color:#6a6a6a;">No data</span>';
+      drawDiminishingChart([]);
+    }
 
-      // Update UI
+    // Update UI + agreement detail per sample
+    function renderResults(ensembleResults, agreement, fleissKappa, accImproveClamped) {
       ensemblePredEl.textContent = ensembleResults.length > 0 ? ensembleResults[0] : '—';
       if (ensembleResults.length > 1) ensemblePredEl.textContent += ` … (${ensembleResults.length} samples)`;
       accImproveEl.textContent = (accImproveClamped * 100).toFixed(1) + '%';
-      agreeRateEl.textContent = (agreementRate * 100).toFixed(1) + '%';
+      agreeRateEl.textContent = (agreement.rate * 100).toFixed(1) + '%';
       fleissKappaEl.textContent = fleissKappa.toFixed(3);
 
-      // Agreement detail per sample
       let detailHtml = '';
-      for (let s = 0; s < numSamples; s++) {
-        const ag = sampleAgreements[s];
+      for (let s = 0; s < agreement.detail.length; s++) {
+        const ag = agreement.detail[s];
         const rate = ag.total > 0 ? (ag.agree / ag.total * 100).toFixed(0) : '—';
         detailHtml += `<div style="display:flex; gap:0.5rem; align-items:center;"><span style="min-width:2rem;">#${s+1}</span><span>agree ${rate}%</span><span>${ag.agree}/${ag.total} pairs</span></div>`;
       }
       agreementDetailEl.innerHTML = detailHtml || '<span style="color:#6a6a6a;">No pairs</span>';
+    }
+
+    function computeEnsemble() {
+      if (models.length === 0 || samples.length === 0) {
+        clearResults();
+        return;
+      }
+
+      const method = methodSelect.value;
+      const numModels = models.length;
+      const numSamples = samples.length;
+
+      // parse predictions: for each sample, array of strings
+      const preds = samples.map(s => s.map(v => (v || '').trim()));
+
+      const agreement = computeAgreement(preds, numModels);
+      const fleissKappa = computeFleissKappa(preds, numSamples, numModels);
+      const ensembleResults = computeEnsembleResults(preds, method, numModels);
+
+      // Expected accuracy improvement (diversity-based)
+      const avgAcc = models.reduce((sum, m) => sum + m.accuracy, 0) / numModels;
+      const diversity = 1 - agreement.rate;
+      const accImprove = diversity * (1 - avgAcc) * 0.5; // heuristic
+      renderResults(ensembleResults, agreement, fleissKappa, clamp(accImprove, 0, 0.5));
 
       // Diminishing returns chart
       drawDiminishingChart(models.map(m => m.accuracy));
@@ -517,7 +584,7 @@
 
     // ----- EVENT LISTENERS -----
     addModelBtn.addEventListener('click', function() {
-      if (models.length >= 10) { alert('Maximum 10 models.'); return; }
+      if (models.length >= MAX_MODELS) { alert('Maximum 10 models.'); return; }
       const newModel = {
         id: nextModelId++,
         name: `M${models.length+1}`,
@@ -543,6 +610,7 @@
 
     addSampleBtn.addEventListener('click', function() {
       if (models.length === 0) { alert('Add at least one model first.'); return; }
+      if (samples.length >= MAX_SAMPLES) { alert('Maximum 200 samples.'); return; }
       const newSample = new Array(models.length).fill('');
       samples.push(newSample);
       renderSampleInputs();

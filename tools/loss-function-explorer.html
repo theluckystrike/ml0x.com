@@ -358,6 +358,7 @@
 
 <script>
 (function() {
+  'use strict';
   // ── Loss function definitions ──────────────────────────────────────────
   var LOSSES = [
     {
@@ -451,9 +452,29 @@
   var params = { huberDelta: 1.0, focalGamma: 2.0, quantileTau: 0.5, xRange: 4.0 };
   var currentTab = 'comparison';
 
+  // Slider bounds mirror the min/max on the range inputs. Every read goes through
+  // sliderVal so an empty or scripted value can never reach the maths as NaN.
+  var SLIDER_BOUNDS = {
+    huberDelta: [1.0, 0.1, 3.0], focalGamma: [2.0, 0, 5], quantileTau: [0.5, 0.05, 0.95],
+    xRange: [4.0, 2, 6], probeSlider: [1.5, -4, 4]
+  };
+
+  function sliderVal(id) {
+    var b = SLIDER_BOUNDS[id];
+    var el = document.getElementById(id);
+    var v = el ? parseFloat(el.value) : NaN;
+    if (!isFinite(v)) return b[0];
+    return Math.min(b[2], Math.max(b[1], v));
+  }
+
+  function ctxOf(id) {
+    var canvas = document.getElementById(id);
+    return (canvas && canvas.getContext) ? canvas.getContext('2d') : null;
+  }
+
   // ── Build toggle grid ──────────────────────────────────────────────────
   var grid = document.getElementById('toggleGrid');
-  LOSSES.forEach(function(loss) {
+  if (grid) LOSSES.forEach(function(loss) {
     var btn = document.createElement('div');
     btn.className = 'loss-toggle' + (loss.active ? ' active' : '');
     btn.dataset.id = loss.id;
@@ -471,13 +492,15 @@
 
   // ── Build detail select ────────────────────────────────────────────────
   var detailSel = document.getElementById('detailSelect');
-  LOSSES.forEach(function(loss) {
-    var opt = document.createElement('option');
-    opt.value = loss.id;
-    opt.textContent = loss.name;
-    detailSel.appendChild(opt);
-  });
-  detailSel.addEventListener('change', drawDetail);
+  if (detailSel) {
+    LOSSES.forEach(function(loss) {
+      var opt = document.createElement('option');
+      opt.value = loss.id;
+      opt.textContent = loss.name;
+      detailSel.appendChild(opt);
+    });
+    detailSel.addEventListener('change', drawDetail);
+  }
 
   // ── Canvas helpers ─────────────────────────────────────────────────────
   function makeAxes(ctx, W, H, pad, xR, yMax, xLabel, yLabel) {
@@ -544,7 +567,8 @@
 
   function drawComparison() {
     var canvas = document.getElementById('compCanvas');
-    var ctx = canvas.getContext('2d');
+    var ctx = ctxOf('compCanvas');
+    if (!ctx) return;
     var W = canvas.width, H = canvas.height;
     var pad = { l: 52, r: 20, t: 16, b: 40 };
     var xR = params.xRange;
@@ -582,11 +606,13 @@
 
   function drawDetail() {
     var canvas = document.getElementById('detailCanvas');
-    var ctx = canvas.getContext('2d');
+    var ctx = ctxOf('detailCanvas');
+    if (!ctx) return;
     var W = canvas.width, H = canvas.height;
     var pad = { l: 56, r: 120, t: 24, b: 44 };
     var xR = params.xRange;
-    var loss = LOSSES.find(function(l) { return l.id === detailSel.value; }) || LOSSES[0];
+    var selId = detailSel ? detailSel.value : '';
+    var loss = LOSSES.find(function(l) { return l.id === selId; }) || LOSSES[0];
 
     var yMax = 0;
     for (var i = -100; i <= 100; i++) {
@@ -616,7 +642,7 @@
     }, axes.sx, axes.sy, xR, 600, loss.color, 1.5, [5, 3]);
 
     // Probe marker
-    var probe = parseFloat(document.getElementById('probeSlider').value);
+    var probe = sliderVal('probeSlider');
     var lossVal = loss.fn(probe, params);
     if (isFinite(lossVal)) {
       var px = axes.sx(probe), py = axes.sy(Math.min(lossVal, yMax));
@@ -628,25 +654,31 @@
       ctx.fillText('r=' + probe.toFixed(2) + '  L=' + lossVal.toFixed(4), px + 10, py - 6);
     }
 
-    // Formula annotation
+    drawDetailKey(ctx, loss, pad, axes.gW);
+  }
+
+  // Right-hand key: formula, series names, dashed gradient swatch.
+  function drawDetailKey(ctx, loss, pad, gW) {
     ctx.fillStyle = '#6a6a6a'; ctx.font = '12px JetBrains Mono,monospace'; ctx.textAlign = 'left';
-    ctx.fillText(loss.formula, pad.l + axes.gW + 6, pad.t + 20);
+    ctx.fillText(loss.formula, pad.l + gW + 6, pad.t + 20);
     ctx.fillStyle = '#2563EB'; ctx.font = '600 13px Inter,sans-serif';
-    ctx.fillText(loss.name, pad.l + axes.gW + 6, pad.t + 8);
+    ctx.fillText(loss.name, pad.l + gW + 6, pad.t + 8);
     ctx.fillStyle = '#6a6a6a'; ctx.font = '11px Inter,sans-serif';
-    ctx.fillText('— loss', pad.l + axes.gW + 6, pad.t + 50);
+    ctx.fillText('— loss', pad.l + gW + 6, pad.t + 50);
     ctx.fillStyle = '#6a6a6a'; ctx.setLineDash([5, 3]);
     ctx.strokeStyle = loss.color; ctx.lineWidth = 1.5;
-    ctx.beginPath(); ctx.moveTo(pad.l + axes.gW + 6, pad.t + 62); ctx.lineTo(pad.l + axes.gW + 22, pad.t + 62); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(pad.l + gW + 6, pad.t + 62); ctx.lineTo(pad.l + gW + 22, pad.t + 62); ctx.stroke();
     ctx.setLineDash([]);
     ctx.fillStyle = '#6a6a6a'; ctx.font = '11px Inter,sans-serif'; ctx.textAlign = 'left';
-    ctx.fillText('— grad (scaled)', pad.l + axes.gW + 26, pad.t + 65);
+    ctx.fillText('— grad (scaled)', pad.l + gW + 26, pad.t + 65);
   }
 
   function drawTable() {
-    var probe = parseFloat(document.getElementById('probeSlider').value);
-    document.getElementById('probeVal').textContent = probe.toFixed(2);
+    var probe = sliderVal('probeSlider');
+    var probeEl = document.getElementById('probeVal');
+    if (probeEl) probeEl.textContent = probe.toFixed(2);
     var tbody = document.getElementById('tableBody');
+    if (!tbody) return;
     tbody.innerHTML = '';
     LOSSES.forEach(function(loss) {
       var lv = loss.fn(probe, params);
@@ -668,15 +700,20 @@
     else drawTable();
   }
 
+  function showPanel(id, visible) {
+    var el = document.getElementById(id);
+    if (el) el.style.display = visible ? '' : 'none';
+  }
+
   // ── Tabs ───────────────────────────────────────────────────────────────
   document.querySelectorAll('.tab-btn').forEach(function(btn) {
     btn.addEventListener('click', function() {
       document.querySelectorAll('.tab-btn').forEach(function(b) { b.classList.remove('active'); });
       btn.classList.add('active');
       currentTab = btn.dataset.tab;
-      document.getElementById('panelComparison').style.display = currentTab === 'comparison' ? '' : 'none';
-      document.getElementById('panelDetail').style.display = currentTab === 'detail' ? '' : 'none';
-      document.getElementById('panelTable').style.display = currentTab === 'table' ? '' : 'none';
+      showPanel('panelComparison', currentTab === 'comparison');
+      showPanel('panelDetail', currentTab === 'detail');
+      showPanel('panelTable', currentTab === 'table');
       redraw();
     });
   });
@@ -685,9 +722,10 @@
   function bindSlider(id, valId, key, fmt) {
     var el = document.getElementById(id);
     var valEl = document.getElementById(valId);
+    if (!el) return;
     el.addEventListener('input', function() {
-      params[key] = parseFloat(this.value);
-      valEl.textContent = fmt ? fmt(params[key]) : params[key].toFixed(2);
+      params[key] = sliderVal(id);
+      if (valEl) valEl.textContent = fmt ? fmt(params[key]) : params[key].toFixed(2);
       redraw();
     });
   }
@@ -696,8 +734,10 @@
   bindSlider('quantileTau', 'quantileTauVal', 'quantileTau');
   bindSlider('xRange', 'xRangeVal', 'xRange', function(v) { return '\u00b1' + v.toFixed(1); });
 
-  document.getElementById('probeSlider').addEventListener('input', function() {
-    document.getElementById('probeVal').textContent = parseFloat(this.value).toFixed(2);
+  var probeSlider = document.getElementById('probeSlider');
+  if (probeSlider) probeSlider.addEventListener('input', function() {
+    var probeEl = document.getElementById('probeVal');
+    if (probeEl) probeEl.textContent = sliderVal('probeSlider').toFixed(2);
     if (currentTab === 'detail') drawDetail();
     else if (currentTab === 'table') drawTable();
   });

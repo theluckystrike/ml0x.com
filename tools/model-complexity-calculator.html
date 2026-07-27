@@ -324,6 +324,7 @@
 
 <script>
 (function() {
+  'use strict';
   var layers = [];
   var architectures = [
     {name:'VGG-16', params:138e6, flops:15.5e9, year:2014, color:'#C53030'},
@@ -342,91 +343,167 @@
     {name:'LLaMA-7B', params:7000e6, flops:14e12, year:2023, color:'#BE185D'}
   ];
 
-  function updateLayerParamInputs() {
-    var type = document.getElementById('layerType').value;
-    var container = document.getElementById('layerParams');
-    var html = '';
-    if (type === 'dense') {
-      html = '<div class="control-group"><label>Input Dim</label><input type="number" id="lpIn" value="768" min="1" style="width:100%;padding:8px;background:#fff;border:1px solid #D8D8D6;border-radius:6px;color:#1A1A1A;"></div>';
-      html += '<div class="control-group"><label>Output Dim</label><input type="number" id="lpOut" value="3072" min="1" style="width:100%;padding:8px;background:#fff;border:1px solid #D8D8D6;border-radius:6px;color:#1A1A1A;"></div>';
-    } else if (type === 'conv2d') {
-      html = '<div class="control-group"><label>In Channels</label><input type="number" id="lpCin" value="64" min="1" style="width:100%;padding:8px;background:#fff;border:1px solid #D8D8D6;border-radius:6px;color:#1A1A1A;"></div>';
-      html += '<div class="control-group"><label>Out Channels</label><input type="number" id="lpCout" value="128" min="1" style="width:100%;padding:8px;background:#fff;border:1px solid #D8D8D6;border-radius:6px;color:#1A1A1A;"></div>';
-      html += '<div class="control-group"><label>Kernel Size</label><input type="number" id="lpK" value="3" min="1" style="width:100%;padding:8px;background:#fff;border:1px solid #D8D8D6;border-radius:6px;color:#1A1A1A;"></div>';
-      html += '<div class="control-group"><label>Feature Map Size</label><input type="number" id="lpFM" value="56" min="1" style="width:100%;padding:8px;background:#fff;border:1px solid #D8D8D6;border-radius:6px;color:#1A1A1A;"></div>';
-    } else if (type === 'lstm') {
-      html = '<div class="control-group"><label>Input Dim</label><input type="number" id="lpIn" value="300" min="1" style="width:100%;padding:8px;background:#fff;border:1px solid #D8D8D6;border-radius:6px;color:#1A1A1A;"></div>';
-      html += '<div class="control-group"><label>Hidden Dim</label><input type="number" id="lpHid" value="512" min="1" style="width:100%;padding:8px;background:#fff;border:1px solid #D8D8D6;border-radius:6px;color:#1A1A1A;"></div>';
-      html += '<div class="control-group"><label>Seq Length</label><input type="number" id="lpSeq" value="128" min="1" style="width:100%;padding:8px;background:#fff;border:1px solid #D8D8D6;border-radius:6px;color:#1A1A1A;"></div>';
-    } else if (type === 'attention') {
-      html = '<div class="control-group"><label>Model Dim (d_model)</label><input type="number" id="lpDim" value="768" min="1" style="width:100%;padding:8px;background:#fff;border:1px solid #D8D8D6;border-radius:6px;color:#1A1A1A;"></div>';
-      html += '<div class="control-group"><label>Num Heads</label><input type="number" id="lpHeads" value="12" min="1" style="width:100%;padding:8px;background:#fff;border:1px solid #D8D8D6;border-radius:6px;color:#1A1A1A;"></div>';
-      html += '<div class="control-group"><label>Seq Length</label><input type="number" id="lpSeq" value="512" min="1" style="width:100%;padding:8px;background:#fff;border:1px solid #D8D8D6;border-radius:6px;color:#1A1A1A;"></div>';
-    } else if (type === 'batchnorm' || type === 'layernorm') {
-      html = '<div class="control-group"><label>Features</label><input type="number" id="lpFeat" value="256" min="1" style="width:100%;padding:8px;background:#fff;border:1px solid #D8D8D6;border-radius:6px;color:#1A1A1A;"></div>';
-    } else if (type === 'embedding') {
-      html = '<div class="control-group"><label>Vocab Size</label><input type="number" id="lpVocab" value="30522" min="1" style="width:100%;padding:8px;background:#fff;border:1px solid #D8D8D6;border-radius:6px;color:#1A1A1A;"></div>';
-      html += '<div class="control-group"><label>Embedding Dim</label><input type="number" id="lpDim" value="768" min="1" style="width:100%;padding:8px;background:#fff;border:1px solid #D8D8D6;border-radius:6px;color:#1A1A1A;"></div>';
-    }
-    container.innerHTML = html;
+  // Ceiling on the layer list and on every dimension read from the form, so a
+  // pasted or scripted value can never build an unbounded model (NASA 1.2/1.4).
+  var MAX_LAYERS = 200;
+  var DIM_LIMITS = {
+    lpIn: 1000000, lpOut: 1000000, lpDim: 1000000, lpHid: 1000000,
+    lpFeat: 1000000, lpVocab: 1000000, lpSeq: 131072,
+    lpCin: 65536, lpCout: 65536, lpK: 31, lpFM: 8192, lpHeads: 1024
+  };
+
+  // VGG-16, the architecture already listed in `architectures` below: 13 conv
+  // layers plus 3 fully connected layers. Loaded on arrival so the summary shows
+  // real figures instead of zeros. Clear All empties it.
+  var DEFAULT_MODEL = [
+    ['conv2d', {cin: 3, cout: 64, k: 3, fm: 224}],
+    ['conv2d', {cin: 64, cout: 64, k: 3, fm: 224}],
+    ['conv2d', {cin: 64, cout: 128, k: 3, fm: 112}],
+    ['conv2d', {cin: 128, cout: 128, k: 3, fm: 112}],
+    ['conv2d', {cin: 128, cout: 256, k: 3, fm: 56}],
+    ['conv2d', {cin: 256, cout: 256, k: 3, fm: 56}],
+    ['conv2d', {cin: 256, cout: 256, k: 3, fm: 56}],
+    ['conv2d', {cin: 256, cout: 512, k: 3, fm: 28}],
+    ['conv2d', {cin: 512, cout: 512, k: 3, fm: 28}],
+    ['conv2d', {cin: 512, cout: 512, k: 3, fm: 28}],
+    ['conv2d', {cin: 512, cout: 512, k: 3, fm: 14}],
+    ['conv2d', {cin: 512, cout: 512, k: 3, fm: 14}],
+    ['conv2d', {cin: 512, cout: 512, k: 3, fm: 14}],
+    ['dense', {inp: 25088, out: 4096}],
+    ['dense', {inp: 4096, out: 4096}],
+    ['dense', {inp: 4096, out: 1000}]
+  ];
+
+  var INPUT_STYLE = 'inputmode="numeric" style="width:100%;padding:8px;' +
+    'background:#fff;border:1px solid #D8D8D6;border-radius:6px;color:#1A1A1A;">';
+
+  function field(label, openTag) {
+    return '<div class="control-group"><label>' + label + '</label>' +
+      openTag + INPUT_STYLE + '</div>';
   }
 
-  document.getElementById('layerType').addEventListener('change', updateLayerParamInputs);
+  function layerParamHtml(type) {
+    if (type === 'conv2d') {
+      return field('In Channels', '<input type="number" id="lpCin" value="64" min="1" max="65536" step="1" ') +
+        field('Out Channels', '<input type="number" id="lpCout" value="128" min="1" max="65536" step="1" ') +
+        field('Kernel Size', '<input type="number" id="lpK" value="3" min="1" max="31" step="1" ') +
+        field('Feature Map Size', '<input type="number" id="lpFM" value="56" min="1" max="8192" step="1" ');
+    }
+    if (type === 'lstm') {
+      return field('Input Dim', '<input type="number" id="lpIn" value="300" min="1" max="1000000" step="1" ') +
+        field('Hidden Dim', '<input type="number" id="lpHid" value="512" min="1" max="1000000" step="1" ') +
+        field('Seq Length', '<input type="number" id="lpSeq" value="128" min="1" max="131072" step="1" ');
+    }
+    if (type === 'attention') {
+      return field('Model Dim (d_model)', '<input type="number" id="lpDim" value="768" min="1" max="1000000" step="1" ') +
+        field('Num Heads', '<input type="number" id="lpHeads" value="12" min="1" max="1024" step="1" ') +
+        field('Seq Length', '<input type="number" id="lpSeq" value="512" min="1" max="131072" step="1" ');
+    }
+    if (type === 'batchnorm' || type === 'layernorm') {
+      return field('Features', '<input type="number" id="lpFeat" value="256" min="1" max="1000000" step="1" ');
+    }
+    if (type === 'embedding') {
+      return field('Vocab Size', '<input type="number" id="lpVocab" value="30522" min="1" max="1000000" step="1" ') +
+        field('Embedding Dim', '<input type="number" id="lpDim" value="768" min="1" max="1000000" step="1" ');
+    }
+    return field('Input Dim', '<input type="number" id="lpIn" value="768" min="1" max="1000000" step="1" ') +
+      field('Output Dim', '<input type="number" id="lpOut" value="3072" min="1" max="1000000" step="1" ');
+  }
+
+  function updateLayerParamInputs() {
+    var sel = document.getElementById('layerType');
+    var container = document.getElementById('layerParams');
+    if (!container) return;
+    if (!sel) return;
+    container.innerHTML = layerParamHtml(sel.value);
+  }
+
+  var layerTypeSel = document.getElementById('layerType');
+  if (layerTypeSel) layerTypeSel.addEventListener('change', updateLayerParamInputs);
   updateLayerParamInputs();
 
-  function addLayer() {
-    var type = document.getElementById('layerType').value;
-    var layer = {type: type, params: 0, flops: 0, config: '', output: ''};
+  // Every dimension is read through here: missing element, empty string, text and
+  // out-of-range values all fall back to the documented default instead of NaN.
+  function readDim(id, fallback) {
+    var el = document.getElementById(id);
+    var raw = el ? parseInt(el.value, 10) : NaN;
+    if (!isFinite(raw) || raw < 1) return fallback;
+    var cap = DIM_LIMITS[id] || 1000000;
+    return raw > cap ? cap : raw;
+  }
 
-    if (type === 'dense') {
-      var inp = parseInt(document.getElementById('lpIn').value) || 768;
-      var out = parseInt(document.getElementById('lpOut').value) || 3072;
-      layer.params = inp * out + out;
-      layer.flops = 2 * inp * out;
-      layer.config = inp + ' -> ' + out;
-      layer.output = out + '';
-    } else if (type === 'conv2d') {
-      var cin = parseInt(document.getElementById('lpCin').value) || 64;
-      var cout = parseInt(document.getElementById('lpCout').value) || 128;
-      var k = parseInt(document.getElementById('lpK').value) || 3;
-      var fm = parseInt(document.getElementById('lpFM').value) || 56;
-      layer.params = k * k * cin * cout + cout;
-      layer.flops = 2 * k * k * cin * cout * fm * fm;
-      layer.config = cin + '->' + cout + ', ' + k + 'x' + k + ', fm=' + fm;
-      layer.output = cout + 'x' + fm + 'x' + fm;
-    } else if (type === 'lstm') {
-      var inp = parseInt(document.getElementById('lpIn').value) || 300;
-      var hid = parseInt(document.getElementById('lpHid').value) || 512;
-      var seq = parseInt(document.getElementById('lpSeq').value) || 128;
-      layer.params = 4 * (inp * hid + hid * hid + hid);
-      layer.flops = seq * (8 * hid * (inp + hid));
-      layer.config = inp + '->' + hid + ', seq=' + seq;
-      layer.output = seq + 'x' + hid;
-    } else if (type === 'attention') {
-      var dim = parseInt(document.getElementById('lpDim').value) || 768;
-      var heads = parseInt(document.getElementById('lpHeads').value) || 12;
-      var seq = parseInt(document.getElementById('lpSeq').value) || 512;
-      layer.params = 4 * (dim * dim + dim);
-      layer.flops = 2 * 4 * dim * dim * seq + 2 * heads * seq * seq * (dim / heads);
-      layer.config = 'd=' + dim + ', h=' + heads + ', seq=' + seq;
-      layer.output = seq + 'x' + dim;
-    } else if (type === 'batchnorm' || type === 'layernorm') {
-      var feat = parseInt(document.getElementById('lpFeat').value) || 256;
-      layer.params = 2 * feat;
-      layer.flops = 5 * feat;
-      layer.config = feat + ' features';
-      layer.output = feat + '';
-    } else if (type === 'embedding') {
-      var vocab = parseInt(document.getElementById('lpVocab').value) || 30522;
-      var dim = parseInt(document.getElementById('lpDim').value) || 768;
-      layer.params = vocab * dim;
-      layer.flops = 0;
-      layer.config = vocab + ' x ' + dim;
-      layer.output = dim + '';
+  function readLayerDims(type) {
+    if (type === 'conv2d') {
+      return {cin: readDim('lpCin', 64), cout: readDim('lpCout', 128),
+              k: readDim('lpK', 3), fm: readDim('lpFM', 56)};
     }
+    if (type === 'lstm') {
+      return {inp: readDim('lpIn', 300), hid: readDim('lpHid', 512),
+              seq: readDim('lpSeq', 128)};
+    }
+    if (type === 'attention') {
+      return {dim: readDim('lpDim', 768), heads: readDim('lpHeads', 12),
+              seq: readDim('lpSeq', 512)};
+    }
+    if (type === 'batchnorm' || type === 'layernorm') {
+      return {feat: readDim('lpFeat', 256)};
+    }
+    if (type === 'embedding') {
+      return {vocab: readDim('lpVocab', 30522), dim: readDim('lpDim', 768)};
+    }
+    return {inp: readDim('lpIn', 768), out: readDim('lpOut', 3072)};
+  }
 
-    layers.push(layer);
+  // Formulas unchanged from the published versions documented on this page.
+  function buildLayer(type, d) {
+    var layer = {type: type, params: 0, flops: 0, config: '', output: ''};
+    if (type === 'dense') {
+      layer.params = d.inp * d.out + d.out;
+      layer.flops = 2 * d.inp * d.out;
+      layer.config = d.inp + ' -> ' + d.out;
+      layer.output = d.out + '';
+    } else if (type === 'conv2d') {
+      layer.params = d.k * d.k * d.cin * d.cout + d.cout;
+      layer.flops = 2 * d.k * d.k * d.cin * d.cout * d.fm * d.fm;
+      layer.config = d.cin + '->' + d.cout + ', ' + d.k + 'x' + d.k + ', fm=' + d.fm;
+      layer.output = d.cout + 'x' + d.fm + 'x' + d.fm;
+    } else if (type === 'lstm') {
+      layer.params = 4 * (d.inp * d.hid + d.hid * d.hid + d.hid);
+      layer.flops = d.seq * (8 * d.hid * (d.inp + d.hid));
+      layer.config = d.inp + '->' + d.hid + ', seq=' + d.seq;
+      layer.output = d.seq + 'x' + d.hid;
+    } else if (type === 'attention') {
+      layer.params = 4 * (d.dim * d.dim + d.dim);
+      layer.flops = 2 * 4 * d.dim * d.dim * d.seq +
+        2 * d.heads * d.seq * d.seq * (d.dim / d.heads);
+      layer.config = 'd=' + d.dim + ', h=' + d.heads + ', seq=' + d.seq;
+      layer.output = d.seq + 'x' + d.dim;
+    } else if (type === 'batchnorm' || type === 'layernorm') {
+      layer.params = 2 * d.feat;
+      layer.flops = 5 * d.feat;
+      layer.config = d.feat + ' features';
+      layer.output = d.feat + '';
+    } else if (type === 'embedding') {
+      layer.params = d.vocab * d.dim;
+      layer.flops = 0;
+      layer.config = d.vocab + ' x ' + d.dim;
+      layer.output = d.dim + '';
+    }
+    return layer;
+  }
+
+  function addLayer() {
+    var sel = document.getElementById('layerType');
+    if (!sel || layers.length >= MAX_LAYERS) return;
+    layers.push(buildLayer(sel.value, readLayerDims(sel.value)));
     updateDisplay();
+  }
+
+  function loadDefaultModel() {
+    layers = [];
+    for (var i = 0; i < DEFAULT_MODEL.length && i < MAX_LAYERS; i++) {
+      layers.push(buildLayer(DEFAULT_MODEL[i][0], DEFAULT_MODEL[i][1]));
+    }
   }
 
   function formatNum(n) {
@@ -437,57 +514,74 @@
     return n.toString();
   }
 
-  function updateDisplay() {
+  function setText(id, value) {
+    var el = document.getElementById(id);
+    if (el) el.textContent = value;
+  }
+
+  function totals() {
     var totalP = 0, totalF = 0;
-    for (var i = 0; i < layers.length; i++) {
+    for (var i = 0; i < layers.length && i < MAX_LAYERS; i++) {
       totalP += layers[i].params;
       totalF += layers[i].flops;
     }
+    return {params: totalP, flops: totalF};
+  }
 
-    document.getElementById('totalParams').textContent = formatNum(totalP);
-    document.getElementById('totalFlops').textContent = formatNum(totalF);
-    document.getElementById('memFP32').textContent = (totalP * 4 / (1024*1024)).toFixed(1) + ' MB';
-    document.getElementById('memFP16').textContent = (totalP * 2 / (1024*1024)).toFixed(1) + ' MB';
-    document.getElementById('memINT8').textContent = (totalP * 1 / (1024*1024)).toFixed(1) + ' MB';
-    document.getElementById('layerCount').textContent = layers.length;
+  function layerRow(l, i) {
+    var typeLabel = l.type.charAt(0).toUpperCase() + l.type.slice(1);
+    if (l.type === 'conv2d') typeLabel = 'Conv2D';
+    if (l.type === 'lstm') typeLabel = 'LSTM';
+    if (l.type === 'attention') typeLabel = 'Multi-Head Attention';
+    if (l.type === 'batchnorm') typeLabel = 'BatchNorm';
+    if (l.type === 'layernorm') typeLabel = 'LayerNorm';
+    var html = '<tr style="border-bottom:1px solid #E8E8E6;">';
+    html += '<td style="padding:6px;color:#6E6E6E;">'+(i+1)+'</td>';
+    html += '<td style="padding:6px;color:#2563EB;font-weight:600;">'+typeLabel+'</td>';
+    html += '<td style="padding:6px;color:#6a6a6a;font-size:12px;">'+l.config+'</td>';
+    html += '<td style="padding:6px;text-align:right;color:#1A1A1A;font-family:IBM Plex Mono,monospace;">'+formatNum(l.params)+'</td>';
+    html += '<td style="padding:6px;text-align:right;color:#1A1A1A;font-family:IBM Plex Mono,monospace;">'+formatNum(l.flops)+'</td>';
+    html += '<td style="padding:6px;text-align:right;color:#6a6a6a;font-size:12px;">'+l.output+'</td>';
+    html += '</tr>';
+    return html;
+  }
+
+  function updateDisplay() {
+    var t = totals();
+    var totalP = t.params;
+
+    setText('totalParams', formatNum(totalP));
+    setText('totalFlops', formatNum(t.flops));
+    setText('memFP32', (totalP * 4 / (1024*1024)).toFixed(1) + ' MB');
+    setText('memFP16', (totalP * 2 / (1024*1024)).toFixed(1) + ' MB');
+    setText('memINT8', (totalP * 1 / (1024*1024)).toFixed(1) + ' MB');
+    setText('layerCount', layers.length);
 
     var tbody = document.getElementById('layerBody');
     var html = '';
-    for (var i = 0; i < layers.length; i++) {
-      var l = layers[i];
-      var typeLabel = l.type.charAt(0).toUpperCase() + l.type.slice(1);
-      if (l.type === 'conv2d') typeLabel = 'Conv2D';
-      if (l.type === 'lstm') typeLabel = 'LSTM';
-      if (l.type === 'attention') typeLabel = 'Multi-Head Attention';
-      if (l.type === 'batchnorm') typeLabel = 'BatchNorm';
-      if (l.type === 'layernorm') typeLabel = 'LayerNorm';
-      html += '<tr style="border-bottom:1px solid #E8E8E6;">';
-      html += '<td style="padding:6px;color:#6E6E6E;">'+(i+1)+'</td>';
-      html += '<td style="padding:6px;color:#2563EB;font-weight:600;">'+typeLabel+'</td>';
-      html += '<td style="padding:6px;color:#6a6a6a;font-size:12px;">'+l.config+'</td>';
-      html += '<td style="padding:6px;text-align:right;color:#1A1A1A;font-family:IBM Plex Mono,monospace;">'+formatNum(l.params)+'</td>';
-      html += '<td style="padding:6px;text-align:right;color:#1A1A1A;font-family:IBM Plex Mono,monospace;">'+formatNum(l.flops)+'</td>';
-      html += '<td style="padding:6px;text-align:right;color:#6a6a6a;font-size:12px;">'+l.output+'</td>';
-      html += '</tr>';
+    for (var i = 0; i < layers.length && i < MAX_LAYERS; i++) {
+      html += layerRow(layers[i], i);
     }
     if (layers.length === 0) {
       html = '<tr><td colspan="6" style="padding:20px;text-align:center;color:#6E6E6E;">No layers added yet. Use the form above to add layers.</td></tr>';
     }
-    tbody.innerHTML = html;
+    if (tbody) tbody.innerHTML = html;
 
     drawComparisonChart();
     drawPrecisionChart(totalP);
   }
 
   function drawComparisonChart() {
-    var metric = document.getElementById('compareMetric').value;
+    var metricEl = document.getElementById('compareMetric');
+    var metric = metricEl ? metricEl.value : 'params';
     var svg = document.getElementById('compareSvg');
+    if (!svg) return;
     var pad = {l:120, r:60, t:20, b:30};
     var w = 700 - pad.l - pad.r, h = 400 - pad.t - pad.b;
 
     var items = architectures.slice();
-    var totalP = 0, totalF = 0;
-    for (var i = 0; i < layers.length; i++) { totalP += layers[i].params; totalF += layers[i].flops; }
+    var t = totals();
+    var totalP = t.params, totalF = t.flops;
     if (totalP > 0) items.push({name:'Your Model', params:totalP, flops:totalF, year:2026, color:'#1A1A1A'});
 
     items.sort(function(a, b) {
@@ -560,15 +654,21 @@
     svg.innerHTML = html;
   }
 
-  document.getElementById('addLayerBtn').addEventListener('click', addLayer);
-  document.getElementById('clearAllBtn').addEventListener('click', function() {
+  function on(id, event, handler) {
+    var el = document.getElementById(id);
+    if (el) el.addEventListener(event, handler);
+  }
+
+  on('addLayerBtn', 'click', addLayer);
+  on('clearAllBtn', 'click', function() {
     layers = []; updateDisplay();
   });
-  document.getElementById('undoBtn').addEventListener('click', function() {
+  on('undoBtn', 'click', function() {
     layers.pop(); updateDisplay();
   });
-  document.getElementById('compareBtn').addEventListener('click', drawComparisonChart);
+  on('compareBtn', 'click', drawComparisonChart);
 
+  loadDefaultModel();
   updateDisplay();
 })();
 </script>

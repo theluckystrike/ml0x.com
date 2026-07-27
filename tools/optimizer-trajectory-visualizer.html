@@ -253,12 +253,16 @@ Adam       m_t = &beta;&#8321;&middot;m_{t-1} + (1&minus;&beta;&#8321;)&middot;g
   var COLORS = { sgd:'#2563EB', momentum:'#C53030', rmsprop:'#157F3B', adam:'#B45309' };
   var NAMES  = { sgd:'SGD', momentum:'Momentum', rmsprop:'RMSprop', adam:'Adam' };
 
+  // Hard ceiling on any trajectory, independent of what the steps slider says.
+  var MAX_ITERATIONS = 2000;
+
   // ---- One optimizer run: exact update rules ----
   function runOpt(kind, surf, start, lr, b1, b2, eps, N){
     var x=start.x, y=start.y;
     var vx=0, vy=0, sx=0, sy=0, mx=0, my=0;
     var path=[[x,y]], losses=[surf.f(x,y)], diverged=false;
-    for(var t=1;t<=N;t++){
+    var steps=Math.min(N, MAX_ITERATIONS);
+    for(var t=1;t<=steps;t++){
       var g=surf.grad(x,y), gx=g[0], gy=g[1];
       if(kind==='sgd'){
         x-=lr*gx; y-=lr*gy;
@@ -283,8 +287,27 @@ Adam       m_t = &beta;&#8321;&middot;m_{t-1} + (1&minus;&beta;&#8321;)&middot;g
 
   // ---- DOM ----
   var $=function(id){return document.getElementById(id);};
-  var trajC=$('traj'), lossC=$('loss'), tx=trajC.getContext('2d'), lx=lossC.getContext('2d');
-  var tbl=$('tbl').querySelector('tbody'), legendEl=$('legend');
+  var trajC=$('traj'), lossC=$('loss'), tblEl=$('tbl');
+  if(!trajC||!trajC.getContext) return;
+  if(!lossC||!lossC.getContext) return;
+  if(!tblEl) return;
+  var tx=trajC.getContext('2d'), lx=lossC.getContext('2d');
+  var tbl=tblEl.querySelector('tbody'), legendEl=$('legend');
+  if(!tbl) return;
+
+  // Bounds mirror the min/max on the range inputs; a missing element or a
+  // scripted empty value resolves to the default instead of NaN.
+  var BOUNDS={steps:[160,20,400], lr:[-2,-4,0], b1:[0.9,0,0.999],
+              b2:[0.999,0.8,0.9999], eps:[-8,-10,-2]};
+
+  function readNum(id){
+    var b=BOUNDS[id], el=$(id);
+    var v=el? parseFloat(el.value): NaN;
+    if(!isFinite(v)) return b[0];
+    return Math.min(b[2], Math.max(b[1], v));
+  }
+
+  function setText(id, value){ var el=$(id); if(el) el.textContent=value; }
 
   var state = {
     surface:'rosenbrock', N:160, lr:0.01, b1:0.9, b2:0.999, eps:1e-8,
@@ -293,18 +316,19 @@ Adam       m_t = &beta;&#8321;&middot;m_{t-1} + (1&minus;&beta;&#8321;)&middot;g
   };
 
   function readInputs(){
-    state.surface=$('surface').value;
-    state.N=+$('steps').value;
-    state.lr=Math.pow(10,+$('lr').value);
-    state.b1=+$('b1').value;
-    state.b2=+$('b2').value;
-    state.eps=Math.pow(10,+$('eps').value);
+    var surfEl=$('surface');
+    state.surface=(surfEl && SURFACES[surfEl.value])? surfEl.value : 'rosenbrock';
+    state.N=Math.round(readNum('steps'));
+    state.lr=Math.pow(10,readNum('lr'));
+    state.b1=readNum('b1');
+    state.b2=readNum('b2');
+    state.eps=Math.pow(10,readNum('eps'));
     document.querySelectorAll('.opt').forEach(function(c){ state.active[c.dataset.k]=c.checked; });
-    $('stepsV').textContent=state.N;
-    $('lrV').textContent=state.lr.toPrecision(3);
-    $('b1V').textContent=state.b1.toFixed(3);
-    $('b2V').textContent=state.b2.toFixed(4);
-    $('epsV').textContent=state.eps.toExponential(0);
+    setText('stepsV', state.N);
+    setText('lrV', state.lr.toPrecision(3));
+    setText('b1V', state.b1.toFixed(3));
+    setText('b2V', state.b2.toFixed(4));
+    setText('epsV', state.eps.toExponential(0));
   }
 
   function surf(){ return SURFACES[state.surface]; }
@@ -413,8 +437,8 @@ Adam       m_t = &beta;&#8321;&middot;m_{t-1} + (1&minus;&beta;&#8321;)&middot;g
     drawLoss(runs);
     fillTable(runs);
     buildLegend(runs);
-    $('startline').textContent='Start: ('+startPt().x.toFixed(2)+', '+startPt().y.toFixed(2)+
-      ')  ·  showing step '+state.shown+' / '+state.N;
+    setText('startline', 'Start: ('+startPt().x.toFixed(2)+', '+startPt().y.toFixed(2)+
+      ')  ·  showing step '+state.shown+' / '+state.N);
   }
 
   function drawLoss(runs){
@@ -488,19 +512,23 @@ Adam       m_t = &beta;&#8321;&middot;m_{t-1} + (1&minus;&beta;&#8321;)&middot;g
 
   // ---- events ----
   ['surface','steps','lr','b1','b2','eps'].forEach(function(id){
-    $(id).addEventListener('input', function(){
-      if(id==='steps'){ state.shown=+$('steps').value; }
+    var el=$(id);
+    if(!el) return;
+    el.addEventListener('input', function(){
+      if(id==='steps'){ state.shown=Math.round(readNum('steps')); }
       if(id==='surface'){ state.start=null; }
       draw();
     });
   });
   document.querySelectorAll('.opt').forEach(function(c){ c.addEventListener('change',draw); });
 
-  $('run').addEventListener('click', function(){ readInputs(); state.shown=state.N; draw(); });
-  $('reset').addEventListener('click', function(){
+  function on(id, event, handler){ var el=$(id); if(el) el.addEventListener(event, handler); }
+
+  on('run','click', function(){ readInputs(); state.shown=state.N; draw(); });
+  on('reset','click', function(){
     state.start=null; state.shown=state.N; draw();
   });
-  $('step').addEventListener('click', function(){
+  on('step','click', function(){
     state.shown=Math.min(state.N, state.shown+10); draw();
   });
 
@@ -510,8 +538,9 @@ Adam       m_t = &beta;&#8321;&middot;m_{t-1} + (1&minus;&beta;&#8321;)&middot;g
     var scaleX=trajC.width/rect.width, scaleY=trajC.height/rect.height;
     var px=(e.clientX-rect.left)*scaleX, py=(e.clientY-rect.top)*scaleY;
     var inv=invMap(surf().dom, trajC.width, trajC.height, 8);
-    var wp=inv(px,py);
-    state.start={x:wp[0], y:wp[1]};
+    var wp=inv(px,py), dm=surf().dom;
+    state.start={x:Math.min(dm.x1,Math.max(dm.x0,wp[0])),
+                 y:Math.min(dm.y1,Math.max(dm.y0,wp[1]))};
     state.shown=state.N;
     draw();
   });

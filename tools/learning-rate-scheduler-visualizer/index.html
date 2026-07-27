@@ -257,6 +257,7 @@ for epoch in range(100):
     </div>
 
     <script>
+        'use strict';
         let scheduleData = [];
 
         const scheduleConfigs = {
@@ -302,119 +303,154 @@ for epoch in range(100):
             }
         };
 
+        // Hard ceilings: a schedule is never longer than MAX_STEPS points and the
+        // warm-restart cycle search can never spin (NASA 1.2).
+        const MAX_STEPS = 20000;
+        const MAX_CYCLE_ITERATIONS = 10000;
+
+        // Bounds per parameter: [fallback, min, max]. Anything empty, non-numeric or
+        // out of range resolves to a usable number instead of NaN (NASA 1.4).
+        const PARAM_BOUNDS = {
+            initialLr: [0.001, 0.00001, 1], minLr: [0.00001, 0, 0.1],
+            totalSteps: [100, 1, 10000],
+            T_max: [100, 1, MAX_STEPS], step_size: [30, 1, MAX_STEPS],
+            gamma: [0.1, 0, 1e6], T_0: [30, 1, MAX_STEPS], T_mult: [2, 1, 100],
+            warmup_steps: [10, 1, MAX_STEPS], power: [2, 0, 100],
+            max_lr: [0.01, 0, 1e6], pct_start: [0.3, 0.01, 0.99],
+            base_lr: [0.0001, 0, 1e6]
+        };
+
+        function num(id, fallback) {
+            const b = PARAM_BOUNDS[id] || [fallback, -1e12, 1e12];
+            const el = document.getElementById(id);
+            const raw = el ? parseFloat(el.value) : NaN;
+            if (!isFinite(raw)) return fallback === undefined ? b[0] : fallback;
+            return Math.min(b[2], Math.max(b[1], raw));
+        }
+
+        function intNum(id, fallback) {
+            return Math.floor(num(id, fallback));
+        }
+
         function updateParamInputs() {
-            const type = document.getElementById('scheduleType').value;
-            const config = scheduleConfigs[type];
+            const sel = document.getElementById('scheduleType');
+            if (!sel) return;
+            const config = scheduleConfigs[sel.value];
             const container = document.getElementById('scheduleParams');
+            if (!container) return;
+            if (!config) return;
             container.innerHTML = '';
 
             if (config.params) {
                 config.params.forEach(param => {
+                    const bounds = PARAM_BOUNDS[param.name] || [param.value, 0, 1e6];
                     const div = document.createElement('div');
                     div.className = 'form-group';
                     div.innerHTML = `
                         <label for="${param.name}">${param.label}</label>
-                        <input type="number" id="${param.name}" value="${param.value}" step="any" min="0">
+                        <input type="number" id="${param.name}" value="${param.value}" step="any" min="${bounds[1]}" max="${bounds[2]}">
                     `;
                     container.appendChild(div);
                 });
             }
         }
 
+        function scheduleParams(type) {
+            if (type === 'cosine') return { T_max: intNum('T_max', 100) };
+            if (type === 'step') return { step_size: intNum('step_size', 30), gamma: num('gamma', 0.1) };
+            if (type === 'exponential') return { gamma: num('gamma', 0.95) };
+            if (type === 'cosine-warm-restart') return { T_0: intNum('T_0', 30), T_mult: num('T_mult', 2) };
+            if (type === 'warmup-cosine') return { warmup_steps: intNum('warmup_steps', 10), T_max: intNum('T_max', 90) };
+            if (type === 'polynomial') return { power: num('power', 2) };
+            if (type === 'onecycle') return { max_lr: num('max_lr', 0.01), pct_start: num('pct_start', 0.3) };
+            if (type === 'cyclic') {
+                return { base_lr: num('base_lr', 0.0001), max_lr: num('max_lr', 0.01),
+                         step_size: intNum('step_size', 20) };
+            }
+            return {};
+        }
+
+        // Published formulas, unchanged. T_max, step sizes and T_0 are >= 1 by the
+        // bounds above, so no division by zero reaches them.
+        function lrAt(type, step, progress, base, p) {
+            const initialLr = base.initialLr, minLr = base.minLr;
+            if (type === 'cosine') {
+                const cycle = step % p.T_max;
+                return minLr + (initialLr - minLr) * (1 + Math.cos(Math.PI * cycle / p.T_max)) / 2;
+            }
+            if (type === 'step') {
+                return initialLr * Math.pow(p.gamma, Math.floor(step / p.step_size));
+            }
+            if (type === 'exponential') return initialLr * Math.pow(p.gamma, step);
+            if (type === 'cosine-warm-restart') {
+                let T_cur = step, T_i = p.T_0, guard = 0;
+                while (T_cur >= T_i && guard < MAX_CYCLE_ITERATIONS) {
+                    T_cur -= T_i;
+                    T_i *= p.T_mult;
+                    guard++;
+                }
+                return minLr + (initialLr - minLr) * (1 + Math.cos(Math.PI * T_cur / T_i)) / 2;
+            }
+            if (type === 'warmup-cosine') {
+                if (step < p.warmup_steps) return initialLr * (step / p.warmup_steps);
+                const cosineStep = step - p.warmup_steps;
+                return minLr + (initialLr - minLr) * (1 + Math.cos(Math.PI * cosineStep / p.T_max)) / 2;
+            }
+            if (type === 'polynomial') {
+                return Math.max(initialLr * Math.pow(1 - progress, p.power), minLr);
+            }
+            if (type === 'onecycle') {
+                const pctEnd = 0.85;
+                if (progress <= p.pct_start) {
+                    return initialLr + (p.max_lr - initialLr) * (progress / p.pct_start);
+                }
+                if (progress <= pctEnd) {
+                    return p.max_lr + (initialLr - p.max_lr) *
+                        ((progress - p.pct_start) / (pctEnd - p.pct_start));
+                }
+                return initialLr * (1 - (progress - pctEnd) / (1 - pctEnd));
+            }
+            if (type === 'cyclic') {
+                const cycle = Math.floor(step / p.step_size);
+                const posInCycle = step - cycle * p.step_size;
+                return p.base_lr + (p.max_lr - p.base_lr) *
+                    Math.abs(1 - 2 * posInCycle / p.step_size);
+            }
+            return initialLr;
+        }
+
         function computeSchedule() {
-            const initialLr = parseFloat(document.getElementById('initialLr').value);
-            const totalSteps = parseInt(document.getElementById('totalSteps').value);
-            const scheduleType = document.getElementById('scheduleType').value;
-            const minLr = parseFloat(document.getElementById('minLr').value);
+            const typeEl = document.getElementById('scheduleType');
+            const scheduleType = typeEl ? typeEl.value : 'cosine';
+            const base = { initialLr: num('initialLr', 0.001), minLr: num('minLr', 0.00001) };
+            const totalSteps = intNum('totalSteps', 100);
+            const p = scheduleParams(scheduleType);
 
             scheduleData = [];
-
-            for (let step = 0; step < totalSteps; step++) {
-                let lr = initialLr;
-                const progress = step / totalSteps;
-
-                if (scheduleType === 'cosine') {
-                    const T_max = parseInt(document.getElementById('T_max').value);
-                    const cycle = step % T_max;
-                    lr = minLr + (initialLr - minLr) * (1 + Math.cos(Math.PI * cycle / T_max)) / 2;
-                } else if (scheduleType === 'step') {
-                    const stepSize = parseInt(document.getElementById('step_size').value);
-                    const gamma = parseFloat(document.getElementById('gamma').value);
-                    const stepNum = Math.floor(step / stepSize);
-                    lr = initialLr * Math.pow(gamma, stepNum);
-                } else if (scheduleType === 'exponential') {
-                    const gamma = parseFloat(document.getElementById('gamma').value);
-                    lr = initialLr * Math.pow(gamma, step);
-                } else if (scheduleType === 'cosine-warm-restart') {
-                    const T_0 = parseInt(document.getElementById('T_0').value);
-                    const T_mult = parseFloat(document.getElementById('T_mult').value);
-                    let T_cur = step;
-                    let T_i = T_0;
-                    let cycle = 0;
-                    while (T_cur >= T_i) {
-                        T_cur -= T_i;
-                        T_i *= T_mult;
-                        cycle++;
-                    }
-                    lr = minLr + (initialLr - minLr) * (1 + Math.cos(Math.PI * T_cur / T_i)) / 2;
-                } else if (scheduleType === 'warmup-cosine') {
-                    const warmupSteps = parseInt(document.getElementById('warmup_steps').value);
-                    const T_max = parseInt(document.getElementById('T_max').value);
-                    if (step < warmupSteps) {
-                        lr = initialLr * (step / warmupSteps);
-                    } else {
-                        const cosineStep = step - warmupSteps;
-                        lr = minLr + (initialLr - minLr) * (1 + Math.cos(Math.PI * cosineStep / T_max)) / 2;
-                    }
-                } else if (scheduleType === 'polynomial') {
-                    const power = parseFloat(document.getElementById('power').value);
-                    lr = initialLr * Math.pow(1 - progress, power);
-                    lr = Math.max(lr, minLr);
-                } else if (scheduleType === 'onecycle') {
-                    const maxLr = parseFloat(document.getElementById('max_lr').value);
-                    const pctStart = parseFloat(document.getElementById('pct_start').value);
-                    const pctEnd = 0.85;
-
-                    if (progress <= pctStart) {
-                        lr = initialLr + (maxLr - initialLr) * (progress / pctStart);
-                    } else if (progress <= pctEnd) {
-                        lr = maxLr + (initialLr - maxLr) * ((progress - pctStart) / (pctEnd - pctStart));
-                    } else {
-                        lr = initialLr * (1 - (progress - pctEnd) / (1 - pctEnd));
-                    }
-                } else if (scheduleType === 'cyclic') {
-                    const baseLr = parseFloat(document.getElementById('base_lr').value);
-                    const maxLr = parseFloat(document.getElementById('max_lr').value);
-                    const stepSize = parseInt(document.getElementById('step_size').value);
-                    const cycle = Math.floor(step / stepSize);
-                    const posInCycle = step - cycle * stepSize;
-                    lr = baseLr + (maxLr - baseLr) * Math.abs(1 - 2 * posInCycle / stepSize);
-                }
-
-                scheduleData.push({ step, lr: Math.max(lr, minLr) });
+            for (let step = 0; step < totalSteps && step < MAX_STEPS; step++) {
+                let lr = lrAt(scheduleType, step, step / totalSteps, base, p);
+                if (!isFinite(lr)) lr = base.minLr;
+                scheduleData.push({ step, lr: Math.max(lr, base.minLr) });
             }
         }
 
-        function drawChart() {
-            const canvas = document.getElementById('scheduleCanvas');
-            const ctx = canvas.getContext('2d');
-            const rect = canvas.getBoundingClientRect();
-            canvas.width = rect.width * window.devicePixelRatio;
-            canvas.height = rect.height * window.devicePixelRatio;
-            ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
+        // One bounded pass instead of Math.max(...array), which overflows the call
+        // stack on a long schedule.
+        function scheduleStats() {
+            let max = -Infinity, min = Infinity, sum = 0, n = 0;
+            for (let i = 0; i < scheduleData.length && i < MAX_STEPS; i++) {
+                const lr = scheduleData[i].lr;
+                if (lr > max) max = lr;
+                if (lr < min) min = lr;
+                sum += lr;
+                n++;
+            }
+            return { max: max, min: min, avg: n > 0 ? sum / n : 0, count: n };
+        }
 
-            const width = rect.width;
-            const height = rect.height;
-            const padding = 50;
-
+        function drawChartFrame(ctx, width, height, padding) {
             ctx.fillStyle = '#FFFFFF';
             ctx.fillRect(0, 0, width, height);
-
-            if (scheduleData.length === 0) return;
-
-            const maxLr = Math.max(...scheduleData.map(d => d.lr));
-            const minLr = Math.min(...scheduleData.map(d => d.lr));
-            const maxStep = scheduleData[scheduleData.length - 1].step;
 
             // Grid
             ctx.strokeStyle = '#E8E8E6';
@@ -456,31 +492,62 @@ for epoch in range(100):
             ctx.rotate(-Math.PI / 2);
             ctx.fillText('Learning Rate', 0, 0);
             ctx.restore();
+        }
 
-            // Plot curve
+        function plotSchedule(ctx, width, height, padding, stats) {
+            const maxStep = scheduleData[scheduleData.length - 1].step;
+            const span = stats.max - stats.min;
+
             ctx.strokeStyle = '#2563EB';
             ctx.lineWidth = 2;
             ctx.beginPath();
 
-            for (let i = 0; i < scheduleData.length; i++) {
+            for (let i = 0; i < scheduleData.length && i < MAX_STEPS; i++) {
                 const data = scheduleData[i];
-                const x = padding + (width - 2 * padding) * data.step / maxStep;
-                const y = height - padding - (height - 2 * padding) * (data.lr - minLr) / (maxLr - minLr);
+                const x = maxStep > 0
+                    ? padding + (width - 2 * padding) * data.step / maxStep
+                    : padding;
+                // A constant schedule has zero span: draw it as a flat mid-line
+                // instead of dividing by zero.
+                const y = span > 0
+                    ? height - padding - (height - 2 * padding) * (data.lr - stats.min) / span
+                    : height / 2;
 
                 if (i === 0) ctx.moveTo(x, y);
                 else ctx.lineTo(x, y);
             }
             ctx.stroke();
+        }
 
-            // Update metrics
-            const allLrs = scheduleData.map(d => d.lr);
-            const maxLrVal = Math.max(...allLrs);
-            const minLrVal = Math.min(...allLrs);
-            const avgLrVal = allLrs.reduce((a, b) => a + b) / allLrs.length;
+        function setText(id, value) {
+            const el = document.getElementById(id);
+            if (el) el.textContent = value;
+        }
 
-            document.getElementById('maxLrValue').textContent = maxLrVal.toExponential(2);
-            document.getElementById('minLrValue').textContent = minLrVal.toExponential(2);
-            document.getElementById('avgLrValue').textContent = avgLrVal.toExponential(2);
+        function drawChart() {
+            const canvas = document.getElementById('scheduleCanvas');
+            if (!canvas || !canvas.getContext) return;
+            const ctx = canvas.getContext('2d');
+            const rect = canvas.getBoundingClientRect();
+            const dpr = window.devicePixelRatio || 1;
+            canvas.width = Math.max(1, rect.width * dpr);
+            canvas.height = Math.max(1, rect.height * dpr);
+            ctx.scale(dpr, dpr);
+
+            const width = rect.width;
+            const height = rect.height;
+            const padding = 50;
+
+            drawChartFrame(ctx, width, height, padding);
+
+            if (scheduleData.length === 0) return;
+
+            const stats = scheduleStats();
+            plotSchedule(ctx, width, height, padding, stats);
+
+            setText('maxLrValue', stats.max.toExponential(2));
+            setText('minLrValue', stats.min.toExponential(2));
+            setText('avgLrValue', stats.avg.toExponential(2));
         }
 
         function updateSchedule() {
@@ -490,31 +557,28 @@ for epoch in range(100):
         }
 
         function generateCode() {
-            const type = document.getElementById('scheduleType').value;
-            const initialLr = parseFloat(document.getElementById('initialLr').value);
-            const totalSteps = parseInt(document.getElementById('totalSteps').value);
-            const minLr = parseFloat(document.getElementById('minLr').value);
+            const typeEl = document.getElementById('scheduleType');
+            const type = typeEl ? typeEl.value : 'cosine';
+            const initialLr = num('initialLr', 0.001);
+            const totalSteps = intNum('totalSteps', 100);
+            const minLr = num('minLr', 0.00001);
+            const p = scheduleParams(type);
 
             let code = `import torch.optim as optim
 from torch.optim.lr_scheduler import `;
 
             if (type === 'cosine') {
-                const T_max = parseInt(document.getElementById('T_max').value);
                 code += `CosineAnnealingLR\n\noptimizer = optim.SGD(model.parameters(), lr=${initialLr})
-scheduler = CosineAnnealingLR(optimizer, T_max=${T_max}, eta_min=${minLr})`;
+scheduler = CosineAnnealingLR(optimizer, T_max=${p.T_max}, eta_min=${minLr})`;
             } else if (type === 'step') {
-                const stepSize = parseInt(document.getElementById('step_size').value);
-                const gamma = parseFloat(document.getElementById('gamma').value);
                 code += `StepLR\n\noptimizer = optim.SGD(model.parameters(), lr=${initialLr})
-scheduler = StepLR(optimizer, step_size=${stepSize}, gamma=${gamma})`;
+scheduler = StepLR(optimizer, step_size=${p.step_size}, gamma=${p.gamma})`;
             } else if (type === 'exponential') {
-                const gamma = parseFloat(document.getElementById('gamma').value);
                 code += `ExponentialLR\n\noptimizer = optim.SGD(model.parameters(), lr=${initialLr})
-scheduler = ExponentialLR(optimizer, gamma=${gamma})`;
+scheduler = ExponentialLR(optimizer, gamma=${p.gamma})`;
             } else if (type === 'onecycle') {
-                const maxLr = parseFloat(document.getElementById('max_lr').value);
                 code += `OneCycleLR\n\noptimizer = optim.SGD(model.parameters(), lr=${initialLr})
-scheduler = OneCycleLR(optimizer, max_lr=${maxLr}, total_steps=${totalSteps})`;
+scheduler = OneCycleLR(optimizer, max_lr=${p.max_lr}, total_steps=${totalSteps})`;
             } else {
                 code += `CustomLR\n\noptimizer = optim.SGD(model.parameters(), lr=${initialLr})
 # Use custom schedule computation`;
@@ -524,53 +588,48 @@ scheduler = OneCycleLR(optimizer, max_lr=${maxLr}, total_steps=${totalSteps})`;
     # training loop
     scheduler.step()`;
 
-            document.getElementById('codeOutput').textContent = code;
+            setText('codeOutput', code);
         }
 
+        function setValue(id, value) {
+            const el = document.getElementById(id);
+            if (el) el.value = value;
+        }
+
+        const PRESETS = {
+            bert: { initialLr: 2e-5, totalSteps: 100, type: 'warmup-cosine',
+                    params: { warmup_steps: 10, T_max: 90 } },
+            resnet: { initialLr: 0.1, totalSteps: 200, type: 'step',
+                      params: { step_size: 30, gamma: 0.1 } },
+            gpt: { initialLr: 0.001, totalSteps: 500, type: 'cosine',
+                   params: { T_max: 500 } }
+        };
+
         function loadPreset(preset) {
-            if (preset === 'bert') {
-                document.getElementById('initialLr').value = 2e-5;
-                document.getElementById('totalSteps').value = 100;
-                document.getElementById('scheduleType').value = 'warmup-cosine';
-                updateParamInputs();
-                setTimeout(() => {
-                    document.getElementById('warmup_steps').value = 10;
-                    document.getElementById('T_max').value = 90;
-                    updateSchedule();
-                }, 100);
-            } else if (preset === 'resnet') {
-                document.getElementById('initialLr').value = 0.1;
-                document.getElementById('totalSteps').value = 200;
-                document.getElementById('scheduleType').value = 'step';
-                updateParamInputs();
-                setTimeout(() => {
-                    document.getElementById('step_size').value = 30;
-                    document.getElementById('gamma').value = 0.1;
-                    updateSchedule();
-                }, 100);
-            } else if (preset === 'gpt') {
-                document.getElementById('initialLr').value = 0.001;
-                document.getElementById('totalSteps').value = 500;
-                document.getElementById('scheduleType').value = 'cosine';
-                updateParamInputs();
-                setTimeout(() => {
-                    document.getElementById('T_max').value = 500;
-                    updateSchedule();
-                }, 100);
-            }
+            const p = PRESETS[preset];
+            if (!p) return;
+            setValue('initialLr', p.initialLr);
+            setValue('totalSteps', p.totalSteps);
+            setValue('scheduleType', p.type);
+            updateParamInputs();
+            setTimeout(() => {
+                Object.keys(p.params).forEach(key => setValue(key, p.params[key]));
+                updateSchedule();
+            }, 100);
         }
 
         function resetSchedule() {
-            document.getElementById('initialLr').value = 0.001;
-            document.getElementById('totalSteps').value = 100;
-            document.getElementById('minLr').value = 0.00001;
-            document.getElementById('scheduleType').value = 'cosine';
+            setValue('initialLr', 0.001);
+            setValue('totalSteps', 100);
+            setValue('minLr', 0.00001);
+            setValue('scheduleType', 'cosine');
             updateParamInputs();
             updateSchedule();
         }
 
         // Initialize
-        document.getElementById('scheduleType').addEventListener('change', updateParamInputs);
+        const typeSelect = document.getElementById('scheduleType');
+        if (typeSelect) typeSelect.addEventListener('change', updateParamInputs);
         updateParamInputs();
         updateSchedule();
     </script>

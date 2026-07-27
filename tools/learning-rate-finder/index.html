@@ -97,19 +97,19 @@
 
                 <div class="input-group">
                     <label for="initialLR">Initial Learning Rate</label>
-                    <input type="number" id="initialLR" value="1e-5" step="1e-6" min="1e-8">
+                    <input type="number" id="initialLR" value="1e-5" step="1e-6" min="1e-8" inputmode="decimal">
                     <div class="input-hint">Typical range: 1e-5 to 1e-4</div>
                 </div>
 
                 <div class="input-group">
                     <label for="finalLR">Final Learning Rate</label>
-                    <input type="number" id="finalLR" value="0.1" step="0.01" min="0.001">
+                    <input type="number" id="finalLR" value="0.1" step="0.01" min="0.001" inputmode="decimal">
                     <div class="input-hint">Typical range: 0.01 to 1.0</div>
                 </div>
 
                 <div class="input-group">
                     <label for="epochs">Number of Epochs</label>
-                    <input type="number" id="epochs" value="100" min="10" step="10">
+                    <input type="number" id="epochs" value="100" min="10" max="1000" step="10" inputmode="numeric">
                     <div class="input-hint">Steps in the learning rate schedule</div>
                 </div>
 
@@ -166,10 +166,48 @@
     </div>
 
     <script>
+        'use strict';
+
+        /* NASA 1.2/1.4 — #epochs drives the only unbounded loop on this page and now
+           carries max="1000" in the markup to match this ceiling. 1000 points already
+           exceeds the 800px plot width, so the bound costs no visible resolution. */
+        const MAX_EPOCHS = 1000;
+        const MIN_EPOCHS = 10;
+        const DEFAULT_INITIAL_LR = 1e-5;
+        const DEFAULT_FINAL_LR = 0.1;
+        const DEFAULT_EPOCHS = 100;
+
+        function byId(id) { return document.getElementById(id); }
+
+        function setText(id, text) {
+            const node = byId(id);
+            if (node) { node.textContent = text; }
+        }
+
+        /* A learning rate has to be finite and strictly positive: the exponential
+           schedule takes log(finalLR / initialLR) and every readout uses toExponential.
+           Empty or non-numeric falls back to the shipped default rather than rendering
+           NaN. The magnitude itself is never rewritten — the field declares only a
+           lower bound, and quietly raising a rate the user typed would turn a valid
+           answer into a wrong one. */
+        function readRate(id, fallback) {
+            const node = byId(id);
+            const v = node ? parseFloat(node.value) : NaN;
+            return (isFinite(v) && v > 0) ? v : fallback;
+        }
+
+        // epochs is a loop count, so out of range here is a hazard rather than a taste:
+        // 0 or negative makes i/epochs non-finite and the chart collapses.
+        function readEpochs() {
+            const node = byId('epochs');
+            const v = node ? parseInt(node.value, 10) : NaN;
+            if (!isFinite(v)) { return DEFAULT_EPOCHS; }
+            return Math.min(MAX_EPOCHS, Math.max(MIN_EPOCHS, v));
+        }
+
         function calculateLearningRate() {
-            const initialLR = parseFloat(document.getElementById('initialLR').value);
-            const finalLR = parseFloat(document.getElementById('finalLR').value);
-            const epochs = parseInt(document.getElementById('epochs').value);
+            const initialLR = readRate('initialLR', DEFAULT_INITIAL_LR);
+            const finalLR = readRate('finalLR', DEFAULT_FINAL_LR);
 
             // Calculate optimal range (3x rule of thumb)
             const optimalLower = initialLR * Math.sqrt(10);
@@ -177,64 +215,52 @@
             const recommendedStartLR = Math.sqrt(optimalLower * optimalUpper);
             const ratio = optimalUpper / optimalLower;
 
-            document.getElementById('optimalLower').textContent = optimalLower.toExponential(2);
-            document.getElementById('optimalUpper').textContent = optimalUpper.toExponential(2);
-            document.getElementById('recommendedLR').textContent = recommendedStartLR.toExponential(2);
-            document.getElementById('lrRatio').textContent = ratio.toFixed(1) + 'x';
+            setText('optimalLower', optimalLower.toExponential(2));
+            setText('optimalUpper', optimalUpper.toExponential(2));
+            setText('recommendedLR', recommendedStartLR.toExponential(2));
+            setText('lrRatio', ratio.toFixed(1) + 'x');
 
             updateScheduleVisualization();
         }
 
-        function updateScheduleVisualization() {
-            const initialLR = parseFloat(document.getElementById('initialLR').value);
-            const finalLR = parseFloat(document.getElementById('finalLR').value);
-            const epochs = parseInt(document.getElementById('epochs').value);
-            const scheduleType = document.getElementById('scheduleType').value;
-
-            const lrs = [];
-            for (let i = 0; i <= epochs; i++) {
-                const t = i / epochs;
-                let lr;
-
-                switch(scheduleType) {
-                    case 'cosine':
-                        lr = finalLR + (initialLR - finalLR) * (1 + Math.cos(Math.PI * t)) / 2;
-                        break;
-                    case 'step':
-                        const steps = [0.3, 0.6, 0.9];
-                        let stepCount = 0;
-                        for (let s of steps) if (t > s) stepCount++;
-                        lr = initialLR / Math.pow(10, stepCount);
-                        break;
-                    case 'exponential':
-                        lr = initialLR * Math.exp(Math.log(finalLR / initialLR) * t);
-                        break;
-                    case 'linear':
-                        lr = initialLR + (finalLR - initialLR) * t;
-                        break;
-                    default:
-                        lr = initialLR;
+        function scheduleLR(scheduleType, initialLR, finalLR, t) {
+            switch (scheduleType) {
+                case 'cosine':
+                    return finalLR + (initialLR - finalLR) * (1 + Math.cos(Math.PI * t)) / 2;
+                case 'step': {
+                    const steps = [0.3, 0.6, 0.9];
+                    let stepCount = 0;
+                    for (let s of steps) if (t > s) stepCount++;
+                    return initialLR / Math.pow(10, stepCount);
                 }
-                lrs.push(Math.max(finalLR, lr));
+                case 'exponential':
+                    return initialLR * Math.exp(Math.log(finalLR / initialLR) * t);
+                case 'linear':
+                    return initialLR + (finalLR - initialLR) * t;
+                default:
+                    return initialLR;
             }
-
-            drawChart(lrs, epochs, scheduleType);
         }
 
-        function drawChart(lrs, epochs, scheduleType) {
-            const canvas = document.getElementById('scheduleChart');
-            const ctx = canvas.getContext('2d');
-            const width = canvas.width;
-            const height = canvas.height;
-            const padding = 50;
+        function updateScheduleVisualization() {
+            const initialLR = readRate('initialLR', DEFAULT_INITIAL_LR);
+            const finalLR = readRate('finalLR', DEFAULT_FINAL_LR);
+            const epochs = readEpochs();
+            const scheduleNode = byId('scheduleType');
+            const scheduleType = scheduleNode ? scheduleNode.value : 'cosine';
 
+            const lrs = [];
+            for (let i = 0; i <= epochs && i <= MAX_EPOCHS; i++) {
+                const t = i / epochs;
+                lrs.push(Math.max(finalLR, scheduleLR(scheduleType, initialLR, finalLR, t)));
+            }
+
+            drawChart(lrs);
+        }
+
+        function drawChartFrame(ctx, width, height, padding) {
             ctx.fillStyle = '#FFFFFF';
             ctx.fillRect(0, 0, width, height);
-
-            // Find min/max
-            const minLR = Math.min(...lrs);
-            const maxLR = Math.max(...lrs);
-            const range = maxLR - minLR || 1;
 
             // Draw grid
             ctx.strokeStyle = '#E8E8E6';
@@ -258,13 +284,14 @@
             ctx.moveTo(padding, padding);
             ctx.lineTo(padding, height - padding);
             ctx.stroke();
+        }
 
-            // Draw curve
+        function drawChartCurve(ctx, lrs, minLR, range, width, height, padding) {
             ctx.strokeStyle = '#2563EB';
             ctx.lineWidth = 3;
             ctx.beginPath();
 
-            for (let i = 0; i < lrs.length; i++) {
+            for (let i = 0; i < lrs.length && i <= MAX_EPOCHS; i++) {
                 const x = padding + (i / (lrs.length - 1)) * (width - 2 * padding);
                 const y = height - padding - ((lrs[i] - minLR) / range) * (height - 2 * padding);
 
@@ -272,8 +299,9 @@
                 else ctx.lineTo(x, y);
             }
             ctx.stroke();
+        }
 
-            // Labels
+        function drawChartLabels(ctx, minLR, range, width, height, padding) {
             ctx.fillStyle = '#6a6a6a';
             ctx.font = '12px sans-serif';
             ctx.textAlign = 'center';
@@ -292,6 +320,27 @@
                 const y = height - padding - (i / 5) * (height - 2 * padding);
                 ctx.fillText(lr.toExponential(1), padding - 10, y + 4);
             }
+        }
+
+        function drawChart(lrs) {
+            const canvas = byId('scheduleChart');
+            const ctx = canvas ? canvas.getContext('2d') : null;
+            if (!ctx || lrs.length < 2) { return; }
+            const width = canvas.width;
+            const height = canvas.height;
+            const padding = 50;
+
+            // Find min/max
+            let minLR = lrs[0], maxLR = lrs[0];
+            for (let i = 1; i < lrs.length; i++) {
+                if (lrs[i] < minLR) minLR = lrs[i];
+                if (lrs[i] > maxLR) maxLR = lrs[i];
+            }
+            const range = maxLR - minLR || 1;
+
+            drawChartFrame(ctx, width, height, padding);
+            drawChartCurve(ctx, lrs, minLR, range, width, height, padding);
+            drawChartLabels(ctx, minLR, range, width, height, padding);
         }
 
         // Initialize on load

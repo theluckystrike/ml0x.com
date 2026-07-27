@@ -129,25 +129,25 @@
 
                 <div class="input-group">
                     <label for="inputSize">Input Dimensions (HxW)</label>
-                    <input type="number" id="inputSize" value="224" min="32" step="32">
+                    <input type="number" id="inputSize" value="224" min="32" max="8192" step="32" inputmode="numeric">
                     <div class="input-hint">e.g., 224 for ImageNet models</div>
                 </div>
 
                 <div class="input-group">
                     <label for="numLayers">Number of Layers</label>
-                    <input type="number" id="numLayers" value="50" min="1" step="1">
+                    <input type="number" id="numLayers" value="50" min="1" max="10000" step="1" inputmode="numeric">
                     <div class="input-hint">Total depth of network</div>
                 </div>
 
                 <div class="input-group">
                     <label for="paramCount">Parameters (millions)</label>
-                    <input type="number" id="paramCount" value="25.5" min="0.1" step="0.1">
+                    <input type="number" id="paramCount" value="25.5" min="0.1" max="1000000" step="0.1" inputmode="decimal">
                     <div class="input-hint">Model weight count in millions</div>
                 </div>
 
                 <div class="input-group">
                     <label for="batchSize">Batch Size</label>
-                    <input type="number" id="batchSize" value="32" min="1" step="1">
+                    <input type="number" id="batchSize" value="32" min="1" max="4096" step="1" inputmode="numeric">
                     <div class="input-hint">For inference time estimation</div>
                 </div>
 
@@ -271,6 +271,7 @@
 </main>
 
     <script>
+        'use strict';
         const presets = {
             resnet50: { inputSize: 224, numLayers: 50, paramCount: 25.5, name: 'ResNet-50' },
             vgg16: { inputSize: 224, numLayers: 16, paramCount: 138, name: 'VGG-16' },
@@ -278,20 +279,48 @@
             bert: { inputSize: 512, numLayers: 12, paramCount: 110, name: 'BERT-Base' }
         };
 
+        // Every numeric field is read through readNum: a missing element, an empty
+        // string, text or an out-of-range value falls back to the documented
+        // default or the field's own bound instead of producing NaN (NASA 1.4).
+        const LIMITS = {
+            inputSize: { min: 32, max: 8192, def: 224 },
+            numLayers: { min: 1, max: 10000, def: 50 },
+            paramCount: { min: 0.1, max: 1000000, def: 25.5 },
+            batchSize: { min: 1, max: 4096, def: 32 }
+        };
+
+        function readNum(id, asInt) {
+            const lim = LIMITS[id];
+            const el = document.getElementById(id);
+            const raw = el ? (asInt ? parseInt(el.value, 10) : parseFloat(el.value)) : NaN;
+            if (!isFinite(raw)) return lim.def;
+            return Math.min(lim.max, Math.max(lim.min, raw));
+        }
+
+        function setText(id, value) {
+            const el = document.getElementById(id);
+            if (el) el.textContent = value;
+        }
+
         function loadPreset(preset) {
             const p = presets[preset];
-            document.getElementById('inputSize').value = p.inputSize;
-            document.getElementById('numLayers').value = p.numLayers;
-            document.getElementById('paramCount').value = p.paramCount;
+            if (!p) return;
+            const size = document.getElementById('inputSize');
+            const layers = document.getElementById('numLayers');
+            const params = document.getElementById('paramCount');
+            if (size) size.value = p.inputSize;
+            if (layers) layers.value = p.numLayers;
+            if (params) params.value = p.paramCount;
             calculateComplexity();
         }
 
         function calculateComplexity() {
-            const inputSize = parseInt(document.getElementById('inputSize').value);
-            const numLayers = parseInt(document.getElementById('numLayers').value);
-            const paramCount = parseFloat(document.getElementById('paramCount').value);
-            const batchSize = parseInt(document.getElementById('batchSize').value);
-            const device = document.getElementById('device').value;
+            const inputSize = readNum('inputSize', true);
+            const numLayers = readNum('numLayers', true);
+            const paramCount = readNum('paramCount', false);
+            const batchSize = readNum('batchSize', true);
+            const deviceEl = document.getElementById('device');
+            const device = deviceEl ? deviceEl.value : 'gpu';
 
             // Estimate FLOPs (2 * input_h * input_w * params for CNN forward pass)
             const flops = 2 * inputSize * inputSize * paramCount * 1e6;
@@ -309,50 +338,140 @@
                 edge: { throughput: 0.5, name: 'Mobile GPU' }
             };
 
-            const spec = deviceSpecs[device];
+            const spec = deviceSpecs[device] || deviceSpecs.gpu;
             const inferenceTime = (flops / (spec.throughput * 1e12)) * 1000; // milliseconds
             const throughput = (batchSize / (inferenceTime / 1000)).toFixed(1);
 
             // Update UI
             if (flops >= 1e12) {
-                document.getElementById('flopsValue').textContent = (flops / 1e12).toFixed(2);
-                document.getElementById('flopsUnit').textContent = 'TFLOPs';
+                setText('flopsValue', (flops / 1e12).toFixed(2));
+                setText('flopsUnit', 'TFLOPs');
             } else if (flops >= 1e9) {
-                document.getElementById('flopsValue').textContent = (flops / 1e9).toFixed(2);
-                document.getElementById('flopsUnit').textContent = 'GFLOPs';
+                setText('flopsValue', (flops / 1e9).toFixed(2));
+                setText('flopsUnit', 'GFLOPs');
             } else {
-                document.getElementById('flopsValue').textContent = (flops / 1e6).toFixed(2);
-                document.getElementById('flopsUnit').textContent = 'MFLOPs';
+                setText('flopsValue', (flops / 1e6).toFixed(2));
+                setText('flopsUnit', 'MFLOPs');
             }
 
-            document.getElementById('memoryValue').textContent = totalMemory.toFixed(1);
-            document.getElementById('memoryUnit').textContent = 'MB';
+            setText('memoryValue', totalMemory.toFixed(1));
+            setText('memoryUnit', 'MB');
 
-            document.getElementById('inferenceValue').textContent = inferenceTime.toFixed(2);
-            document.getElementById('inferenceUnit').textContent = 'ms';
+            setText('inferenceValue', inferenceTime.toFixed(2));
+            setText('inferenceUnit', 'ms');
 
-            document.getElementById('throughputValue').textContent = throughput;
-            document.getElementById('paramMemory').textContent = paramMemory.toFixed(1);
+            setText('throughputValue', throughput);
+            setText('paramMemory', paramMemory.toFixed(1));
 
             // Table data
-            document.getElementById('peakMemory').textContent = (totalMemory + (batchSize * inputSize * inputSize * 4) / (1024 * 1024)).toFixed(1) + ' MB';
-            document.getElementById('totalParams').textContent = paramCount.toFixed(1) + 'M';
-            document.getElementById('depthMetric').textContent = numLayers;
-            document.getElementById('efficiency').textContent = (flops / (paramCount * 1e6)).toFixed(2);
-            document.getElementById('batchThroughput').textContent = throughput;
+            setText('peakMemory', (totalMemory + (batchSize * inputSize * inputSize * 4) / (1024 * 1024)).toFixed(1) + ' MB');
+            setText('totalParams', paramCount.toFixed(1) + 'M');
+            setText('depthMetric', numLayers);
+            setText('efficiency', (flops / (paramCount * 1e6)).toFixed(2));
+            setText('batchThroughput', throughput);
 
-            drawTradeoffChart(flops / 1e9, totalMemory, numLayers, paramCount);
+            drawTradeoffChart(flops / 1e9, totalMemory);
         }
 
-        function drawTradeoffChart(flops, memory, layers, params) {
+        // Both axes are decade (log10) scales sized to the data actually plotted.
+        // The previous fixed 0-120 GFLOPs / 0-600 MB linear box put the "Current"
+        // marker thousands of pixels off-canvas for any large model. The plotted
+        // values themselves are unchanged.
+        const MAX_DECADES = 12;
+
+        function axisRange(values) {
+            let lo = Infinity, hi = -Infinity;
+            for (let i = 0; i < values.length && i < 64; i++) {
+                const v = values[i];
+                if (isFinite(v) && v > 0) {
+                    if (v < lo) lo = v;
+                    if (v > hi) hi = v;
+                }
+            }
+            if (!isFinite(lo) || !isFinite(hi)) { lo = 1; hi = 10; }
+            const loExp = Math.floor(Math.log10(lo));
+            let hiExp = Math.ceil(Math.log10(hi));
+            if (hiExp <= loExp) hiExp = loExp + 1;
+            if (hiExp - loExp > MAX_DECADES) hiExp = loExp + MAX_DECADES;
+            return { loExp: loExp, hiExp: hiExp };
+        }
+
+        function axisFrac(value, range) {
+            if (!isFinite(value) || value <= 0) return 0;
+            const f = (Math.log10(value) - range.loExp) / (range.hiExp - range.loExp);
+            return Math.min(1, Math.max(0, f));
+        }
+
+        function tickLabel(exp) {
+            const v = Math.pow(10, exp);
+            if (v >= 1e6) return (v / 1e6) + 'M';
+            if (v >= 1000) return (v / 1000) + 'k';
+            if (v >= 1) return String(v);
+            return v.toFixed(Math.min(6, -exp));
+        }
+
+        function drawTradeoffAxes(ctx, geom) {
+            const p = geom.padding, w = geom.width, h = geom.height;
+            ctx.strokeStyle = '#E8E8E6';
+            ctx.lineWidth = 1;
+            ctx.fillStyle = '#6a6a6a';
+            ctx.font = '10px sans-serif';
+            for (let e = geom.xr.loExp; e <= geom.xr.hiExp; e++) {
+                const x = p + axisFrac(Math.pow(10, e), geom.xr) * (w - 2 * p);
+                ctx.beginPath();
+                ctx.moveTo(x, p);
+                ctx.lineTo(x, h - p);
+                ctx.stroke();
+                ctx.textAlign = 'center';
+                ctx.fillText(tickLabel(e), x, h - p + 14);
+            }
+            for (let e = geom.yr.loExp; e <= geom.yr.hiExp; e++) {
+                const y = h - p - axisFrac(Math.pow(10, e), geom.yr) * (h - 2 * p);
+                ctx.beginPath();
+                ctx.moveTo(p, y);
+                ctx.lineTo(w - p, y);
+                ctx.stroke();
+                ctx.textAlign = 'right';
+                ctx.fillText(tickLabel(e), p - 6, y + 3);
+            }
+            ctx.strokeStyle = '#B8B8B6';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(p, h - p);
+            ctx.lineTo(w - p, h - p);
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.moveTo(p, p);
+            ctx.lineTo(p, h - p);
+            ctx.stroke();
+        }
+
+        function drawTradeoffPoints(ctx, geom, models) {
+            const p = geom.padding, w = geom.width, h = geom.height;
+            for (let i = 0; i < models.length && i < 64; i++) {
+                const model = models[i];
+                const x = p + axisFrac(model.flops, geom.xr) * (w - 2 * p);
+                const y = h - p - axisFrac(model.memory, geom.yr) * (h - 2 * p);
+                const current = model.name === 'Current';
+                ctx.fillStyle = current ? '#2563EB' : 'rgba(37, 99, 235, 0.45)';
+                ctx.beginPath();
+                ctx.arc(x, y, current ? 8 : 5, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.fillStyle = '#1A1A1A';
+                ctx.font = '11px sans-serif';
+                ctx.textAlign = 'center';
+                ctx.fillText(model.name, x, Math.max(12, y - 15));
+            }
+        }
+
+        function drawTradeoffChart(flops, memory) {
             const canvas = document.getElementById('tradeoffChart');
+            if (!canvas || !canvas.getContext) return;
             const ctx = canvas.getContext('2d');
-            const width = canvas.width;
-            const height = canvas.height;
-            const padding = 50;
+            const geom = { width: canvas.width, height: canvas.height, padding: 50 };
 
             ctx.fillStyle = '#FFFFFF';
-            ctx.fillRect(0, 0, width, height);
+            ctx.fillRect(0, 0, geom.width, geom.height);
 
             // Example data points for comparison
             const models = [
@@ -363,72 +482,23 @@
                 { name: 'Current', flops: flops, memory: memory }
             ];
 
-            const maxFlops = 120;
-            const maxMemory = 600;
+            geom.xr = axisRange(models.map(m => m.flops));
+            geom.yr = axisRange(models.map(m => m.memory));
 
-            // Draw grid
-            ctx.strokeStyle = '#E8E8E6';
-            ctx.lineWidth = 1;
-            for (let i = 0; i <= 5; i++) {
-                const x = padding + (i / 5) * (width - 2 * padding);
-                ctx.beginPath();
-                ctx.moveTo(x, padding);
-                ctx.lineTo(x, height - padding);
-                ctx.stroke();
-
-                const y = padding + (i / 5) * (height - 2 * padding);
-                ctx.beginPath();
-                ctx.moveTo(padding, y);
-                ctx.lineTo(width - padding, y);
-                ctx.stroke();
-            }
-
-            // Draw axes
-            ctx.strokeStyle = '#B8B8B6';
-            ctx.lineWidth = 2;
-            ctx.beginPath();
-            ctx.moveTo(padding, height - padding);
-            ctx.lineTo(width - padding, height - padding);
-            ctx.stroke();
-            ctx.beginPath();
-            ctx.moveTo(padding, padding);
-            ctx.lineTo(padding, height - padding);
-            ctx.stroke();
-
-            // Plot points
-            models.forEach((model, idx) => {
-                const x = padding + (model.flops / maxFlops) * (width - 2 * padding);
-                const y = height - padding - (model.memory / maxMemory) * (height - 2 * padding);
-
-                if (model.name === 'Current') {
-                    ctx.fillStyle = '#2563EB';
-                    ctx.beginPath();
-                    ctx.arc(x, y, 8, 0, Math.PI * 2);
-                    ctx.fill();
-                } else {
-                    ctx.fillStyle = 'rgba(37, 99, 235, 0.45)';
-                    ctx.beginPath();
-                    ctx.arc(x, y, 5, 0, Math.PI * 2);
-                    ctx.fill();
-                }
-
-                ctx.fillStyle = '#1A1A1A';
-                ctx.font = '11px sans-serif';
-                ctx.textAlign = 'center';
-                ctx.fillText(model.name, x, y - 15);
-            });
+            drawTradeoffAxes(ctx, geom);
+            drawTradeoffPoints(ctx, geom, models);
 
             // Labels
             ctx.fillStyle = '#6a6a6a';
             ctx.font = '12px sans-serif';
             ctx.textAlign = 'center';
-            ctx.fillText('GFLOPs', width / 2, height - 15);
+            ctx.fillText('GFLOPs (log scale)', geom.width / 2, geom.height - 15);
 
             ctx.save();
-            ctx.translate(15, height / 2);
+            ctx.translate(15, geom.height / 2);
             ctx.rotate(-Math.PI / 2);
             ctx.textAlign = 'center';
-            ctx.fillText('Memory (MB)', 0, 0);
+            ctx.fillText('Memory MB (log scale)', 0, 0);
             ctx.restore();
         }
 

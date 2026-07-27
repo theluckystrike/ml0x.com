@@ -160,7 +160,7 @@
             <th>Aspect</th>
             <th style="color:var(--s1);">L1 (Lasso)</th>
             <th style="color:var(--s3);">L2 (Ridge)</th>
-            <th style="color:var(--s4);">Elastic Net</th>
+            <th style="color:var(--warn);">Elastic Net</th>
             <th style="color:var(--s5);">Dropout</th>
           </tr>
         </thead>
@@ -375,12 +375,36 @@
 
 <script>
 (function() {
+  'use strict';
+
+  /* Declared ranges of the controls on this page. Every read is clamped into
+     these, so no control value can widen a loop bound. NASA rules 2 and 5. */
+  var MIN_FEATURES = 5, MAX_FEATURES = 12, DEF_FEATURES = 8;   /* #featureCount */
+  var MIN_LAMBDA = 0, MAX_LAMBDA = 100, DEF_LAMBDA = 50;       /* #lambdaSlider */
+  var MIN_DROP = 0, MAX_DROP = 80, DEF_DROP = 30;              /* #dropoutSlider */
+
   /* Coefficient paths */
   var coeffs = [];
   var featureColors = ['#2563EB','#157F3B','#B45309','#C53030','#7C3AED','#0E7490','#BE185D','#4D7C0F','#1D4ED8','#92400E','#5B21B6','#0F766E'];
 
+  function byId(id) { return document.getElementById(id); }
+
+  function setText(id, value) {
+    var el = byId(id);
+    if (el) { el.textContent = value; }
+  }
+
+  /* Parse a control, reject non-finite, clamp to the control's declared range. */
+  function readNum(id, lo, hi, fallback) {
+    var el = byId(id);
+    if (!el) { return fallback; }
+    var v = parseInt(el.value, 10);
+    if (!isFinite(v)) { return fallback; }
+    return Math.max(lo, Math.min(hi, v));
+  }
+
   function generateCoeffs() {
-    var n = parseInt(document.getElementById('featureCount').value);
+    var n = readNum('featureCount', MIN_FEATURES, MAX_FEATURES, DEF_FEATURES);
     coeffs = [];
     for (var i = 0; i < n; i++) {
       coeffs.push((Math.random() - 0.5) * 4);
@@ -398,10 +422,11 @@
     return w / (1 + 2 * lambda);
   }
 
-  function drawPath(svgId, shrinkFn, label) {
-    var svg = document.getElementById(svgId);
-    var lambda = parseInt(document.getElementById('lambdaSlider').value) / 100 * 2;
-    var n = coeffs.length;
+  function drawPath(svgId, shrinkFn) {
+    var svg = byId(svgId);
+    if (!svg) { return {nonzero: 0, norm: 0}; }
+    var lambda = readNum('lambdaSlider', MIN_LAMBDA, MAX_LAMBDA, DEF_LAMBDA) / 100 * 2;
+    var n = Math.min(coeffs.length, MAX_FEATURES);
     var W = 350, H = 280, pad = 40;
 
     var maxAbs = 0;
@@ -421,27 +446,25 @@
 
     // Bars for current lambda
     var barW = Math.min(28, Math.floor((W - pad - 20) / n) - 4);
-    var shrunk = [];
     var nonzero = 0, norm = 0;
 
-    for (var i = 0; i < n; i++) {
-      var s = shrinkFn(coeffs[i], lambda);
-      shrunk.push(s);
+    for (var b = 0; b < n; b++) {
+      var s = shrinkFn(coeffs[b], lambda);
       if (Math.abs(s) > 1e-6) nonzero++;
       norm += Math.abs(s);
 
       var barH = Math.abs(s) / maxAbs * (H - 2 * pad) / 2;
-      var x = pad + 10 + i * (barW + 4);
+      var x = pad + 10 + b * (barW + 4);
       var y = s >= 0 ? zeroY - barH : zeroY;
 
-      html += '<rect x="'+x+'" y="'+y+'" width="'+barW+'" height="'+Math.max(1, barH)+'" fill="'+featureColors[i % featureColors.length]+'" opacity="'+(Math.abs(s) > 1e-6 ? 0.8 : 0.15)+'" rx="2"/>';
+      html += '<rect x="'+x+'" y="'+y+'" width="'+barW+'" height="'+Math.max(1, barH)+'" fill="'+featureColors[b % featureColors.length]+'" opacity="'+(Math.abs(s) > 1e-6 ? 0.8 : 0.15)+'" rx="2"/>';
 
       // Original value indicator
-      var origY = zeroY - (coeffs[i] / maxAbs) * (H - 2 * pad) / 2;
-      html += '<line x1="'+x+'" y1="'+origY+'" x2="'+(x+barW)+'" y2="'+origY+'" stroke="'+featureColors[i % featureColors.length]+'" stroke-width="1" stroke-dasharray="2,2" opacity="0.4"/>';
+      var origY = zeroY - (coeffs[b] / maxAbs) * (H - 2 * pad) / 2;
+      html += '<line x1="'+x+'" y1="'+origY+'" x2="'+(x+barW)+'" y2="'+origY+'" stroke="'+featureColors[b % featureColors.length]+'" stroke-width="1" stroke-dasharray="2,2" opacity="0.4"/>';
 
       // Label
-      html += '<text x="'+(x+barW/2)+'" y="'+(H-pad+14)+'" text-anchor="middle" fill="#6a6a6a" font-size="9" font-family="Inter,sans-serif">w'+i+'</text>';
+      html += '<text x="'+(x+barW/2)+'" y="'+(H-pad+14)+'" text-anchor="middle" fill="#6a6a6a" font-size="9" font-family="Inter,sans-serif">w'+b+'</text>';
     }
 
     svg.innerHTML = html;
@@ -449,23 +472,30 @@
   }
 
   function updatePaths() {
-    var l1Stats = drawPath('l1Svg', l1Shrink, 'L1');
-    var l2Stats = drawPath('l2Svg', l2Shrink, 'L2');
-    document.getElementById('l1Nonzero').textContent = l1Stats.nonzero + '/' + coeffs.length;
-    document.getElementById('l1Norm').textContent = l1Stats.norm.toFixed(3);
-    document.getElementById('l2Nonzero').textContent = l2Stats.nonzero + '/' + coeffs.length;
-    document.getElementById('l2Norm').textContent = l2Stats.norm.toFixed(3);
+    var l1Stats = drawPath('l1Svg', l1Shrink);
+    var l2Stats = drawPath('l2Svg', l2Shrink);
+    setText('l1Nonzero', l1Stats.nonzero + '/' + coeffs.length);
+    setText('l1Norm', l1Stats.norm.toFixed(3));
+    setText('l2Nonzero', l2Stats.nonzero + '/' + coeffs.length);
+    setText('l2Norm', l2Stats.norm.toFixed(3));
   }
 
-  document.getElementById('lambdaSlider').addEventListener('input', function() {
-    document.getElementById('lambdaDisplay').textContent = (this.value / 100 * 2).toFixed(2);
+  function on(id, evt, fn) {
+    var el = byId(id);
+    if (el) { el.addEventListener(evt, fn); }
+  }
+
+  on('lambdaSlider', 'input', function() {
+    setText('lambdaDisplay',
+      (readNum('lambdaSlider', MIN_LAMBDA, MAX_LAMBDA, DEF_LAMBDA) / 100 * 2).toFixed(2));
     updatePaths();
   });
 
-  document.getElementById('featureCount').addEventListener('change', generateCoeffs);
-  document.getElementById('regenerateBtn').addEventListener('click', generateCoeffs);
+  on('featureCount', 'change', generateCoeffs);
+  on('regenerateBtn', 'click', generateCoeffs);
 
-  /* Dropout visualization */
+  /* Dropout visualization. `layers` is a page constant, so every loop below
+     is bounded by a compile-time known size (6 layers, max 8 neurons). */
   var layers = [4, 8, 6, 8, 4, 2];
   var neuronStates = [];
 
@@ -480,50 +510,51 @@
     drawDropout();
   }
 
-  function drawDropout() {
-    var svg = document.getElementById('dropoutSvg');
-    var W = 700, H = 260;
-    var html = '<rect width="'+W+'" height="'+H+'" fill="#FFFFFF"/>';
-    var layerLabels = ['Input','Hidden 1','Hidden 2','Hidden 3','Hidden 4','Output'];
+  function isActive(i, j) {
+    return !!(neuronStates[i] && neuronStates[i][j]);
+  }
 
+  function layout(W, H) {
     var lSpacing = (W - 80) / (layers.length - 1);
-    var positions = [];
-    var totalActive = 0, totalHidden = 0;
-
+    var positions = [], totalActive = 0, totalHidden = 0, labels = '';
+    var layerLabels = ['Input','Hidden 1','Hidden 2','Hidden 3','Hidden 4','Output'];
     for (var i = 0; i < layers.length; i++) {
       positions[i] = [];
       var n = layers[i];
       var nSpacing = Math.min(28, (H - 60) / n);
       var startY = (H - n * nSpacing) / 2;
       var x = 40 + i * lSpacing;
-
-      html += '<text x="'+x+'" y="'+(H-6)+'" text-anchor="middle" fill="#6a6a6a" font-size="10" font-family="Inter,sans-serif">'+layerLabels[i]+'</text>';
-
+      labels += '<text x="'+x+'" y="'+(H-6)+'" text-anchor="middle" fill="#6a6a6a" font-size="10" font-family="Inter,sans-serif">'+layerLabels[i]+'</text>';
       for (var j = 0; j < n; j++) {
-        var y = startY + j * nSpacing + nSpacing / 2;
-        positions[i][j] = {x: x, y: y};
-        var active = neuronStates[i][j];
+        positions[i][j] = {x: x, y: startY + j * nSpacing + nSpacing / 2};
         if (i > 0 && i < layers.length - 1) {
-          if (active) totalActive++; else totalHidden++;
+          if (isActive(i, j)) totalActive++; else totalHidden++;
         }
       }
     }
+    return {positions: positions, labels: labels,
+            totalActive: totalActive, totalHidden: totalHidden};
+  }
 
-    // Draw connections
+  function connectionsSvg(positions) {
+    var html = '';
     for (var i = 0; i < layers.length - 1; i++) {
       for (var j = 0; j < layers[i]; j++) {
         for (var k = 0; k < layers[i + 1]; k++) {
-          var active = neuronStates[i][j] && neuronStates[i + 1][k];
+          var active = isActive(i, j) && isActive(i + 1, k);
           html += '<line x1="'+positions[i][j].x+'" y1="'+positions[i][j].y+'" x2="'+positions[i+1][k].x+'" y2="'+positions[i+1][k].y+'" stroke="'+(active ? '#2563EB' : '#D8D8D6')+'" stroke-width="'+(active ? '0.5' : '0.3')+'" opacity="'+(active ? '0.35' : '0.5')+'"/>';
         }
       }
     }
+    return html;
+  }
 
-    // Draw neurons
+  function neuronsSvg(positions) {
+    var html = '';
     for (var i = 0; i < layers.length; i++) {
       for (var j = 0; j < layers[i]; j++) {
         var p = positions[i][j];
-        var active = neuronStates[i][j];
+        var active = isActive(i, j);
         var isIO = (i === 0 || i === layers.length - 1);
         html += '<circle cx="'+p.x+'" cy="'+p.y+'" r="'+(isIO ? 8 : 10)+'" fill="'+(active ? '#2563EB' : '#F2F2F0')+'" stroke="'+(active ? '#1D4ED8' : '#D8D8D6')+'" stroke-width="'+(active ? 2 : 1)+'" opacity="'+(active ? 1 : 0.9)+'"/>';
         if (!active && !isIO) {
@@ -532,18 +563,28 @@
         }
       }
     }
-
-    svg.innerHTML = html;
-    var totalMiddle = totalActive + totalHidden;
-    document.getElementById('dropActive').textContent = totalActive;
-    document.getElementById('dropInactive').textContent = totalHidden;
-    document.getElementById('dropRate').textContent = totalMiddle > 0 ? (totalHidden / totalMiddle * 100).toFixed(1) + '%' : '0%';
-    document.getElementById('dropCapacity').textContent = totalMiddle > 0 ? (totalActive / totalMiddle * 100).toFixed(1) + '%' : '100%';
+    return html;
   }
 
-  document.getElementById('dropBtn').addEventListener('click', function() {
-    var rate = parseInt(document.getElementById('dropoutSlider').value) / 100;
+  function drawDropout() {
+    var svg = byId('dropoutSvg');
+    if (!svg) { return; }
+    var W = 700, H = 260;
+    var L = layout(W, H);
+    svg.innerHTML = '<rect width="'+W+'" height="'+H+'" fill="#FFFFFF"/>' + L.labels
+      + connectionsSvg(L.positions) + neuronsSvg(L.positions);
+
+    var totalMiddle = L.totalActive + L.totalHidden;
+    setText('dropActive', L.totalActive);
+    setText('dropInactive', L.totalHidden);
+    setText('dropRate', totalMiddle > 0 ? (L.totalHidden / totalMiddle * 100).toFixed(1) + '%' : '0%');
+    setText('dropCapacity', totalMiddle > 0 ? (L.totalActive / totalMiddle * 100).toFixed(1) + '%' : '100%');
+  }
+
+  on('dropBtn', 'click', function() {
+    var rate = readNum('dropoutSlider', MIN_DROP, MAX_DROP, DEF_DROP) / 100;
     for (var i = 1; i < layers.length - 1; i++) {
+      if (!neuronStates[i]) { neuronStates[i] = []; }
       for (var j = 0; j < layers[i]; j++) {
         neuronStates[i][j] = Math.random() > rate;
       }
@@ -551,9 +592,10 @@
     drawDropout();
   });
 
-  document.getElementById('resetDropBtn').addEventListener('click', initNeurons);
-  document.getElementById('dropoutSlider').addEventListener('input', function() {
-    document.getElementById('dropoutDisplay').textContent = (this.value / 100).toFixed(2);
+  on('resetDropBtn', 'click', initNeurons);
+  on('dropoutSlider', 'input', function() {
+    setText('dropoutDisplay',
+      (readNum('dropoutSlider', MIN_DROP, MAX_DROP, DEF_DROP) / 100).toFixed(2));
   });
 
   generateCoeffs();

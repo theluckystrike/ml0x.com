@@ -233,8 +233,15 @@ svg{width:100%; height:auto; display:block; touch-action:none; background:var(--
 (function(){
   "use strict";
   var $ = function(id){ return document.getElementById(id); };
+  var setTxt = function(id, v){ var e=$(id); if(e){ e.textContent=v; } };
   var scoresEl=$("scores"), labelsEl=$("labels"), optEl=$("opt"),
       thrEl=$("thr"), errEl=$("err");
+  // Nothing below can run without these five controls; bail rather than throw.
+  if(!scoresEl || !labelsEl || !optEl || !thrEl || !errEl){ return; }
+
+  // Hard ceiling on rows. The sweep is O(n log n) but the SVG path it feeds is
+  // built as a string, so an unbounded paste would lock the renderer.
+  var MAX_POINTS = 20000;
 
   // ---- example data: 40 pts, decent-but-imperfect classifier ----
   function makeExample(){
@@ -256,6 +263,7 @@ svg{width:100%; height:auto; display:block; touch-action:none; background:var(--
     var lv=labelsEl.value.trim().split(/[\s,]+/).filter(function(x){return x.length;});
     if(sv.length===0) return { err:"Enter prediction scores." };
     if(sv.length!==lv.length) return { err:"Scores ("+sv.length+") and labels ("+lv.length+") count mismatch." };
+    if(sv.length>MAX_POINTS) return { err:"Too many rows ("+sv.length+"). This tool sweeps up to "+MAX_POINTS+" points." };
     var pts=[], i, sc, lb;
     for(i=0;i<sv.length;i++){
       sc=parseFloat(sv[i]);
@@ -278,10 +286,13 @@ svg{width:100%; height:auto; display:block; touch-action:none; background:var(--
     var pr=[];           // (recall,precision)
     var thrList=[];      // {t,tp,fp,fn,tn}
     var tp=0, fp=0;
-    var j, ap=0, prevRecall=0, prevPrec=1;
-    // iterate, grouping ties (same score decided together)
+    var j, ap=0, prevRecall=0;
+    // iterate, grouping ties (same score decided together). Each pass consumes at
+    // least one row, so `guard` can only trip if that invariant is ever broken.
     i=0;
+    var guard=0;
     while(i<arr.length){
+      if(++guard > MAX_POINTS+1) break;
       var t=arr[i].s;
       while(i<arr.length && arr[i].s===t){
         if(arr[i].y===1) tp++; else fp++;
@@ -296,7 +307,7 @@ svg{width:100%; height:auto; display:block; touch-action:none; background:var(--
       pr.push({x:recall,y:prec});
       // average precision: sum precision * delta-recall
       ap += (recall-prevRecall)*prec;
-      prevRecall=recall; prevPrec=prec;
+      prevRecall=recall;
       thrList.push({t:t, tp:tp, fp:fp, fn:fn, tn:tn, tpr:tpr, fpr:fpr, prec:prec});
     }
     // ROC-AUC via trapezoid over (fpr,tpr)
@@ -338,6 +349,7 @@ svg{width:100%; height:auto; display:block; touch-action:none; background:var(--
   // ---- SVG plotting ----
   var W=320, PAD=38, PW=W-PAD-14;
   function plot(svgEl, curve, marker, opts){
+    if(!svgEl) return;
     var col=opts.col, xlab=opts.xlab, ylab=opts.ylab, diag=opts.diag;
     function X(x){ return PAD + x*PW; }
     function Y(y){ return (W-PAD) - y*PW; }
@@ -396,10 +408,10 @@ svg{width:100%; height:auto; display:block; touch-action:none; background:var(--
     var best=pickBest(res.thrList, mode, pts.length);
 
     // display AUCs
-    $("roc").textContent=fmt(res.rocAuc);
-    $("ap").textContent=fmt(res.ap);
-    $("counts").textContent=res.P+" / "+res.N;
-    $("best").textContent= best? fmt(best.t) : "—";
+    setTxt("roc", fmt(res.rocAuc));
+    setTxt("ap", fmt(res.ap));
+    setTxt("counts", res.P+" / "+res.N);
+    setTxt("best", best? fmt(best.t) : "—");
 
     // plots: mark best point
     var rocMark = best? {x:best.fpr, y:best.tpr} : null;
@@ -419,12 +431,15 @@ svg{width:100%; height:auto; display:block; touch-action:none; background:var(--
   function updateManual(res, best){
     var pr=parse();
     if(pr.err) return;
+    // the slider declares min=0 max=1; re-assert it so no non-finite t can render
     var t=parseFloat(thrEl.value);
-    $("thrval").textContent=t.toFixed(3);
-    $("chosenT").textContent=t.toFixed(3);
+    if(!isFinite(t)) t=0.5;
+    if(t<0) t=0; else if(t>1) t=1;
+    setTxt("thrval", t.toFixed(3));
+    setTxt("chosenT", t.toFixed(3));
     var c=confAt(pr.pts, t);
-    $("tp").textContent=c.tp; $("fp").textContent=c.fp;
-    $("fn").textContent=c.fn; $("tn").textContent=c.tn;
+    setTxt("tp", c.tp); setTxt("fp", c.fp);
+    setTxt("fn", c.fn); setTxt("tn", c.tn);
     var tot=c.tp+c.fp+c.fn+c.tn;
     var acc=tot? (c.tp+c.tn)/tot : 0;
     var prec=(c.tp+c.fp)? c.tp/(c.tp+c.fp) : 0;
@@ -432,12 +447,12 @@ svg{width:100%; height:auto; display:block; touch-action:none; background:var(--
     var spe=(c.tn+c.fp)? c.tn/(c.tn+c.fp) : 0;
     var f1=(prec+rec)? 2*prec*rec/(prec+rec) : 0;
     var jj=rec-((c.fp+c.tn)? c.fp/(c.fp+c.tn):0);
-    $("mAcc").textContent=fmt(acc);
-    $("mPre").textContent=fmt(prec);
-    $("mRec").textContent=fmt(rec);
-    $("mSpe").textContent=fmt(spe);
-    $("mF1").textContent=fmt(f1);
-    $("mJ").textContent=fmt(jj);
+    setTxt("mAcc", fmt(acc));
+    setTxt("mPre", fmt(prec));
+    setTxt("mRec", fmt(rec));
+    setTxt("mSpe", fmt(spe));
+    setTxt("mF1", fmt(f1));
+    setTxt("mJ", fmt(jj));
   }
 
   // ---- events ----
@@ -453,16 +468,18 @@ svg{width:100%; height:auto; display:block; touch-action:none; background:var(--
     render._syncBest=false;
     render();
   });
-  $("loadEx").addEventListener("click", function(){
+  var loadExBtn=$("loadEx"), clrBtn=$("clr");
+  if(loadExBtn) loadExBtn.addEventListener("click", function(){
     var ex=makeExample();
     scoresEl.value=ex.s; labelsEl.value=ex.l;
     fullRender(true);
   });
-  $("clr").addEventListener("click", function(){
+  if(clrBtn) clrBtn.addEventListener("click", function(){
     scoresEl.value=""; labelsEl.value="";
     errEl.textContent="Enter prediction scores.";
-    ["roc","ap","best","counts","tp","fp","fn","tn","mAcc","mPre","mRec","mSpe","mF1","mJ"].forEach(function(id){$(id).textContent="—";});
-    $("rocSvg").innerHTML=""; $("prSvg").innerHTML="";
+    ["roc","ap","best","counts","tp","fp","fn","tn","mAcc","mPre","mRec","mSpe","mF1","mJ"].forEach(function(id){setTxt(id,"—");});
+    var rs=$("rocSvg"), ps=$("prSvg");
+    if(rs) rs.innerHTML=""; if(ps) ps.innerHTML="";
   });
 
   // prefill defaults

@@ -367,8 +367,32 @@
 
 <script>
 (function() {
+  'use strict';
+
   var steps = [];
   var codeTab = 'pipeline';
+
+  /* NASA rule 2: a hard ceiling on pipeline length, so repeated clicks on the
+     add buttons cannot grow `steps` without bound. Templates use at most 6. */
+  var MAX_STEPS = 64;
+
+  function byId(id) { return document.getElementById(id); }
+
+  function setText(id, value) {
+    var el = byId(id);
+    if (el) { el.textContent = value; }
+  }
+
+  /* Read a select, falling back to its declared default if it is missing. */
+  function readSelect(id, fallback) {
+    var el = byId(id);
+    return el && typeof el.value === 'string' ? el.value : fallback;
+  }
+
+  function on(id, evt, fn) {
+    var el = byId(id);
+    if (el) { el.addEventListener(evt, fn); }
+  }
 
   var STEP_DEFS = {
     imputer: {
@@ -432,7 +456,7 @@
       ],
       sklearn: function(opts) {
         var m = opts.algorithm;
-        var task = document.getElementById('taskType').value;
+        var task = readSelect('taskType', 'classification');
         if (task === 'regression') {
           if (m === 'RandomForest') return 'RandomForestRegressor(n_estimators=100, random_state=42)';
           if (m === 'GradientBoosting') return 'GradientBoostingRegressor(n_estimators=100, random_state=42)';
@@ -467,7 +491,9 @@
   };
 
   function addStep(stepType) {
-    var def = STEP_DEFS[stepType];
+    var def = Object.prototype.hasOwnProperty.call(STEP_DEFS, stepType)
+      ? STEP_DEFS[stepType] : null;
+    if (!def || steps.length >= MAX_STEPS) { return; }
     var step = {type: stepType, id: 'step_' + Date.now() + '_' + Math.random().toString(36).substr(2,4), opts: {}};
     for (var i = 0; i < def.options.length; i++) {
       step.opts[def.options[i].id] = def.options[i].default;
@@ -482,9 +508,13 @@
   }
 
   function moveStep(stepId, dir) {
+    /* dir arrives from a data-dir attribute: parse it, reject anything that is
+       not exactly one position up or down */
+    var d = parseInt(dir, 10);
+    if (!isFinite(d) || (d !== 1 && d !== -1)) return;
     var idx = steps.findIndex(function(s) { return s.id === stepId; });
     if (idx < 0) return;
-    var newIdx = idx + dir;
+    var newIdx = idx + d;
     if (newIdx < 0 || newIdx >= steps.length) return;
     var tmp = steps[idx];
     steps[idx] = steps[newIdx];
@@ -493,15 +523,16 @@
   }
 
   function renderSteps() {
-    var container = document.getElementById('pipelineSteps');
-    var empty = document.getElementById('emptyMsg');
-    document.getElementById('stepCount').textContent = '(' + steps.length + ' step' + (steps.length !== 1 ? 's' : '') + ')';
+    var container = byId('pipelineSteps');
+    setText('stepCount', '(' + steps.length + ' step' + (steps.length !== 1 ? 's' : '') + ')');
+    if (!container) { return; }
     if (steps.length === 0) {
       container.innerHTML = '<p id="emptyMsg" style="color:var(--ink-faint);text-align:center;font-size:13px;margin:0;">Click buttons above to add steps, or select a template.</p>';
       return;
     }
     var html = '';
-    for (var i = 0; i < steps.length; i++) {
+    var shown = Math.min(steps.length, MAX_STEPS);   /* explicit loop ceiling */
+    for (var i = 0; i < shown; i++) {
       var s = steps[i];
       var def = STEP_DEFS[s.type];
       html += '<div style="display:flex;align-items:center;gap:10px;padding:10px;margin-bottom:8px;background:#FFFFFF;border:1px solid ' + def.color + '33;border-left:3px solid ' + def.color + ';border-radius:6px;">';
@@ -566,19 +597,24 @@
     if (steps.length === 0) issues.push({type:'info', msg:'Pipeline is empty. Add steps to build your workflow.'});
     if (issues.length === 0) issues.push({type:'success', msg:'Pipeline is valid and ready to generate code.'});
 
-    document.getElementById('validationSection').style.display = 'block';
-    var list = document.getElementById('validationList');
-    list.innerHTML = '';
-    var icons = {error: '&#10060;', warning: '&#9888;', info: '&#8505;', success: '&#9989;'};
-    var colors = {error: '#C53030', warning: '#B45309', info: '#2563EB', success: '#157F3B'};
-    for (var i = 0; i < issues.length; i++) {
-      list.innerHTML += '<li style="padding:6px 0;color:' + colors[issues[i].type] + ';">' + icons[issues[i].type] + ' ' + issues[i].msg + '</li>';
+    var section = byId('validationSection');
+    if (section) { section.style.display = 'block'; }
+    var list = byId('validationList');
+    if (list) {
+      var icons = {error: '&#10060;', warning: '&#9888;', info: '&#8505;', success: '&#9989;'};
+      var colors = {error: '#C53030', warning: '#B45309', info: '#2563EB', success: '#157F3B'};
+      /* every string below is a page constant; no user input reaches this markup */
+      var out = '';
+      for (var i = 0; i < issues.length; i++) {
+        out += '<li style="padding:6px 0;color:' + colors[issues[i].type] + ';">' + icons[issues[i].type] + ' ' + issues[i].msg + '</li>';
+      }
+      list.innerHTML = out;
     }
     return !issues.some(function(iss) { return iss.type === 'error'; });
   }
 
   function getModelImports(step) {
-    var task = document.getElementById('taskType').value;
+    var task = readSelect('taskType', 'classification');
     var m = step.opts.algorithm;
     var imports = [];
     if (m === 'RandomForest') imports.push('from sklearn.ensemble import ' + (task==='regression'?'RandomForestRegressor':'RandomForestClassifier'));
@@ -595,7 +631,7 @@
   }
 
   function generateSklearnCode() {
-    var task = document.getElementById('taskType').value;
+    var task = readSelect('taskType', 'classification');
     var imports = new Set();
     imports.add('import numpy as np');
     imports.add('import pandas as pd');
@@ -638,7 +674,7 @@
   }
 
   function generateTrainCode() {
-    var task = document.getElementById('taskType').value;
+    var task = readSelect('taskType', 'classification');
     var evalStep = steps.find(function(s) { return s.type === 'eval'; });
     var code = '# Split data\n';
     code += 'X_train, X_test, y_train, y_test = train_test_split(\n';
@@ -682,7 +718,7 @@
   }
 
   function generatePyTorchCode() {
-    var task = document.getElementById('taskType').value;
+    var task = readSelect('taskType', 'classification');
     var code = 'import torch\nimport torch.nn as nn\nimport torch.optim as optim\nfrom torch.utils.data import DataLoader, TensorDataset\n';
     code += 'import numpy as np\nfrom sklearn.preprocessing import StandardScaler\nfrom sklearn.model_selection import train_test_split\n\n';
     code += '# Load and preprocess data\n# X, y = load_your_data()\n';
@@ -723,17 +759,19 @@
 
   function generate() {
     if (!validate()) return;
-    document.getElementById('resultsSection').style.display = 'block';
-    var fw = document.getElementById('framework').value;
+    var results = byId('resultsSection');
+    if (results) { results.style.display = 'block'; }
+    var fw = readSelect('framework', 'sklearn');
 
     var preprocessCount = steps.filter(function(s) { return STEP_DEFS[s.type].category === 'preprocessing'; }).length;
     var modelStep = steps.find(function(s) { return s.type === 'model'; });
-    document.getElementById('metSteps').textContent = steps.length;
-    document.getElementById('metPreprocess').textContent = preprocessCount;
-    document.getElementById('metModel').textContent = modelStep ? modelStep.opts.algorithm : 'None';
-    document.getElementById('metFramework').textContent = fw === 'sklearn' ? 'scikit-learn' : 'PyTorch';
-    document.getElementById('metStatus').textContent = 'Valid';
-    document.getElementById('metStatus').style.color = '#157F3B';
+    setText('metSteps', steps.length);
+    setText('metPreprocess', preprocessCount);
+    setText('metModel', modelStep ? modelStep.opts.algorithm : 'None');
+    setText('metFramework', fw === 'sklearn' ? 'scikit-learn' : 'PyTorch');
+    setText('metStatus', 'Valid');
+    var status = byId('metStatus');
+    if (status) { status.style.color = '#157F3B'; }
 
     updateCodeDisplay();
     drawPipelineSvg();
@@ -741,7 +779,7 @@
   }
 
   function updateCodeDisplay() {
-    var fw = document.getElementById('framework').value;
+    var fw = readSelect('framework', 'sklearn');
     var code = '';
     if (fw === 'sklearn') {
       if (codeTab === 'pipeline') code = generateSklearnCode();
@@ -751,12 +789,13 @@
       if (codeTab === 'deploy') code = generateDeployCode();
       else code = generatePyTorchCode();
     }
-    document.getElementById('codeOutput').textContent = code;
-    document.getElementById('metLines').textContent = code.split('\n').length;
+    setText('codeOutput', code);
+    setText('metLines', code.split('\n').length);
   }
 
   function drawPipelineSvg() {
-    var svg = document.getElementById('pipelineSvg');
+    var svg = byId('pipelineSvg');
+    if (!svg) { return; }
     var html = '<rect width="400" height="400" fill="#FFFFFF"/>';
     if (steps.length === 0) { svg.innerHTML = html; return; }
 
@@ -793,12 +832,13 @@
   }
 
   function drawFlowSvg() {
-    var svg = document.getElementById('flowSvg');
+    var svg = byId('flowSvg');
+    if (!svg) { return; }
     var html = '<rect width="400" height="400" fill="#FFFFFF"/>';
     var phases = {preprocessing: {name:'Preprocessing', color:'#B45309', steps:[]}, feature_eng: {name:'Feature Eng.', color:'#0E7490', steps:[]}, model: {name:'Model', color:'#C53030', steps:[]}, eval: {name:'Evaluation', color:'#92400E', steps:[]}};
     for (var i = 0; i < steps.length; i++) {
       var cat = STEP_DEFS[steps[i].type].category;
-      phases[cat].steps.push(steps[i]);
+      if (phases[cat]) { phases[cat].steps.push(steps[i]); }
     }
 
     var phaseKeys = Object.keys(phases).filter(function(k) { return phases[k].steps.length > 0; });
@@ -839,7 +879,7 @@
     btn.addEventListener('click', function() { addStep(this.getAttribute('data-step')); });
   });
 
-  document.getElementById('templateSelect').addEventListener('change', function() {
+  on('templateSelect', 'change', function() {
     var tmpl = this.value;
     if (tmpl === 'custom') return;
     steps = [];
@@ -864,19 +904,23 @@
       addStep('model');
       steps[steps.length-1].opts.algorithm = 'MLP';
       addStep('eval');
-      document.getElementById('framework').value = 'pytorch';
+      var fwSel = byId('framework');
+      if (fwSel) { fwSel.value = 'pytorch'; }
     }
     renderSteps();
   });
 
-  document.getElementById('generateBtn').addEventListener('click', generate);
-  document.getElementById('validateBtn').addEventListener('click', validate);
-  document.getElementById('clearBtn').addEventListener('click', function() {
+  on('generateBtn', 'click', generate);
+  on('validateBtn', 'click', validate);
+  on('clearBtn', 'click', function() {
     steps = [];
     renderSteps();
-    document.getElementById('resultsSection').style.display = 'none';
-    document.getElementById('validationSection').style.display = 'none';
-    document.getElementById('templateSelect').value = 'custom';
+    var results = byId('resultsSection');
+    if (results) { results.style.display = 'none'; }
+    var section = byId('validationSection');
+    if (section) { section.style.display = 'none'; }
+    var tmplSel = byId('templateSelect');
+    if (tmplSel) { tmplSel.value = 'custom'; }
   });
 
   document.querySelectorAll('.codeTabBtn').forEach(function(btn) {
@@ -888,14 +932,18 @@
     });
   });
 
-  document.getElementById('copyCodeBtn').addEventListener('click', function() {
-    var code = document.getElementById('codeOutput').textContent;
-    if (navigator.clipboard) {
-      navigator.clipboard.writeText(code).then(function() {
-        document.getElementById('copyCodeBtn').textContent = 'Copied!';
-        setTimeout(function() { document.getElementById('copyCodeBtn').textContent = 'Copy Code'; }, 1500);
-      });
-    }
+  on('copyCodeBtn', 'click', function() {
+    var out = byId('codeOutput');
+    if (!out || !navigator.clipboard) { return; }
+    /* clipboard writes reject when the document is not focused or permission is
+       denied; without a rejection handler that surfaces as an unhandled promise */
+    navigator.clipboard.writeText(out.textContent).then(function() {
+      setText('copyCodeBtn', 'Copied!');
+      setTimeout(function() { setText('copyCodeBtn', 'Copy Code'); }, 1500);
+    }).catch(function() {
+      setText('copyCodeBtn', 'Copy failed');
+      setTimeout(function() { setText('copyCodeBtn', 'Copy Code'); }, 1500);
+    });
   });
 
   renderSteps();

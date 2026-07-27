@@ -324,211 +324,271 @@
 
 <script>
 (function() {
-  const canvas = document.getElementById('bvCanvas');
-  const ctx = canvas.getContext('2d');
-  const W = canvas.width, H = canvas.height;
-  const pad = 50;
+  'use strict';
 
-  let trainData = [], testData = [];
+  /* Declared ranges of the controls on this page. Every read is clamped into
+     these, so a hand-edited or non-finite control value can never widen a loop
+     bound or reach the maths. NASA rules 2 and 5. */
+  var MIN_POINTS = 20, MAX_POINTS = 80, DEF_POINTS = 40;   /* #numPoints options */
+  var MIN_NOISE = 5, MAX_NOISE = 80, DEF_NOISE = 30;       /* #noiseSlider min/max */
+  var MIN_DEGREE = 1, MAX_DEGREE = 15, DEF_DEGREE = 3;     /* #degreeSlider min/max */
+  var MAX_COLS = MAX_DEGREE + 1;                           /* normal-equation size */
+
+  var canvas = document.getElementById('bvCanvas');
+  var ctx = canvas ? canvas.getContext('2d') : null;
+  if (!ctx) { return; }   /* no canvas on the page: stop, do not throw */
+
+  var W = canvas.width, H = canvas.height;
+  var pad = 50;
+  var trainData = [], testData = [];
+
+  function byId(id) { return document.getElementById(id); }
+
+  function setText(id, value) {
+    var el = byId(id);
+    if (el) { el.textContent = value; }
+  }
+
+  /* Parse a control, reject non-finite, clamp to the control's declared range. */
+  function readNum(id, lo, hi, fallback) {
+    var el = byId(id);
+    if (!el) { return fallback; }
+    var v = parseInt(el.value, 10);
+    if (!isFinite(v)) { return fallback; }
+    return Math.max(lo, Math.min(hi, v));
+  }
 
   function trueFn(x) { return 0.5 * Math.sin(2.5 * x) + 0.3 * x; }
 
   function generateData() {
-    const n = parseInt(document.getElementById('numPoints').value);
-    const noise = parseInt(document.getElementById('noiseSlider').value) / 100;
+    var n = readNum('numPoints', MIN_POINTS, MAX_POINTS, DEF_POINTS);
+    var noise = readNum('noiseSlider', MIN_NOISE, MAX_NOISE, DEF_NOISE) / 100;
+    var i, x;
     trainData = [];
     testData = [];
-    for (let i = 0; i < n; i++) {
-      const x = (i / (n - 1)) * 4 - 2;
-      trainData.push({x, y: trueFn(x) + (Math.random() - 0.5) * noise * 2});
+    for (i = 0; i < n; i++) {
+      x = (i / (n - 1)) * 4 - 2;
+      trainData.push({x: x, y: trueFn(x) + (Math.random() - 0.5) * noise * 2});
     }
-    for (let i = 0; i < n; i++) {
-      const x = Math.random() * 4 - 2;
-      testData.push({x, y: trueFn(x) + (Math.random() - 0.5) * noise * 2});
+    for (i = 0; i < n; i++) {
+      x = Math.random() * 4 - 2;
+      testData.push({x: x, y: trueFn(x) + (Math.random() - 0.5) * noise * 2});
     }
   }
 
-  // Polynomial regression via normal equations
-  function polyFit(data, degree) {
-    const n = data.length;
-    const X = [];
-    const Y = [];
-    for (let i = 0; i < n; i++) {
-      const row = [];
-      for (let d = 0; d <= degree; d++) row.push(Math.pow(data[i].x, d));
+  /* Polynomial regression via normal equations.
+     cols <= MAX_COLS and n <= MAX_POINTS, so every loop here is bounded. */
+  function normalEquations(data, cols) {
+    var n = data.length;
+    var XtX = [], XtY = [];
+    var i, j, k, row, X = [], Y = [];
+    for (i = 0; i < cols; i++) { XtX.push(new Array(cols).fill(0)); XtY.push(0); }
+    for (i = 0; i < n; i++) {
+      row = [];
+      for (j = 0; j < cols; j++) { row.push(Math.pow(data[i].x, j)); }
       X.push(row);
       Y.push(data[i].y);
     }
-
-    // X^T X
-    const cols = degree + 1;
-    const XtX = Array.from({length: cols}, () => new Array(cols).fill(0));
-    const XtY = new Array(cols).fill(0);
-    for (let i = 0; i < n; i++) {
-      for (let j = 0; j < cols; j++) {
+    for (i = 0; i < n; i++) {
+      for (j = 0; j < cols; j++) {
         XtY[j] += X[i][j] * Y[i];
-        for (let k = 0; k < cols; k++) {
-          XtX[j][k] += X[i][j] * X[i][k];
-        }
+        for (k = 0; k < cols; k++) { XtX[j][k] += X[i][j] * X[i][k]; }
       }
     }
+    /* Small ridge term prevents a singular matrix. */
+    for (i = 0; i < cols; i++) { XtX[i][i] += 1e-8; }
+    return {XtX: XtX, XtY: XtY};
+  }
 
-    // Add small ridge to prevent singular matrix
-    for (let i = 0; i < cols; i++) XtX[i][i] += 1e-8;
-
-    // Solve via Gaussian elimination
-    const aug = XtX.map((row, i) => [...row, XtY[i]]);
-    for (let i = 0; i < cols; i++) {
-      let maxRow = i;
-      for (let k = i + 1; k < cols; k++) {
-        if (Math.abs(aug[k][i]) > Math.abs(aug[maxRow][i])) maxRow = k;
+  function solveGaussian(XtX, XtY, cols) {
+    var aug = XtX.map(function(row, i) { return row.concat([XtY[i]]); });
+    var i, j, k, maxRow, factor, sum, swap;
+    for (i = 0; i < cols; i++) {
+      maxRow = i;
+      for (k = i + 1; k < cols; k++) {
+        if (Math.abs(aug[k][i]) > Math.abs(aug[maxRow][i])) { maxRow = k; }
       }
-      [aug[i], aug[maxRow]] = [aug[maxRow], aug[i]];
-      if (Math.abs(aug[i][i]) < 1e-12) continue;
-      for (let k = i + 1; k < cols; k++) {
-        const factor = aug[k][i] / aug[i][i];
-        for (let j = i; j <= cols; j++) aug[k][j] -= factor * aug[i][j];
+      swap = aug[i]; aug[i] = aug[maxRow]; aug[maxRow] = swap;
+      if (Math.abs(aug[i][i]) < 1e-12) { continue; }
+      for (k = i + 1; k < cols; k++) {
+        factor = aug[k][i] / aug[i][i];
+        for (j = i; j <= cols; j++) { aug[k][j] -= factor * aug[i][j]; }
       }
     }
-    const coeffs = new Array(cols).fill(0);
-    for (let i = cols - 1; i >= 0; i--) {
-      let sum = aug[i][cols];
-      for (let j = i + 1; j < cols; j++) sum -= aug[i][j] * coeffs[j];
+    var coeffs = new Array(cols).fill(0);
+    for (i = cols - 1; i >= 0; i--) {
+      sum = aug[i][cols];
+      for (j = i + 1; j < cols; j++) { sum -= aug[i][j] * coeffs[j]; }
       coeffs[i] = sum / aug[i][i];
     }
     return coeffs;
   }
 
+  function polyFit(data, degree) {
+    var cols = Math.max(1, Math.min(MAX_COLS, degree + 1));
+    if (!data.length) { return new Array(cols).fill(0); }
+    var ne = normalEquations(data, cols);
+    return solveGaussian(ne.XtX, ne.XtY, cols);
+  }
+
   function polyEval(coeffs, x) {
-    let y = 0;
-    for (let i = 0; i < coeffs.length; i++) y += coeffs[i] * Math.pow(x, i);
+    var y = 0;
+    for (var i = 0; i < coeffs.length && i < MAX_COLS; i++) {
+      y += coeffs[i] * Math.pow(x, i);
+    }
     return y;
   }
 
   function mse(coeffs, data) {
-    let sum = 0;
-    for (const pt of data) {
-      const err = pt.y - polyEval(coeffs, pt.x);
+    if (!data.length) { return 0; }
+    var sum = 0, err;
+    for (var i = 0; i < data.length; i++) {
+      err = data[i].y - polyEval(coeffs, data[i].x);
       sum += err * err;
     }
     return sum / data.length;
   }
 
-  function update() {
-    const degree = parseInt(document.getElementById('degreeSlider').value);
-    document.getElementById('degreeDisplay').textContent = degree;
-    document.getElementById('degreeVal').textContent = degree;
+  var GOOD = '#157F3B', OVER = '#C53030', UNDER = 'var(--warn)';
 
-    const coeffs = polyFit(trainData, degree);
-    const trainMSE = mse(coeffs, trainData);
-    const testMSE = mse(coeffs, testData);
-
-    document.getElementById('trainErr').textContent = trainMSE.toFixed(4);
-    document.getElementById('testErr').textContent = testMSE.toFixed(4);
-
-    let status, advice;
-    const ratio = testMSE / (trainMSE + 1e-10);
+  function verdict(trainMSE, testMSE, degree) {
+    var ratio = testMSE / (trainMSE + 1e-10);
     if (trainMSE > 0.05 && testMSE > 0.05) {
-      status = 'Underfitting';
-      advice = 'Both training and test errors are high. The model is too simple to capture the underlying pattern. Increase the polynomial degree to add capacity.';
-    } else if (ratio > 3 && degree > 5) {
-      status = 'Overfitting';
-      advice = 'Training error is low but test error is much higher. The model is fitting noise. Reduce the polynomial degree or add regularization to improve generalization.';
-    } else {
-      status = 'Good Fit';
-      advice = 'Training and test errors are both reasonably low and close together. The model captures the underlying pattern without fitting noise.';
+      return {status: 'Underfitting', color: UNDER,
+        advice: 'Both training and test errors are high. The model is too simple to capture the underlying pattern. Increase the polynomial degree to add capacity.'};
     }
-    document.getElementById('fitStatus').textContent = status;
-    document.getElementById('fitStatus').style.color = status === 'Good Fit' ? '#157F3B' : status === 'Overfitting' ? '#C53030' : '#B45309';
-    document.getElementById('fitAdvice').innerHTML = '<p style="color:#4A4A4A;margin:0;"><strong style="color:' +
-      (status === 'Good Fit' ? '#157F3B' : status === 'Overfitting' ? '#C53030' : '#B45309') + '">' + status + ':</strong> ' + advice + '</p>';
+    if (ratio > 3 && degree > 5) {
+      return {status: 'Overfitting', color: OVER,
+        advice: 'Training error is low but test error is much higher. The model is fitting noise. Reduce the polynomial degree or add regularization to improve generalization.'};
+    }
+    return {status: 'Good Fit', color: GOOD,
+      advice: 'Training and test errors are both reasonably low and close together. The model captures the underlying pattern without fitting noise.'};
+  }
+
+  function update() {
+    var degree = readNum('degreeSlider', MIN_DEGREE, MAX_DEGREE, DEF_DEGREE);
+    setText('degreeDisplay', degree);
+    setText('degreeVal', degree);
+
+    var coeffs = polyFit(trainData, degree);
+    var trainMSE = mse(coeffs, trainData);
+    var testMSE = mse(coeffs, testData);
+
+    setText('trainErr', trainMSE.toFixed(4));
+    setText('testErr', testMSE.toFixed(4));
+
+    var v = verdict(trainMSE, testMSE, degree);
+    var statusEl = byId('fitStatus');
+    if (statusEl) {
+      statusEl.textContent = v.status;
+      statusEl.style.color = v.color;
+    }
+    /* Only page constants reach this markup; no user string is interpolated. */
+    var adviceEl = byId('fitAdvice');
+    if (adviceEl) {
+      adviceEl.innerHTML = '<p style="color:#4A4A4A;margin:0;"><strong style="color:' +
+        v.color + '">' + v.status + ':</strong> ' + v.advice + '</p>';
+    }
 
     draw(coeffs);
   }
 
-  function draw(coeffs) {
-    ctx.clearRect(0, 0, W, H);
-    ctx.fillStyle = '#FFFFFF';
-    ctx.fillRect(0, 0, W, H);
+  /* --- drawing, split so no function exceeds the 60-line NASA ceiling --- */
 
-    const xMin = -2.2, xMax = 2.2;
-    const allY = [...trainData.map(d => d.y), ...testData.map(d => d.y)];
-    let yMin = Math.min(...allY) - 0.3;
-    let yMax = Math.max(...allY) + 0.3;
+  function scale() {
+    var xMin = -2.2, xMax = 2.2;
+    var yMin = 0, yMax = 1, i, y;
+    var pts = trainData.concat(testData);
+    if (pts.length) {
+      yMin = pts[0].y; yMax = pts[0].y;
+      for (i = 1; i < pts.length; i++) {
+        y = pts[i].y;
+        if (y < yMin) { yMin = y; }
+        if (y > yMax) { yMax = y; }
+      }
+    }
+    yMin -= 0.3; yMax += 0.3;
+    var ySpan = (yMax - yMin) || 1;
+    return {
+      xMin: xMin, xMax: xMax, yMin: yMin, yMax: yMax,
+      toX: function(x) { return pad + (x - xMin) / (xMax - xMin) * (W - 2 * pad); },
+      toY: function(y) { return (H - pad) - (y - yMin) / ySpan * (H - 2 * pad); }
+    };
+  }
 
-    function toX(x) { return pad + (x - xMin) / (xMax - xMin) * (W - 2 * pad); }
-    function toY(y) { return (H - pad) - (y - yMin) / (yMax - yMin) * (H - 2 * pad); }
-
-    // Grid
+  function drawGrid(t) {
+    var i, x, y;
     ctx.strokeStyle = '#E8E8E6';
     ctx.lineWidth = 0.5;
-    for (let i = 0; i <= 4; i++) {
-      const x = xMin + (xMax - xMin) * i / 4;
-      ctx.beginPath(); ctx.moveTo(toX(x), pad); ctx.lineTo(toX(x), H - pad); ctx.stroke();
+    for (i = 0; i <= 4; i++) {
+      x = t.xMin + (t.xMax - t.xMin) * i / 4;
+      ctx.beginPath(); ctx.moveTo(t.toX(x), pad); ctx.lineTo(t.toX(x), H - pad); ctx.stroke();
       ctx.fillStyle = '#6a6a6a';
       ctx.font = '10px IBM Plex Sans';
-      ctx.fillText(x.toFixed(1), toX(x) - 10, H - pad + 16);
+      ctx.fillText(x.toFixed(1), t.toX(x) - 10, H - pad + 16);
     }
-    for (let i = 0; i <= 4; i++) {
-      const y = yMin + (yMax - yMin) * i / 4;
-      ctx.beginPath(); ctx.moveTo(pad, toY(y)); ctx.lineTo(W - pad, toY(y)); ctx.stroke();
-      ctx.fillText(y.toFixed(1), 8, toY(y) + 4);
+    for (i = 0; i <= 4; i++) {
+      y = t.yMin + (t.yMax - t.yMin) * i / 4;
+      ctx.beginPath(); ctx.moveTo(pad, t.toY(y)); ctx.lineTo(W - pad, t.toY(y)); ctx.stroke();
+      ctx.fillText(y.toFixed(1), 8, t.toY(y) + 4);
     }
-
-    // Axes
     ctx.strokeStyle = '#B8B8B6';
     ctx.lineWidth = 1;
     ctx.beginPath();
     ctx.moveTo(pad, pad); ctx.lineTo(pad, H - pad); ctx.lineTo(W - pad, H - pad);
     ctx.stroke();
+  }
 
-    // True function
+  function drawCurves(t, coeffs) {
+    var px, x, y, cy;
     ctx.beginPath();
     ctx.strokeStyle = 'rgba(21,127,59,0.75)';
     ctx.lineWidth = 2;
     ctx.setLineDash([6, 4]);
-    for (let px = pad; px <= W - pad; px++) {
-      const x = xMin + (px - pad) / (W - 2 * pad) * (xMax - xMin);
-      const y = trueFn(x);
-      if (px === pad) ctx.moveTo(px, toY(y)); else ctx.lineTo(px, toY(y));
+    for (px = pad; px <= W - pad; px++) {
+      x = t.xMin + (px - pad) / (W - 2 * pad) * (t.xMax - t.xMin);
+      y = trueFn(x);
+      if (px === pad) { ctx.moveTo(px, t.toY(y)); } else { ctx.lineTo(px, t.toY(y)); }
     }
     ctx.stroke();
     ctx.setLineDash([]);
 
-    // Fitted curve
     ctx.beginPath();
     ctx.strokeStyle = '#2563EB';
     ctx.lineWidth = 2.5;
-    for (let px = pad; px <= W - pad; px++) {
-      const x = xMin + (px - pad) / (W - 2 * pad) * (xMax - xMin);
-      const y = polyEval(coeffs, x);
-      const cy = Math.max(pad - 20, Math.min(H - pad + 20, toY(y)));
-      if (px === pad) ctx.moveTo(px, cy); else ctx.lineTo(px, cy);
+    for (px = pad; px <= W - pad; px++) {
+      x = t.xMin + (px - pad) / (W - 2 * pad) * (t.xMax - t.xMin);
+      y = polyEval(coeffs, x);
+      cy = Math.max(pad - 20, Math.min(H - pad + 20, t.toY(y)));
+      if (px === pad) { ctx.moveTo(px, cy); } else { ctx.lineTo(px, cy); }
     }
     ctx.stroke();
+  }
 
-    // Train points
-    for (const pt of trainData) {
+  function drawPoints(t) {
+    var i, pt;
+    for (i = 0; i < trainData.length; i++) {
+      pt = trainData[i];
       ctx.beginPath();
-      ctx.arc(toX(pt.x), toY(pt.y), 5, 0, Math.PI * 2);
+      ctx.arc(t.toX(pt.x), t.toY(pt.y), 5, 0, Math.PI * 2);
       ctx.fillStyle = '#2563EB';
       ctx.fill();
       ctx.strokeStyle = '#FFFFFF';
       ctx.lineWidth = 1;
       ctx.stroke();
     }
-
-    // Test points
-    for (const pt of testData) {
+    for (i = 0; i < testData.length; i++) {
+      pt = testData[i];
       ctx.beginPath();
-      ctx.arc(toX(pt.x), toY(pt.y), 4, 0, Math.PI * 2);
+      ctx.arc(t.toX(pt.x), t.toY(pt.y), 4, 0, Math.PI * 2);
       ctx.fillStyle = 'transparent';
       ctx.strokeStyle = '#C53030';
       ctx.lineWidth = 1.5;
       ctx.stroke();
     }
+  }
 
-    // Legend
+  function drawLegend() {
     ctx.font = '11px IBM Plex Sans, sans-serif';
     ctx.fillStyle = '#2563EB';
     ctx.fillText('\u25CF Train data', W - pad - 180, pad + 16);
@@ -540,14 +600,31 @@
     ctx.fillText('\u2014 Fitted polynomial', W - pad - 180, pad + 64);
   }
 
-  document.getElementById('degreeSlider').addEventListener('input', update);
-  document.getElementById('noiseSlider').addEventListener('input', function() {
-    document.getElementById('noiseDisplay').textContent = (this.value / 100).toFixed(2);
+  function draw(coeffs) {
+    ctx.clearRect(0, 0, W, H);
+    ctx.fillStyle = '#FFFFFF';
+    ctx.fillRect(0, 0, W, H);
+    var t = scale();
+    drawGrid(t);
+    drawCurves(t, coeffs);
+    drawPoints(t);
+    drawLegend();
+  }
+
+  function on(id, evt, fn) {
+    var el = byId(id);
+    if (el) { el.addEventListener(evt, fn); }
+  }
+
+  on('degreeSlider', 'input', update);
+  on('noiseSlider', 'input', function() {
+    setText('noiseDisplay',
+      (readNum('noiseSlider', MIN_NOISE, MAX_NOISE, DEF_NOISE) / 100).toFixed(2));
     generateData();
     update();
   });
-  document.getElementById('numPoints').addEventListener('change', function() { generateData(); update(); });
-  document.getElementById('bvRegenBtn').addEventListener('click', function() { generateData(); update(); });
+  on('numPoints', 'change', function() { generateData(); update(); });
+  on('bvRegenBtn', 'click', function() { generateData(); update(); });
 
   generateData();
   update();

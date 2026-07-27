@@ -305,6 +305,7 @@
 
 <script>
 (function() {
+  'use strict';
   const categories = [
     {
       name: 'Numeric Features',
@@ -366,114 +367,165 @@
     }
   ];
 
+  /* NASA rule 2: fixed ceilings so a pasted blob cannot open an unbounded loop. */
+  const MAX_CSV_LINES = 2000;
+  const MAX_CSV_COLS = 100;
+
   const container = document.getElementById('checklistContainer');
   let allItems = [];
 
-  categories.forEach((cat, ci) => {
+  function byId(id) { return document.getElementById(id); }
+
+  function setText(id, value) {
+    const el = byId(id);
+    if (el) { el.textContent = value; }
+  }
+
+  /* User-pasted CSV reaches innerHTML below. Escape it so a header cell can
+     never be parsed as markup. Benign headers render byte-identically. */
+  function esc(s) {
+    return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  }
+
+  function makeItem(item, ci) {
+    const itemDiv = document.createElement('div');
+    itemDiv.className = 'fe-item';
+    itemDiv.innerHTML = '<div class="fe-check"></div><div class="fe-item-content"><div class="fe-item-title">' + item.title + '</div><div class="fe-item-desc">' + item.desc + '</div></div>';
+
+    const itemData = {el: itemDiv, checked: false, catIndex: ci};
+    allItems.push(itemData);
+
+    itemDiv.addEventListener('click', function(e) {
+      if (e.target && e.target.closest && e.target.closest('.fe-item-desc')) return;
+      itemData.checked = !itemData.checked;
+      itemDiv.classList.toggle('checked', itemData.checked);
+      const check = itemDiv.querySelector('.fe-check');
+      if (check) { check.textContent = itemData.checked ? '\u2713' : ''; }
+      itemDiv.classList.toggle('expanded', !itemData.checked);
+      updateProgress();
+    });
+
+    itemDiv.addEventListener('dblclick', function() {
+      itemDiv.classList.toggle('expanded');
+    });
+
+    return itemDiv;
+  }
+
+  function buildCategory(cat, ci) {
     const catDiv = document.createElement('div');
     catDiv.className = 'fe-category';
 
     const header = document.createElement('div');
     header.className = 'fe-category-header';
+    /* id built at runtime on purpose; read back through byId(), null-checked */
     header.innerHTML = '<h4>' + cat.name + '</h4><span class="cat-progress" id="cat-prog-' + ci + '">0/' + cat.items.length + '</span>';
     catDiv.appendChild(header);
 
     const itemsDiv = document.createElement('div');
     itemsDiv.className = 'fe-items';
-
-    cat.items.forEach((item, ii) => {
-      const itemDiv = document.createElement('div');
-      itemDiv.className = 'fe-item';
-      itemDiv.innerHTML = '<div class="fe-check"></div><div class="fe-item-content"><div class="fe-item-title">' + item.title + '</div><div class="fe-item-desc">' + item.desc + '</div></div>';
-
-      const itemData = {el: itemDiv, checked: false, catIndex: ci};
-      allItems.push(itemData);
-
-      itemDiv.addEventListener('click', function(e) {
-        if (e.target.closest('.fe-item-desc')) return;
-        itemData.checked = !itemData.checked;
-        itemDiv.classList.toggle('checked', itemData.checked);
-        itemDiv.querySelector('.fe-check').textContent = itemData.checked ? '\u2713' : '';
-        itemDiv.classList.toggle('expanded', !itemData.checked);
-        updateProgress();
-      });
-
-      itemDiv.addEventListener('dblclick', function() {
-        itemDiv.classList.toggle('expanded');
-      });
-
-      itemsDiv.appendChild(itemDiv);
-    });
-
+    cat.items.forEach(function(item) { itemsDiv.appendChild(makeItem(item, ci)); });
     catDiv.appendChild(itemsDiv);
-    container.appendChild(catDiv);
-  });
+    return catDiv;
+  }
 
-  document.getElementById('totalCount').textContent = allItems.length;
+  if (container) {
+    categories.forEach(function(cat, ci) { container.appendChild(buildCategory(cat, ci)); });
+  }
+
+  setText('totalCount', allItems.length);
 
   function updateProgress() {
-    const checked = allItems.filter(i => i.checked).length;
     const total = allItems.length;
-    const pct = Math.round(checked / total * 100);
-    document.getElementById('checkedCount').textContent = checked;
-    document.getElementById('progressBar').style.width = pct + '%';
-    document.getElementById('progressBar').textContent = pct + '%';
+    const checked = allItems.filter(function(i) { return i.checked; }).length;
+    const pct = total > 0 ? Math.round(checked / total * 100) : 0;
+    setText('checkedCount', checked);
+    const bar = byId('progressBar');
+    if (bar) {
+      bar.style.width = pct + '%';
+      bar.textContent = pct + '%';
+    }
 
     // Per-category progress
-    categories.forEach((cat, ci) => {
-      const catItems = allItems.filter(i => i.catIndex === ci);
-      const catChecked = catItems.filter(i => i.checked).length;
-      const catProgId = 'cat-prog-' + ci;
-      document.getElementById(catProgId).textContent = catChecked + '/' + catItems.length;
+    categories.forEach(function(cat, ci) {
+      const catItems = allItems.filter(function(i) { return i.catIndex === ci; });
+      const catChecked = catItems.filter(function(i) { return i.checked; }).length;
+      setText('cat-prog-' + ci, catChecked + '/' + catItems.length);
     });
   }
 
-  // Data Type Detector
-  document.getElementById('detectBtn').addEventListener('click', function() {
-    const raw = document.getElementById('dataInput').value.trim();
-    if (!raw) { document.getElementById('detectionResults').innerHTML = '<p style="color:#C53030;">Please paste some CSV data first.</p>'; return; }
+  /* --- Data Type Detector --- */
 
-    const lines = raw.split('\n').map(l => l.trim()).filter(l => l);
-    if (lines.length < 2) { document.getElementById('detectionResults').innerHTML = '<p style="color:#C53030;">Need at least a header row and one data row.</p>'; return; }
+  function showDetection(html) {
+    const out = byId('detectionResults');
+    if (out) { out.innerHTML = html; }
+  }
 
-    const headers = lines[0].split(',').map(h => h.trim());
-    const rows = lines.slice(1).map(l => l.split(',').map(c => c.trim()));
+  function parseCsv(raw) {
+    const lines = raw.split('\n').map(function(l) { return l.trim(); })
+      .filter(function(l) { return l; })
+      .slice(0, MAX_CSV_LINES);
+    if (lines.length < 2) { return null; }
+    const headers = lines[0].split(',').map(function(h) { return h.trim(); })
+      .slice(0, MAX_CSV_COLS);
+    const rows = lines.slice(1).map(function(l) {
+      return l.split(',').map(function(c) { return c.trim(); }).slice(0, MAX_CSV_COLS);
+    });
+    return {headers: headers, rows: rows};
+  }
 
+  function renderDetection(parsed) {
     let html = '<h4 style="color:var(--ink);margin-bottom:12px;">Detected Columns</h4>';
-
-    headers.forEach((header, i) => {
-      const values = rows.map(r => r[i] || '').filter(v => v);
+    parsed.headers.forEach(function(header, i) {
+      const values = parsed.rows.map(function(r) { return r[i] || ''; })
+        .filter(function(v) { return v; });
       const type = detectType(header, values);
       const suggestions = getSuggestions(type);
       const typeColor = type === 'numeric' ? '#157F3B' : type === 'categorical' ? '#2563EB' : type === 'datetime' ? '#B45309' : type === 'text' ? '#7C3AED' : '#6a6a6a';
 
       html += '<div class="detection-col">';
-      html += '<span class="col-name">' + header + '</span>';
+      html += '<span class="col-name">' + esc(header) + '</span>';
       html += '<span class="col-type" style="background:' + typeColor + '22;color:' + typeColor + ';">' + type + '</span>';
       html += '<div class="suggestions"><strong>Suggested steps:</strong> ' + suggestions.join(' | ') + '</div>';
       html += '</div>';
     });
+    showDetection(html);
+  }
 
-    document.getElementById('detectionResults').innerHTML = html;
-  });
+  const detectBtn = byId('detectBtn');
+  if (detectBtn) {
+    detectBtn.addEventListener('click', function() {
+      const input = byId('dataInput');
+      const raw = input ? String(input.value).trim() : '';
+      if (!raw) { showDetection('<p style="color:#C53030;">Please paste some CSV data first.</p>'); return; }
+      const parsed = parseCsv(raw);
+      if (!parsed) { showDetection('<p style="color:#C53030;">Need at least a header row and one data row.</p>'); return; }
+      renderDetection(parsed);
+    });
+  }
 
   function detectType(name, values) {
     const n = name.toLowerCase();
     if (n.includes('date') || n.includes('time') || n.includes('created') || n.includes('updated') || n.includes('timestamp') || n.includes('signup') || n.includes('birth')) return 'datetime';
     if (n.includes('description') || n.includes('comment') || n.includes('text') || n.includes('note') || n.includes('review') || n.includes('bio') || n.includes('message')) return 'text';
+    /* a column with no non-empty values fell through to 'categorical' before; keep that */
+    if (values.length === 0) return 'categorical';
 
-    const numCount = values.filter(v => !isNaN(v) && v !== '').length;
+    const numCount = values.filter(function(v) { return !isNaN(v) && v !== ''; }).length;
     if (numCount / values.length > 0.8) {
-      const uniq = new Set(values).size;
-      if (uniq <= 10 && uniq < values.length * 0.3) return 'categorical';
+      const uniqNum = new Set(values).size;
+      if (uniqNum <= 10 && uniqNum < values.length * 0.3) return 'categorical';
       return 'numeric';
     }
 
     const datePatterns = [/\d{4}-\d{2}-\d{2}/, /\d{2}\/\d{2}\/\d{4}/, /\d{2}-\d{2}-\d{4}/];
-    const dateCount = values.filter(v => datePatterns.some(p => p.test(v))).length;
+    const dateCount = values.filter(function(v) {
+      return datePatterns.some(function(p) { return p.test(v); });
+    }).length;
     if (dateCount / values.length > 0.5) return 'datetime';
 
-    const avgLen = values.reduce((s, v) => s + v.length, 0) / values.length;
+    const avgLen = values.reduce(function(s, v) { return s + v.length; }, 0) / values.length;
     if (avgLen > 30) return 'text';
 
     const uniq = new Set(values).size;

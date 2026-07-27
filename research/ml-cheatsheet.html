@@ -1209,6 +1209,8 @@ y_pred_adjusted = (y_prob >= threshold).<span class="fn">astype</span>(<span cla
 </main>
 
 <script>
+(function () {
+'use strict';
 // Algorithm recommendation engine
 const algorithms = [
   // Tabular + Classify
@@ -1295,10 +1297,20 @@ const algorithms = [
 const badgeClass = { best: 'badge-best', alt: 'badge-alt', also: 'badge-also' };
 const badgeLabel = { best: 'Recommended', alt: 'Strong Alternative', also: 'Also Consider' };
 
+const MAX_RESULTS = 32;   // NASA rule 2: fixed upper bound on the render loop
+
+function byId(id) { return document.getElementById(id); }
+
+function readSelect(id) {
+  const el = byId(id);
+  return el && typeof el.value === 'string' ? el.value : '';
+}
+
 function updateRecommendations() {
-  const dataType = document.getElementById('data-type').value;
-  const goal = document.getElementById('goal').value;
-  const resultsDiv = document.getElementById('selector-results');
+  const resultsDiv = byId('selector-results');
+  if (!resultsDiv) { return; }   // null-checked: never assume the panel is present
+  const dataType = readSelect('data-type');
+  const goal = readSelect('goal');
 
   if (!dataType || !goal) {
     resultsDiv.innerHTML = '<p class="muted" style="font-size:0.85rem;">Select both options above to get personalized algorithm recommendations.</p>';
@@ -1313,9 +1325,13 @@ function updateRecommendations() {
   }
 
   let html = '';
-  for (const m of matches) {
+  const shown = Math.min(matches.length, MAX_RESULTS);
+  for (let i = 0; i < shown; i++) {
+    const m = matches[i];
+    // every field below comes from the `algorithms` constant above; no user string
+    // reaches this markup, so innerHTML here cannot be an injection sink
     html += `<div class="result-item">
-      <span class="result-badge ${badgeClass[m.rank]}">${badgeLabel[m.rank]}</span>
+      <span class="result-badge ${badgeClass[m.rank] || ''}">${badgeLabel[m.rank] || ''}</span>
       <h4><a href="${m.link}" style="color:var(--ink);text-decoration:none;">${m.name}</a></h4>
       <p class="result-reason">${m.reason}</p>
     </div>`;
@@ -1323,8 +1339,14 @@ function updateRecommendations() {
   resultsDiv.innerHTML = html;
 }
 
-document.getElementById('data-type').addEventListener('change', updateRecommendations);
-document.getElementById('goal').addEventListener('change', updateRecommendations);
+function on(id, evt, fn) {
+  const el = byId(id);
+  if (el) { el.addEventListener(evt, fn); }
+}
+
+on('data-type', 'change', updateRecommendations);
+on('goal', 'change', updateRecommendations);
+})();
 </script>
 
 

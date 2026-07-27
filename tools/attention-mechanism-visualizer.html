@@ -312,7 +312,8 @@
 </footer>
 
 <script>
-(function() {
+(() => {
+  'use strict';
   var RANDOM_SENTENCES = [
     "The cat sat on the mat",
     "Transformers learn contextual word representations",
@@ -348,6 +349,21 @@
       return cross * (0.5 + 0.5 * Math.random()) + 0.1 * Math.random();
     }
   ];
+
+  // Hard ceiling on the sequence length, which bounds every loop and every
+  // animation step on this page. It was already applied to the token lists; it
+  // is named here so the bound is explicit rather than a literal in one branch.
+  var MAX_TOKENS = 14;
+  // softmax divides by the temperature, so a zero or non-numeric value would
+  // turn the whole matrix into Infinity/NaN
+  var DEFAULT_TEMP = 1.0;
+
+  function el(id) { return document.getElementById(id); }
+
+  function setText(id, value) {
+    var node = el(id);
+    if (node) node.textContent = value;
+  }
 
   function tokenize(sentence) {
     return sentence.trim().split(/\s+/).filter(function(t) { return t.length > 0; });
@@ -394,33 +410,31 @@
   var currentQTokens = [];
   var currentKTokens = [];
   var selectedRow = -1;
-  var animFrameId = null;
+  var animTimerId = null;
 
-  function drawHeatmap(matrix, qTokens, kTokens, highlightRow) {
-    var canvas = document.getElementById('heatmapCanvas');
-    var ctx = canvas.getContext('2d');
-    var qn = qTokens.length, kn = kTokens.length;
-
-    var labelW = 100, labelH = 90, cellSize = Math.min(Math.floor((640 - labelW) / kn), Math.floor((640 - labelH) / qn));
+  /* Cell geometry. Both the renderer and the click hit-test derive coordinates
+     from this one function so they cannot drift apart. */
+  function heatmapGeom(qn, kn) {
+    var labelW = 100, labelH = 90;
+    var cellSize = Math.min(Math.floor((640 - labelW) / kn), Math.floor((640 - labelH) / qn));
     cellSize = Math.max(cellSize, 28);
-    var gridW = kn * cellSize, gridH = qn * cellSize;
-    var totalW = labelW + gridW + 20, totalH = labelH + gridH + 20;
+    return {
+      labelW: labelW, labelH: labelH, cellSize: cellSize,
+      gridW: kn * cellSize, gridH: qn * cellSize,
+      totalW: labelW + kn * cellSize + 20, totalH: labelH + qn * cellSize + 20
+    };
+  }
 
-    canvas.width = totalW;
-    canvas.height = totalH;
-    ctx.clearRect(0, 0, totalW, totalH);
-    ctx.fillStyle = '#FFFFFF';
-    ctx.fillRect(0, 0, totalW, totalH);
-
-    // Column headers (key tokens)
+  // Column headers (key tokens)
+  function drawColumnHeaders(ctx, kTokens, g) {
     ctx.save();
     ctx.font = '600 12px IBM Plex Sans, sans-serif';
     ctx.fillStyle = '#6a6a6a';
     ctx.textAlign = 'center';
-    for (var j = 0; j < kn; j++) {
-      var cx = labelW + j * cellSize + cellSize / 2;
+    for (var j = 0; j < kTokens.length; j++) {
+      var cx = g.labelW + j * g.cellSize + g.cellSize / 2;
       ctx.save();
-      ctx.translate(cx, labelH - 8);
+      ctx.translate(cx, g.labelH - 8);
       ctx.rotate(-Math.PI / 4);
       ctx.fillStyle = '#6a6a6a';
       ctx.font = '600 11px IBM Plex Sans, sans-serif';
@@ -429,54 +443,58 @@
       ctx.restore();
     }
     ctx.restore();
+  }
 
-    // Row labels (query tokens) and cells
-    for (var i = 0; i < qn; i++) {
-      var cy = labelH + i * cellSize + cellSize / 2;
+  // Row labels (query tokens) and cells
+  function drawRowsAndCells(ctx, matrix, qTokens, kn, g, highlightRow) {
+    for (var i = 0; i < qTokens.length; i++) {
+      var cy = g.labelH + i * g.cellSize + g.cellSize / 2;
       var isHighlight = (i === highlightRow);
 
       // Row label
       ctx.font = (isHighlight ? '700' : '600') + ' 11px IBM Plex Sans, sans-serif';
       ctx.fillStyle = isHighlight ? '#157F3B' : '#6a6a6a';
       ctx.textAlign = 'right';
-      ctx.fillText(qTokens[i], labelW - 8, cy + 4);
+      ctx.fillText(qTokens[i], g.labelW - 8, cy + 4);
 
       // Hover highlight strip
       if (isHighlight) {
         ctx.fillStyle = 'rgba(21,127,59,0.10)';
-        ctx.fillRect(labelW, labelH + i * cellSize, gridW, cellSize);
+        ctx.fillRect(g.labelW, g.labelH + i * g.cellSize, g.gridW, g.cellSize);
       }
 
       for (var j = 0; j < kn; j++) {
-        var val = matrix[i][j];
-        var cx2 = labelW + j * cellSize;
-        var cy2 = labelH + i * cellSize;
-        ctx.fillStyle = lerpColor(Math.pow(val, 0.65));
-        ctx.fillRect(cx2 + 1, cy2 + 1, cellSize - 2, cellSize - 2);
+        var v = matrix[i][j];
+        var cx2 = g.labelW + j * g.cellSize;
+        var cy2 = g.labelH + i * g.cellSize;
+        ctx.fillStyle = lerpColor(Math.pow(v, 0.65));
+        ctx.fillRect(cx2 + 1, cy2 + 1, g.cellSize - 2, g.cellSize - 2);
 
         // Weight text for larger cells
-        if (cellSize >= 44) {
+        if (g.cellSize >= 44) {
           ctx.font = '10px IBM Plex Mono, monospace';
-          ctx.fillStyle = val > 0.4 ? '#FFFFFF' : '#767676';
+          ctx.fillStyle = v > 0.4 ? '#FFFFFF' : '#767676';
           ctx.textAlign = 'center';
-          ctx.fillText(val.toFixed(2), cx2 + cellSize / 2, cy2 + cellSize / 2 + 4);
+          ctx.fillText(v.toFixed(2), cx2 + g.cellSize / 2, cy2 + g.cellSize / 2 + 4);
         }
       }
     }
+  }
 
+  function drawHeatmapChrome(ctx, qn, kn, g) {
     // Grid lines
     ctx.strokeStyle = '#E8E8E6';
     ctx.lineWidth = 0.5;
     for (var i = 0; i <= qn; i++) {
       ctx.beginPath();
-      ctx.moveTo(labelW, labelH + i * cellSize);
-      ctx.lineTo(labelW + gridW, labelH + i * cellSize);
+      ctx.moveTo(g.labelW, g.labelH + i * g.cellSize);
+      ctx.lineTo(g.labelW + g.gridW, g.labelH + i * g.cellSize);
       ctx.stroke();
     }
     for (var j = 0; j <= kn; j++) {
       ctx.beginPath();
-      ctx.moveTo(labelW + j * cellSize, labelH);
-      ctx.lineTo(labelW + j * cellSize, labelH + gridH);
+      ctx.moveTo(g.labelW + j * g.cellSize, g.labelH);
+      ctx.lineTo(g.labelW + j * g.cellSize, g.labelH + g.gridH);
       ctx.stroke();
     }
 
@@ -484,37 +502,35 @@
     ctx.font = '11px IBM Plex Sans, sans-serif';
     ctx.fillStyle = '#6a6a6a';
     ctx.textAlign = 'center';
-    ctx.fillText('Key tokens (attends TO)', labelW + gridW / 2, totalH - 4);
+    ctx.fillText('Key tokens (attends TO)', g.labelW + g.gridW / 2, g.totalH - 4);
     ctx.save();
-    ctx.translate(10, labelH + gridH / 2);
+    ctx.translate(10, g.labelH + g.gridH / 2);
     ctx.rotate(-Math.PI / 2);
     ctx.fillText('Query tokens (attends FROM)', 0, 0);
     ctx.restore();
   }
 
-  function drawArcs(matrix, qTokens, rowIdx) {
-    var canvas = document.getElementById('arcCanvas');
-    var ctx = canvas.getContext('2d');
-    var n = qTokens.length;
-    var W = canvas.width, H = canvas.height;
+  function drawHeatmap(matrix, qTokens, kTokens, highlightRow) {
+    var canvas = el('heatmapCanvas');
+    var ctx = canvas ? canvas.getContext('2d') : null;
+    var qn = qTokens.length, kn = kTokens.length;
+    // a zero-length axis would make the cell size divide by zero
+    if (!ctx || qn === 0 || kn === 0) return;
 
-    ctx.clearRect(0, 0, W, H);
+    var g = heatmapGeom(qn, kn);
+    canvas.width = g.totalW;
+    canvas.height = g.totalH;
+    ctx.clearRect(0, 0, g.totalW, g.totalH);
     ctx.fillStyle = '#FFFFFF';
-    ctx.fillRect(0, 0, W, H);
+    ctx.fillRect(0, 0, g.totalW, g.totalH);
 
-    if (rowIdx < 0 || rowIdx >= matrix.length) {
-      ctx.font = '13px IBM Plex Sans, sans-serif';
-      ctx.fillStyle = '#6a6a6a';
-      ctx.textAlign = 'center';
-      ctx.fillText('Click a row label in the heatmap to inspect token attention arcs', W / 2, H / 2);
-      return;
-    }
+    drawColumnHeaders(ctx, kTokens, g);
+    drawRowsAndCells(ctx, matrix, qTokens, kn, g, highlightRow);
+    drawHeatmapChrome(ctx, qn, kn, g);
+  }
 
-    var row = matrix[rowIdx];
-    var tokenPad = 40, tokenY = H - 28;
-    var spacing = (W - tokenPad * 2) / Math.max(n - 1, 1);
-
-    // Draw arcs
+  // Draw arcs
+  function drawArcCurves(ctx, row, n, rowIdx, tokenPad, tokenY, spacing, H) {
     for (var j = 0; j < n; j++) {
       var x1 = tokenPad + rowIdx * spacing;
       var x2 = tokenPad + j * spacing;
@@ -530,9 +546,11 @@
       ctx.lineWidth = Math.max(1, w * 5);
       ctx.stroke();
     }
+  }
 
-    // Draw tokens
-    for (var j = 0; j < n; j++) {
+  // Draw tokens
+  function drawArcTokens(ctx, row, qTokens, rowIdx, tokenPad, tokenY, spacing) {
+    for (var j = 0; j < qTokens.length; j++) {
       var tx = tokenPad + j * spacing;
       var isQuery = (j === rowIdx);
       var w = row[j];
@@ -556,33 +574,57 @@
         ctx.fillText(w.toFixed(2), tx, tokenY - 24);
       }
     }
-
-    document.getElementById('arcStatus').textContent =
-      'Showing outgoing attention from "' + qTokens[rowIdx] + '" (row ' + (rowIdx + 1) + ').';
   }
 
-  function visualize(animate) {
-    var sentence = document.getElementById('inputSentence').value.trim();
-    var attnType = document.getElementById('attnType').value;
-    var headIdx = parseInt(document.getElementById('headSelect').value);
-    var temp = parseFloat(document.getElementById('temperature').value);
+  function drawArcs(matrix, qTokens, rowIdx) {
+    var canvas = el('arcCanvas');
+    var ctx = canvas ? canvas.getContext('2d') : null;
+    if (!ctx) return;
+    var n = qTokens.length;
+    var W = canvas.width, H = canvas.height;
 
-    var qTokens = tokenize(sentence);
-    var kTokens = qTokens;
-    if (attnType === 'cross') {
-      var target = document.getElementById('targetSentence').value.trim();
-      kTokens = tokenize(target.length > 0 ? target : sentence);
+    ctx.clearRect(0, 0, W, H);
+    ctx.fillStyle = '#FFFFFF';
+    ctx.fillRect(0, 0, W, H);
+
+    if (rowIdx < 0 || rowIdx >= matrix.length) {
+      ctx.font = '13px IBM Plex Sans, sans-serif';
+      ctx.fillStyle = '#6a6a6a';
+      ctx.textAlign = 'center';
+      ctx.fillText('Click a row label in the heatmap to inspect token attention arcs', W / 2, H / 2);
+      return;
     }
 
-    if (qTokens.length === 0) return;
-    if (qTokens.length > 14) qTokens = qTokens.slice(0, 14);
-    if (kTokens.length > 14) kTokens = kTokens.slice(0, 14);
+    var row = matrix[rowIdx];
+    var tokenPad = 40, tokenY = H - 28;
+    var spacing = (W - tokenPad * 2) / Math.max(n - 1, 1);
 
-    currentQTokens = qTokens;
-    currentKTokens = kTokens;
-    currentMatrix = computeAttention(qTokens, kTokens, headIdx, temp);
+    drawArcCurves(ctx, row, n, rowIdx, tokenPad, tokenY, spacing, H);
+    drawArcTokens(ctx, row, qTokens, rowIdx, tokenPad, tokenY, spacing);
 
-    // Stats
+    setText('arcStatus',
+      'Showing outgoing attention from "' + qTokens[rowIdx] + '" (row ' + (rowIdx + 1) + ').');
+  }
+
+  /* Read the four controls. Every one is a <select> or a text field, so each
+     value is validated before it can reach the arithmetic: a head index outside
+     the pattern table would call undefined, and a temperature of 0 would divide
+     by zero inside softmax. */
+  function readControls() {
+    var sentenceEl = el('inputSentence');
+    var headIdx = parseInt(el('headSelect') ? el('headSelect').value : '0', 10);
+    if (!Number.isInteger(headIdx) || headIdx < 0 || headIdx >= HEAD_PATTERNS.length) headIdx = 0;
+    var temp = parseFloat(el('temperature') ? el('temperature').value : '');
+    if (!Number.isFinite(temp) || temp <= 0) temp = DEFAULT_TEMP;
+    return {
+      sentence: sentenceEl ? sentenceEl.value.trim() : '',
+      attnType: el('attnType') ? el('attnType').value : 'self',
+      headIdx: headIdx,
+      temp: temp
+    };
+  }
+
+  function updateStats(cfg, qTokens, kTokens) {
     var maxAttn = 0, maxToken = qTokens[0];
     var totalEntropy = 0;
     for (var i = 0; i < currentMatrix.length; i++) {
@@ -594,72 +636,122 @@
         }
       }
     }
-    document.getElementById('statTokens').textContent = qTokens.length + (attnType === 'cross' ? ' x ' + kTokens.length : '');
-    document.getElementById('statEntropy').textContent = (totalEntropy / currentMatrix.length).toFixed(3);
-    document.getElementById('statMaxAttn').textContent = maxAttn.toFixed(3);
-    document.getElementById('statFocused').textContent = '"' + maxToken + '"';
-    document.getElementById('heatmapStatus').textContent =
-      (attnType === 'self' ? 'Self-attention' : 'Cross-attention') +
-      ', Head ' + (headIdx + 1) + ', Temp=' + temp +
-      '. Click a row label to inspect arcs.';
+    setText('statTokens', qTokens.length + (cfg.attnType === 'cross' ? ' x ' + kTokens.length : ''));
+    setText('statEntropy', (totalEntropy / currentMatrix.length).toFixed(3));
+    setText('statMaxAttn', maxAttn.toFixed(3));
+    setText('statFocused', '"' + maxToken + '"');
+    setText('heatmapStatus',
+      (cfg.attnType === 'self' ? 'Self-attention' : 'Cross-attention') +
+      ', Head ' + (cfg.headIdx + 1) + ', Temp=' + cfg.temp +
+      '. Click a row label to inspect arcs.');
+  }
 
+  function visualize(animate) {
+    var cfg = readControls();
+
+    var qTokens = tokenize(cfg.sentence);
+    var kTokens = qTokens;
+    if (cfg.attnType === 'cross') {
+      var targetEl = el('targetSentence');
+      var target = targetEl ? targetEl.value.trim() : '';
+      kTokens = tokenize(target.length > 0 ? target : cfg.sentence);
+    }
+
+    if (qTokens.length === 0) return;
+    if (qTokens.length > MAX_TOKENS) qTokens = qTokens.slice(0, MAX_TOKENS);
+    if (kTokens.length > MAX_TOKENS) kTokens = kTokens.slice(0, MAX_TOKENS);
+
+    currentQTokens = qTokens;
+    currentKTokens = kTokens;
+    currentMatrix = computeAttention(qTokens, kTokens, cfg.headIdx, cfg.temp);
+
+    updateStats(cfg, qTokens, kTokens);
+
+    // Any in-flight animation is cancelled first, so two runs cannot interleave
+    // their draws onto the same canvas.
+    stopRowAnimation();
     if (animate) {
-      animateRows(0);
+      startRowAnimation();
     } else {
-      if (animFrameId) cancelAnimationFrame(animFrameId);
       drawHeatmap(currentMatrix, qTokens, kTokens, selectedRow);
       drawArcs(currentMatrix, qTokens, selectedRow);
     }
   }
 
-  function animateRows(idx) {
-    if (!currentMatrix) return;
-    if (idx >= currentMatrix.length) {
+  function stopRowAnimation() {
+    if (animTimerId !== null) { clearInterval(animTimerId); animTimerId = null; }
+  }
+
+  /* Draws the matrix revealed down to row idx. Returns true once the reveal is
+     complete, which is the signal to stop the timer. */
+  function drawAnimationFrame(idx) {
+    if (!currentMatrix) return true;
+    if (idx >= currentMatrix.length || idx >= MAX_TOKENS) {
       drawHeatmap(currentMatrix, currentQTokens, currentKTokens, selectedRow);
       drawArcs(currentMatrix, currentQTokens, selectedRow);
-      return;
+      return true;
     }
     // Draw partial matrix up to row idx
     var partial = currentMatrix.slice(0, idx + 1);
     drawHeatmap(partial, currentQTokens.slice(0, idx + 1), currentKTokens, idx);
-    animFrameId = setTimeout(function() { animateRows(idx + 1); }, 120);
+    return false;
+  }
+
+  /* One row per tick, driven by a single interval rather than a chain of
+     self-scheduled calls: the index only ever increases and is capped at
+     MAX_TOKENS, so the timer is always cleared. */
+  function startRowAnimation() {
+    var idx = 0;
+    if (drawAnimationFrame(idx)) return;
+    animTimerId = setInterval(function() {
+      idx += 1;
+      if (drawAnimationFrame(idx)) stopRowAnimation();
+    }, 120);
   }
 
   // Canvas click — select row
-  document.getElementById('heatmapCanvas').addEventListener('click', function(e) {
+  function onHeatmapClick(e) {
     if (!currentMatrix) return;
     var canvas = this;
     var rect = canvas.getBoundingClientRect();
+    if (rect.width === 0 || rect.height === 0) return;
     var scaleX = canvas.width / rect.width;
     var scaleY = canvas.height / rect.height;
     var x = (e.clientX - rect.left) * scaleX;
     var y = (e.clientY - rect.top) * scaleY;
 
     var qn = currentQTokens.length, kn = currentKTokens.length;
-    var labelW = 100, labelH = 90;
-    var cellSize = Math.min(Math.floor((640 - labelW) / kn), Math.floor((640 - labelH) / qn));
-    cellSize = Math.max(cellSize, 28);
+    if (qn === 0 || kn === 0) return;
+    var g = heatmapGeom(qn, kn);
 
-    if (x < labelW && y > labelH) {
-      var row = Math.floor((y - labelH) / cellSize);
+    if (x < g.labelW && y > g.labelH) {
+      var row = Math.floor((y - g.labelH) / g.cellSize);
       if (row >= 0 && row < qn) {
         selectedRow = row;
         drawHeatmap(currentMatrix, currentQTokens, currentKTokens, selectedRow);
         drawArcs(currentMatrix, currentQTokens, selectedRow);
       }
     }
+  }
+
+  function on(id, evt, fn) {
+    var node = el(id);
+    if (node) node.addEventListener(evt, fn);
+  }
+
+  on('heatmapCanvas', 'click', onHeatmapClick);
+
+  on('attnType', 'change', function() {
+    var row = el('crossSentenceRow');
+    if (row) row.style.display = this.value === 'cross' ? 'block' : 'none';
   });
 
-  document.getElementById('attnType').addEventListener('change', function() {
-    document.getElementById('crossSentenceRow').style.display =
-      this.value === 'cross' ? 'block' : 'none';
-  });
-
-  document.getElementById('visualizeBtn').addEventListener('click', function() { visualize(false); });
-  document.getElementById('animateBtn').addEventListener('click', function() { visualize(true); });
-  document.getElementById('randomBtn').addEventListener('click', function() {
+  on('visualizeBtn', 'click', function() { visualize(false); });
+  on('animateBtn', 'click', function() { visualize(true); });
+  on('randomBtn', 'click', function() {
     var s = RANDOM_SENTENCES[Math.floor(Math.random() * RANDOM_SENTENCES.length)];
-    document.getElementById('inputSentence').value = s;
+    var input = el('inputSentence');
+    if (input) input.value = s;
     visualize(true);
   });
 

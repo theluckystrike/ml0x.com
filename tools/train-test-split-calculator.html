@@ -125,7 +125,7 @@
 
                 <div class="input-group">
                     <label for="datasetSize">Total Dataset Size</label>
-                    <input type="number" id="datasetSize" value="10000" min="100" step="100">
+                    <input type="number" id="datasetSize" value="10000" min="100" max="100000000" step="100" inputmode="numeric">
                     <div class="input-hint">Number of samples in your dataset</div>
                 </div>
 
@@ -143,7 +143,7 @@
 
                 <div class="input-group">
                     <label for="classBalance">Class Balance (imbalance ratio)</label>
-                    <input type="number" id="classBalance" value="1.0" min="0.1" max="10" step="0.1">
+                    <input type="number" id="classBalance" value="1.0" min="0.1" max="10" step="0.1" inputmode="decimal">
                     <div class="input-hint">1.0 = balanced, &gt;1.0 = imbalanced</div>
                 </div>
 
@@ -209,35 +209,89 @@
     </div>
 
     <script>
-        function updateCalculation() {
-            const datasetSize = parseInt(document.getElementById('datasetSize').value);
-            const trainRatio = parseInt(document.getElementById('trainRatio').value);
-            const valRatio = parseInt(document.getElementById('valRatio').value);
-            const classBalance = parseFloat(document.getElementById('classBalance').value);
+        (function () {
+            'use strict';
 
-            // Update display
-            document.getElementById('trainPercent').textContent = trainRatio;
-            document.getElementById('valPercent').textContent = valRatio;
+            /* Every numeric control declares its own range in the markup above; FIELDS
+               mirrors that declaration so a clamp can never drift from the HTML. A
+               letter, an empty field, a negative or 1e9 all resolve to an in-range
+               number here and can therefore never reach the display as NaN. */
+            var FIELDS = {
+                datasetSize:  { min: 100, max: 100000000, dflt: 10000, integer: true },
+                trainRatio:   { min: 50,  max: 90,        dflt: 70,    integer: true },
+                valRatio:     { min: 5,   max: 30,        dflt: 15,    integer: true },
+                classBalance: { min: 0.1, max: 10,        dflt: 1,     integer: false }
+            };
+            var K_VALUES = [3, 5, 10];
 
-            // Calculate splits
-            const trainCount = Math.floor(datasetSize * (trainRatio / 100));
-            const valCount = Math.floor(datasetSize * (valRatio / 100));
-            const testCount = datasetSize - trainCount - valCount;
-            const testRatio = ((testCount / datasetSize) * 100).toFixed(1);
+            function el(id) {
+                return document.getElementById(id);
+            }
 
-            document.getElementById('trainCount').textContent = trainCount.toLocaleString();
-            document.getElementById('valCount').textContent = valCount.toLocaleString();
-            document.getElementById('testCount').textContent = testCount.toLocaleString();
-            document.getElementById('testPercent').textContent = testRatio + '%';
+            function setText(id, value) {
+                var node = el(id);
+                if (node) { node.textContent = value; }
+            }
 
-            // Update visualization
-            document.getElementById('segmentTrain').style.width = trainRatio + '%';
-            document.getElementById('segmentVal').style.width = valRatio + '%';
-            document.getElementById('segmentTest').style.width = (100 - trainRatio - valRatio) + '%';
+            function setWidth(id, percent) {
+                var node = el(id);
+                if (node) { node.style.width = percent + '%'; }
+            }
 
-            // K-fold recommendations
-            const kfoldOptions = getKFoldRecommendations(trainCount, classBalance);
-            const kfoldHTML = kfoldOptions.map(opt => `
+            function readNumber(id) {
+                var spec = FIELDS[id];
+                var node = el(id);
+                var raw = node ? parseFloat(node.value) : NaN;
+                if (!isFinite(raw)) { raw = spec.dflt; }
+                if (raw < spec.min) { raw = spec.min; }
+                if (raw > spec.max) { raw = spec.max; }
+                return spec.integer ? Math.floor(raw) : raw;
+            }
+
+            function computeSplit(datasetSize, trainRatio, valRatio) {
+                var trainCount = Math.floor(datasetSize * (trainRatio / 100));
+                var valCount = Math.floor(datasetSize * (valRatio / 100));
+                return {
+                    train: trainCount,
+                    val: valCount,
+                    test: datasetSize - trainCount - valCount
+                };
+            }
+
+            function renderSplit(datasetSize, trainRatio, valRatio, split) {
+                var testRatio = ((split.test / datasetSize) * 100).toFixed(1);
+                setText('trainCount', split.train.toLocaleString());
+                setText('valCount', split.val.toLocaleString());
+                setText('testCount', split.test.toLocaleString());
+                setText('testPercent', testRatio + '%');
+                setWidth('segmentTrain', trainRatio);
+                setWidth('segmentVal', valRatio);
+                setWidth('segmentTest', 100 - trainRatio - valRatio);
+            }
+
+            function getKFoldRecommendations(trainCount, classBalance) {
+                var options = [];
+                var i, k, foldSize, stratumSize, rec;
+                for (i = 0; i < K_VALUES.length; i++) {
+                    k = K_VALUES[i];
+                    if (trainCount % k === 0 || (trainCount / k) >= 100) {
+                        foldSize = Math.floor(trainCount / k);
+                        stratumSize = Math.max(10, Math.floor(foldSize / Math.max(2, Math.ceil(classBalance))));
+                        rec = '';
+                        if (k === 3) { rec = 'Fast, good for small datasets.'; }
+                        else if (k === 5) { rec = 'Balanced: speed vs. stability.'; }
+                        else if (k === 10) { rec = 'Best for large datasets (lower bias).'; }
+                        options.push({ k: k, foldSize: foldSize, stratumSize: stratumSize, recommendation: rec });
+                    }
+                }
+                return options;
+            }
+
+            function renderKFold(trainCount, classBalance) {
+                var container = el('kfoldRecommendations');
+                if (!container) { return; }
+                container.innerHTML = getKFoldRecommendations(trainCount, classBalance).map(function (opt) {
+                    return `
                 <div class="kfold-card">
                     <div class="kfold-title">${opt.k}-Fold Cross-Validation</div>
                     <div class="kfold-desc">
@@ -245,100 +299,93 @@
                         <br>${opt.recommendation}
                     </div>
                 </div>
-            `).join('');
+            `;
+                }).join('');
+            }
 
-            document.getElementById('kfoldRecommendations').innerHTML = kfoldHTML;
+            function recommendationFor(trainRatio, classBalance) {
+                var rec = '✓ Split configuration is optimal. ';
+                if (trainRatio < 60) { rec += 'Warning: Training set may be too small.'; }
+                else if (trainRatio > 85) { rec += 'Consider larger validation/test sets for better evaluation.'; }
+                else if (classBalance > 3) { rec += 'Use stratified split to preserve class distribution.'; }
+                else { rec += 'Good balance for most ML tasks.'; }
+                return rec;
+            }
 
-            // Recommendation
-            let rec = '✓ Split configuration is optimal. ';
-            if (trainRatio < 60) rec += 'Warning: Training set may be too small.';
-            else if (trainRatio > 85) rec += 'Consider larger validation/test sets for better evaluation.';
-            else if (classBalance > 3) rec += 'Use stratified split to preserve class distribution.';
-            else rec += 'Good balance for most ML tasks.';
+            function drawSplitChart(trainCount, valCount, testCount) {
+                var canvas = el('splitChart');
+                var ctx = (canvas && canvas.getContext) ? canvas.getContext('2d') : null;
+                if (!ctx) { return; }
+                var width = canvas.width;
+                var height = canvas.height;
+                var padding = 50;
 
-            document.getElementById('recommendation').textContent = rec;
+                ctx.fillStyle = '#FFFFFF';
+                ctx.fillRect(0, 0, width, height);
 
-            drawSplitChart(trainCount, valCount, testCount);
-        }
+                var total = trainCount + valCount + testCount;
+                if (!(total > 0)) { return; }
 
-        function getKFoldRecommendations(trainCount, classBalance) {
-            const options = [];
-            const kValues = [3, 5, 10];
+                // Draw horizontal bar chart
+                var barHeight = 40;
+                var barY = height / 2 - barHeight / 2;
+                var barWidth = width - 2 * padding;
+                var segments = [
+                    { label: 'Train', count: trainCount, fill: '#2563EB' },
+                    { label: 'Val', count: valCount, fill: '#157F3B' },
+                    { label: 'Test', count: testCount, fill: '#7C3AED' }
+                ];
 
-            for (let k of kValues) {
-                if (trainCount % k === 0 || (trainCount / k) >= 100) {
-                    const foldSize = Math.floor(trainCount / k);
-                    const stratumSize = Math.max(10, Math.floor(foldSize / Math.max(2, Math.ceil(classBalance))));
-                    let rec = '';
+                var x = padding;
+                var i, seg;
+                ctx.font = 'bold 14px sans-serif';
+                ctx.textAlign = 'center';
+                for (i = 0; i < segments.length; i++) {
+                    seg = segments[i];
+                    seg.percent = (seg.count / total) * 100;
+                    seg.width = (seg.percent / 100) * barWidth;
+                    seg.mid = x + seg.width / 2;
+                    ctx.fillStyle = seg.fill;
+                    ctx.fillRect(x, barY, seg.width, barHeight);
+                    ctx.fillStyle = '#FFFFFF';
+                    ctx.fillText(seg.label + ' (' + seg.percent.toFixed(0) + '%)',
+                                 seg.mid, barY + barHeight / 2 + 5);
+                    x += seg.width;
+                }
 
-                    if (k === 3) rec = 'Fast, good for small datasets.';
-                    else if (k === 5) rec = 'Balanced: speed vs. stability.';
-                    else if (k === 10) rec = 'Best for large datasets (lower bias).';
-
-                    options.push({ k, foldSize, stratumSize, recommendation: rec });
+                // Labels below
+                ctx.fillStyle = '#6a6a6a';
+                ctx.font = '11px sans-serif';
+                for (i = 0; i < segments.length; i++) {
+                    ctx.fillText(segments[i].count.toLocaleString() + ' samples',
+                                 segments[i].mid, barY + barHeight + 25);
                 }
             }
 
-            return options;
-        }
+            function updateCalculation() {
+                var datasetSize = readNumber('datasetSize');
+                var trainRatio = readNumber('trainRatio');
+                var valRatio = readNumber('valRatio');
+                var classBalance = readNumber('classBalance');
 
-        function drawSplitChart(trainCount, valCount, testCount) {
-            const canvas = document.getElementById('splitChart');
-            const ctx = canvas.getContext('2d');
-            const width = canvas.width;
-            const height = canvas.height;
-            const padding = 50;
+                // Update display
+                setText('trainPercent', trainRatio);
+                setText('valPercent', valRatio);
 
-            ctx.fillStyle = '#FFFFFF';
-            ctx.fillRect(0, 0, width, height);
+                var split = computeSplit(datasetSize, trainRatio, valRatio);
+                renderSplit(datasetSize, trainRatio, valRatio, split);
+                renderKFold(split.train, classBalance);
+                setText('recommendation', recommendationFor(trainRatio, classBalance));
+                drawSplitChart(split.train, split.val, split.test);
+            }
 
-            const total = trainCount + valCount + testCount;
-            const trainPercent = (trainCount / total) * 100;
-            const valPercent = (valCount / total) * 100;
-            const testPercent = (testCount / total) * 100;
+            // inline handlers in the markup above call this by name
+            window.updateCalculation = updateCalculation;
 
-            // Draw horizontal bar chart
-            const barHeight = 40;
-            const barY = height / 2 - barHeight / 2;
-            const barWidth = width - 2 * padding;
-
-            // Train segment
-            let x = padding;
-            ctx.fillStyle = '#2563EB';
-            const trainW = (trainPercent / 100) * barWidth;
-            ctx.fillRect(x, barY, trainW, barHeight);
-            ctx.fillStyle = '#FFFFFF';
-            ctx.font = 'bold 14px sans-serif';
-            ctx.textAlign = 'center';
-            ctx.fillText(`Train (${trainPercent.toFixed(0)}%)`, x + trainW / 2, barY + barHeight / 2 + 5);
-
-            // Val segment
-            x += trainW;
-            ctx.fillStyle = '#157F3B';
-            const valW = (valPercent / 100) * barWidth;
-            ctx.fillRect(x, barY, valW, barHeight);
-            ctx.fillStyle = '#FFFFFF';
-            ctx.fillText(`Val (${valPercent.toFixed(0)}%)`, x + valW / 2, barY + barHeight / 2 + 5);
-
-            // Test segment
-            x += valW;
-            ctx.fillStyle = '#7C3AED';
-            const testW = (testPercent / 100) * barWidth;
-            ctx.fillRect(x, barY, testW, barHeight);
-            ctx.fillStyle = '#FFFFFF';
-            ctx.fillText(`Test (${testPercent.toFixed(0)}%)`, x + testW / 2, barY + barHeight / 2 + 5);
-
-            // Labels below
-            ctx.fillStyle = '#6a6a6a';
-            ctx.font = '11px sans-serif';
-            ctx.fillText(trainCount.toLocaleString() + ' samples', padding + trainW / 2, barY + barHeight + 25);
-            ctx.fillText(valCount.toLocaleString() + ' samples', padding + trainW + valW / 2, barY + barHeight + 25);
-            ctx.fillText(testCount.toLocaleString() + ' samples', padding + trainW + valW + testW / 2, barY + barHeight + 25);
-        }
-
-        window.addEventListener('load', () => {
-            updateCalculation();
-        });
+            window.addEventListener('load', function () {
+                updateCalculation();
+            });
+        })();
     </script>
 </main>
 

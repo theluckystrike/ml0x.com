@@ -298,6 +298,21 @@ optimizer mem = params &middot; states &middot; master_bytes   (Adam &rArr; stat
 (function(){
   "use strict";
   var $ = function(id){ return document.getElementById(id); };
+  var setTxt = function(id, v){ var e=$(id); if(e){ e.textContent=v; } };
+  var setHtml = function(id, v){ var e=$(id); if(e){ e.innerHTML=v; } };
+
+  // Mirrors the min/max each control declares in the markup above, so a letter, an
+  // empty field, a negative or 1e9 all resolve to an in-range number and can never
+  // reach the display as NaN.
+  var LIMITS = {
+    L: {min:1,    max:120,     dflt:12,    integer:true},
+    D: {min:128,  max:16384,   dflt:768,   integer:true},
+    H: {min:1,    max:256,     dflt:12,    integer:true},
+    V: {min:1000, max:500000,  dflt:50257, integer:true},
+    S: {min:1,    max:1048576, dflt:2048,  integer:true},
+    B: {min:1,    max:65536,   dflt:8,     integer:true},
+    FF:{min:1,    max:16,      dflt:4,     integer:false}
+  };
 
   var presets = {
     gpt2s:{L:12,D:768,H:12,V:50257,S:1024,B:8,FF:4},
@@ -338,104 +353,142 @@ optimizer mem = params &middot; states &middot; master_bytes   (Adam &rArr; stat
     return (s/3600).toFixed(2)+" h";
   }
 
-  function num(id, dflt){
-    var v = parseFloat($(id).value);
-    return (isFinite(v)&&v>0) ? v : dflt;
+  function num(id){
+    var spec = LIMITS[id], el = $(id);
+    var v = el ? parseFloat(el.value) : NaN;
+    if(!isFinite(v)) v = spec.dflt;
+    v = Math.max(spec.min, Math.min(spec.max, v));
+    return spec.integer ? Math.round(v) : v;
   }
 
-  function compute(){
-    var L  = Math.max(1, Math.round(num("L",12)));
-    var D  = Math.max(1, Math.round(num("D",768)));
-    var H  = Math.max(1, Math.round(num("H",12)));
-    var V  = Math.max(1, Math.round(num("V",50257)));
-    var S  = Math.max(1, Math.round(num("S",2048)));
-    var B  = Math.max(1, Math.round(num("B",8)));
-    var FF = Math.max(1, num("FF",4));
-    var DT = parseFloat($("DT").value);   // bytes/weight
-    var OPTmul = parseFloat($("OPT").value); // extra state copies
-    var MP = parseFloat($("MP").value);   // master bytes for grads+opt
+  // a <select> only ever holds one of its own option values; dflt covers a missing node
+  function pick(id, dflt){
+    var el = $(id);
+    var v = el ? parseFloat(el.value) : NaN;
+    return isFinite(v) ? v : dflt;
+  }
 
-    $("Lval").textContent = L;
-    $("Dval").textContent = D;
+  function readCfg(){
+    return {
+      L: num("L"), D: num("D"), H: num("H"), V: num("V"),
+      S: num("S"), B: num("B"), FF: num("FF"),
+      DT: pick("DT", 2),        // bytes/weight
+      OPTmul: pick("OPT", 2),   // extra state copies
+      MP: pick("MP", 4)         // master bytes for grads+opt
+    };
+  }
 
+  function model(c){
     // ---- Parameters ----
     // per block: 4 attention proj (D*D) + FFN (2 * FF * D*D) + small biases/norms (~4*D) ignored vs D^2
-    var perBlock = (4 + 2*FF) * D * D;
-    var pBlocks = L * perBlock;
-    var pEmb = (V + S) * D;                 // token + positional embeddings
+    var perBlock = (4 + 2*c.FF) * c.D * c.D;
+    var pBlocks = c.L * perBlock;
+    var pEmb = (c.V + c.S) * c.D;              // token + positional embeddings
     var params = pBlocks + pEmb;
 
     // ---- FLOPs ----
-    var tokens = B * S;
+    var tokens = c.B * c.S;
     // dense (params) term
     var fwdDense = 2 * params * tokens;
     // exact attention (QK^T scores + score*V): 2 * (2 * S^2 * D) per layer per seq, fwd
-    var attnFwd = L * B * (4 * S * S * D);
+    var attnFwd = c.L * c.B * (4 * c.S * c.S * c.D);
     var fwdTotal = fwdDense + attnFwd;
-    var trainTotal = 3 * fwdTotal;          // fwd + bwd (bwd ~ 2x fwd)
+    var trainTotal = 3 * fwdTotal;             // fwd + bwd (bwd ~ 2x fwd)
     var attnShare = 3 * attnFwd;
-    var ffnShare = trainTotal - attnShare;
 
     // ---- Memory: weights / grads / optimizer / activations ----
-    var wBytes = params * DT;
-    var gBytes = params * MP;               // gradients at master precision
-    var oBytes = params * OPTmul * MP;      // Adam: 2 states
+    var wBytes = params * c.DT;
+    var gBytes = params * c.MP;                // gradients at master precision
+    var oBytes = params * c.OPTmul * c.MP;     // Adam: 2 states
     // activations (bf16-ish, coarse): main hidden buffers ~ (10..) * B*S*D per layer
-    var actPerLayer = 12 * B * S * D * 2;   // 2 bytes/elem, ~12 saved tensors of B*S*D
-    var attnScores = L * B * H * S * S * 2; // score matrix per head
-    var actBytes = L * actPerLayer + attnScores;
-    var vramTotal = wBytes + gBytes + oBytes + actBytes;
+    var actPerLayer = 12 * c.B * c.S * c.D * 2; // 2 bytes/elem, ~12 saved tensors of B*S*D
+    var attnScores = c.L * c.B * c.H * c.S * c.S * 2; // score matrix per head
+    var actBytes = c.L * actPerLayer + attnScores;
 
     // ---- KV cache (inference) ----
-    var kvPerTok = 2 * L * D * DT;          // K and V per token
-    var kvTotal = kvPerTok * S * B;
+    var kvPerTok = 2 * c.L * c.D * c.DT;       // K and V per token
 
     // ---- A100 step time ----
     var A100 = 312e12, MFU = 0.40;
-    var stepSec = trainTotal / (A100 * MFU);
 
-    // ===== Render =====
-    $("paramsBig").innerHTML = humanNum(params).replace(" ","&nbsp;") + " <small>parameters</small>";
-    $("pBlocks").textContent = humanNum(pBlocks);
-    $("pEmb").textContent = humanNum(pEmb);
-    $("wDisk").textContent = bytes(wBytes);
-
-    $("fInf").textContent = flops(fwdTotal);
-    $("fTrain").textContent = flops(trainTotal);
-    $("fAttn").textContent = flops(attnShare) + " (" + (100*attnShare/trainTotal).toFixed(0) + "%)";
-    $("fFfn").textContent = flops(ffnShare) + " (" + (100*ffnShare/trainTotal).toFixed(0) + "%)";
-    $("stepTime").textContent = time(stepSec);
-
-    $("vramBig").innerHTML = bytes(vramTotal) + " <small>total</small>";
-    $("vW").textContent = bytes(wBytes);
-    $("vG").textContent = bytes(gBytes);
-    $("vO").textContent = bytes(oBytes);
-    $("vA").textContent = bytes(actBytes);
-    var segs = $("vbar").children;
-    var parts = [wBytes,gBytes,oBytes,actBytes];
-    for(var i=0;i<4;i++){ segs[i].style.width = (100*parts[i]/vramTotal).toFixed(2)+"%"; }
-
-    $("kvBig").textContent = bytes(kvTotal);
-    $("kvTok").textContent = bytes(kvPerTok);
-    $("kvCtx").textContent = (B*S).toLocaleString() + " tokens";
-
-    $("actBig").textContent = bytes(actBytes);
-    $("actL").textContent = bytes(actPerLayer);
-    $("actAtt").textContent = bytes(attnScores);
+    return {
+      params:params, pBlocks:pBlocks, pEmb:pEmb,
+      fwdTotal:fwdTotal, trainTotal:trainTotal,
+      attnShare:attnShare, ffnShare:trainTotal - attnShare,
+      wBytes:wBytes, gBytes:gBytes, oBytes:oBytes,
+      actPerLayer:actPerLayer, attnScores:attnScores, actBytes:actBytes,
+      vramTotal:wBytes + gBytes + oBytes + actBytes,
+      kvPerTok:kvPerTok, kvTotal:kvPerTok * c.S * c.B,
+      stepSec: trainTotal / (A100 * MFU)
+    };
   }
 
+  function share(part, whole){
+    return whole>0 ? (100*part/whole).toFixed(0) : "0";
+  }
+
+  function renderBar(m){
+    var bar = $("vbar");
+    if(!bar || !(m.vramTotal>0)) return;
+    var segs = bar.children;
+    var parts = [m.wBytes, m.gBytes, m.oBytes, m.actBytes];
+    for(var i=0;i<parts.length && i<segs.length;i++){
+      segs[i].style.width = (100*parts[i]/m.vramTotal).toFixed(2)+"%";
+    }
+  }
+
+  function render(c, m){
+    setTxt("Lval", c.L);
+    setTxt("Dval", c.D);
+
+    setHtml("paramsBig", humanNum(m.params).replace(" ","&nbsp;") + " <small>parameters</small>");
+    setTxt("pBlocks", humanNum(m.pBlocks));
+    setTxt("pEmb", humanNum(m.pEmb));
+    setTxt("wDisk", bytes(m.wBytes));
+
+    setTxt("fInf", flops(m.fwdTotal));
+    setTxt("fTrain", flops(m.trainTotal));
+    setTxt("fAttn", flops(m.attnShare) + " (" + share(m.attnShare, m.trainTotal) + "%)");
+    setTxt("fFfn", flops(m.ffnShare) + " (" + share(m.ffnShare, m.trainTotal) + "%)");
+    setTxt("stepTime", time(m.stepSec));
+
+    setHtml("vramBig", bytes(m.vramTotal) + " <small>total</small>");
+    setTxt("vW", bytes(m.wBytes));
+    setTxt("vG", bytes(m.gBytes));
+    setTxt("vO", bytes(m.oBytes));
+    setTxt("vA", bytes(m.actBytes));
+    renderBar(m);
+
+    setTxt("kvBig", bytes(m.kvTotal));
+    setTxt("kvTok", bytes(m.kvPerTok));
+    setTxt("kvCtx", (c.B*c.S).toLocaleString() + " tokens");
+
+    setTxt("actBig", bytes(m.actBytes));
+    setTxt("actL", bytes(m.actPerLayer));
+    setTxt("actAtt", bytes(m.attnScores));
+  }
+
+  function compute(){
+    var c = readCfg();
+    render(c, model(c));
+  }
+
+  function setVal(id, v){ var e=$(id); if(e){ e.value = v; } }
+
   // wire preset buttons
-  $("presets").addEventListener("click", function(e){
-    var b = e.target.closest("button"); if(!b) return;
+  var presetBar = $("presets");
+  if(presetBar) presetBar.addEventListener("click", function(e){
+    var b = (e.target && e.target.closest) ? e.target.closest("button") : null; if(!b) return;
     var p = presets[b.getAttribute("data-p")]; if(!p) return;
-    $("L").value=p.L; $("D").value=p.D; $("H").value=p.H;
-    $("V").value=p.V; $("S").value=p.S; $("B").value=p.B; $("FF").value=p.FF;
+    setVal("L",p.L); setVal("D",p.D); setVal("H",p.H);
+    setVal("V",p.V); setVal("S",p.S); setVal("B",p.B); setVal("FF",p.FF);
     compute();
   });
 
   // wire all inputs
   ["L","D","H","V","S","B","FF","DT","OPT","MP"].forEach(function(id){
     var el = $(id);
+    if(!el) return;
     el.addEventListener("input", compute);
     el.addEventListener("change", compute);
   });

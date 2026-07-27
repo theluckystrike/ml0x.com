@@ -27,14 +27,14 @@
   --line-strong: #D8D8D6;
 
   --ok: #157F3B;
-  --warn: #B45309;
+  --warn: #AA4F08;   /* was #B45309, which measures 4.48:1 as text on --surface-2. This is 4.89 there, 5.25 on --bg */
   --bad: #C53030;
 
   /* categorical series for canvas + charts, all >=3:1 on --surface */
   --s1: #2563EB;
   --s2: #C53030;
   --s3: #157F3B;
-  --s4: #B45309;
+  --s4: #AA4F08;     /* kept equal to --warn; both are the amber series */
   --s5: #7C3AED;
   --s6: #0E7490;
 
@@ -122,7 +122,11 @@ main { display: block; }
 }
 .breadcrumb a { color: var(--ink-faint); text-decoration: none; }
 .breadcrumb a:hover { color: var(--ink); text-decoration: underline; }
-.breadcrumb span, .breadcrumb .sep { color: var(--line-strong); margin: 0 6px; }
+/* A bare span in a breadcrumb is usually the current-page label, and painting it
+   --line-strong put it at 1.37:1. Default spans to a readable tone and reserve the light
+   separator colour for something explicitly marked as a separator. */
+.breadcrumb span { color: var(--ink-faint); margin: 0 6px; }
+.breadcrumb .sep, .breadcrumb span[aria-hidden="true"] { color: var(--line-strong); }
 
 /* --------------------------------------------------------- page head */
 .page-head, .hero { padding: 48px 0 32px; }
@@ -169,6 +173,7 @@ small { font-size: 12px; color: var(--ink-faint); }
 
 pre, .explainer-section pre, .prose pre {
   background: var(--surface-dark); color: var(--on-dark);
+  font-variant-ligatures: none;   /* JetBrains Mono fuses != and >= otherwise */
   border: 0; border-radius: var(--radius);
   padding: 20px 22px; overflow-x: auto;
   font-family: var(--font-mono); font-size: 13px; line-height: 1.8;
@@ -176,7 +181,9 @@ pre, .explainer-section pre, .prose pre {
 }
 pre code { background: none; color: inherit; padding: 0; font-size: inherit; }
 code, .explainer-section code {
-  font-family: var(--font-mono); font-size: 0.9em;
+  /* was 0.9em, which compounded against its parent and produced 13.5, 13.6, 12.6 and
+     12.24px across 54 nodes. Pinned so a code span is one size everywhere. */
+  font-family: var(--font-mono); font-size: 13px;
   background: var(--surface-2); color: var(--ink);
   padding: 2px 6px; border-radius: 4px;
 }
@@ -239,9 +246,19 @@ input[type="text"], input[type="number"], input[type="email"], select, textarea,
   padding: 10px 12px; transition: border-color 0.15s, box-shadow 0.15s;
   font-variant-numeric: tabular-nums;
 }
-input:focus, select:focus, textarea:focus {
-  outline: none; border-color: var(--ink);
-  box-shadow: 0 0 0 3px rgba(26, 26, 26, 0.08);
+/* The old rule was `outline: none` plus a 0.08-alpha halo. Measured, that halo is 1.17:1
+   against white, and on a range slider or checkbox, which have no border to darken, the
+   focused and unfocused pixels were identical. WCAG 1.4.11 wants 3:1. 63 controls across
+   the site had no perceivable focus state. This outline measures 17.4:1. The rule is keyed
+   to :focus-visible so a mouse click does not draw it. */
+input:focus-visible, select:focus-visible, textarea:focus-visible {
+  border-color: var(--ink);
+  outline: 2px solid var(--ink);
+  outline-offset: 2px;
+  box-shadow: none;
+}
+input:focus:not(:focus-visible), select:focus:not(:focus-visible) {
+  border-color: var(--ink); box-shadow: none; outline: none;
 }
 select {
   appearance: none;
@@ -261,7 +278,7 @@ input[type="range"] {
   width: 100%; appearance: none; -webkit-appearance: none;
   /* inside .slider-container (a flex row) width:100% forces the value readout onto its
      own line, so shrink there instead */
-  height: 6px; background: var(--line-strong); border-radius: 3px; outline: none;
+  height: 6px; background: var(--line-strong); border-radius: 3px;
   padding: 0; min-height: 0; border: 0;
 }
 input[type="range"]::-webkit-slider-thumb {
@@ -276,6 +293,7 @@ input[type="range"]::-moz-range-thumb {
 }
 input[type="checkbox"], input[type="radio"] {
   width: 20px; height: 20px; min-height: 0; accent-color: var(--ink); margin: 0 8px 0 0;
+  flex: none;   /* as a flex child these were shrinking to 13px wide */
 }
 .slider-value, .value-readout {
   font-family: var(--font-mono); font-size: 13px; font-weight: 500;
@@ -309,6 +327,9 @@ input[type="checkbox"], input[type="radio"] {
   margin: 24px 0;
 }
 .stat-card, .stat, .metric-card, .stat-box, .stat-item {
+  /* flex is required for the `order: -1` on .label below to do anything at all; on a
+     block parent it is inert and the label rendered under the figure. */
+  display: flex; flex-direction: column;
   background: var(--surface); border: 0; border-radius: 0;
   padding: 20px; text-align: left;
   box-shadow: 0 0 0 1px var(--line);
@@ -375,6 +396,9 @@ canvas { display: block; max-width: 100%; background: var(--surface); border-rad
 .site-footer, body > footer {
   background: var(--surface-dark); padding: 28px var(--pad-x); margin-top: 96px;
   border: 0;
+  /* without this the footer inherits --ink, #1A1A1A on #111, a ratio of 1.14:1. Children
+     currently override it one by one, so the next child added without a colour vanishes. */
+  color: var(--on-dark-muted);
 }
 .footer-links-seo {
   max-width: var(--wrap); margin: 0 auto 20px; padding: 0 0 20px;
@@ -434,6 +458,9 @@ canvas { display: block; max-width: 100%; background: var(--surface); border-rad
   padding: 3px 9px; border-radius: 5px; margin: 0 6px 6px 0;
 }
 .results-box, .output-box, .result-box, .tool-output, .code-out {
+  /* these hold values that recompute as the user types. In proportional Inter the digits
+     drift 3.36px each, so a six-decimal figure jitters up to 20px. */
+  font-family: var(--font-mono); font-variant-numeric: tabular-nums;
   background: var(--surface-2); border: 1px solid var(--line);
   border-radius: var(--radius); padding: 20px; margin: 20px 0;
   overflow-x: auto; color: var(--ink-2);
@@ -514,7 +541,7 @@ details p { color: var(--ink-2); padding-top: 10px; margin-bottom: 0; }
   display: block;
 }
 .footer-brand {
-  font-family: var(--font-display);
+  font-family: var(--font-mono);   /* --font-display was never defined; this fell back to serif */
   font-size: 15px;
   font-weight: 700;
   color: #E8E8E8;

@@ -253,99 +253,163 @@
 </main>
 
     <script>
+        (function () {
+        'use strict';
+
+        /* A pasted curve is bounded so that neither the parse, the min/max scan nor the
+           canvas walk can be turned into unbounded work by a single paste. */
+        var MAX_EPOCHS = 2000;
+        var METRIC_IDS = ['severity', 'overfitEpoch', 'finalGap', 'bestGap', 'bestValLoss', 'trend'];
+        var EMPTY_RECS = '<div style="color: #6a6a6a; text-align: center; padding: 20px;">Analyze curves to see recommendations</div>';
+
+        function el(id) {
+            return document.getElementById(id);
+        }
+
+        function setText(id, value) {
+            var node = el(id);
+            if (node) { node.textContent = value; }
+        }
+
+        function setHTML(id, value) {
+            var node = el(id);
+            if (node) { node.innerHTML = value; }
+        }
+
+        function setValue(id, value) {
+            var node = el(id);
+            if (node) { node.value = value; }
+        }
+
+        /* Comma-separated finite floats. Non-numeric entries are dropped exactly as
+           before; the extra isFinite test also rejects "Infinity", which would
+           otherwise poison every downstream min/max. */
+        function parseSeries(id) {
+            var node = el(id);
+            if (!node) { return []; }
+            var parts = String(node.value).split(',');
+            var limit = Math.min(parts.length, MAX_EPOCHS);
+            var out = [];
+            var i, v;
+            for (i = 0; i < limit; i++) {
+                v = parseFloat(parts[i].trim());
+                if (isFinite(v)) { out.push(v); }
+            }
+            return out;
+        }
+
+        function minOf(values) {
+            var m = Infinity, i;
+            for (i = 0; i < values.length; i++) {
+                if (values[i] < m) { m = values[i]; }
+            }
+            return m;
+        }
+
+        function maxOf(values) {
+            var m = -Infinity, i;
+            for (i = 0; i < values.length; i++) {
+                if (values[i] > m) { m = values[i]; }
+            }
+            return m;
+        }
+
         function loadDemoData() {
-            document.getElementById('trainLosses').value = '2.5,2.3,2.1,1.9,1.8,1.75,1.73,1.71,1.70,1.70';
-            document.getElementById('valLosses').value = '2.6,2.4,2.2,2.0,1.95,1.94,1.98,2.05,2.15,2.28';
+            setValue('trainLosses', '2.5,2.3,2.1,1.9,1.8,1.75,1.73,1.71,1.70,1.70');
+            setValue('valLosses', '2.6,2.4,2.2,2.0,1.95,1.94,1.98,2.05,2.15,2.28');
             analyzeOverfitting();
         }
 
-        function analyzeOverfitting() {
-            const trainStr = document.getElementById('trainLosses').value;
-            const valStr = document.getElementById('valLosses').value;
-
-            const trainLosses = trainStr.split(',').map(x => parseFloat(x.trim())).filter(x => !isNaN(x));
-            const valLosses = valStr.split(',').map(x => parseFloat(x.trim())).filter(x => !isNaN(x));
-
-            if (trainLosses.length === 0 || valLosses.length === 0) {
-                alert('Please enter valid loss values');
-                return;
+        /* Metrics over the epochs the two curves share, so a length mismatch yields a
+           short honest answer instead of NaN. */
+        function analyze(trainLosses, valLosses) {
+            var n = Math.min(trainLosses.length, valLosses.length);
+            var gaps = [];
+            var bestValIdx = 0;
+            var overfitEpoch = -1;
+            var i;
+            for (i = 0; i < n; i++) {
+                gaps.push(valLosses[i] - trainLosses[i]);
+                if (valLosses[i] < valLosses[bestValIdx]) { bestValIdx = i; }
             }
-
-            // Calculate metrics
-            const finalTrainLoss = trainLosses[trainLosses.length - 1];
-            const finalValLoss = valLosses[valLosses.length - 1];
-            const bestValIdx = valLosses.indexOf(Math.min(...valLosses));
-            const bestValLoss = valLosses[bestValIdx];
-
-            // Calculate gaps
-            const gaps = valLosses.map((v, i) => v - trainLosses[i]);
-            const finalGap = gaps[gaps.length - 1];
-            const bestGap = gaps[bestValIdx];
-            const maxGap = Math.max(...gaps);
-            const maxGapIdx = gaps.indexOf(maxGap);
-
-            // Determine overfitting point (where validation loss starts consistently increasing)
-            let overfitEpoch = -1;
-            for (let i = bestValIdx + 1; i < valLosses.length; i++) {
+            for (i = bestValIdx + 1; i < n; i++) {
                 if (valLosses[i] > valLosses[i - 1]) {
                     overfitEpoch = i + 1;
                     break;
                 }
             }
+            var finalGap = gaps[n - 1];
+            var recentGapTrend = gaps.slice(-3).reduce(function (a, b) { return a + b; }, 0) / 3;
+            return {
+                n: n,
+                gaps: gaps,
+                bestValIdx: bestValIdx,
+                bestValLoss: valLosses[bestValIdx],
+                bestGap: gaps[bestValIdx],
+                finalGap: finalGap,
+                overfitEpoch: overfitEpoch,
+                trend: recentGapTrend > finalGap / 2 ? 'Worsening' : 'Stable'
+            };
+        }
 
-            // Severity classification
-            let severity, severityClass;
-            if (finalGap < 0.1) {
-                severity = 'None';
-                severityClass = 'alert-info';
-            } else if (finalGap < 0.3) {
-                severity = 'Mild';
-                severityClass = 'alert-info';
-            } else if (finalGap < 0.7) {
-                severity = 'Moderate';
-                severityClass = 'alert-warning';
-            } else {
-                severity = 'Severe';
-                severityClass = 'alert-severe';
+        function severityOf(finalGap) {
+            if (finalGap < 0.1) { return { name: 'None', cls: 'alert-info' }; }
+            if (finalGap < 0.3) { return { name: 'Mild', cls: 'alert-info' }; }
+            if (finalGap < 0.7) { return { name: 'Moderate', cls: 'alert-warning' }; }
+            return { name: 'Severe', cls: 'alert-severe' };
+        }
+
+        function showInputError() {
+            setHTML('alertContainer', `
+                <div class="alert alert-warning">
+                    <strong>No valid loss values</strong> — enter comma-separated numbers for both curves.
+                </div>
+            `);
+            METRIC_IDS.forEach(function (id) { setText(id, '—'); });
+            setHTML('recommendationsContainer', EMPTY_RECS);
+        }
+
+        function analyzeOverfitting() {
+            var trainLosses = parseSeries('trainLosses');
+            var valLosses = parseSeries('valLosses');
+
+            if (trainLosses.length === 0 || valLosses.length === 0) {
+                showInputError();
+                return;
             }
 
-            // Trend
-            const recentGapTrend = gaps.slice(-3).reduce((a, b) => a + b) / 3;
-            const trend = recentGapTrend > finalGap / 2 ? 'Worsening' : 'Stable';
+            var a = analyze(trainLosses, valLosses);
+            var sev = severityOf(a.finalGap);
 
             // Update UI
-            document.getElementById('severity').textContent = severity;
-            document.getElementById('overfitEpoch').textContent = overfitEpoch > 0 ? overfitEpoch : 'No clear sign';
-            document.getElementById('finalGap').textContent = finalGap.toFixed(4);
-            document.getElementById('bestGap').textContent = bestGap.toFixed(4);
-            document.getElementById('bestValLoss').textContent = bestValLoss.toFixed(4);
-            document.getElementById('trend').textContent = trend;
+            setText('severity', sev.name);
+            setText('overfitEpoch', a.overfitEpoch > 0 ? a.overfitEpoch : 'No clear sign');
+            setText('finalGap', a.finalGap.toFixed(4));
+            setText('bestGap', a.bestGap.toFixed(4));
+            setText('bestValLoss', a.bestValLoss.toFixed(4));
+            setText('trend', a.trend);
 
             // Alert
-            const alertHTML = `
-                <div class="alert ${severityClass}">
-                    <strong>${severity} Overfitting Detected</strong> — Validation loss diverging from training loss at epoch ${overfitEpoch > 0 ? overfitEpoch : '?'}
+            setHTML('alertContainer', `
+                <div class="alert ${sev.cls}">
+                    <strong>${sev.name} Overfitting Detected</strong> — Validation loss diverging from training loss at epoch ${a.overfitEpoch > 0 ? a.overfitEpoch : '?'}
                 </div>
-            `;
-            document.getElementById('alertContainer').innerHTML = alertHTML;
+            `);
 
             // Recommendations
-            const recommendations = generateRecommendations(severity, finalGap, overfitEpoch, trainLosses, valLosses);
-            const recHTML = recommendations.map(rec => `
+            setHTML('recommendationsContainer', generateRecommendations(sev.name, a.overfitEpoch).map(rec => `
                 <div class="recommendation">
                     <div class="rec-title">${rec.title}</div>
                     <div class="rec-desc">${rec.description}</div>
                 </div>
-            `).join('');
-
-            document.getElementById('recommendationsContainer').innerHTML = recHTML;
+            `).join(''));
 
             // Draw charts
-            drawLossChart(trainLosses, valLosses, bestValIdx);
-            drawGapChart(gaps, bestValIdx);
+            drawLossChart(trainLosses.slice(0, a.n), valLosses.slice(0, a.n), a.bestValIdx);
+            drawGapChart(a.gaps, a.bestValIdx);
         }
 
-        function generateRecommendations(severity, finalGap, overfitEpoch, trainLosses, valLosses) {
+        function generateRecommendations(severity, overfitEpoch) {
             const recs = [];
 
             if (severity === 'Severe') {
@@ -397,25 +461,35 @@
             return recs;
         }
 
-        function drawLossChart(trainLosses, valLosses, bestValIdx) {
-            const canvas = document.getElementById('lossChart');
-            const ctx = canvas.getContext('2d');
-            const width = canvas.width;
-            const height = canvas.height;
-            const padding = 50;
+        /* Returns null when the canvas or its 2d context is unavailable, so every
+           drawing routine below can bail instead of throwing on a missing element. */
+        function chartCtx(id) {
+            var canvas = el(id);
+            var ctx = (canvas && canvas.getContext) ? canvas.getContext('2d') : null;
+            return ctx ? { canvas: canvas, ctx: ctx } : null;
+        }
 
-            ctx.fillStyle = '#FFFFFF';
-            ctx.fillRect(0, 0, width, height);
+        function drawPolyline(ctx, values, geo, colour) {
+            ctx.strokeStyle = colour;
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            var i, x, y;
+            for (i = 0; i < values.length; i++) {
+                x = geo.x(i);
+                y = geo.y(values[i]);
+                if (i === 0) { ctx.moveTo(x, y); }
+                else { ctx.lineTo(x, y); }
+            }
+            ctx.stroke();
+        }
 
-            const minLoss = Math.min(...trainLosses, ...valLosses) * 0.95;
-            const maxLoss = Math.max(...trainLosses, ...valLosses) * 1.05;
-            const range = maxLoss - minLoss;
-
+        function drawLossFrame(ctx, width, height, padding) {
             // Grid
             ctx.strokeStyle = '#E8E8E6';
             ctx.lineWidth = 1;
-            for (let i = 0; i <= 5; i++) {
-                const y = padding + (i / 5) * (height - 2 * padding);
+            var i, y;
+            for (i = 0; i <= 5; i++) {
+                y = padding + (i / 5) * (height - 2 * padding);
                 ctx.beginPath();
                 ctx.moveTo(padding, y);
                 ctx.lineTo(width - padding, y);
@@ -433,39 +507,9 @@
             ctx.moveTo(padding, padding);
             ctx.lineTo(padding, height - padding);
             ctx.stroke();
+        }
 
-            // Draw training loss
-            ctx.strokeStyle = '#2563EB';
-            ctx.lineWidth = 3;
-            ctx.beginPath();
-            for (let i = 0; i < trainLosses.length; i++) {
-                const x = padding + (i / (trainLosses.length - 1)) * (width - 2 * padding);
-                const y = height - padding - ((trainLosses[i] - minLoss) / range) * (height - 2 * padding);
-                if (i === 0) ctx.moveTo(x, y);
-                else ctx.lineTo(x, y);
-            }
-            ctx.stroke();
-
-            // Draw validation loss
-            ctx.strokeStyle = '#B45309';
-            ctx.lineWidth = 3;
-            ctx.beginPath();
-            for (let i = 0; i < valLosses.length; i++) {
-                const x = padding + (i / (valLosses.length - 1)) * (width - 2 * padding);
-                const y = height - padding - ((valLosses[i] - minLoss) / range) * (height - 2 * padding);
-                if (i === 0) ctx.moveTo(x, y);
-                else ctx.lineTo(x, y);
-            }
-            ctx.stroke();
-
-            // Mark best validation point
-            const bx = padding + (bestValIdx / (valLosses.length - 1)) * (width - 2 * padding);
-            const by = height - padding - ((valLosses[bestValIdx] - minLoss) / range) * (height - 2 * padding);
-            ctx.fillStyle = '#157F3B';
-            ctx.beginPath();
-            ctx.arc(bx, by, 6, 0, Math.PI * 2);
-            ctx.fill();
-
+        function drawLossLabels(ctx, width, height, padding, minLoss, range) {
             // Legend
             ctx.fillStyle = '#2563EB';
             ctx.font = '12px sans-serif';
@@ -477,9 +521,10 @@
             ctx.fillStyle = '#6a6a6a';
             ctx.font = '11px sans-serif';
             ctx.textAlign = 'right';
-            for (let i = 0; i <= 5; i++) {
-                const loss = minLoss + (i / 5) * range;
-                const y = height - padding - (i / 5) * (height - 2 * padding);
+            var i, loss, y;
+            for (i = 0; i <= 5; i++) {
+                loss = minLoss + (i / 5) * range;
+                y = height - padding - (i / 5) * (height - 2 * padding);
                 ctx.fillText(loss.toFixed(2), padding - 10, y + 4);
             }
 
@@ -488,23 +533,47 @@
             ctx.fillText('Epoch', width / 2, height - 15);
         }
 
-        function drawGapChart(gaps, bestIdx) {
-            const canvas = document.getElementById('gapChart');
-            const ctx = canvas.getContext('2d');
-            const width = canvas.width;
-            const height = canvas.height;
-            const padding = 50;
+        function drawLossChart(trainLosses, valLosses, bestValIdx) {
+            var c = chartCtx('lossChart');
+            if (!c || trainLosses.length === 0 || valLosses.length === 0) { return; }
+            var ctx = c.ctx;
+            var width = c.canvas.width;
+            var height = c.canvas.height;
+            var padding = 50;
 
             ctx.fillStyle = '#FFFFFF';
             ctx.fillRect(0, 0, width, height);
 
-            const maxGap = Math.max(...gaps) * 1.1;
+            var minLoss = Math.min(minOf(trainLosses), minOf(valLosses)) * 0.95;
+            var maxLoss = Math.max(maxOf(trainLosses), maxOf(valLosses)) * 1.05;
+            var range = maxLoss - minLoss;
+            if (range === 0) { range = 1; }        // flat curve: avoid a 0/0 coordinate
+            var span = Math.max(1, valLosses.length - 1);
+            var geo = {
+                x: function (i) { return padding + (i / span) * (width - 2 * padding); },
+                y: function (v) { return height - padding - ((v - minLoss) / range) * (height - 2 * padding); }
+            };
 
+            drawLossFrame(ctx, width, height, padding);
+            drawPolyline(ctx, trainLosses, geo, '#2563EB');
+            drawPolyline(ctx, valLosses, geo, '#B45309');
+
+            // Mark best validation point
+            ctx.fillStyle = '#157F3B';
+            ctx.beginPath();
+            ctx.arc(geo.x(bestValIdx), geo.y(valLosses[bestValIdx]), 6, 0, Math.PI * 2);
+            ctx.fill();
+
+            drawLossLabels(ctx, width, height, padding, minLoss, range);
+        }
+
+        function drawGapFrame(ctx, width, height, padding) {
             // Grid
             ctx.strokeStyle = '#E8E8E6';
             ctx.lineWidth = 1;
-            for (let i = 0; i <= 5; i++) {
-                const y = height - padding - (i / 5) * (height - 2 * padding);
+            var i, y;
+            for (i = 0; i <= 5; i++) {
+                y = height - padding - (i / 5) * (height - 2 * padding);
                 ctx.beginPath();
                 ctx.moveTo(padding, y);
                 ctx.lineTo(width - padding, y);
@@ -518,18 +587,9 @@
             ctx.moveTo(padding, height - padding);
             ctx.lineTo(width - padding, height - padding);
             ctx.stroke();
+        }
 
-            // Draw bars
-            gaps.forEach((gap, i) => {
-                const x = padding + (i / (gaps.length - 1)) * (width - 2 * padding);
-                const gapHeight = (gap / maxGap) * (height - 2 * padding);
-
-                if (i === bestIdx) ctx.fillStyle = '#157F3B';
-                else ctx.fillStyle = gap > 0.3 ? '#C53030' : '#2563EB';
-
-                ctx.fillRect(x - 8, height - padding - gapHeight, 16, gapHeight);
-            });
-
+        function drawGapLabels(ctx, width, height, padding, maxGap) {
             // Labels
             ctx.fillStyle = '#6a6a6a';
             ctx.font = '11px sans-serif';
@@ -538,16 +598,54 @@
 
             // Y-axis labels
             ctx.textAlign = 'right';
-            for (let i = 0; i <= 5; i++) {
-                const gap = (i / 5) * maxGap;
-                const y = height - padding - (i / 5) * (height - 2 * padding);
+            var i, gap, y;
+            for (i = 0; i <= 5; i++) {
+                gap = (i / 5) * maxGap;
+                y = height - padding - (i / 5) * (height - 2 * padding);
                 ctx.fillText(gap.toFixed(2), padding - 10, y + 4);
             }
         }
 
-        window.addEventListener('load', () => {
+        function drawGapChart(gaps, bestIdx) {
+            var c = chartCtx('gapChart');
+            if (!c || gaps.length === 0) { return; }
+            var ctx = c.ctx;
+            var width = c.canvas.width;
+            var height = c.canvas.height;
+            var padding = 50;
+
+            ctx.fillStyle = '#FFFFFF';
+            ctx.fillRect(0, 0, width, height);
+
+            var maxGap = maxOf(gaps) * 1.1;
+            if (maxGap === 0) { maxGap = 1; }      // all-zero gaps: avoid a 0/0 bar height
+            var span = Math.max(1, gaps.length - 1);
+
+            drawGapFrame(ctx, width, height, padding);
+
+            // Draw bars
+            var i, x, gapHeight;
+            for (i = 0; i < gaps.length; i++) {
+                x = padding + (i / span) * (width - 2 * padding);
+                gapHeight = (gaps[i] / maxGap) * (height - 2 * padding);
+
+                if (i === bestIdx) { ctx.fillStyle = '#157F3B'; }
+                else { ctx.fillStyle = gaps[i] > 0.3 ? '#C53030' : '#2563EB'; }
+
+                ctx.fillRect(x - 8, height - padding - gapHeight, 16, gapHeight);
+            }
+
+            drawGapLabels(ctx, width, height, padding, maxGap);
+        }
+
+        // inline handlers in the markup above call these by name
+        window.loadDemoData = loadDemoData;
+        window.analyzeOverfitting = analyzeOverfitting;
+
+        window.addEventListener('load', function () {
             loadDemoData();
         });
+        })();
     </script>
 
 <footer class="site-footer">
