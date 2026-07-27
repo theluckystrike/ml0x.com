@@ -204,7 +204,7 @@
   (function() {
     'use strict';
 
-    /* NASA 1.2 — explicit ceilings for both user-growable collections. Models were
+    /* NASA 1.2: explicit ceilings for both user-growable collections. Models were
        already capped in the UI; samples had no bound at all, and every agreement loop
        below is O(samples x models^2). Neither ceiling is reachable by the shipped
        demo data, so nothing this page renders by default changes. */
@@ -233,7 +233,7 @@
     const agreementDetailEl = document.getElementById('agreementDetail');
     const canvas = document.getElementById('diminishingChart');
 
-    /* NASA 1.3 — stop as a unit when the tool markup is absent. canvas.getContext used
+    /* NASA 1.3: stop as a unit when the tool markup is absent. canvas.getContext used
        to run unguarded at load, so a missing canvas took the whole script down. */
     if (!modelListEl || !sampleInputsEl || !methodSelect || !weightHint || !addModelBtn ||
         !resetModelsBtn || !addSampleBtn || !computeBtn || !ensemblePredEl ||

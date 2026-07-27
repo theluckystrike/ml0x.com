@@ -214,7 +214,7 @@
   (function() {
     'use strict';
 
-    /* NASA 1.2 — the gradient vector arrives from a free-text field, so every loop
+    /* NASA 1.2: the gradient vector arrives from a free-text field, so every loop
        that walks it carries an explicit ceiling. 1000 is far above any real paste and
        keeps maxOf() away from engine argument limits. */
     const MAX_GRADIENTS = 1000;
@@ -233,7 +233,7 @@
     const barChartContainer = document.getElementById('barChartContainer');
     const codeSnippet = document.getElementById('codeSnippet');
 
-    /* NASA 1.3 — one guard for the whole tool instead of throwing on the first null
+    /* NASA 1.3: one guard for the whole tool instead of throwing on the first null
        dereference if any part of the markup is missing. */
     if (!gradInput || !methodSelect || !thresholdInput || !computeBtn || !resetBtn ||
         !origGlobalNormEl || !clippedGlobalNormEl || !scalingFactorEl ||

@@ -260,10 +260,10 @@
     <script>
         'use strict';
 
-        /* NASA 1.2 — hard ceiling on the only user-growable collection on the page. */
+        /* NASA 1.2: hard ceiling on the only user-growable collection on the page. */
         const MAX_PARAMETERS = 10;
 
-        /* NASA 1.4 — one entry per numeric control, mirroring the min/max attributes in
+        /* NASA 1.4: one entry per numeric control, mirroring the min/max attributes in
            the markup above. Every shipped default sits inside its range, so a default
            render is byte-identical; the clamp only bites on values the control itself
            declares invalid, where the previous code rendered NaN. */
