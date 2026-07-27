@@ -462,7 +462,7 @@
       if (l.type === 'batchnorm') typeLabel = 'BatchNorm';
       if (l.type === 'layernorm') typeLabel = 'LayerNorm';
       html += '<tr style="border-bottom:1px solid #E8E8E6;">';
-      html += '<td style="padding:6px;color:#767676;">'+(i+1)+'</td>';
+      html += '<td style="padding:6px;color:#6E6E6E;">'+(i+1)+'</td>';
       html += '<td style="padding:6px;color:#2563EB;font-weight:600;">'+typeLabel+'</td>';
       html += '<td style="padding:6px;color:#6a6a6a;font-size:12px;">'+l.config+'</td>';
       html += '<td style="padding:6px;text-align:right;color:#1A1A1A;font-family:IBM Plex Mono,monospace;">'+formatNum(l.params)+'</td>';
@@ -471,7 +471,7 @@
       html += '</tr>';
     }
     if (layers.length === 0) {
-      html = '<tr><td colspan="6" style="padding:20px;text-align:center;color:#767676;">No layers added yet. Use the form above to add layers.</td></tr>';
+      html = '<tr><td colspan="6" style="padding:20px;text-align:center;color:#6E6E6E;">No layers added yet. Use the form above to add layers.</td></tr>';
     }
     tbody.innerHTML = html;
 

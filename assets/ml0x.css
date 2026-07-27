@@ -18,7 +18,8 @@
   --ink: #1A1A1A;          /* 15.9:1 on --bg */
   --ink-2: #4A4A4A;        /* 8.4:1  */
   --ink-muted: #6a6a6a;    /* 5.3:1  */
-  --ink-faint: #767676;    /* 4.5:1  — floor for body-size text */
+  --ink-faint: #6E6E6E;    /* 4.88:1 on --bg, 5.10 on --surface, 4.55 on --surface-2.
+                              Measured, not assumed: #767676 only reaches 4.35 on --bg. */
   --on-dark: #E8E8E8;
   --on-dark-muted: #8a8a8a;
 

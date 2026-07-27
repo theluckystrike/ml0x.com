@@ -654,10 +654,10 @@
       var tr = document.createElement('tr');
       tr.innerHTML =
         '<td class="loss-name" style="color:' + loss.color + '">' + loss.name + '</td>' +
-        '<td style="font-family:var(--font-mono);font-size:12px;color:#767676;">' + loss.formula + '</td>' +
+        '<td style="font-family:var(--font-mono);font-size:12px;color:#6E6E6E;">' + loss.formula + '</td>' +
         '<td style="font-family:var(--font-mono);">' + (isFinite(lv) ? lv.toFixed(6) : 'N/A') + '</td>' +
         '<td style="font-family:var(--font-mono);">' + (isFinite(gv) ? gv.toFixed(6) : 'N/A') + '</td>' +
-        '<td style="color:#767676;font-size:12px;">' + loss.useCase + '</td>';
+        '<td style="color:#6E6E6E;font-size:12px;">' + loss.useCase + '</td>';
       tbody.appendChild(tr);
     });
   }
