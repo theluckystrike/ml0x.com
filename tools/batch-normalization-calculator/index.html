@@ -102,12 +102,12 @@
     <div class="grid-2">
       <div class="input-group">
         <label for="batchInput">Batch values (comma‑separated, e.g. 1.2, -0.5, 0.8, 2.1, -1.3)</label>
-        <textarea id="batchInput" placeholder="e.g. 1.2, -0.5, 0.8, 2.1, -1.3">1.2, -0.5, 0.8, 2.1, -1.3</textarea>
+        <textarea id="batchInput" placeholder="e.g. 1.2, -0.5, 0.8, 2.1, -1.3" maxlength="8000" inputmode="decimal">1.2, -0.5, 0.8, 2.1, -1.3</textarea>
       </div>
       <div class="param-row">
         <div class="param-item">
           <label for="epsilon">ε (epsilon)</label>
-          <input type="number" id="epsilon" step="any" value="1e-5" lang="en">
+          <input type="number" id="epsilon" step="any" min="0" value="1e-5" lang="en">
         </div>
         <div class="param-item">
           <label for="gamma">γ (gamma)</label>
@@ -170,13 +170,20 @@
     const outputVal = document.getElementById('outputVal');
     const inputDisplay = document.getElementById('inputDisplay');
     const canvas = document.getElementById('histogramCanvas');
-    const ctx = canvas.getContext('2d');
+    const ctx = canvas ? canvas.getContext('2d') : null;
+
+    // Every control is required; bail rather than throw if markup drifts.
+    if (!batchInput || !epsilonInput || !gammaInput || !betaInput || !computeBtn ||
+        !meanVal || !varVal || !normalizedVal || !outputVal || !inputDisplay || !ctx) {
+      return;
+    }
+
+    // Ceiling on batch length. Without it a pasted 100k-value batch spreads into
+    // Math.min(...data) (stack overflow) and joins into a megabyte of text.
+    const MAX_BATCH = 512;
 
     // fixed canvas resolution
     function resizeCanvas() {
-      const rect = canvas.parentElement.getBoundingClientRect();
-      const w = Math.min(600, rect.width - 8);
-      const ratio = 200 / 600;
       canvas.width = 600;
       canvas.height = 200;
       canvas.style.width = '100%';
@@ -185,10 +192,21 @@
     window.addEventListener('resize', resizeCanvas);
     resizeCanvas();
 
+    // min/max without argument spreading, so length cannot blow the stack
+    function extent(data) {
+      let min = data[0], max = data[0];
+      for (let i = 1; i < data.length; i++) {
+        if (data[i] < min) min = data[i];
+        if (data[i] > max) max = data[i];
+      }
+      return { min: min, max: max };
+    }
+
     function parseBatch(text) {
-      const parts = text.split(',').map(s => s.trim()).filter(s => s !== '');
+      const parts = String(text).split(',').map(s => s.trim()).filter(s => s !== '');
+      if (parts.length > MAX_BATCH) return null;
       const nums = parts.map(s => parseFloat(s));
-      if (nums.length === 0 || nums.some(n => isNaN(n))) {
+      if (nums.length === 0 || nums.some(n => !isFinite(n))) {
         return null;
       }
       return nums;
@@ -196,8 +214,9 @@
 
     function computeHistogram(data, bins = 8) {
       if (data.length === 0) return [];
-      const min = Math.min(...data);
-      const max = Math.max(...data);
+      const ext = extent(data);
+      const min = ext.min;
+      const max = ext.max;
       if (max === min) {
         // all same value
         return [{ binStart: min, count: data.length }];
@@ -231,8 +250,9 @@
         ctx.fillText('no data', w/2, h/2);
         return;
       }
-      const min = Math.min(...all);
-      const max = Math.max(...all);
+      const ext = extent(all);
+      const min = ext.min;
+      const max = ext.max;
       const range = max - min || 1;
       const bins = 8;
       const binWidth = range / bins;
@@ -277,7 +297,10 @@
         ctx.fillRect(x + barWidth + 2, h - padding - aHeight, barWidth, aHeight);
       }
 
-      // legend
+      drawLegend(padding);
+    }
+
+    function drawLegend(padding) {
       ctx.fillStyle = '#6a6a6a';
       ctx.font = '11px system-ui';
       ctx.textAlign = 'left';
@@ -306,9 +329,15 @@
         return;
       }
 
-      const eps = parseFloat(epsilonInput.value) || 1e-5;
-      const gamma = parseFloat(gammaInput.value) || 1.0;
-      const beta = parseFloat(betaInput.value) || 0.0;
+      // Parameters keep their existing defaults for blank/unparsable fields, and
+      // additionally reject values that can only produce NaN/Infinity downstream:
+      // a negative epsilon makes sqrt(variance + eps) imaginary.
+      let eps = parseFloat(epsilonInput.value) || 1e-5;
+      let gamma = parseFloat(gammaInput.value) || 1.0;
+      let beta = parseFloat(betaInput.value) || 0.0;
+      if (!isFinite(eps) || eps < 0) eps = 1e-5;
+      if (!isFinite(gamma)) gamma = 1.0;
+      if (!isFinite(beta)) beta = 0.0;
 
       // step a: mean
       const n = batch.length;
@@ -319,6 +348,15 @@
 
       // step c: normalized
       const std = Math.sqrt(variance + eps);
+      if (!isFinite(std) || std === 0) {
+        meanVal.textContent = 'invalid input';
+        varVal.textContent = '—';
+        normalizedVal.textContent = '—';
+        outputVal.textContent = '—';
+        inputDisplay.textContent = '—';
+        drawHistogram([], []);
+        return;
+      }
       const normalized = batch.map(v => (v - mean) / std);
 
       // step d: scale & shift

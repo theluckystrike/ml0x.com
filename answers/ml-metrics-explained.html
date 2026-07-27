@@ -328,28 +328,50 @@
 
   var currentTask = 'binary';
 
-  function renderMetrics(task) {
-    currentTask = task;
-    var metrics = metricsDB[task];
-    var panel = document.getElementById('metricsPanel');
-    var html = '';
+  /* Hardening helpers: null-checked lookups, and numeric reads that are
+     validated so an empty or non-numeric field can never render "NaN". */
+  function el(id) { return document.getElementById(id); }
 
-    for (var i = 0; i < metrics.length; i++) {
-      var m = metrics[i];
-      html += '<div class="tool-card" style="margin-top:12px;">';
-      html += '<div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;">';
-      html += '<h3 style="margin:0;">'+m.name+'</h3>';
-      html += '<span style="color:#2563EB;font-size:12px;background:rgba(37,99,235,0.10);padding:4px 10px;border-radius:12px;">'+m.range+'</span>';
-      html += '</div>';
-      html += '<div style="background:#F2F2F0;padding:10px 14px;border-radius:6px;margin:12px 0;font-family:IBM Plex Mono,monospace;font-size:13px;color:#1A1A1A;overflow-x:auto;">'+m.formula+'</div>';
-      html += '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;font-size:13px;">';
-      html += '<div><span style="color:#6a6a6a;font-weight:600;">When to use: </span><span style="color:#4A4A4A;">'+m.when+'</span></div>';
-      html += '<div><span style="color:#157F3B;font-weight:600;">Pros: </span><span style="color:#4A4A4A;">'+m.pros+'</span></div>';
-      html += '<div><span style="color:#C53030;font-weight:600;">Cons: </span><span style="color:#4A4A4A;">'+m.cons+'</span></div>';
-      html += '</div>';
+  function fieldOf(idx, field) {
+    return document.querySelector('[data-metric="'+idx+'"][data-field="'+field+'"]');
+  }
 
-      if (m.calc) {
-        html += '<div style="margin-top:12px;padding-top:12px;border-top:1px solid #E8E8E6;">';
+  function countOf(idx, field) {
+    var node = fieldOf(idx, field);
+    var raw = node ? parseInt(node.value, 10) : NaN;
+    if (!isFinite(raw) || raw < 0) return 0;
+    return raw;
+  }
+
+  function unitOf(idx, field) {
+    var node = fieldOf(idx, field);
+    var raw = node ? parseFloat(node.value) : NaN;
+    if (!isFinite(raw)) return 0;
+    return Math.min(1, Math.max(0, raw));
+  }
+
+  /* Parses a comma-separated series. Returns null when any entry is not a
+     finite number, so the caller reports a validation message instead of NaN. */
+  function seriesOf(idx, field) {
+    var node = fieldOf(idx, field);
+    if (!node) return null;
+    var parts = node.value.split(',');
+    var out = [];
+    for (var i = 0; i < parts.length; i++) {
+      var v = Number(parts[i]);
+      if (!isFinite(v)) return null;
+      out.push(v);
+    }
+    return out;
+  }
+
+  function showResult(idx, value) {
+    var node = el('calcResult' + idx);
+    if (node) node.textContent = value;
+  }
+
+  function calcBlock(m, i) {
+    var html = '<div style="margin-top:12px;padding-top:12px;border-top:1px solid #E8E8E6;">';
         html += '<div style="font-weight:600;color:#6a6a6a;font-size:12px;margin-bottom:8px;">MINI-CALCULATOR</div>';
         if (m.calcType === 'binary') {
           html += '<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:end;">';
@@ -383,31 +405,62 @@
           html += '</div>';
         }
         html += '</div>';
-      }
+    return html;
+  }
 
+  function syncCompareSelects(metrics) {
+    var selA = el('compareA');
+    var selB = el('compareB');
+    if (!selA || !selB) return;
+    var optsA = '', optsB = '';
+    for (var i = 0; i < metrics.length; i++) {
+      optsA += '<option value="'+i+'">'+metrics[i].name+'</option>';
+      optsB += '<option value="'+i+'"'+(i===1?' selected':'')+'>'+metrics[i].name+'</option>';
+    }
+    selA.innerHTML = optsA;
+    selB.innerHTML = optsB;
+  }
+
+  function renderMetrics(task) {
+    var metrics = metricsDB[task];
+    if (!metrics) return;
+    currentTask = task;
+    var panel = el('metricsPanel');
+    if (!panel) return;
+    var html = '';
+
+    for (var i = 0; i < metrics.length; i++) {
+      var m = metrics[i];
+      html += '<div class="tool-card" style="margin-top:12px;">';
+      html += '<div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;">';
+      html += '<h3 style="margin:0;">'+m.name+'</h3>';
+      html += '<span style="color:#2563EB;font-size:12px;background:rgba(37,99,235,0.10);padding:4px 10px;border-radius:12px;">'+m.range+'</span>';
+      html += '</div>';
+      html += '<div style="background:#F2F2F0;padding:10px 14px;border-radius:6px;margin:12px 0;font-family:IBM Plex Mono,monospace;font-size:13px;color:#1A1A1A;overflow-x:auto;">'+m.formula+'</div>';
+      html += '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;font-size:13px;">';
+      html += '<div><span style="color:#6a6a6a;font-weight:600;">When to use: </span><span style="color:#4A4A4A;">'+m.when+'</span></div>';
+      html += '<div><span style="color:#157F3B;font-weight:600;">Pros: </span><span style="color:#4A4A4A;">'+m.pros+'</span></div>';
+      html += '<div><span style="color:#C53030;font-weight:600;">Cons: </span><span style="color:#4A4A4A;">'+m.cons+'</span></div>';
+      html += '</div>';
+      if (m.calc) html += calcBlock(m, i);
       html += '</div>';
     }
 
     panel.innerHTML = html;
-
-    // Update comparison selects
-    var selA = document.getElementById('compareA');
-    var selB = document.getElementById('compareB');
-    selA.innerHTML = '';
-    selB.innerHTML = '';
-    for (var i = 0; i < metrics.length; i++) {
-      selA.innerHTML += '<option value="'+i+'">'+metrics[i].name+'</option>';
-      selB.innerHTML += '<option value="'+i+'"'+(i===1?' selected':'')+'>'+metrics[i].name+'</option>';
-    }
-    document.getElementById('compareSection').style.display = 'block';
+    syncCompareSelects(metrics);
+    var compareSection = el('compareSection');
+    if (compareSection) compareSection.style.display = 'block';
     updateCompare();
   }
 
   function updateCompare() {
     var metrics = metricsDB[currentTask];
-    var a = parseInt(document.getElementById('compareA').value);
-    var b = parseInt(document.getElementById('compareB').value);
+    var selA = el('compareA'), selB = el('compareB'), out = el('compareResult');
+    if (!metrics || !selA || !selB || !out) return;
+    var a = parseInt(selA.value, 10);
+    var b = parseInt(selB.value, 10);
     var ma = metrics[a], mb = metrics[b];
+    if (!ma || !mb) return;
     var html = '<div style="display:grid;grid-template-columns:auto 1fr 1fr;gap:1px;font-size:13px;">';
     var rows = [
       ['Formula', ma.formula, mb.formula],
@@ -426,15 +479,15 @@
       html += '<div style="padding:8px;background:'+bg+';color:#4A4A4A;">'+rows[i][2]+'</div>';
     }
     html += '</div>';
-    document.getElementById('compareResult').innerHTML = html;
+    out.innerHTML = html;
   }
 
   // Calculator functions (global scope)
   window.calcBinaryMetric = function(idx, name) {
-    var tp = parseInt(document.querySelector('[data-metric="'+idx+'"][data-field="tp"]').value) || 0;
-    var fp = parseInt(document.querySelector('[data-metric="'+idx+'"][data-field="fp"]').value) || 0;
-    var fn = parseInt(document.querySelector('[data-metric="'+idx+'"][data-field="fn"]').value) || 0;
-    var tn = parseInt(document.querySelector('[data-metric="'+idx+'"][data-field="tn"]').value) || 0;
+    var tp = countOf(idx, 'tp');
+    var fp = countOf(idx, 'fp');
+    var fn = countOf(idx, 'fn');
+    var tn = countOf(idx, 'tn');
     var result = 0;
     if (name === 'Accuracy') result = (tp+tn) / Math.max(1, tp+tn+fp+fn);
     else if (name === 'Precision') result = tp / Math.max(1, tp+fp);
@@ -443,19 +496,20 @@
       var d = Math.sqrt((tp+fp)*(tp+fn)*(tn+fp)*(tn+fn));
       result = d > 0 ? (tp*tn - fp*fn) / d : 0;
     }
-    document.getElementById('calcResult'+idx).textContent = result.toFixed(4);
+    showResult(idx, result.toFixed(4));
   };
 
   window.calcF1 = function(idx) {
-    var p = parseFloat(document.querySelector('[data-metric="'+idx+'"][data-field="prec"]').value) || 0;
-    var r = parseFloat(document.querySelector('[data-metric="'+idx+'"][data-field="rec"]').value) || 0;
+    var p = unitOf(idx, 'prec');
+    var r = unitOf(idx, 'rec');
     var f1 = (p + r) > 0 ? 2 * p * r / (p + r) : 0;
-    document.getElementById('calcResult'+idx).textContent = f1.toFixed(4);
+    showResult(idx, f1.toFixed(4));
   };
 
   window.calcRegression = function(idx, name) {
-    var actual = document.querySelector('[data-metric="'+idx+'"][data-field="actual"]').value.split(',').map(Number);
-    var predicted = document.querySelector('[data-metric="'+idx+'"][data-field="predicted"]').value.split(',').map(Number);
+    var actual = seriesOf(idx, 'actual');
+    var predicted = seriesOf(idx, 'predicted');
+    if (!actual || !predicted) { showResult(idx, 'numbers only'); return; }
     var n = Math.min(actual.length, predicted.length);
     if (n === 0) return;
     var sumSqErr = 0, sumAbsErr = 0;
@@ -468,12 +522,13 @@
     if (name === 'MSE') result = mse;
     else if (name === 'RMSE') result = Math.sqrt(mse);
     else if (name === 'MAE') result = sumAbsErr / n;
-    document.getElementById('calcResult'+idx).textContent = result.toFixed(4);
+    showResult(idx, result.toFixed(4));
   };
 
   window.calcR2 = function(idx) {
-    var actual = document.querySelector('[data-metric="'+idx+'"][data-field="actual"]').value.split(',').map(Number);
-    var predicted = document.querySelector('[data-metric="'+idx+'"][data-field="predicted"]').value.split(',').map(Number);
+    var actual = seriesOf(idx, 'actual');
+    var predicted = seriesOf(idx, 'predicted');
+    if (!actual || !predicted) { showResult(idx, 'numbers only'); return; }
     var n = Math.min(actual.length, predicted.length);
     if (n === 0) return;
     var mean = actual.reduce(function(a,b){return a+b;},0) / n;
@@ -483,7 +538,7 @@
       ssTot += (actual[i] - mean) * (actual[i] - mean);
     }
     var r2 = ssTot > 0 ? 1 - ssRes / ssTot : 0;
-    document.getElementById('calcResult'+idx).textContent = r2.toFixed(4);
+    showResult(idx, r2.toFixed(4));
   };
 
   // Task button handlers
@@ -498,8 +553,9 @@
     });
   }
 
-  document.getElementById('compareA').addEventListener('change', updateCompare);
-  document.getElementById('compareB').addEventListener('change', updateCompare);
+  var selAInit = el('compareA'), selBInit = el('compareB');
+  if (selAInit) selAInit.addEventListener('change', updateCompare);
+  if (selBInit) selBInit.addEventListener('change', updateCompare);
 
   // Initialize with binary
   renderMetrics('binary');

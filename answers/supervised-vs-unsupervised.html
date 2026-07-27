@@ -361,9 +361,19 @@
   ];
 
   var score = 0, total = 0, remaining;
-  var pool = document.getElementById('cardPool');
-  var binSup = document.getElementById('binSupervised');
-  var binUnsup = document.getElementById('binUnsupervised');
+
+  /* Hardening helpers: null-checked lookups so a missing panel disables just
+     that widget instead of throwing and taking the rest of the page with it. */
+  function el(id) { return document.getElementById(id); }
+
+  function setText(id, value) {
+    var node = el(id);
+    if (node) node.textContent = value;
+  }
+
+  var pool = el('cardPool');
+  var binSup = el('binSupervised');
+  var binUnsup = el('binUnsupervised');
   var draggedEl = null;
 
   function shuffle(a) {
@@ -394,6 +404,7 @@
   }
 
   function setupBin(bin, binType) {
+    if (!bin) return;
     bin.addEventListener('dragover', function(e) {
       e.preventDefault();
       e.dataTransfer.dropEffect = 'move';
@@ -425,14 +436,15 @@
   }
 
   function updateStats() {
-    document.getElementById('sortScore').textContent = score;
-    document.getElementById('sortTotal').textContent = total;
-    document.getElementById('sortPct').textContent = total > 0 ? Math.round(score / total * 100) + '%' : '--';
-    document.getElementById('sortRemaining').textContent = remaining;
+    setText('sortScore', score);
+    setText('sortTotal', total);
+    setText('sortPct', total > 0 ? Math.round(score / total * 100) + '%' : '--');
+    setText('sortRemaining', remaining);
   }
 
   function init() {
     score = 0; total = 0; remaining = algorithms.length;
+    if (!pool || !binSup || !binUnsup) return;
     pool.innerHTML = ''; binSup.innerHTML = ''; binUnsup.innerHTML = '';
     var shuffled = shuffle(algorithms.slice());
     for (var i = 0; i < shuffled.length; i++) {
@@ -443,7 +455,8 @@
 
   setupBin(binSup, 'supervised');
   setupBin(binUnsup, 'unsupervised');
-  document.getElementById('resetSortBtn').addEventListener('click', init);
+  var resetSortBtn = el('resetSortBtn');
+  if (resetSortBtn) resetSortBtn.addEventListener('click', init);
   init();
 
   /* Decision Flowchart */
@@ -458,12 +471,16 @@
     {result: true, title:'Anomaly Detection', color:'#7C3AED', text:'Use unsupervised anomaly detection. Isolation Forest for tabular data, Autoencoders for complex patterns (high reconstruction error = anomaly), or One-Class SVM for well-defined normal regions. Evaluate with precision-at-k if you have some labeled anomalies for validation.'}
   ];
 
-  var flowEl = document.getElementById('flowQuestion');
-  var optsEl = document.getElementById('flowOptions');
-  var resultEl = document.getElementById('flowResult');
-  var resetFlowBtn = document.getElementById('resetFlowBtn');
+  var flowEl = el('flowQuestion');
+  var optsEl = el('flowOptions');
+  var resultEl = el('flowResult');
+  var resetFlowBtn = el('resetFlowBtn');
 
   function showStep(idx) {
+    /* index-bounds check: every branch target is a literal in flowSteps, but a
+       bad index must not throw. Recursion is event-driven, never nested. */
+    if (!flowEl || !optsEl || !resultEl || !resetFlowBtn) return;
+    if (typeof idx !== 'number' || idx < 0 || idx >= flowSteps.length) return;
     var step = flowSteps[idx];
     if (step.result) {
       flowEl.style.display = 'none';
@@ -492,7 +509,7 @@
     }
   }
 
-  resetFlowBtn.addEventListener('click', function() { showStep(0); });
+  if (resetFlowBtn) resetFlowBtn.addEventListener('click', function() { showStep(0); });
   showStep(0);
 })();
 </script>

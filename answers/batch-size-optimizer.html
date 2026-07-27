@@ -372,6 +372,37 @@
 (function() {
   var maxBatch = 0;
 
+  /* Hardening helpers. Every DOM read is null-checked; every numeric read is
+     validated and clamped to the range its own control declares, so a typed
+     out-of-range value cannot produce NaN or an unbounded draw loop. */
+  var MAX_CURVE_POINTS = 512;
+
+  function el(id) { return document.getElementById(id); }
+
+  function setText(id, value) {
+    var node = el(id);
+    if (node) node.textContent = value;
+  }
+
+  function strOf(id, fallback) {
+    var node = el(id);
+    return node ? node.value : fallback;
+  }
+
+  function intOf(id, fallback, min, max) {
+    var node = el(id);
+    var raw = node ? parseInt(node.value, 10) : NaN;
+    if (!isFinite(raw)) raw = fallback;
+    return Math.min(max, Math.max(min, raw));
+  }
+
+  function floatOf(id, fallback, min, max) {
+    var node = el(id);
+    var raw = node ? parseFloat(node.value) : NaN;
+    if (!isFinite(raw)) raw = fallback;
+    return Math.min(max, Math.max(min, raw));
+  }
+
   function bytesPerParam(prec) {
     return prec === 'fp32' ? 4 : 2;
   }
@@ -405,12 +436,12 @@
   }
 
   function calculate() {
-    var gpuGB = parseInt(document.getElementById('gpuMem').value);
-    var params = parseFloat(document.getElementById('modelParams').value);
-    var prec = document.getElementById('precision').value;
-    var opt = document.getElementById('optimizer').value;
-    var seqLen = parseInt(document.getElementById('seqLen').value);
-    var modelType = document.getElementById('modelType').value;
+    var gpuGB = intOf('gpuMem', 8, 1, 80);
+    var params = floatOf('modelParams', 125, 1, 175000);
+    var prec = strOf('precision', 'fp32');
+    var opt = strOf('optimizer', 'adam');
+    var seqLen = intOf('seqLen', 512, 1, 4096);
+    var modelType = strOf('modelType', 'transformer');
 
     if (isNaN(params) || params <= 0) return;
 
@@ -431,21 +462,23 @@
     var totalUsed = modelOverhead + maxBatch * actPerSample;
     var utilization = Math.min(100, (totalUsed / gpuBytes * 100));
 
-    document.getElementById('metMaxBatch').textContent = maxBatch;
-    document.getElementById('metModelMem').textContent = ((paramBytes + gradBytes) / (1024*1024*1024)).toFixed(2);
-    document.getElementById('metOptMem').textContent = (optBytes / (1024*1024*1024)).toFixed(2);
-    document.getElementById('metActMem').textContent = (actPerSample / (1024*1024)).toFixed(1);
-    document.getElementById('metFreeMem').textContent = (availableForAct / (1024*1024*1024)).toFixed(2);
-    document.getElementById('metUtil').textContent = utilization.toFixed(1) + '%';
+    setText('metMaxBatch', maxBatch);
+    setText('metModelMem', ((paramBytes + gradBytes) / (1024*1024*1024)).toFixed(2));
+    setText('metOptMem', (optBytes / (1024*1024*1024)).toFixed(2));
+    setText('metActMem', (actPerSample / (1024*1024)).toFixed(1));
+    setText('metFreeMem', (availableForAct / (1024*1024*1024)).toFixed(2));
+    setText('metUtil', utilization.toFixed(1) + '%');
 
-    document.getElementById('resultsSection').style.display = 'block';
+    var resultsPanel = el('resultsSection');
+    if (resultsPanel) resultsPanel.style.display = 'block';
     drawMemoryBreakdown(paramBytes + gradBytes, optBytes, maxBatch * actPerSample, cudaOverhead, gpuBytes);
     drawTradeoffCurve(maxBatch);
     drawScalingCurve(maxBatch);
   }
 
   function drawMemoryBreakdown(paramGrad, opt, act, overhead, total) {
-    var svg = document.getElementById('memSvg');
+    var svg = el('memSvg');
+    if (!svg) return;
     var pad = {l:60, r:30, t:30, b:40};
     var w = 700 - pad.l - pad.r, h = 250 - pad.t - pad.b;
     var totalGB = total / (1024*1024*1024);
@@ -484,12 +517,15 @@
   }
 
   function drawTradeoffCurve(maxBS) {
-    var svg = document.getElementById('tradeoffSvg');
+    var svg = el('tradeoffSvg');
+    if (!svg) return;
     var pad = {l:70, r:50, t:20, b:50};
     var w = 700 - pad.l - pad.r, h = 300 - pad.t - pad.b;
     var maxX = Math.max(512, maxBS * 2);
     var batchSizes = [];
-    for (var b = 1; b <= maxX; b = Math.ceil(b * 1.2)) batchSizes.push(b);
+    /* explicit iteration ceiling: the geometric step is monotonic, but a
+       ceiling is required so no input can make this loop run without bound */
+    for (var b = 1; b <= maxX && batchSizes.length < MAX_CURVE_POINTS; b = Math.ceil(b * 1.2)) batchSizes.push(b);
 
     function sx(b) { return pad.l + Math.log2(b) / Math.log2(maxX) * w; }
     function sySpeed(v) { return pad.t + (1 - v) * h; }
@@ -532,7 +568,8 @@
   }
 
   function drawScalingCurve(perGpuBatch) {
-    var svg = document.getElementById('scalingSvg');
+    var svg = el('scalingSvg');
+    if (!svg) return;
     var pad = {l:70, r:60, t:20, b:50};
     var w = 700 - pad.l - pad.r, h = 280 - pad.t - pad.b;
     var gpuCounts = [1,2,4,8,16,32,64];
@@ -579,22 +616,29 @@
     svg.innerHTML = html;
   }
 
-  document.getElementById('calcBtn').addEventListener('click', calculate);
-  document.getElementById('resetBtn').addEventListener('click', function() {
-    document.getElementById('resultsSection').style.display = 'none';
+  function on(id, evt, handler) {
+    var node = el(id);
+    if (node) node.addEventListener(evt, handler);
+  }
+
+  on('calcBtn', 'click', calculate);
+  on('resetBtn', 'click', function() {
+    var resultsPanel = el('resultsSection');
+    if (resultsPanel) resultsPanel.style.display = 'none';
   });
 
-  document.getElementById('accumBtn').addEventListener('click', function() {
+  on('accumBtn', 'click', function() {
     if (maxBatch <= 0) return;
-    var target = parseInt(document.getElementById('targetBatch').value);
+    var field = el('targetBatch');
+    var target = field ? parseInt(field.value, 10) : NaN;
     if (isNaN(target) || target <= 0) return;
     var microBatch = Math.min(maxBatch, target);
     var steps = Math.ceil(target / microBatch);
     var effective = steps * microBatch;
-    document.getElementById('accumSteps').textContent = steps;
-    document.getElementById('accumMicro').textContent = microBatch;
-    document.getElementById('accumEffective').textContent = effective;
-    document.getElementById('accumSlowdown').textContent = steps + 'x';
+    setText('accumSteps', steps);
+    setText('accumMicro', microBatch);
+    setText('accumEffective', effective);
+    setText('accumSlowdown', steps + 'x');
   });
 
   calculate();

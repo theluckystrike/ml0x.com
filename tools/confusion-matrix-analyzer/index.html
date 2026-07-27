@@ -132,8 +132,8 @@
                 <div class="section-title">Input Configuration</div>
 
                 <div class="tabs">
-                    <button class="tab-button active" onclick="switchTab('binary')">Binary</button>
-                    <button class="tab-button" onclick="switchTab('multiclass')">Multi-class</button>
+                    <button class="tab-button active" onclick="switchTab('binary', event)">Binary</button>
+                    <button class="tab-button" onclick="switchTab('multiclass', event)">Multi-class</button>
                 </div>
 
                 <div id="binary" class="tab-content active">
@@ -269,16 +269,32 @@
         let multiclassMatrix = [];
         let multiclassLabels = [];
 
-        function switchTab(tab) {
+        // Ceiling on the class count. The grid below is numClasses x numClasses inputs,
+        // so an unclamped field (a typed 500) builds 250,000 nodes and hangs the tab.
+        // 2 and 10 mirror the min/max attributes on #numClasses.
+        var MIN_CLASSES = 2, MAX_CLASSES = 10;
+
+        function readCount(id, min, max, def) {
+            const el = document.getElementById(id);
+            if (!el) return def;
+            const v = parseFloat(el.value);
+            if (!isFinite(v)) return def;
+            return Math.min(max, Math.max(min, v));
+        }
+
+        function switchTab(tab, evt) {
             document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
             document.querySelectorAll('.tab-button').forEach(el => el.classList.remove('active'));
-            document.getElementById(tab).classList.add('active');
-            event.target.classList.add('active');
+            const panel = document.getElementById(tab);
+            if (panel) panel.classList.add('active');
+            const src = (evt || window.event);
+            if (src && src.target) src.target.classList.add('active');
         }
 
         function setupMulticlassMatrix() {
-            const numClasses = parseInt(document.getElementById('numClasses').value);
+            const numClasses = Math.round(readCount('numClasses', MIN_CLASSES, MAX_CLASSES, 3));
             const container = document.getElementById('multiclassInputs');
+            if (!container) return;
             container.innerHTML = '';
 
             multiclassLabels = [];
@@ -317,15 +333,19 @@
         }
 
         function updateBinaryInputs() {
-            document.getElementById('tp').value = matrixData.tp;
-            document.getElementById('fp').value = matrixData.fp;
-            document.getElementById('tn').value = matrixData.tn;
-            document.getElementById('fn').value = matrixData.fn;
+            ['tp','fp','tn','fn'].forEach(function(k) {
+                const el = document.getElementById(k);
+                if (el) el.value = matrixData[k];
+            });
         }
 
         function updateThreshold() {
-            const threshold = parseFloat(document.getElementById('thresholdSlider').value);
-            document.getElementById('thresholdValue').textContent = threshold.toFixed(2);
+            const slider = document.getElementById('thresholdSlider');
+            if (!slider) return;
+            let threshold = parseFloat(slider.value);
+            if (!isFinite(threshold)) threshold = 0.5;
+            threshold = Math.min(1, Math.max(0, threshold));
+            setText('thresholdValue', threshold.toFixed(2));
             const tpAdjust = matrixData.tp * (2 - threshold);
             const fpAdjust = matrixData.fp * (1 - threshold);
             const tnAdjust = matrixData.tn * (1 - threshold);
@@ -333,7 +353,8 @@
         }
 
         function calculateMetrics() {
-            const activeTab = document.querySelector('.tab-button.active').textContent;
+            const activeBtn = document.querySelector('.tab-button.active');
+            const activeTab = activeBtn ? activeBtn.textContent : 'Binary';
 
             if (activeTab === 'Binary') {
                 calculateBinaryMetrics();
@@ -342,14 +363,40 @@
             }
         }
 
+        // counts: blank/negative/non-finite is not a count, it is 0
+        function setText(id, value) {
+            const el = document.getElementById(id);
+            if (el) el.textContent = value;
+        }
+
+        function readCell(id) {
+            const el = document.getElementById(id);
+            if (!el) return 0;
+            const v = parseFloat(el.value);
+            if (!isFinite(v) || v < 0) return 0;
+            return Math.min(v, 1e12);
+        }
+
+        function showBinaryPlaceholders() {
+            const ids = ['accuracy','precision','recall','f1','specificity',
+                         'fpr','fnr','mcc','kappa','balancedAccuracy'];
+            ids.forEach(function(id) {
+                const el = document.getElementById(id);
+                if (el) el.textContent = '—';
+            });
+            drawBinaryMatrix();
+        }
+
         function calculateBinaryMetrics() {
-            matrixData.tp = parseFloat(document.getElementById('tp').value);
-            matrixData.fp = parseFloat(document.getElementById('fp').value);
-            matrixData.tn = parseFloat(document.getElementById('tn').value);
-            matrixData.fn = parseFloat(document.getElementById('fn').value);
+            matrixData.tp = readCell('tp');
+            matrixData.fp = readCell('fp');
+            matrixData.tn = readCell('tn');
+            matrixData.fn = readCell('fn');
 
             const { tp, fp, tn, fn } = matrixData;
             const total = tp + fp + tn + fn;
+            // an empty matrix has no metrics; every ratio below divides by total
+            if (total <= 0) { showBinaryPlaceholders(); return; }
 
             const accuracy = (tp + tn) / total;
             const precision = tp / (tp + fp) || 0;
@@ -360,56 +407,64 @@
             const fnr = fn / (fn + tp) || 0;
 
             const pe = ((tp + fn) / total) * ((tp + fp) / total) + ((tn + fp) / total) * ((tn + fn) / total);
-            const kappa = (accuracy - pe) / (1 - pe);
+            // pe === 1 (a single-cell matrix) makes kappa 0/0; chance agreement is
+            // total, so there is no agreement beyond chance to report.
+            const kappa = pe === 1 ? 0 : (accuracy - pe) / (1 - pe);
 
             const mcc = (tp * tn - fp * fn) / Math.sqrt((tp + fp) * (tp + fn) * (tn + fp) * (tn + fn));
             const balancedAccuracy = (recall + specificity) / 2;
 
-            document.getElementById('accuracy').textContent = accuracy.toFixed(4);
-            document.getElementById('precision').textContent = precision.toFixed(4);
-            document.getElementById('recall').textContent = recall.toFixed(4);
-            document.getElementById('f1').textContent = f1.toFixed(4);
-            document.getElementById('specificity').textContent = specificity.toFixed(4);
-            document.getElementById('fpr').textContent = fpr.toFixed(4);
-            document.getElementById('fnr').textContent = fnr.toFixed(4);
-            document.getElementById('mcc').textContent = (isNaN(mcc) ? 0 : mcc).toFixed(4);
-            document.getElementById('kappa').textContent = kappa.toFixed(4);
-            document.getElementById('balancedAccuracy').textContent = balancedAccuracy.toFixed(4);
+            setText('accuracy', accuracy.toFixed(4));
+            setText('precision', precision.toFixed(4));
+            setText('recall', recall.toFixed(4));
+            setText('f1', f1.toFixed(4));
+            setText('specificity', specificity.toFixed(4));
+            setText('fpr', fpr.toFixed(4));
+            setText('fnr', fnr.toFixed(4));
+            setText('mcc', (isNaN(mcc) ? 0 : mcc).toFixed(4));
+            setText('kappa', kappa.toFixed(4));
+            setText('balancedAccuracy', balancedAccuracy.toFixed(4));
 
             drawBinaryMatrix();
         }
 
         function calculateMulticlassMetrics() {
             const inputs = document.querySelectorAll('#multiclassInputs input[type="number"]');
-            const numClasses = parseInt(document.getElementById('numClasses').value);
+            const numClasses = Math.round(readCount('numClasses', MIN_CLASSES, MAX_CLASSES, 3));
             multiclassMatrix = Array(numClasses).fill(0).map(() => Array(numClasses).fill(0));
 
+            // a stale grid (built for a different class count) must not index out of range
             inputs.forEach(input => {
-                const row = parseInt(input.dataset.row);
-                const col = parseInt(input.dataset.col);
-                multiclassMatrix[row][col] = parseFloat(input.value);
+                const row = parseInt(input.dataset.row, 10);
+                const col = parseInt(input.dataset.col, 10);
+                if (!(row >= 0 && row < numClasses && col >= 0 && col < numClasses)) return;
+                const v = parseFloat(input.value);
+                multiclassMatrix[row][col] = (isFinite(v) && v > 0) ? Math.min(v, 1e12) : 0;
             });
 
             const total = multiclassMatrix.flat().reduce((a, b) => a + b, 0);
-            const accuracy = multiclassMatrix.reduce((sum, row, i) => sum + row[i], 0) / total;
+            const accuracy = total > 0
+                ? multiclassMatrix.reduce((sum, row, i) => sum + row[i], 0) / total
+                : 0;
 
-            document.getElementById('accuracy').textContent = accuracy.toFixed(4);
-            document.getElementById('precision').textContent = 'Multi-class';
-            document.getElementById('recall').textContent = 'Multi-class';
-            document.getElementById('f1').textContent = 'Multi-class';
-            document.getElementById('specificity').textContent = 'N/A';
-            document.getElementById('fpr').textContent = 'N/A';
-            document.getElementById('fnr').textContent = 'N/A';
-            document.getElementById('mcc').textContent = 'Calc';
-            document.getElementById('kappa').textContent = 'Calc';
-            document.getElementById('balancedAccuracy').textContent = 'Calc';
+            setText('accuracy', accuracy.toFixed(4));
+            setText('precision', 'Multi-class');
+            setText('recall', 'Multi-class');
+            setText('f1', 'Multi-class');
+            setText('specificity', 'N/A');
+            setText('fpr', 'N/A');
+            setText('fnr', 'N/A');
+            setText('mcc', 'Calc');
+            setText('kappa', 'Calc');
+            setText('balancedAccuracy', 'Calc');
 
             drawMulticlassMatrix();
         }
 
         function drawBinaryMatrix() {
             const canvas = document.getElementById('matrixCanvas');
-            const ctx = canvas.getContext('2d');
+            const ctx = canvas ? canvas.getContext('2d') : null;
+            if (!ctx) return;
             const rect = canvas.getBoundingClientRect();
             canvas.width = rect.width * window.devicePixelRatio;
             canvas.height = rect.height * window.devicePixelRatio;
@@ -423,7 +478,9 @@
 
             const { tp, fp, tn, fn } = matrixData;
             const matrix = [[tp, fp], [fn, tn]];
-            const maxVal = Math.max(tp, fp, tn, fn);
+            // an all-zero matrix would make every intensity 0/0 = NaN, and a NaN
+            // alpha in rgba() is an invalid colour that silently paints nothing
+            const maxVal = Math.max(tp, fp, tn, fn) || 1;
 
             // Draw cells
             for (let i = 0; i < 2; i++) {
@@ -452,7 +509,11 @@
                 }
             }
 
-            // Labels
+            drawBinaryAxisLabels(ctx, startX, startY, cellSize);
+        }
+
+        // split out of drawBinaryMatrix to keep it under the 60-line limit
+        function drawBinaryAxisLabels(ctx, startX, startY, cellSize) {
             ctx.fillStyle = '#4A4A4A';
             ctx.font = '13px sans-serif';
             ctx.textAlign = 'center';
@@ -472,7 +533,8 @@
 
         function drawMulticlassMatrix() {
             const canvas = document.getElementById('matrixCanvas');
-            const ctx = canvas.getContext('2d');
+            const ctx = canvas ? canvas.getContext('2d') : null;
+            if (!ctx || multiclassMatrix.length === 0) return;
             const rect = canvas.getBoundingClientRect();
             canvas.width = rect.width * window.devicePixelRatio;
             canvas.height = rect.height * window.devicePixelRatio;
@@ -485,7 +547,7 @@
             const startX = (width - numClasses * cellSize) / 2;
             const startY = (height - numClasses * cellSize) / 2;
 
-            const maxVal = Math.max(...multiclassMatrix.flat());
+            const maxVal = Math.max(...multiclassMatrix.flat()) || 1;
 
             for (let i = 0; i < numClasses; i++) {
                 for (let j = 0; j < numClasses; j++) {
@@ -513,8 +575,9 @@
         function resetAnalyzer() {
             matrixData = { tp: 85, fp: 12, tn: 88, fn: 15 };
             updateBinaryInputs();
-            document.getElementById('thresholdSlider').value = 0.5;
-            document.getElementById('thresholdValue').textContent = '0.5';
+            const slider = document.getElementById('thresholdSlider');
+            if (slider) slider.value = 0.5;
+            setText('thresholdValue', '0.5');
             calculateMetrics();
         }
 

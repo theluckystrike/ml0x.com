@@ -348,6 +348,28 @@
 (function() {
   var foldColors = ['#2563EB','#157F3B','#B45309','#C53030','#7C3AED','#0E7490','#BE185D','#4D7C0F','#1D4ED8','#047857','#92400E','#9F1239','#6D28D9','#155E75','#A21CAF','#3F6212','#1E40AF','#065F46','#78350F','#831843'];
 
+  /* Hardening helpers: null-checked lookups, numeric reads clamped to the
+     value set each control declares. */
+  function el(id) { return document.getElementById(id); }
+
+  function setText(id, value) {
+    var node = el(id);
+    if (node) node.textContent = value;
+  }
+
+  function ctxOf(id) {
+    var canvas = el(id);
+    if (!canvas || typeof canvas.getContext !== 'function') return null;
+    return canvas.getContext('2d');
+  }
+
+  function numOf(id, fallback, min, max) {
+    var node = el(id);
+    var raw = node ? parseFloat(node.value) : NaN;
+    if (!isFinite(raw)) raw = fallback;
+    return Math.min(max, Math.max(min, raw));
+  }
+
   function simulateCV(K, N, balance, stratified) {
     var data = [];
     var posCount = Math.round(N * balance);
@@ -388,8 +410,9 @@
   }
 
   function drawFolds(result) {
-    var canvas = document.getElementById('foldCanvas');
-    var ctx = canvas.getContext('2d');
+    var canvas = el('foldCanvas');
+    var ctx = ctxOf('foldCanvas');
+    if (!ctx) return;
     var W = canvas.width, H = canvas.height;
     ctx.clearRect(0, 0, W, H);
     ctx.fillStyle = '#FFFFFF';
@@ -438,23 +461,8 @@
     ctx.fillText('= Training fold', lx + 156, ly + 10);
   }
 
-  function drawScores(result) {
-    var canvas = document.getElementById('scoreCanvas');
-    var ctx = canvas.getContext('2d');
-    var W = canvas.width, H = canvas.height;
-    ctx.clearRect(0, 0, W, H);
-    ctx.fillStyle = '#FFFFFF';
-    ctx.fillRect(0, 0, W, H);
-
-    var scores = result.scores, K = result.K;
-    var mean = scores.reduce(function(a,b){return a+b;},0) / K;
-    var std = Math.sqrt(scores.reduce(function(a,b){return a+(b-mean)*(b-mean);},0) / K);
-
-    var pad = 50, bw = Math.min(40, Math.floor((W - pad * 2 - K * 4) / K));
-    var maxS = Math.max.apply(null, scores);
-    var minS = Math.min.apply(null, scores);
-    var range = Math.max(0.01, maxS - minS + 0.1);
-    var base = Math.max(0, minS - 0.05);
+  function drawScoreOverlay(ctx, geom, mean, std) {
+    var W = geom.W, H = geom.H, pad = geom.pad, base = geom.base, range = geom.range;
 
     // Axes
     ctx.strokeStyle = '#B8B8B6';
@@ -484,8 +492,12 @@
     var stdBot = H - pad - ((mean - std - base) / range) * (H - pad - 20);
     ctx.fillStyle = 'rgba(37,99,235,0.10)';
     ctx.fillRect(pad, stdTop, W - pad - 20, stdBot - stdTop);
+  }
 
-    // Bars
+  function drawScoreBars(ctx, geom, scores) {
+    var W = geom.W, H = geom.H, pad = geom.pad, base = geom.base;
+    var range = geom.range, bw = geom.bw, K = geom.K;
+
     var totalBarWidth = K * (bw + 4);
     var startX = pad + (W - pad - 20 - totalBarWidth) / 2;
     for (var i = 0; i < K; i++) {
@@ -514,15 +526,31 @@
     ctx.fillText(((base + range) * 100).toFixed(0) + '%', 4, 28);
   }
 
-  function drawCompare(results) {
-    var canvas = document.getElementById('compareCanvas');
-    var ctx = canvas.getContext('2d');
+  function drawScores(result) {
+    var canvas = el('scoreCanvas');
+    var ctx = ctxOf('scoreCanvas');
+    if (!ctx || !result || !result.scores) return;
     var W = canvas.width, H = canvas.height;
     ctx.clearRect(0, 0, W, H);
     ctx.fillStyle = '#FFFFFF';
     ctx.fillRect(0, 0, W, H);
 
-    var pad = 60;
+    var scores = result.scores, K = result.K;
+    var mean = scores.reduce(function(a,b){return a+b;},0) / K;
+    var std = Math.sqrt(scores.reduce(function(a,b){return a+(b-mean)*(b-mean);},0) / K);
+
+    var pad = 50, bw = Math.min(40, Math.floor((W - pad * 2 - K * 4) / K));
+    var maxS = Math.max.apply(null, scores);
+    var minS = Math.min.apply(null, scores);
+    var range = Math.max(0.01, maxS - minS + 0.1);
+    var base = Math.max(0, minS - 0.05);
+    var geom = {W: W, H: H, pad: pad, base: base, range: range, bw: bw, K: K};
+
+    drawScoreOverlay(ctx, geom, mean, std);
+    drawScoreBars(ctx, geom, scores);
+  }
+
+  function compareSeries(results) {
     var means = [], stds = [], ks = [];
     for (var i = 0; i < results.length; i++) {
       var s = results[i].scores;
@@ -532,15 +560,17 @@
       stds.push(sd);
       ks.push(results[i].K);
     }
-
     var allMin = 1, allMax = 0;
-    for (var i = 0; i < means.length; i++) {
-      allMin = Math.min(allMin, means[i] - stds[i] - 0.02);
-      allMax = Math.max(allMax, means[i] + stds[i] + 0.02);
+    for (var j = 0; j < means.length; j++) {
+      allMin = Math.min(allMin, means[j] - stds[j] - 0.02);
+      allMax = Math.max(allMax, means[j] + stds[j] + 0.02);
     }
-    var range = allMax - allMin;
+    /* guard against a zero denominator when every K lands on the same mean */
+    return {means: means, stds: stds, ks: ks, allMin: allMin,
+            range: Math.max(1e-6, allMax - allMin)};
+  }
 
-    // Axes
+  function drawCompareAxes(ctx, W, H, pad) {
     ctx.strokeStyle = '#B8B8B6';
     ctx.lineWidth = 1;
     ctx.beginPath();
@@ -558,10 +588,13 @@
     ctx.rotate(-Math.PI / 2);
     ctx.fillText('Accuracy', 0, 0);
     ctx.restore();
+  }
 
+  function drawComparePoints(ctx, W, H, pad, series) {
+    var means = series.means, stds = series.stds, ks = series.ks;
+    var allMin = series.allMin, range = series.range;
     var spacing = (W - pad - 40) / (means.length - 1 || 1);
 
-    // Error bars and points
     for (var i = 0; i < means.length; i++) {
       var x = pad + i * spacing;
       var y = H - pad - ((means[i] - allMin) / range) * (H - pad - 20);
@@ -600,56 +633,87 @@
     ctx.beginPath();
     ctx.strokeStyle = '#2563EB';
     ctx.lineWidth = 2;
-    for (var i = 0; i < means.length; i++) {
-      var x = pad + i * spacing;
-      var y = H - pad - ((means[i] - allMin) / range) * (H - pad - 20);
-      if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+    for (var j = 0; j < means.length; j++) {
+      var lx = pad + j * spacing;
+      var ly = H - pad - ((means[j] - allMin) / range) * (H - pad - 20);
+      if (j === 0) ctx.moveTo(lx, ly); else ctx.lineTo(lx, ly);
     }
     ctx.stroke();
     ctx.textAlign = 'left';
   }
 
+  function drawCompare(results) {
+    var canvas = el('compareCanvas');
+    var ctx = ctxOf('compareCanvas');
+    if (!ctx || !results || results.length === 0) return;
+    var W = canvas.width, H = canvas.height;
+    ctx.clearRect(0, 0, W, H);
+    ctx.fillStyle = '#FFFFFF';
+    ctx.fillRect(0, 0, W, H);
+
+    var pad = 60;
+    var series = compareSeries(results);
+    drawCompareAxes(ctx, W, H, pad);
+    drawComparePoints(ctx, W, H, pad, series);
+  }
+
   function updateStats(result) {
+    if (!result || !result.scores || result.scores.length === 0) return;
     var scores = result.scores;
     var mean = scores.reduce(function(a,b){return a+b;},0) / scores.length;
     var std = Math.sqrt(scores.reduce(function(a,b){return a+(b-mean)*(b-mean);},0) / scores.length);
-    document.getElementById('cvMean').textContent = (mean * 100).toFixed(2) + '%';
-    document.getElementById('cvStd').textContent = '\u00B1' + (std * 100).toFixed(2) + '%';
-    document.getElementById('cvMin').textContent = (Math.min.apply(null, scores) * 100).toFixed(2) + '%';
-    document.getElementById('cvMax').textContent = (Math.max.apply(null, scores) * 100).toFixed(2) + '%';
+    setText('cvMean', (mean * 100).toFixed(2) + '%');
+    setText('cvStd', '\u00B1' + (std * 100).toFixed(2) + '%');
+    setText('cvMin', (Math.min.apply(null, scores) * 100).toFixed(2) + '%');
+    setText('cvMax', (Math.max.apply(null, scores) * 100).toFixed(2) + '%');
   }
 
-  document.getElementById('runCVBtn').addEventListener('click', function() {
-    var K = parseInt(document.getElementById('kSelect').value);
-    var N = parseInt(document.getElementById('datasetSize').value);
-    var balance = parseFloat(document.getElementById('classBalance').value);
-    var stratified = document.getElementById('cvMode').value === 'stratified';
+  function show(id, mode) {
+    var node = el(id);
+    if (node) node.style.display = mode;
+  }
+
+  function on(id, evt, handler) {
+    var node = el(id);
+    if (node) node.addEventListener(evt, handler);
+  }
+
+  function isStratified() {
+    var node = el('cvMode');
+    return node ? node.value === 'stratified' : false;
+  }
+
+  on('runCVBtn', 'click', function() {
+    var K = numOf('kSelect', 5, 2, 20);
+    var N = numOf('datasetSize', 100, 2, 500);
+    var balance = numOf('classBalance', 0.5, 0.01, 0.99);
+    var stratified = isStratified();
 
     var result = simulateCV(K, N, balance, stratified);
-    document.getElementById('foldViz').style.display = 'block';
-    document.getElementById('compareViz').style.display = 'none';
+    show('foldViz', 'block');
+    show('compareViz', 'none');
     drawFolds(result);
     drawScores(result);
     updateStats(result);
   });
 
-  document.getElementById('compareBtn').addEventListener('click', function() {
-    var N = parseInt(document.getElementById('datasetSize').value);
-    var balance = parseFloat(document.getElementById('classBalance').value);
-    var stratified = document.getElementById('cvMode').value === 'stratified';
+  on('compareBtn', 'click', function() {
+    var N = numOf('datasetSize', 100, 2, 500);
+    var balance = numOf('classBalance', 0.5, 0.01, 0.99);
+    var stratified = isStratified();
     var kValues = [2, 3, 5, 7, 10, 15, 20];
     var results = [];
     for (var i = 0; i < kValues.length; i++) {
       results.push(simulateCV(kValues[i], N, balance, stratified));
     }
-    document.getElementById('foldViz').style.display = 'none';
-    document.getElementById('compareViz').style.display = 'block';
+    show('foldViz', 'none');
+    show('compareViz', 'block');
     drawCompare(results);
   });
 
-  document.getElementById('resetCVBtn').addEventListener('click', function() {
-    document.getElementById('foldViz').style.display = 'none';
-    document.getElementById('compareViz').style.display = 'none';
+  on('resetCVBtn', 'click', function() {
+    show('foldViz', 'none');
+    show('compareViz', 'none');
   });
 })();
 </script>

@@ -160,6 +160,13 @@
 
 <script>
   (function() {
+    // Hard ceilings. MAX_NEURONS mirrors the max attribute on #neurons; the render
+    // loop below builds one DOM node per neuron, so an unclamped value (a pasted
+    // 999999999) would build a billion nodes and hang the tab.
+    const MIN_NEURONS = 4, MAX_NEURONS = 512;
+    const MIN_TRAIN = 100, MAX_TRAIN = 1000000;
+    const MIN_DROPOUT = 0, MAX_DROPOUT = 0.9;
+
     // DOM refs
     const layerType = document.getElementById('layerType');
     const neuronsInput = document.getElementById('neurons');
@@ -177,11 +184,26 @@
     const recommendationBox = document.getElementById('recommendedRange');
     const layerNameDisplay = document.getElementById('layerNameDisplay');
 
+    // Every control above is required. If markup ever drifts, stop instead of
+    // throwing on the first property read.
+    const required = [layerType, neuronsInput, trainSizeInput, dropoutSlider,
+                      dropoutValue, dropoutLabel, effectiveNeurons, timeMultiplier,
+                      regStrength, dropoutStat, neuronGrid, neuronCountLabel,
+                      droppedCountBadge, recommendationBox, layerNameDisplay];
+    if (required.some(function(el) { return !el; })) return;
+
+    // clamp a raw field value into [min,max]; non-numeric falls back to def
+    function clampNum(raw, min, max, def, isInt) {
+      const v = isInt ? parseInt(raw, 10) : parseFloat(raw);
+      if (!isFinite(v)) return def;
+      return Math.min(max, Math.max(min, v));
+    }
+
     // helpers
     function getLayerType() { return layerType.value; }
-    function getNeurons() { return Math.max(4, parseInt(neuronsInput.value, 10) || 64); }
-    function getTrainSize() { return Math.max(100, parseInt(trainSizeInput.value, 10) || 5000); }
-    function getDropout() { return parseFloat(dropoutSlider.value); }
+    function getNeurons() { return clampNum(neuronsInput.value, MIN_NEURONS, MAX_NEURONS, 64, true); }
+    function getTrainSize() { return clampNum(trainSizeInput.value, MIN_TRAIN, MAX_TRAIN, 5000, true); }
+    function getDropout() { return clampNum(dropoutSlider.value, MIN_DROPOUT, MAX_DROPOUT, 0.5, false); }
 
     // recommended rate
     function getRecommended(layer) {
@@ -249,9 +271,11 @@
       neuronCountLabel.textContent = total;
       const fragment = document.createDocumentFragment();
       let droppedCount = 0;
+      // explicit ceiling: total is already clamped, this is the second belt
+      const cells = Math.min(Math.max(0, total), MAX_NEURONS);
       // deterministic pseudo-random based on index + seed for consistency
       // but we want fresh random each time (real-time)
-      for (let i = 0; i < total; i++) {
+      for (let i = 0; i < cells; i++) {
         const neuron = document.createElement('div');
         neuron.className = 'neuron';
         // random drop

@@ -340,15 +340,35 @@
 (function() {
   var mode = 'binary';
   var classNames = ['Positive','Negative','Class C','Class D','Class E'];
+  // the mode select offers binary + multi3/4/5, and classNames has 5 entries
+  var MAX_CLASSES = 5;
+
+  function byId(id) { return document.getElementById(id); }
+
+  // a count field: blank, text, negative and non-finite all read as 0
+  function readCount(id) {
+    var el = byId(id);
+    if (!el) return 0;
+    return clampCount(el.value);
+  }
+
+  function clampCount(raw) {
+    var v = parseInt(raw, 10);
+    if (!isFinite(v) || v < 0) return 0;
+    return Math.min(v, 1e12);
+  }
 
   function getNumClasses() {
     if (mode === 'binary') return 2;
-    return parseInt(mode.replace('multi',''));
+    var n = parseInt(mode.replace('multi',''), 10);
+    if (!isFinite(n)) return 2;
+    return Math.min(MAX_CLASSES, Math.max(2, n));
   }
 
   function buildMultiGrid() {
     var n = getNumClasses();
-    var grid = document.getElementById('multiGrid');
+    var grid = byId('multiGrid');
+    if (!grid) return;
     var html = '<table style="border-collapse:collapse;margin:0 auto;">';
     html += '<tr><td></td><td colspan="'+n+'" style="text-align:center;color:#2563EB;font-weight:600;padding:8px;">Predicted</td></tr>';
     html += '<tr><td></td>';
@@ -371,8 +391,8 @@
     var n = getNumClasses();
     if (mode === 'binary') {
       return [
-        [parseInt(document.getElementById('inputTP').value)||0, parseInt(document.getElementById('inputFP').value)||0],
-        [parseInt(document.getElementById('inputFN').value)||0, parseInt(document.getElementById('inputTN').value)||0]
+        [readCount('inputTP'), readCount('inputFP')],
+        [readCount('inputFN'), readCount('inputTN')]
       ];
     }
     var mat = [];
@@ -380,10 +400,100 @@
       mat[i] = [];
       for (var j = 0; j < n; j++) {
         var el = document.querySelector('.mc-cell[data-r="'+i+'"][data-c="'+j+'"]');
-        mat[i][j] = el ? (parseInt(el.value)||0) : 0;
+        mat[i][j] = el ? clampCount(el.value) : 0;
       }
     }
     return mat;
+  }
+
+  function setMetric(id, value) {
+    var el = byId(id);
+    if (el) el.textContent = value;
+  }
+
+  function showSection(id, on) {
+    var el = byId(id);
+    if (el) el.style.display = on ? 'block' : 'none';
+  }
+
+  function computeBinary(mat, total) {
+    var tp = mat[0][0], fp = mat[0][1], fn = mat[1][0], tn = mat[1][1];
+    var acc = (tp + tn) / total;
+    var prec = (tp + fp) > 0 ? tp / (tp + fp) : 0;
+    var rec = (tp + fn) > 0 ? tp / (tp + fn) : 0;
+    var f1 = (prec + rec) > 0 ? 2 * prec * rec / (prec + rec) : 0;
+    var spec = (tn + fp) > 0 ? tn / (tn + fp) : 0;
+    // every factor is a clamped non-negative count, so the root is never imaginary
+    var denom = Math.sqrt((tp+fp)*(tp+fn)*(tn+fp)*(tn+fn));
+    var mcc = denom > 0 ? (tp*tn - fp*fn) / denom : 0;
+
+    setMetric('metAccuracy', (acc*100).toFixed(1)+'%');
+    setMetric('metPrecision', (prec*100).toFixed(1)+'%');
+    setMetric('metRecall', (rec*100).toFixed(1)+'%');
+    setMetric('metF1', f1.toFixed(4));
+    setMetric('metSpecificity', (spec*100).toFixed(1)+'%');
+    setMetric('metMCC', mcc.toFixed(4));
+
+    showSection('perClassSection', false);
+    drawHeatmapBinary(tp, fp, fn, tn);
+    drawROC(rec, 1 - spec);
+  }
+
+  function perClassStats(mat, n) {
+    var perClass = [];
+    for (var c = 0; c < n; c++) {
+      var tp_c = mat[c][c];
+      var fp_c = 0, fn_c = 0;
+      for (var i = 0; i < n; i++) { if (i !== c) fp_c += mat[i][c]; }
+      for (var j = 0; j < n; j++) { if (j !== c) fn_c += mat[c][j]; }
+      var support = 0; for (var j = 0; j < n; j++) support += mat[c][j];
+      var p = (tp_c + fp_c) > 0 ? tp_c / (tp_c + fp_c) : 0;
+      var r = (tp_c + fn_c) > 0 ? tp_c / (tp_c + fn_c) : 0;
+      var f = (p + r) > 0 ? 2 * p * r / (p + r) : 0;
+      perClass.push({name: classNames[c], prec: p, rec: r, f1: f, support: support});
+    }
+    return perClass;
+  }
+
+  function renderPerClassTable(perClass) {
+    var tbody = byId('perClassBody');
+    if (!tbody) return;
+    var html = '';
+    for (var i = 0; i < perClass.length; i++) {
+      html += '<tr style="border-bottom:1px solid #E8E8E6;">';
+      html += '<td style="padding:8px;color:#1A1A1A;font-weight:600;">'+perClass[i].name+'</td>';
+      html += '<td style="padding:8px;text-align:right;color:#4A4A4A;">'+(perClass[i].prec*100).toFixed(1)+'%</td>';
+      html += '<td style="padding:8px;text-align:right;color:#4A4A4A;">'+(perClass[i].rec*100).toFixed(1)+'%</td>';
+      html += '<td style="padding:8px;text-align:right;color:#4A4A4A;">'+perClass[i].f1.toFixed(4)+'</td>';
+      html += '<td style="padding:8px;text-align:right;color:#6a6a6a;">'+perClass[i].support+'</td>';
+      html += '</tr>';
+    }
+    tbody.innerHTML = html;
+  }
+
+  function computeMulti(mat, n, total) {
+    var correct = 0;
+    for (var i = 0; i < n; i++) correct += mat[i][i];
+    var acc = correct / total;
+
+    var perClass = perClassStats(mat, n);
+    var macroPr = 0, macroRe = 0, macroF1 = 0;
+    for (var c = 0; c < perClass.length; c++) {
+      macroPr += perClass[c].prec; macroRe += perClass[c].rec; macroF1 += perClass[c].f1;
+    }
+    macroPr /= n; macroRe /= n; macroF1 /= n;
+
+    setMetric('metAccuracy', (acc*100).toFixed(1)+'%');
+    setMetric('metPrecision', (macroPr*100).toFixed(1)+'%');
+    setMetric('metRecall', (macroRe*100).toFixed(1)+'%');
+    setMetric('metF1', macroF1.toFixed(4));
+    setMetric('metSpecificity', 'N/A');
+    setMetric('metMCC', 'N/A');
+
+    showSection('perClassSection', true);
+    renderPerClassTable(perClass);
+    drawHeatmapMulti(mat, n);
+    drawROCMulti(perClass);
   }
 
   function compute() {
@@ -391,79 +501,18 @@
     var n = mat.length;
     var total = 0;
     for (var i = 0; i < n; i++) for (var j = 0; j < n; j++) total += mat[i][j];
+    // no samples: every metric below divides by total, so leave the panel as-is
     if (total === 0) return;
 
-    document.getElementById('resultsSection').style.display = 'block';
+    showSection('resultsSection', true);
 
-    if (mode === 'binary') {
-      var tp = mat[0][0], fp = mat[0][1], fn = mat[1][0], tn = mat[1][1];
-      var acc = (tp + tn) / total;
-      var prec = (tp + fp) > 0 ? tp / (tp + fp) : 0;
-      var rec = (tp + fn) > 0 ? tp / (tp + fn) : 0;
-      var f1 = (prec + rec) > 0 ? 2 * prec * rec / (prec + rec) : 0;
-      var spec = (tn + fp) > 0 ? tn / (tn + fp) : 0;
-      var denom = Math.sqrt((tp+fp)*(tp+fn)*(tn+fp)*(tn+fn));
-      var mcc = denom > 0 ? (tp*tn - fp*fn) / denom : 0;
-
-      document.getElementById('metAccuracy').textContent = (acc*100).toFixed(1)+'%';
-      document.getElementById('metPrecision').textContent = (prec*100).toFixed(1)+'%';
-      document.getElementById('metRecall').textContent = (rec*100).toFixed(1)+'%';
-      document.getElementById('metF1').textContent = f1.toFixed(4);
-      document.getElementById('metSpecificity').textContent = (spec*100).toFixed(1)+'%';
-      document.getElementById('metMCC').textContent = mcc.toFixed(4);
-
-      document.getElementById('perClassSection').style.display = 'none';
-      drawHeatmapBinary(tp, fp, fn, tn);
-      drawROC(rec, 1 - spec);
-    } else {
-      var correct = 0;
-      for (var i = 0; i < n; i++) correct += mat[i][i];
-      var acc = correct / total;
-
-      var perClass = [];
-      var macroPr = 0, macroRe = 0, macroF1 = 0;
-      for (var c = 0; c < n; c++) {
-        var tp_c = mat[c][c];
-        var fp_c = 0, fn_c = 0;
-        for (var i = 0; i < n; i++) { if (i !== c) fp_c += mat[i][c]; }
-        for (var j = 0; j < n; j++) { if (j !== c) fn_c += mat[c][j]; }
-        var support = 0; for (var j = 0; j < n; j++) support += mat[c][j];
-        var p = (tp_c + fp_c) > 0 ? tp_c / (tp_c + fp_c) : 0;
-        var r = (tp_c + fn_c) > 0 ? tp_c / (tp_c + fn_c) : 0;
-        var f = (p + r) > 0 ? 2 * p * r / (p + r) : 0;
-        perClass.push({name: classNames[c], prec: p, rec: r, f1: f, support: support});
-        macroPr += p; macroRe += r; macroF1 += f;
-      }
-      macroPr /= n; macroRe /= n; macroF1 /= n;
-
-      document.getElementById('metAccuracy').textContent = (acc*100).toFixed(1)+'%';
-      document.getElementById('metPrecision').textContent = (macroPr*100).toFixed(1)+'%';
-      document.getElementById('metRecall').textContent = (macroRe*100).toFixed(1)+'%';
-      document.getElementById('metF1').textContent = macroF1.toFixed(4);
-      document.getElementById('metSpecificity').textContent = 'N/A';
-      document.getElementById('metMCC').textContent = 'N/A';
-
-      document.getElementById('perClassSection').style.display = 'block';
-      var tbody = document.getElementById('perClassBody');
-      tbody.innerHTML = '';
-      for (var i = 0; i < perClass.length; i++) {
-        var row = '<tr style="border-bottom:1px solid #E8E8E6;">';
-        row += '<td style="padding:8px;color:#1A1A1A;font-weight:600;">'+perClass[i].name+'</td>';
-        row += '<td style="padding:8px;text-align:right;color:#4A4A4A;">'+(perClass[i].prec*100).toFixed(1)+'%</td>';
-        row += '<td style="padding:8px;text-align:right;color:#4A4A4A;">'+(perClass[i].rec*100).toFixed(1)+'%</td>';
-        row += '<td style="padding:8px;text-align:right;color:#4A4A4A;">'+perClass[i].f1.toFixed(4)+'</td>';
-        row += '<td style="padding:8px;text-align:right;color:#6a6a6a;">'+perClass[i].support+'</td>';
-        row += '</tr>';
-        tbody.innerHTML += row;
-      }
-
-      drawHeatmapMulti(mat, n);
-      drawROCMulti(perClass);
-    }
+    if (mode === 'binary') computeBinary(mat, total);
+    else computeMulti(mat, n, total);
   }
 
   function drawHeatmapBinary(tp, fp, fn, tn) {
-    var svg = document.getElementById('heatmapSvg');
+    var svg = byId('heatmapSvg');
+    if (!svg) return;
     var max = Math.max(tp, fp, fn, tn, 1);
     var cells = [[tp,'TP'],[fp,'FP'],[fn,'FN'],[tn,'TN']];
     var colors = ['#157F3B','#C53030','#C53030','#157F3B'];
@@ -490,7 +539,8 @@
   }
 
   function drawHeatmapMulti(mat, n) {
-    var svg = document.getElementById('heatmapSvg');
+    var svg = byId('heatmapSvg');
+    if (!svg) return;
     var max = 1;
     for (var i = 0; i < n; i++) for (var j = 0; j < n; j++) if (mat[i][j] > max) max = mat[i][j];
     var ox = 70, oy = 50;
@@ -514,7 +564,8 @@
   }
 
   function drawROC(tpr, fpr) {
-    var svg = document.getElementById('rocSvg');
+    var svg = byId('rocSvg');
+    if (!svg) return;
     var pad = 50, w = 300 - pad, h = 300 - pad;
     var html = '<rect width="350" height="350" fill="#FFFFFF"/>';
     // Axes
@@ -542,7 +593,8 @@
   }
 
   function drawROCMulti(perClass) {
-    var svg = document.getElementById('rocSvg');
+    var svg = byId('rocSvg');
+    if (!svg) return;
     var pad = 50, w = 300 - pad, h = 300 - pad;
     var html = '<rect width="350" height="350" fill="#FFFFFF"/>';
     html += '<line x1="'+pad+'" y1="'+(h+10)+'" x2="'+(w+pad)+'" y2="'+(h+10)+'" stroke="#B8B8B6" stroke-width="1"/>';
@@ -561,27 +613,37 @@
     svg.innerHTML = html;
   }
 
-  document.getElementById('modeSelect').addEventListener('change', function() {
+  function on(id, evt, fn) {
+    var el = byId(id);
+    if (el) el.addEventListener(evt, fn);
+  }
+
+  on('modeSelect', 'change', function() {
     mode = this.value;
     if (mode === 'binary') {
-      document.getElementById('binarySection').style.display = 'block';
-      document.getElementById('multiSection').style.display = 'none';
+      showSection('binarySection', true);
+      showSection('multiSection', false);
     } else {
-      document.getElementById('binarySection').style.display = 'none';
-      document.getElementById('multiSection').style.display = 'block';
+      showSection('binarySection', false);
+      showSection('multiSection', true);
       buildMultiGrid();
     }
-    document.getElementById('resultsSection').style.display = 'none';
+    showSection('resultsSection', false);
   });
 
-  document.getElementById('computeBtn').addEventListener('click', compute);
+  on('computeBtn', 'click', compute);
 
-  document.getElementById('exampleBtn').addEventListener('click', function() {
+  function setVal(id, v) {
+    var el = byId(id);
+    if (el) el.value = v;
+  }
+
+  on('exampleBtn', 'click', function() {
     if (mode === 'binary') {
-      document.getElementById('inputTP').value = 85;
-      document.getElementById('inputFP').value = 15;
-      document.getElementById('inputFN').value = 10;
-      document.getElementById('inputTN').value = 190;
+      setVal('inputTP', 85);
+      setVal('inputFP', 15);
+      setVal('inputFN', 10);
+      setVal('inputTN', 190);
     } else {
       var n = getNumClasses();
       for (var i = 0; i < n; i++) {
@@ -594,17 +656,17 @@
     compute();
   });
 
-  document.getElementById('resetBtn').addEventListener('click', function() {
+  on('resetBtn', 'click', function() {
     if (mode === 'binary') {
-      document.getElementById('inputTP').value = 0;
-      document.getElementById('inputFP').value = 0;
-      document.getElementById('inputFN').value = 0;
-      document.getElementById('inputTN').value = 0;
+      setVal('inputTP', 0);
+      setVal('inputFP', 0);
+      setVal('inputFN', 0);
+      setVal('inputTN', 0);
     } else {
       var cells = document.querySelectorAll('.mc-cell');
       for (var i = 0; i < cells.length; i++) cells[i].value = 0;
     }
-    document.getElementById('resultsSection').style.display = 'none';
+    showSection('resultsSection', false);
   });
 
   compute();

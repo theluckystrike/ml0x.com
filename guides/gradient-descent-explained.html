@@ -324,16 +324,27 @@ theta = theta - lr * m_hat / (sqrt(v_hat) + eps)</pre>
 
 <script>
 (function() {
-  const canvas = document.getElementById('gdCanvas');
+  const el = id => document.getElementById(id);
+  const setText = (id, value) => { const n = el(id); if (n) n.textContent = value; };
+
+  const canvas = el('gdCanvas');
+  if (!canvas || typeof canvas.getContext !== 'function') return;
   const ctx = canvas.getContext('2d');
+  if (!ctx) return;
   const W = canvas.width, H = canvas.height;
-  const lrSlider = document.getElementById('lrSlider');
-  const lrDisplay = document.getElementById('lrDisplay');
-  const optimizerSel = document.getElementById('optimizerSelect');
-  const surfaceSel = document.getElementById('surfaceSelect');
-  const stepBtn = document.getElementById('stepBtn');
-  const autoBtn = document.getElementById('autoBtn');
-  const resetBtn = document.getElementById('resetBtn');
+  const lrSlider = el('lrSlider');
+  const lrDisplay = el('lrDisplay');
+  const optimizerSel = el('optimizerSelect');
+  const surfaceSel = el('surfaceSelect');
+  const stepBtn = el('stepBtn');
+  const autoBtn = el('autoBtn');
+  const resetBtn = el('resetBtn');
+
+  /* Hard ceilings. AUTO_MAX_STEPS was already enforced for auto-play; MAX_PATH
+     bounds the trail array so repeated manual stepping cannot grow it, and the
+     redraw loops over it, without bound. */
+  const AUTO_MAX_STEPS = 500;
+  const MAX_PATH = 1000;
 
   let pos = {x: 3.5, y: 3.5};
   let vel = {x: 0, y: 0};

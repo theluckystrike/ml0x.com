@@ -143,7 +143,7 @@
                     <div class="feature-row">
                         <div>
                             <label>Feature Name</label>
-                            <input type="text" class="feature-name-input" placeholder="e.g., age" value="age">
+                            <input type="text" class="feature-name-input" placeholder="e.g., age" value="age" maxlength="60">
                         </div>
                         <div>
                             <label>Weight/Coefficient</label>
@@ -154,7 +154,7 @@
                     <div class="feature-row">
                         <div>
                             <label>Feature Name</label>
-                            <input type="text" class="feature-name-input" placeholder="e.g., salary" value="salary">
+                            <input type="text" class="feature-name-input" placeholder="e.g., salary" value="salary" maxlength="60">
                         </div>
                         <div>
                             <label>Weight/Coefficient</label>
@@ -165,7 +165,7 @@
                     <div class="feature-row">
                         <div>
                             <label>Feature Name</label>
-                            <input type="text" class="feature-name-input" placeholder="e.g., experience" value="experience">
+                            <input type="text" class="feature-name-input" placeholder="e.g., experience" value="experience" maxlength="60">
                         </div>
                         <div>
                             <label>Weight/Coefficient</label>
@@ -217,14 +217,27 @@
 </main>
 
     <script>
+        // Ceiling on rows: the chart divides its width by the feature count, and each
+        // row is a DOM subtree, so an unbounded "+ Add Feature" is an unbounded loop.
+        var MAX_FEATURES = 40;
+
+        // user-typed feature names are interpolated into innerHTML below
+        function escHtml(s) {
+            return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;')
+                            .replace(/>/g, '&gt;').replace(/"/g, '&quot;')
+                            .replace(/'/g, '&#39;');
+        }
+
         function addFeature() {
             const list = document.getElementById('featuresList');
+            if (!list) return;
+            if (list.querySelectorAll('.feature-row').length >= MAX_FEATURES) return;
             const row = document.createElement('div');
             row.className = 'feature-row';
             row.innerHTML = `
                 <div>
                     <label>Feature Name</label>
-                    <input type="text" class="feature-name-input" placeholder="e.g., feature_name" value="">
+                    <input type="text" class="feature-name-input" placeholder="e.g., feature_name" value="" maxlength="60">
                 </div>
                 <div>
                     <label>Weight/Coefficient</label>
@@ -236,16 +249,41 @@
         }
 
         function removeFeature(btn) {
+            if (!btn || !btn.parentElement) return;
             btn.parentElement.remove();
             calculateImportance();
         }
 
+        // Nothing to divide by: show placeholders instead of NaN%.
+        function showEmptyStats(count, totalWeight) {
+            const set = (id, text) => {
+                const el = document.getElementById(id);
+                if (el) el.textContent = text;
+            };
+            set('totalWeight', totalWeight.toFixed(2));
+            set('featureCount', count);
+            set('topFeature', '—');
+            set('concentration', '—');
+            const results = document.getElementById('importanceResults');
+            if (results) {
+                results.innerHTML = '<div style="color:#6a6a6a;text-align:center;padding:20px">' +
+                    (count === 0 ? 'Add a feature to see results'
+                                 : 'Enter at least one non-zero weight to see results') + '</div>';
+            }
+            drawChart([]);
+        }
+
         function calculateImportance() {
             const names = Array.from(document.querySelectorAll('.feature-name-input')).map(el => el.value || 'Unknown');
-            const weights = Array.from(document.querySelectorAll('.feature-weight-input')).map(el => parseFloat(el.value) || 0);
+            const weights = Array.from(document.querySelectorAll('.feature-weight-input'))
+                .map(el => { const v = parseFloat(el.value); return isFinite(v) ? v : 0; });
 
             const absWeights = weights.map(w => Math.abs(w));
             const totalWeight = absWeights.reduce((a, b) => a + b, 0);
+            if (names.length === 0 || totalWeight === 0) {
+                showEmptyStats(names.length, totalWeight);
+                return;
+            }
             const importance = absWeights.map(w => (w / totalWeight) * 100);
 
             // Sort by importance
@@ -257,22 +295,30 @@
             })).sort((a, b) => b.importance - a.importance);
 
             // Update stats
-            document.getElementById('totalWeight').textContent = totalWeight.toFixed(2);
-            document.getElementById('featureCount').textContent = names.length;
+            const setStat = (id, text) => {
+                const el = document.getElementById(id);
+                if (el) el.textContent = text;
+            };
+            setStat('totalWeight', totalWeight.toFixed(2));
+            setStat('featureCount', names.length);
 
             const topFeature = sorted[0];
-            document.getElementById('topFeature').textContent = topFeature.importance.toFixed(1) + '%';
+            setStat('topFeature', topFeature.importance.toFixed(1) + '%');
 
             // Concentration: Herfindahl index (0-1, higher = more concentrated)
+            // The normalisation divides by (1 - 1/n), which is 0 for a single feature,
+            // so concentration is undefined there rather than 0/0 = NaN.
             const herfindahl = sorted.reduce((sum, f) => sum + Math.pow(f.importance / 100, 2), 0);
-            const concentration = ((herfindahl - 1 / names.length) / (1 - 1 / names.length) * 100).toFixed(0);
-            document.getElementById('concentration').textContent = concentration + '%';
+            const concentration = names.length > 1
+                ? ((herfindahl - 1 / names.length) / (1 - 1 / names.length) * 100).toFixed(0) + '%'
+                : '—';
+            setStat('concentration', concentration);
 
             // Display results
             const resultsHTML = sorted.map(f => `
                 <div class="importance-item">
                     <div>
-                        <div class="feature-name">${f.name}</div>
+                        <div class="feature-name">${escHtml(f.name)}</div>
                         <div class="bar-container">
                             <div class="bar" style="width: ${f.importance}%;">
                                 ${f.importance.toFixed(1)}%
@@ -286,24 +332,13 @@
                 </div>
             `).join('');
 
-            document.getElementById('importanceResults').innerHTML = resultsHTML;
+            const results = document.getElementById('importanceResults');
+            if (results) results.innerHTML = resultsHTML;
             drawChart(sorted);
         }
 
-        function drawChart(sortedFeatures) {
-            const canvas = document.getElementById('importanceChart');
-            const ctx = canvas.getContext('2d');
-            const width = canvas.width;
-            const height = canvas.height;
-            const padding = 60;
-
-            ctx.fillStyle = '#FFFFFF';
-            ctx.fillRect(0, 0, width, height);
-
-            const maxImportance = Math.max(...sortedFeatures.map(f => f.importance), 1);
-            const barWidth = (width - 2 * padding) / sortedFeatures.length;
-
-            // Draw grid
+        // grid + axes, split out of drawChart to keep both under the 60-line limit
+        function drawChartFrame(ctx, width, height, padding) {
             ctx.strokeStyle = '#E8E8E6';
             ctx.lineWidth = 1;
             for (let i = 0; i <= 5; i++) {
@@ -313,8 +348,6 @@
                 ctx.lineTo(width - padding, y);
                 ctx.stroke();
             }
-
-            // Draw axes
             ctx.strokeStyle = '#B8B8B6';
             ctx.lineWidth = 2;
             ctx.beginPath();
@@ -325,9 +358,32 @@
             ctx.moveTo(padding, padding);
             ctx.lineTo(padding, height - padding);
             ctx.stroke();
+        }
+
+        function drawChart(sortedFeatures) {
+            const canvas = document.getElementById('importanceChart');
+            const ctx = canvas ? canvas.getContext('2d') : null;
+            if (!ctx) return;
+            const width = canvas.width;
+            const height = canvas.height;
+            const padding = 60;
+
+            ctx.fillStyle = '#FFFFFF';
+            ctx.fillRect(0, 0, width, height);
+
+            // no features: an empty axis frame, not a division by zero
+            const bars = sortedFeatures.slice(0, MAX_FEATURES);
+            drawChartFrame(ctx, width, height, padding);
+            if (bars.length === 0) return;
+
+            let maxImportance = 1;
+            for (let i = 0; i < bars.length; i++) {
+                if (bars[i].importance > maxImportance) maxImportance = bars[i].importance;
+            }
+            const barWidth = (width - 2 * padding) / bars.length;
 
             // Draw bars
-            sortedFeatures.forEach((feature, idx) => {
+            bars.forEach((feature, idx) => {
                 const x = padding + idx * barWidth + barWidth * 0.1;
                 const barHeight = (feature.importance / maxImportance) * (height - 2 * padding);
                 const y = height - padding - barHeight;

@@ -170,8 +170,8 @@
                 <div class="section-title">Data Input</div>
 
                 <div class="tabs">
-                    <button class="tab-button active" onclick="switchTab('manual')">Manual Data</button>
-                    <button class="tab-button" onclick="switchTab('generate')">Generate Data</button>
+                    <button class="tab-button active" onclick="switchTab('manual', this)">Manual Data</button>
+                    <button class="tab-button" onclick="switchTab('generate', this)">Generate Data</button>
                 </div>
 
                 <div id="manual" class="tab-content active">
@@ -261,78 +261,161 @@
     </div>
 
     <script>
+        'use strict';
+
+        // Hard ceilings. Every loop below is bounded by one of these.
+        const MAX_ROWS = 5000;        // pasted prob,label rows accepted in one run
+        const MIN_SAMPLES = 10;       // mirrors #sampleSize min
+        const MAX_SAMPLES = 5000;     // mirrors #sampleSize max
+        const DEFAULT_SAMPLES = 200;  // mirrors #sampleSize value
+        const HINT_IDLE = 'Load data to see interpretation';
+        const HINT_NO_DATA = 'No prediction rows read. Paste one "prob,label" pair per line, or use the Generate Data tab.';
+        const HINT_TOO_MANY = 'Too many rows. This tool sweeps every threshold against every row, so it accepts at most '
+            + MAX_ROWS + ' rows. Trim the data and calculate again.';
+
         let predictions = [];
         let rocPoints = [];
         let auc = 0;
 
-        function switchTab(tab) {
-            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
-            document.querySelectorAll('.tab-button').forEach(el => el.classList.remove('active'));
-            document.getElementById(tab).classList.add('active');
-            event.target.classList.add('active');
+        function el(id) { return document.getElementById(id); }
+
+        function setText(id, value) {
+            const node = el(id);
+            if (node) node.textContent = value;
+        }
+
+        function switchTab(tab, button) {
+            document.querySelectorAll('.tab-content').forEach(node => node.classList.remove('active'));
+            document.querySelectorAll('.tab-button').forEach(node => node.classList.remove('active'));
+            const panel = el(tab);
+            if (panel) panel.classList.add('active');
+            if (button && button.classList) button.classList.add('active');
         }
 
         function generatePreset(preset) {
             const quality = preset === 'medical' ? 'good' : 'fair';
-            document.getElementById('modelQuality').value = quality;
-            document.getElementById('sampleSize').value = preset === 'medical' ? 300 : 250;
+            const qualityNode = el('modelQuality');
+            const sizeNode = el('sampleSize');
+            if (qualityNode) qualityNode.value = quality;
+            if (sizeNode) sizeNode.value = preset === 'medical' ? 300 : 250;
             generateAndCalculate();
         }
 
+        // Clamp to [min, max]; text, blanks and non-finite values fall back.
+        function clampCount(raw, min, max, fallback) {
+            const value = parseFloat(raw);
+            if (!isFinite(value)) return fallback;
+            return Math.min(max, Math.max(min, Math.floor(value)));
+        }
+
+        function sampleProbability(quality, positive) {
+            if (quality === 'perfect') return positive ? 0.95 + Math.random() * 0.05 : Math.random() * 0.05;
+            if (quality === 'good') return positive ? 0.6 + Math.random() * 0.4 : Math.random() * 0.4;
+            if (quality === 'fair') return positive ? 0.5 + Math.random() * 0.5 : Math.random() * 0.5;
+            if (quality === 'poor') return positive ? Math.random() * 0.5 : 0.5 + Math.random() * 0.5;
+            return Math.random();
+        }
+
         function generateAndCalculate() {
-            const quality = document.getElementById('modelQuality').value;
-            const sampleSize = parseInt(document.getElementById('sampleSize').value);
+            const qualityNode = el('modelQuality');
+            const sizeNode = el('sampleSize');
+            const quality = qualityNode ? qualityNode.value : 'good';
+            const sampleSize = clampCount(sizeNode ? sizeNode.value : DEFAULT_SAMPLES,
+                                          MIN_SAMPLES, MAX_SAMPLES, DEFAULT_SAMPLES);
+            if (sizeNode) sizeNode.value = sampleSize;
 
             predictions = [];
-
             for (let i = 0; i < sampleSize; i++) {
-                let prob;
-                if (quality === 'perfect') {
-                    prob = i < sampleSize / 2 ? 0.95 + Math.random() * 0.05 : Math.random() * 0.05;
-                } else if (quality === 'good') {
-                    prob = i < sampleSize / 2 ? 0.6 + Math.random() * 0.4 : Math.random() * 0.4;
-                } else if (quality === 'fair') {
-                    prob = i < sampleSize / 2 ? 0.5 + Math.random() * 0.5 : Math.random() * 0.5;
-                } else if (quality === 'poor') {
-                    prob = i < sampleSize / 2 ? Math.random() * 0.5 : 0.5 + Math.random() * 0.5;
-                } else {
-                    prob = Math.random();
-                }
-                const label = i < sampleSize / 2 ? 1 : 0;
-                predictions.push({ prob: Math.min(1, Math.max(0, prob)), label });
+                const positive = i < sampleSize / 2;
+                const prob = sampleProbability(quality, positive);
+                predictions.push({ prob: Math.min(1, Math.max(0, prob)), label: positive ? 1 : 0 });
             }
 
-            calculateROC();
+            // renderROC(), not calculateROC(): calling back into calculateROC() made these
+            // two functions mutually recursive with no depth bound.
+            renderROC();
+        }
+
+        function parsePredictions(text) {
+            const rows = [];
+            const lines = text.split('\n');
+            const limit = Math.min(lines.length, MAX_ROWS);
+            for (let i = 0; i < limit; i++) {
+                const fields = lines[i].split(',');
+                const prob = parseFloat((fields[0] || '').trim());
+                const label = parseFloat((fields[1] || '').trim());
+                if (!isNaN(prob) && !isNaN(label)) {
+                    rows.push({ prob: Math.min(1, Math.max(0, prob)), label: label === 1 ? 1 : 0 });
+                }
+            }
+            return rows;
         }
 
         function calculateROC() {
             const activeTab = document.querySelector('.tab-content.active');
 
-            if (activeTab.id === 'generate') {
+            if (activeTab && activeTab.id === 'generate') {
                 generateAndCalculate();
                 return;
             }
 
-            const input = document.getElementById('dataInput').value.trim();
+            const inputNode = el('dataInput');
+            const input = inputNode ? inputNode.value.trim() : '';
             if (!input) {
-                alert('Please paste data');
+                showEmptyState(HINT_NO_DATA);
+                return;
+            }
+            if (input.split('\n').length > MAX_ROWS) {
+                showEmptyState(HINT_TOO_MANY);
                 return;
             }
 
-            predictions = [];
-            const lines = input.split('\n');
-            for (let line of lines) {
-                const [prob, label] = line.split(',').map(s => parseFloat(s.trim()));
-                if (!isNaN(prob) && !isNaN(label)) {
-                    predictions.push({ prob: Math.min(1, Math.max(0, prob)), label: label === 1 ? 1 : 0 });
-                }
+            predictions = parsePredictions(input);
+            if (predictions.length === 0) {
+                showEmptyState(HINT_NO_DATA);
+                return;
             }
 
-            if (predictions.length === 0) return;
+            renderROC();
+        }
 
+        function renderROC() {
             computeROC();
             drawROC();
             displayMetrics();
+        }
+
+        // No data: draw the empty axes and say so in place. Never a modal dialog,
+        // which blocks the page (and any headless renderer) until dismissed.
+        function showEmptyState(message) {
+            rocPoints = [];
+            drawROC();
+            setText('rocInterpretation', message);
+        }
+
+        function trapezoidalAuc(points) {
+            let area = 0;
+            for (let i = 1; i < points.length; i++) {
+                const x1 = points[i - 1].fpr;
+                const x2 = points[i].fpr;
+                const y1 = points[i - 1].tpr;
+                const y2 = points[i].tpr;
+                area += (x2 - x1) * (y1 + y2) / 2;
+            }
+            return area;
+        }
+
+        function bestYouden(points) {
+            let youden = -1;
+            let threshold = 0.5;
+            for (let point of points) {
+                const j = point.tpr - point.fpr;
+                if (j > youden) {
+                    youden = j;
+                    threshold = point.threshold;
+                }
+            }
+            return { youden, threshold };
         }
 
         function computeROC() {
@@ -342,9 +425,10 @@
             const uniqueThresholds = [...new Set(thresholds)];
 
             rocPoints = [];
-            let p = predictions.filter(p => p.label === 1).length;
-            let n = predictions.filter(p => p.label === 0).length;
+            const p = predictions.filter(row => row.label === 1).length;
+            const n = predictions.filter(row => row.label === 0).length;
 
+            // Bounded: uniqueThresholds <= MAX_ROWS + 2, inner loop <= MAX_ROWS.
             for (let threshold of uniqueThresholds) {
                 let tp = 0, fp = 0;
                 for (let pred of predictions) {
@@ -360,51 +444,55 @@
 
             rocPoints.sort((a, b) => a.fpr - b.fpr);
 
-            // Calculate AUC using trapezoidal rule
-            auc = 0;
-            for (let i = 1; i < rocPoints.length; i++) {
-                const x1 = rocPoints[i - 1].fpr;
-                const x2 = rocPoints[i].fpr;
-                const y1 = rocPoints[i - 1].tpr;
-                const y2 = rocPoints[i].tpr;
-                auc += (x2 - x1) * (y1 + y2) / 2;
-            }
+            // AUC by the trapezoidal rule
+            auc = trapezoidalAuc(rocPoints);
 
-            // Find optimal threshold (max Youden's J)
-            let maxYouden = -1;
-            let optimalThreshold = 0.5;
-            for (let point of rocPoints) {
-                const youden = point.tpr - point.fpr;
-                if (youden > maxYouden) {
-                    maxYouden = youden;
-                    optimalThreshold = point.threshold;
-                }
-            }
+            // Optimal threshold (max Youden's J)
+            const best = bestYouden(rocPoints);
 
-            document.getElementById('optimalThreshold').textContent = optimalThreshold.toFixed(4);
-            document.getElementById('maxYouden').textContent = maxYouden.toFixed(4);
-            document.getElementById('thresholdSlider').value = optimalThreshold;
-            document.getElementById('thresholdDisplay').textContent = optimalThreshold.toFixed(3);
+            setText('optimalThreshold', best.threshold.toFixed(4));
+            setText('maxYouden', best.youden.toFixed(4));
+            const slider = el('thresholdSlider');
+            if (slider) slider.value = best.threshold;
+            setText('thresholdDisplay', best.threshold.toFixed(3));
 
             updateThreshold();
         }
 
-        function drawROC() {
-            const canvas = document.getElementById('rocCanvas');
+        // Returns null when the canvas is missing or has no layout box, so every
+        // drawing helper below can assume a live 2d context.
+        function rocGeometry() {
+            const canvas = el('rocCanvas');
+            if (!canvas || typeof canvas.getContext !== 'function') return null;
             const ctx = canvas.getContext('2d');
+            if (!ctx) return null;
             const rect = canvas.getBoundingClientRect();
-            canvas.width = rect.width * window.devicePixelRatio;
-            canvas.height = rect.height * window.devicePixelRatio;
-            ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
+            if (!(rect.width > 0) || !(rect.height > 0)) return null;
+            const dpr = window.devicePixelRatio || 1;
+            canvas.width = rect.width * dpr;
+            canvas.height = rect.height * dpr;
+            ctx.scale(dpr, dpr);
+            return { ctx: ctx, width: rect.width, height: rect.height, padding: 50 };
+        }
 
-            const width = rect.width;
-            const height = rect.height;
-            const padding = 50;
+        function drawROC() {
+            const g = rocGeometry();
+            if (!g) return;
 
-            ctx.fillStyle = '#FFFFFF';
-            ctx.fillRect(0, 0, width, height);
+            g.ctx.fillStyle = '#FFFFFF';
+            g.ctx.fillRect(0, 0, g.width, g.height);
 
-            // Grid
+            drawRocGrid(g);
+            drawRocDiagonal(g);
+            drawRocArea(g);
+            drawRocCurve(g);
+            drawRocOptimalPoint(g);
+            drawRocAxes(g);
+            drawRocLabels(g);
+        }
+
+        function drawRocGrid(g) {
+            const ctx = g.ctx, width = g.width, height = g.height, padding = g.padding;
             ctx.strokeStyle = '#E8E8E6';
             ctx.lineWidth = 0.5;
             for (let i = 0; i <= 10; i++) {
@@ -420,8 +508,10 @@
                 ctx.lineTo(width - padding, y);
                 ctx.stroke();
             }
+        }
 
-            // Diagonal reference line
+        function drawRocDiagonal(g) {
+            const ctx = g.ctx, width = g.width, height = g.height, padding = g.padding;
             ctx.strokeStyle = '#B8B8B6';
             ctx.lineWidth = 2;
             ctx.setLineDash([5, 5]);
@@ -430,8 +520,10 @@
             ctx.lineTo(width - padding, padding);
             ctx.stroke();
             ctx.setLineDash([]);
+        }
 
-            // AUC shaded region
+        function drawRocArea(g) {
+            const ctx = g.ctx, width = g.width, height = g.height, padding = g.padding;
             ctx.fillStyle = 'rgba(37, 99, 235, 0.10)';
             ctx.beginPath();
             ctx.moveTo(padding, height - padding);
@@ -443,8 +535,10 @@
             ctx.lineTo(width - padding, padding);
             ctx.closePath();
             ctx.fill();
+        }
 
-            // ROC curve
+        function drawRocCurve(g) {
+            const ctx = g.ctx, width = g.width, height = g.height, padding = g.padding;
             ctx.strokeStyle = '#2563EB';
             ctx.lineWidth = 2;
             ctx.beginPath();
@@ -456,9 +550,13 @@
                 else ctx.lineTo(x, y);
             }
             ctx.stroke();
+        }
 
-            // Optimal threshold point
-            const optimalThreshold = parseFloat(document.getElementById('optimalThreshold').textContent);
+        function drawRocOptimalPoint(g) {
+            const ctx = g.ctx, width = g.width, height = g.height, padding = g.padding;
+            const label = el('optimalThreshold');
+            const optimalThreshold = parseFloat(label ? label.textContent : 'NaN');
+            if (!isFinite(optimalThreshold)) return;
             const optimalPoint = rocPoints.find(p => Math.abs(p.threshold - optimalThreshold) < 0.01);
             if (optimalPoint) {
                 const x = padding + (width - 2 * padding) * optimalPoint.fpr;
@@ -468,8 +566,10 @@
                 ctx.arc(x, y, 6, 0, 2 * Math.PI);
                 ctx.fill();
             }
+        }
 
-            // Axes
+        function drawRocAxes(g) {
+            const ctx = g.ctx, width = g.width, height = g.height, padding = g.padding;
             ctx.strokeStyle = '#B8B8B6';
             ctx.lineWidth = 1;
             ctx.beginPath();
@@ -481,8 +581,10 @@
             ctx.moveTo(padding, padding);
             ctx.lineTo(padding, height - padding);
             ctx.stroke();
+        }
 
-            // Labels
+        function drawRocLabels(g) {
+            const ctx = g.ctx, width = g.width, height = g.height, padding = g.padding;
             ctx.fillStyle = '#6a6a6a';
             ctx.font = '12px sans-serif';
             ctx.textAlign = 'center';
@@ -504,8 +606,8 @@
         }
 
         function displayMetrics() {
-            document.getElementById('aucValue').textContent = auc.toFixed(4);
-            document.getElementById('giniValue').textContent = (2 * auc - 1).toFixed(4);
+            setText('aucValue', auc.toFixed(4));
+            setText('giniValue', (2 * auc - 1).toFixed(4));
 
             let interpretation = '';
             if (auc >= 0.9) {
@@ -520,32 +622,46 @@
                 interpretation = 'Very poor discrimination. Model barely outperforms random chance.';
             }
 
-            document.getElementById('rocInterpretation').textContent = interpretation;
+            setText('rocInterpretation', interpretation);
         }
 
         function updateThreshold() {
-            const threshold = parseFloat(document.getElementById('thresholdSlider').value);
+            const slider = el('thresholdSlider');
+            const threshold = parseFloat(slider ? slider.value : 'NaN');
+            if (!isFinite(threshold)) return;
             const point = rocPoints.find(p => Math.abs(p.threshold - threshold) < 0.001);
 
             if (point) {
-                document.getElementById('thresholdTpr').textContent = point.tpr.toFixed(4);
-                document.getElementById('thresholdFpr').textContent = point.fpr.toFixed(4);
-                document.getElementById('thresholdDisplay').textContent = threshold.toFixed(3);
+                setText('thresholdTpr', point.tpr.toFixed(4));
+                setText('thresholdFpr', point.fpr.toFixed(4));
+                setText('thresholdDisplay', threshold.toFixed(3));
             }
         }
 
         function resetROC() {
-            document.getElementById('dataInput').value = '';
-            document.getElementById('modelQuality').value = 'good';
-            document.getElementById('sampleSize').value = 200;
+            const inputNode = el('dataInput');
+            const qualityNode = el('modelQuality');
+            const sizeNode = el('sampleSize');
+            if (inputNode) inputNode.value = '';
+            if (qualityNode) qualityNode.value = 'good';
+            if (sizeNode) sizeNode.value = DEFAULT_SAMPLES;
             predictions = [];
             rocPoints = [];
-            document.getElementById('aucValue').textContent = '0.0000';
-            document.getElementById('giniValue').textContent = '0.0000';
+            setText('aucValue', '0.0000');
+            setText('giniValue', '0.0000');
         }
 
-        // Initialize
-        generateAndCalculate();
+        // Initialize: draw the empty axes and leave the idle hint in place. The old
+        // init ran generateAndCalculate(), which fell through to an alert() on load.
+        function initROC() {
+            showEmptyState(HINT_IDLE);
+        }
+
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initROC);
+        } else {
+            initROC();
+        }
     </script>
 <div class="partner-card">
 <p>Recommended by our team</p>

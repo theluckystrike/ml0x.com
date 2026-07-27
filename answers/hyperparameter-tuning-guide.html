@@ -375,6 +375,38 @@
   var stepPoints = [];
   var codeTab = 'sklearn';
 
+  /* Hardening helpers: null-checked DOM access, numeric reads clamped to the
+     value set the control declares, and free-text names escaped before they
+     reach an innerHTML sink. */
+  function el(id) { return document.getElementById(id); }
+
+  function setText(id, value) {
+    var node = el(id);
+    if (node) node.textContent = value;
+  }
+
+  function strOf(id, fallback) {
+    var node = el(id);
+    return node ? node.value : fallback;
+  }
+
+  function intOf(id, fallback, min, max) {
+    var node = el(id);
+    var raw = node ? parseInt(node.value, 10) : NaN;
+    if (!isFinite(raw)) raw = fallback;
+    return Math.min(max, Math.max(min, raw));
+  }
+
+  function esc(s) {
+    return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;')
+                    .replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  }
+
+  function on(id, evt, handler) {
+    var node = el(id);
+    if (node) node.addEventListener(evt, handler);
+  }
+
   function objectiveFn(x, y) {
     x = Math.max(0, Math.min(1, x));
     y = Math.max(0, Math.min(1, y));
@@ -450,6 +482,7 @@
           bestCand = {x: cx, y: cy};
         }
       }
+      if (!bestCand) break;
       bestCand.score = objectiveFn(bestCand.x, bestCand.y);
       pts.push(bestCand);
       observed.push(bestCand);
@@ -497,7 +530,8 @@
   }
 
   function drawSearch(res, svgId) {
-    var svg = document.getElementById(svgId || 'searchSvg');
+    var svg = el(svgId || 'searchSvg');
+    if (!svg || !res || !res.points) return;
     var pad = 50, w = 350, h = 350;
     var html = '<rect width="400" height="400" fill="#FFFFFF"/>';
     for (var gi = 0; gi <= 20; gi++) {
@@ -514,8 +548,8 @@
     }
     html += '<line x1="'+pad+'" y1="'+h+'" x2="'+w+'" y2="'+h+'" stroke="#B8B8B6" stroke-width="1"/>';
     html += '<line x1="'+pad+'" y1="'+pad+'" x2="'+pad+'" y2="'+h+'" stroke="#B8B8B6" stroke-width="1"/>';
-    html += '<text x="'+(pad+(w-pad)/2)+'" y="390" text-anchor="middle" fill="#6a6a6a" font-size="12" font-family="IBM Plex Sans,sans-serif">' + document.getElementById('param1Name').value + '</text>';
-    html += '<text x="15" y="'+(pad+(h-pad)/2)+'" text-anchor="middle" fill="#6a6a6a" font-size="12" font-family="IBM Plex Sans,sans-serif" transform="rotate(-90,15,'+(pad+(h-pad)/2)+')">' + document.getElementById('param2Name').value + '</text>';
+    html += '<text x="'+(pad+(w-pad)/2)+'" y="390" text-anchor="middle" fill="#6a6a6a" font-size="12" font-family="IBM Plex Sans,sans-serif">' + esc(strOf('param1Name', '')) + '</text>';
+    html += '<text x="15" y="'+(pad+(h-pad)/2)+'" text-anchor="middle" fill="#6a6a6a" font-size="12" font-family="IBM Plex Sans,sans-serif" transform="rotate(-90,15,'+(pad+(h-pad)/2)+')">' + esc(strOf('param2Name', '')) + '</text>';
     var colors = {'grid':'#2563EB','random':'#157F3B','bayesian':'#B45309'};
     var color = colors[res.method] || '#2563EB';
     var count = stepping ? stepIdx : res.points.length;
@@ -542,7 +576,8 @@
   }
 
   function drawConvergence(resList) {
-    var svg = document.getElementById('convergeSvg');
+    var svg = el('convergeSvg');
+    if (!svg || !resList) return;
     var pad = 50, w = 350, h = 250;
     var html = '<rect width="400" height="300" fill="#FFFFFF"/>';
     html += '<line x1="'+pad+'" y1="'+h+'" x2="'+w+'" y2="'+h+'" stroke="#B8B8B6" stroke-width="1"/>';
@@ -558,6 +593,7 @@
     if (!Array.isArray(resList)) resList = [resList];
     for (var r = 0; r < resList.length; r++) {
       var res = resList[r];
+      if (!res || !res.bestSoFar) continue;
       var color = colors[res.method];
       var n = stepping ? stepIdx : res.bestSoFar.length;
       if (n < 2) continue;
@@ -574,20 +610,22 @@
   }
 
   function updateMetrics(res) {
-    document.getElementById('metBestScore').textContent = res.best.score.toFixed(4);
-    document.getElementById('metEvals').textContent = stepping ? stepIdx + '/' + budget : budget;
-    document.getElementById('metBestP1').textContent = res.best.x.toFixed(4);
-    document.getElementById('metBestP2').textContent = res.best.y.toFixed(4);
-    document.getElementById('lblP1').textContent = 'Best ' + document.getElementById('param1Name').value;
-    document.getElementById('lblP2').textContent = 'Best ' + document.getElementById('param2Name').value;
-    document.getElementById('metEfficiency').textContent = (res.best.score / res.avgScore).toFixed(2) + 'x';
-    document.getElementById('metConverge').textContent = res.convergeStep + '/' + res.points.length;
+    if (!res || !res.best || !res.points) return;
+    setText('metBestScore', res.best.score.toFixed(4));
+    setText('metEvals', stepping ? stepIdx + '/' + budget : budget);
+    setText('metBestP1', res.best.x.toFixed(4));
+    setText('metBestP2', res.best.y.toFixed(4));
+    setText('lblP1', 'Best ' + strOf('param1Name', ''));
+    setText('lblP2', 'Best ' + strOf('param2Name', ''));
+    setText('metEfficiency', (res.best.score / res.avgScore).toFixed(2) + 'x');
+    setText('metConverge', res.convergeStep + '/' + res.points.length);
   }
 
   function updateCompareTable(allRes) {
-    var tbody = document.getElementById('compareBody');
-    tbody.innerHTML = '';
+    var tbody = el('compareBody');
+    if (!tbody) return;
     var colors = {'grid':'#2563EB','random':'#157F3B','bayesian':'#B45309'};
+    var rows = '';
     for (var i = 0; i < allRes.length; i++) {
       var r = allRes[i];
       var row = '<tr>';
@@ -598,13 +636,14 @@
       row += '<td style="text-align:right;color:#6a6a6a;">'+r.uniqueX+'</td>';
       row += '<td style="text-align:right;color:#6a6a6a;">'+r.uniqueY+'</td>';
       row += '</tr>';
-      tbody.innerHTML += row;
+      rows += row;
     }
+    tbody.innerHTML = rows;
   }
 
   function generateCode() {
-    var p1 = document.getElementById('param1Name').value;
-    var p2 = document.getElementById('param2Name').value;
+    var p1 = strOf('param1Name', '');
+    var p2 = strOf('param2Name', '');
     var code = '';
     if (codeTab === 'sklearn') {
       if (method === 'grid' || method === 'compare') {
@@ -619,16 +658,21 @@
     } else {
       code = 'from ray import tune\nfrom ray.tune.schedulers import ASHAScheduler\nfrom sklearn.ensemble import GradientBoostingClassifier\nfrom sklearn.model_selection import cross_val_score\n\ndef train_model(config):\n    model = GradientBoostingClassifier(\n        ' + p1 + '=config["' + p1 + '"],\n        ' + p2 + '=config["' + p2 + '"]\n    )\n    score = cross_val_score(\n        model, X_train, y_train,\n        cv=5, scoring="f1"\n    ).mean()\n    tune.report(f1=score)\n\nsearch_space = {\n    "' + p1 + '": tune.loguniform(0.01, 0.3),\n    "' + p2 + '": tune.randint(50, 1000)\n}\n\nscheduler = ASHAScheduler(\n    max_t=100,\n    grace_period=10,\n    reduction_factor=2\n)\n\nanalysis = tune.run(\n    train_model,\n    config=search_space,\n    num_samples=' + budget + ',\n    scheduler=scheduler,\n    metric="f1",\n    mode="max"\n)\n\nprint(f"Best config: {analysis.best_config}")\nprint(f"Best F1: {analysis.best_result[\'f1\']:.4f}")';
     }
-    document.getElementById('codeOutput').textContent = code;
+    setText('codeOutput', code);
+  }
+
+  function show(id, mode) {
+    var node = el(id);
+    if (node) node.style.display = mode;
   }
 
   function runAll() {
     stepping = false;
     stepIdx = 0;
-    budget = parseInt(document.getElementById('budgetSelect').value);
-    method = document.getElementById('methodSelect').value;
-    landscape = document.getElementById('landscapeSelect').value;
-    document.getElementById('resultsSection').style.display = 'block';
+    budget = intOf('budgetSelect', 25, 1, 64);
+    method = strOf('methodSelect', 'grid');
+    landscape = strOf('landscapeSelect', 'unimodal');
+    show('resultsSection', 'block');
 
     if (method === 'compare') {
       var gridRes = runSearch('grid');
@@ -638,29 +682,29 @@
       drawSearch(bayesRes);
       drawConvergence([gridRes, randRes, bayesRes]);
       updateMetrics(bayesRes);
-      document.getElementById('compareSection').style.display = 'block';
+      show('compareSection', 'block');
       updateCompareTable([gridRes, randRes, bayesRes]);
     } else {
       results = runSearch(method);
       drawSearch(results);
       drawConvergence(results);
       updateMetrics(results);
-      document.getElementById('compareSection').style.display = 'none';
+      show('compareSection', 'none');
     }
     generateCode();
   }
 
-  document.getElementById('runBtn').addEventListener('click', runAll);
+  on('runBtn', 'click', runAll);
 
-  document.getElementById('stepBtn').addEventListener('click', function() {
+  on('stepBtn', 'click', function() {
     if (!results.points || results.points.length === 0) {
-      budget = parseInt(document.getElementById('budgetSelect').value);
-      method = document.getElementById('methodSelect').value;
-      landscape = document.getElementById('landscapeSelect').value;
+      budget = intOf('budgetSelect', 25, 1, 64);
+      method = strOf('methodSelect', 'grid');
+      landscape = strOf('landscapeSelect', 'unimodal');
       if (method === 'compare') method = 'bayesian';
       results = runSearch(method);
-      document.getElementById('resultsSection').style.display = 'block';
-      document.getElementById('compareSection').style.display = 'none';
+      show('resultsSection', 'block');
+      show('compareSection', 'none');
       stepping = true;
       stepIdx = 1;
     } else {
@@ -673,11 +717,11 @@
     generateCode();
   });
 
-  document.getElementById('resetBtn').addEventListener('click', function() {
+  on('resetBtn', 'click', function() {
     results = {};
     stepping = false;
     stepIdx = 0;
-    document.getElementById('resultsSection').style.display = 'none';
+    show('resultsSection', 'none');
   });
 
   var tabBtns = document.querySelectorAll('.codeTabBtn');
@@ -690,14 +734,16 @@
     });
   }
 
-  document.getElementById('copyCodeBtn').addEventListener('click', function() {
-    var code = document.getElementById('codeOutput').textContent;
-    if (navigator.clipboard) {
-      navigator.clipboard.writeText(code).then(function() {
-        document.getElementById('copyCodeBtn').textContent = 'Copied!';
-        setTimeout(function() { document.getElementById('copyCodeBtn').textContent = 'Copy Code'; }, 1500);
-      });
-    }
+  on('copyCodeBtn', 'click', function() {
+    var out = el('codeOutput');
+    if (!out || !navigator.clipboard) return;
+    navigator.clipboard.writeText(out.textContent).then(function() {
+      setText('copyCodeBtn', 'Copied!');
+      setTimeout(function() { setText('copyCodeBtn', 'Copy Code'); }, 1500);
+    }).catch(function() {
+      setText('copyCodeBtn', 'Copy failed');
+      setTimeout(function() { setText('copyCodeBtn', 'Copy Code'); }, 1500);
+    });
   });
 
   runAll();

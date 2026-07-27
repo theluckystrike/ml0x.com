@@ -458,8 +458,16 @@
   const sizes = [{id:'small',label:'Small (<1K samples)'},{id:'medium',label:'Medium (1K-100K)'},{id:'large',label:'Large (>100K)'}];
   const interps = [{id:'yes',label:'Yes, interpretability needed'},{id:'no',label:'No, accuracy is priority'}];
 
+  /* Hardening helpers: every lookup is null-checked so a missing panel
+     degrades to a no-op instead of throwing and killing the whole wizard. */
+  const el = id => document.getElementById(id);
+  const setHTML = (id, html) => { const n = el(id); if (n) n.innerHTML = html; };
+  const setDisplay = (id, mode) => { const n = el(id); if (n) n.style.display = mode; };
+  const labelIn = (list, id) => { const hit = list.find(o => o.id === id); return hit ? hit.label : ''; };
+
   function renderOptions(containerId, options, key, nextStep) {
-    const container = document.getElementById(containerId);
+    const container = el(containerId);
+    if (!container) return;
     container.innerHTML = '';
     options.forEach(opt => {
       const btn = document.createElement('button');
@@ -471,7 +479,7 @@
         selections[key] = opt.id;
         updateBreadcrumb();
         if (nextStep) {
-          setTimeout(() => { document.getElementById(nextStep).style.display = 'block'; }, 200);
+          setTimeout(() => { setDisplay(nextStep, 'block'); }, 200);
         } else {
           setTimeout(showResults, 200);
         }
@@ -482,18 +490,19 @@
 
   function updateBreadcrumb() {
     const parts = [];
-    if (selections.dataType) parts.push('Data: ' + dataTypes.find(d => d.id === selections.dataType).label);
-    if (selections.task) parts.push('Task: ' + tasks.find(t => t.id === selections.task).label);
-    if (selections.size) parts.push('Size: ' + sizes.find(s => s.id === selections.size).label);
+    if (selections.dataType) parts.push('Data: ' + labelIn(dataTypes, selections.dataType));
+    if (selections.task) parts.push('Task: ' + labelIn(tasks, selections.task));
+    if (selections.size) parts.push('Size: ' + labelIn(sizes, selections.size));
     if (selections.interp) parts.push('Interpretability: ' + (selections.interp === 'yes' ? 'Yes' : 'No'));
-    document.getElementById('wizardBreadcrumb').textContent = parts.join(' > ');
+    const crumb = el('wizardBreadcrumb');
+    if (crumb) crumb.textContent = parts.join(' > ');
   }
 
   function showResults() {
     const algos = DB[selections.dataType]?.[selections.task]?.[selections.size]?.[selections.interp];
     if (!algos) {
-      document.getElementById('algoCards').innerHTML = '<p style="color:#6a6a6a;">No recommendations found for this combination. Try different options.</p>';
-      document.getElementById('wizardResults').style.display = 'block';
+      setHTML('algoCards', '<p style="color:#6a6a6a;">No recommendations found for this combination. Try different options.</p>');
+      setDisplay('wizardResults', 'block');
       return;
     }
 
@@ -504,23 +513,24 @@
       cardsHTML += '<p class="algo-pros">Pros: ' + a.pros + '</p>';
       cardsHTML += '<p class="algo-cons">Cons: ' + a.cons + '</p></div>';
     });
-    document.getElementById('algoCards').innerHTML = cardsHTML;
+    setHTML('algoCards', cardsHTML);
 
     let tbody = '';
     algos.forEach(a => {
       tbody += '<tr><td style="font-weight:600;color:#1A1A1A;">' + a.name + '</td><td>' + a.accuracy + '</td><td>' + a.speed + '</td><td>' + a.interp + '</td><td>' + a.tuning + '</td><td>' + a.best + '</td></tr>';
     });
-    document.getElementById('comparisonBody').innerHTML = tbody;
-    document.getElementById('wizardResults').style.display = 'block';
+    setHTML('comparisonBody', tbody);
+    setDisplay('wizardResults', 'block');
   }
 
   function resetWizard() {
     selections = {};
-    document.getElementById('step2').style.display = 'none';
-    document.getElementById('step3').style.display = 'none';
-    document.getElementById('step4').style.display = 'none';
-    document.getElementById('wizardResults').style.display = 'none';
-    document.getElementById('wizardBreadcrumb').textContent = '';
+    setDisplay('step2', 'none');
+    setDisplay('step3', 'none');
+    setDisplay('step4', 'none');
+    setDisplay('wizardResults', 'none');
+    const crumb = el('wizardBreadcrumb');
+    if (crumb) crumb.textContent = '';
     document.querySelectorAll('.wizard-opt').forEach(b => b.classList.remove('selected'));
   }
 
@@ -528,7 +538,8 @@
   renderOptions('taskOptions', tasks, 'task', 'step3');
   renderOptions('sizeOptions', sizes, 'size', 'step4');
   renderOptions('interpOptions', interps, 'interp', null);
-  document.getElementById('wizardResetBtn').addEventListener('click', resetWizard);
+  const resetBtn = el('wizardResetBtn');
+  if (resetBtn) resetBtn.addEventListener('click', resetWizard);
 })();
 </script>
 </body>
