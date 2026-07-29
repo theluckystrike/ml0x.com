@@ -70,14 +70,14 @@
         <a href="/research/">Research</a>
       </nav>
     </div>
-    <a class="nav-cta" href="https://zovo.one/pricing" target="_blank" rel="noopener">Full system, $99</a>
+    <a class="nav-cta" href="https://zovo.one/pricing?utm_source=ml0x&amp;utm_medium=nav&amp;utm_campaign=calculators-llm-memory-calculator" target="_blank" rel="noopener">Full system, $99</a>
   </div>
 </header>
 <main id="main" class="container">
 <article class="llm-calc">
 <nav aria-label="Breadcrumb"><a href="/">ml0x</a> / <a href="/calculators/">Calculators</a> / <span>LLM memory calculator</span></nav>
 <h1>LLM memory calculator</h1>
-<p class="byline">By <a href="https://zovo.one" rel="author">Michael Lip</a>. Model fields fetched and cross checked on 12 July 2026.</p>
+<p class="byline">By <a href="https://zovo.one/lifetime?utm_source=ml0x&amp;utm_medium=inline&amp;utm_campaign=calculators-llm-memory-calculator" rel="author">Michael Lip</a>. Model fields fetched and cross checked on 12 July 2026.</p>
 <section>
 <h2>The head count most calculators get wrong</h2>
 <p>Most LLM memory calculators make two quiet mistakes. They ask you to type a parameter count you are guessing at, and they size the KV cache from <code>num_attention_heads</code>. The second one inflates the cache badly on modern models. Under grouped query attention the tensors that persist across decoding are the keys and values, and their count comes from <code>num_key_value_heads</code>, a different config field that is usually several times smaller. Pope et al. show that sharing key and value heads across query heads lowers memory requirements and lets inference scale to much longer contexts (<a href="https://arxiv.org/abs/2211.05102">arXiv 2211.05102</a>).</p>
