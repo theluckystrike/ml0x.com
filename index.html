@@ -437,5 +437,38 @@ img,svg{max-width:100%;height:auto}
     document.addEventListener('DOMContentLoaded', wire);
   } else { wire(); }
 })();</script>
+<script>
+/* First-party click counting. One request when the page opens, one when a
+   checkout link is clicked. No cookies, no local storage, no identifier, no
+   third party, and nothing that survives the page. It exists because every
+   conversion rate anyone has quoted for this page so far was a guess.
+   Endpoint: https://microtools-licence.lipmichal.workers.dev/hit */
+(function(){
+  var EP="https://microtools-licence.lipmichal.workers.dev/hit", P="ml0x";
+  var q=new URLSearchParams(location.search||"");
+  function g(n){return (q.get(n)||"").toLowerCase().replace(/[^a-z0-9._-]/g,"").slice(0,32);}
+  var s=g("utm_source"), m=g("utm_medium"), c=g("utm_campaign"), t=g("utm_content");
+  if(!s){
+    var r=document.referrer||"";
+    s=/^https?:\/\/([a-z0-9-]+\.)*(x\.com|twitter\.com|t\.co)\//i.test(r)?"x":(r?"ref":"direct");
+    if(s==="x"&&!m){m="other";}
+  }
+  function hit(e){
+    var u=EP+"?p="+P+"&e="+e+"&s="+encodeURIComponent(s)+"&m="+encodeURIComponent(m)+
+          "&c="+encodeURIComponent(c)+"&t="+encodeURIComponent(t);
+    try{ if(navigator.sendBeacon&&navigator.sendBeacon(u)){return;} }catch(x){}
+    try{ var i=new Image(); i.referrerPolicy="no-referrer"; i.src=u; }catch(x){}
+  }
+  hit("view");
+  document.addEventListener("click",function(ev){
+    var a=ev.target&&ev.target.closest?ev.target.closest("a"):null;
+    if(!a)return;
+    var h=a.getAttribute("href")||"";
+    if(a.hasAttribute("data-checkout")||/buy\.stripe\.com|creem\.io|paypal|\/get\/|checkout/i.test(h)){
+      hit("cta");
+    }
+  },true);
+})();
+</script>
 </body>
 </html>
