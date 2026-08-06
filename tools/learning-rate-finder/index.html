@@ -3,12 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Learning Rate Finder — Free ML Tool</title>
+    <title>Learning rate finder, free ML tool</title>
     <meta name="description" content="Free learning rate finder tool. Input model params, find optimal LR range, visualize cosine, step, exponential schedules.">
     <meta name="keywords" content="learning rate finder, machine learning, neural networks, optimization">
     <meta name="author" content="ml0x.com">
     <link rel="canonical" href="https://ml0x.com/tools/learning-rate-finder.html">
-    <meta property="og:title" content="Learning Rate Finder — Free ML Tool">
+    <meta property="og:title" content="Learning rate finder, free ML tool">
     <meta property="og:description" content="Free learning rate finder tool. Input model params, find optimal LR range, visualize cosine, step, exponential schedules.">
     <meta property="og:url" content="https://ml0x.com/tools/learning-rate-finder">
     <meta property="og:type" content="website">
@@ -128,19 +128,19 @@
                 <div class="results" id="resultsContainer">
                     <div class="result-item">
                         <div class="result-label">Optimal Lower Bound</div>
-                        <div class="result-value" id="optimalLower">—</div>
+                        <div class="result-value" id="optimalLower">3.16e-5</div>
                     </div>
                     <div class="result-item">
                         <div class="result-label">Optimal Upper Bound</div>
-                        <div class="result-value" id="optimalUpper">—</div>
+                        <div class="result-value" id="optimalUpper">1.00e-2</div>
                     </div>
                     <div class="result-item">
                         <div class="result-label">Recommended Starting LR</div>
-                        <div class="result-value" id="recommendedLR">—</div>
+                        <div class="result-value" id="recommendedLR">5.62e-4</div>
                     </div>
                     <div class="result-item">
                         <div class="result-label">LR Ratio (Upper/Lower)</div>
-                        <div class="result-value" id="lrRatio">—</div>
+                        <div class="result-value" id="lrRatio">316.2x</div>
                     </div>
                 </div>
 
@@ -187,7 +187,7 @@
         /* A learning rate has to be finite and strictly positive: the exponential
            schedule takes log(finalLR / initialLR) and every readout uses toExponential.
            Empty or non-numeric falls back to the shipped default rather than rendering
-           NaN. The magnitude itself is never rewritten — the field declares only a
+           NaN. The magnitude itself is never rewritten. The field declares only a
            lower bound, and quietly raising a rate the user typed would turn a valid
            answer into a wrong one. */
         function readRate(id, fallback) {
@@ -355,7 +355,7 @@
 <div style="margin:30px auto;max-width:728px;text-align:center;padding:18px 24px;background:var(--surface);border:1px solid var(--line);border-radius:12px">
 <p style="margin:0 0 6px;color:var(--ink-muted);font-size:0.85rem">Recommended by our team</p>
 <a href="https://www.belikenative.com?ref=satellite" target="_blank" rel="noopener" style="color:var(--s1);font-weight:600;font-size:1.05rem;text-decoration:none">BeLikeNative.com</a>
-<p style="margin:6px 0 0;color:var(--ink-2);font-size:0.9rem">The #1 AI writing tool for freelancers — perfect grammar in any language, instantly.</p>
+<p style="margin:6px 0 0;color:var(--ink-2);font-size:0.9rem">The #1 AI writing tool for freelancers. Perfect grammar in any language, instantly.</p>
 </div>
 </main>
 

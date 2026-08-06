@@ -142,6 +142,7 @@ h1 span { color: var(--ink); }
   font-family: var(--font-body); font-size: 16px; color: var(--ink-muted);
   margin: 0; max-width: 62ch; line-height: 1.65;
 }
+.page-head p + p, .hero p + p { margin-top: 14px; }
 h2 {
   font-family: var(--font-mono); font-weight: 700;
   font-size: clamp(22px, 2.4vw, 28px); line-height: 1.2; letter-spacing: -1px;
@@ -166,6 +167,7 @@ small { font-size: 12px; color: var(--ink-faint); }
 
 /* --------------------------------------------------------- text body */
 .explainer-section, .prose { max-width: 760px; margin: 0 auto; padding: 8px 0; }
+.stat-note { font-family: var(--font-body); font-size: 13px; color: var(--ink-faint); line-height: 1.6; max-width: 70ch; margin: 12px 0 0; }
 .explainer-section h2, .prose h2 { color: var(--ink); }
 .explainer-section h3, .prose h3 { color: var(--ink); }
 .explainer-section p, .prose p { color: var(--ink-2); }
@@ -712,4 +714,15 @@ main, .tool-container, .research-content, .article-content { max-width: 100%; }
 @media print {
   .site-nav, .site-footer { display: none; }
   body { background: #fff; }
+}
+
+/* Opt-in, per page. On a phone the answer should come before the controls, which is
+   what the tool actually ranking for these queries does. Add class="result-first" to
+   <body>. Desktop order is untouched. */
+@media (max-width: 720px) {
+  body.result-first main.container { display: flex; flex-direction: column; }
+  body.result-first main.container > .breadcrumb { order: 1; }
+  body.result-first main.container > .hero { order: 2; }
+  body.result-first main.container > #resultsSection { order: 3; }
+  body.result-first main.container > * { order: 4; }
 }
