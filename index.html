@@ -82,8 +82,9 @@ img,svg{max-width:100%;height:auto}
 .skip-link:focus{left:0}
 @media(max-width:767px){.footer-links-seo{padding-left:24px;padding-right:24px}}
 /* NASA Phase 7: the nav $99 CTA measured 30px tall on mobile; lift it to a >=44px tap target.
-   !important is required to beat the comp's inline padding. */
-@media(max-width:767px){nav > a[href*="zovo.one/pricing"]{padding-top:14px!important;padding-bottom:14px!important}}
+   !important is required to beat the comp's inline padding. The selector follows the CTA href,
+   so it moved when the button stopped pointing at another domain. */
+@media(max-width:767px){nav > a[href="/pipeline/"]{padding-top:14px!important;padding-bottom:14px!important}}
 @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}*{animation-duration:.01ms!important;transition-duration:.01ms!important}}
 .h5b14ad9:hover{color: #1A1A1A}
 .h8507f75:hover{background: #333}
