@@ -247,6 +247,9 @@ theta = theta - lr * m_hat / (sqrt(v_hat) + eps)</pre>
   </section>
 
   <p class="last-updated">Last updated: May 25, 2026</p>
+  <aside class="note" aria-label="From the builder">
+  <p>Free, like everything else here. When descent stops working and the loss turns to NaN, the decision tree in <a href="/triage/">Training Run Triage</a> takes one observation at a time and tells you what it rules out. Every runtime claim in it was executed against PyTorch rather than recalled, including the case where clipping a single infinite gradient poisons the whole model.</p>
+  </aside>
 </main>
 
 <footer class="site-footer">

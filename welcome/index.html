@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Your download, Training Run Triage | ml0x</title>
+<meta name="description" content="Download page for Training Run Triage.">
+<meta name="robots" content="noindex, nofollow">
+<meta name="referrer" content="no-referrer">
+<link rel="canonical" href="https://ml0x.com/welcome/">
+<style>
+*,*::before,*::after{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{
+  margin:0;
+  background:#FAFAF9;
+  color:#1A1A1A;
+  font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+  font-size:16px;
+  line-height:1.6;
+  -webkit-font-smoothing:antialiased;
+}
+.wrap{max-width:640px;margin:0 auto;padding:28px 20px 64px}
+a{color:#1A1A1A}
+.eyebrow{
+  font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  font-size:12px;letter-spacing:.08em;text-transform:uppercase;
+  color:#6E6E6E;margin:0 0 10px
+}
+h1{font-size:26px;line-height:1.25;letter-spacing:-.01em;margin:0 0 12px;font-weight:600}
+h2{font-size:18px;line-height:1.3;margin:0 0 8px;font-weight:600}
+.lede{color:#4A4A4A;margin:0 0 28px}
+.card{
+  background:#FFFFFF;border:1px solid #E8E8E6;border-radius:12px;
+  padding:20px;margin:0 0 16px
+}
+.card p{margin:0 0 12px}
+.card p:last-child{margin-bottom:0}
+.dlbox{
+  background:#FFFFFF;border:1px solid #E8E8E6;border-radius:12px;
+  padding:24px 20px;margin:0 0 24px;text-align:center
+}
+.btn{
+  display:block;text-align:center;text-decoration:none;
+  background:#111111;color:#FFFFFF;
+  border-radius:8px;padding:14px 18px;min-height:48px;
+  font-weight:600;font-size:16px;border:0;width:100%;cursor:pointer
+}
+.btn:hover{background:#000000;color:#FFFFFF}
+.status{
+  font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  font-size:14px;color:#4A4A4A;margin:0
+}
+.err{color:#8A3324}
+.note{font-size:13px;color:#6E6E6E;margin:10px 0 0}
+ol,ul{margin:0 0 12px;padding-left:20px}
+li{margin:0 0 8px;color:#4A4A4A}
+li strong{color:#1A1A1A;font-weight:600}
+.manifest{
+  font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  font-size:13px;color:#4A4A4A;line-height:1.9;margin:0
+}
+.rule{border:0;border-top:1px solid #E8E8E6;margin:28px 0}
+footer{font-size:13px;color:#6E6E6E;margin:32px 0 0}
+footer a{color:#6E6E6E}
+@media (max-width:480px){h1{font-size:22px}.wrap{padding:20px 16px 48px}}
+</style>
+</head>
+<body>
+<main class="wrap">
+
+  <p class="eyebrow">ml0x.com</p>
+  <h1>Your copy of Training Run Triage</h1>
+  <p class="lede">Payment went through. The file is below. It is yours to keep, on as many machines as you own, with no licence key and no account to create.</p>
+
+  <div class="dlbox">
+    <div id="dl"><p class="status">Checking your receipt.</p></div>
+    <p class="note">Bookmark this page. The link on it stays valid for a year, and reloading mints a fresh download.</p>
+  </div>
+
+  <div class="card">
+    <h2>Open this first</h2>
+    <p>Unzip it and read START-HERE.txt. It takes about a minute and it tells you which of the seven guides answers the question you have right now, so you are not reading the whole thing to find one number.</p>
+    <p>If your run is broken at this moment, go straight to the decision tree in the NaN guide. It is built to be read while a job is still burning money.</p>
+  </div>
+
+  <div class="card">
+    <h2>What is in the archive</h2>
+    <p class="manifest" id="manifest">
+      guides/ &nbsp; seven PDFs, 183 pages, each with its own source map<br>
+      scripts/ &nbsp; four runnable Python diagnostics<br>
+      tools/ &nbsp; two offline calculators, no network needed<br>
+      START-HERE.txt<br>
+      LICENCE.txt
+    </p>
+  </div>
+
+  <div class="card">
+    <h2>Every number has a source</h2>
+    <p>Each guide ships with a source map that maps every formula, constant and default to the primary reference it came from, with the conditions it was measured under. Where the arithmetic is mine, it is marked as derived and reproduced so you can check it without a calculator.</p>
+    <p>That is the point of the product. The reason this was worth building is that the free material tells you what a thing is and almost never tells you what to set, or why.</p>
+  </div>
+
+  <div class="card">
+    <h2>If something is wrong</h2>
+    <p>Reply to the Stripe receipt in your inbox. It reaches me directly and it carries your order details, so there is nothing for you to look up.</p>
+    <p>Refunds run 60 days, no questions, and you keep the files. If a formula in here is wrong I would rather hear it than not, and corrections go out to everyone who bought.</p>
+  </div>
+
+  <hr class="rule">
+
+  <footer>
+    <a href="/">ml0x.com</a> &nbsp; the calculators on this site stay free
+  </footer>
+
+</main>
+
+<script>
+(function () {
+  "use strict";
+  var EP = "https://ml0x-delivery.lipmichal.workers.dev";
+  var out = document.getElementById("dl");
+
+  function say(msg, isErr) {
+    out.textContent = "";
+    var p = document.createElement("p");
+    p.className = "status" + (isErr ? " err" : "");
+    p.textContent = msg;
+    out.appendChild(p);
+  }
+
+  var m = /[#&]s=(cs_[A-Za-z0-9_]+)/.exec(location.hash || "");
+  var sid = m ? m[1] : null;
+  try {
+    if (sid) { window.localStorage.setItem("ml0x_triage_ref", sid); }
+    else { sid = window.localStorage.getItem("ml0x_triage_ref"); }
+  } catch (e) { /* private mode, carry on with whatever the URL gave us */ }
+
+  if (!sid) {
+    say("Open this page from the link on your Stripe receipt so we can match your order.", true);
+    return;
+  }
+
+  fetch(EP + "/claim?session_id=" + encodeURIComponent(sid))
+    .then(function (r) { return r.json(); })
+    .then(function (d) {
+      if (!d || !d.ok) {
+        say((d && d.error) || "We could not verify that receipt.", true);
+        return;
+      }
+      out.textContent = "";
+      var a = document.createElement("a");
+      a.href = EP + "/download?token=" + encodeURIComponent(d.token);
+      a.className = "btn";
+      a.rel = "noopener";
+      a.textContent = "Download " + (d.filename || "your archive");
+      out.appendChild(a);
+      var n = document.createElement("p");
+      n.className = "note";
+      n.textContent = "Verified against your Stripe order.";
+      out.appendChild(n);
+    })
+    .catch(function () {
+      say("We could not reach the download service. Reload in a minute, or reply to your Stripe receipt.", true);
+    });
+})();
+</script>
+</body>
+</html>
