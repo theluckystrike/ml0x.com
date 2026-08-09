@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Your download, Training Run Triage | ml0x</title>
-<meta name="description" content="Download page for Training Run Triage.">
+<title>Your download | ml0x</title>
+<meta name="description" content="Download page for ml0x products.">
 <meta name="robots" content="noindex, nofollow">
 <meta name="referrer" content="no-referrer">
 <link rel="canonical" href="https://ml0x.com/welcome/">
@@ -70,7 +70,7 @@ footer a{color:#6E6E6E}
 <main class="wrap">
 
   <p class="eyebrow">ml0x.com</p>
-  <h1>Your copy of Training Run Triage</h1>
+  <h1 id="title">Your download</h1>
   <p class="lede">Payment went through. The file is below. It is yours to keep, on as many machines as you own, with no licence key and no account to create.</p>
 
   <div class="dlbox">
@@ -80,25 +80,36 @@ footer a{color:#6E6E6E}
 
   <div class="card">
     <h2>Open this first</h2>
-    <p>Unzip it and read START-HERE.txt. It takes about a minute and it tells you which of the seven guides answers the question you have right now, so you are not reading the whole thing to find one number.</p>
-    <p>If your run is broken at this moment, go straight to the decision tree in the NaN guide. It is built to be read while a job is still burning money.</p>
+    <p>Unzip it and read START-HERE.txt. It takes about a minute and it points you at the one file that answers the question you actually have, so you are not reading the whole archive to find one thing.</p>
   </div>
 
-  <div class="card">
+  <div class="card" id="panel-triage" hidden>
     <h2>What is in the archive</h2>
-    <p class="manifest" id="manifest">
+    <p class="manifest">
       guides/ &nbsp; seven PDFs, 183 pages, each with its own source map<br>
       scripts/ &nbsp; four runnable Python diagnostics<br>
       tools/ &nbsp; two offline calculators, no network needed<br>
       START-HERE.txt<br>
       LICENCE.txt
     </p>
+    <p>Each guide ships a source map that traces every formula, constant and default to the primary reference it came from, with the conditions it was measured under. Where the arithmetic is mine it is marked as derived and reproduced, so you can check it without a calculator.</p>
+    <p>If a run is broken right now, go straight to the decision tree in the NaN guide. It is built to be read while a job is still burning money.</p>
   </div>
 
-  <div class="card">
-    <h2>Every number has a source</h2>
-    <p>Each guide ships with a source map that maps every formula, constant and default to the primary reference it came from, with the conditions it was measured under. Where the arithmetic is mine, it is marked as derived and reproduced so you can check it without a calculator.</p>
-    <p>That is the point of the product. The reason this was worth building is that the free material tells you what a thing is and almost never tells you what to set, or why.</p>
+  <div class="card" id="panel-pipeline" hidden>
+    <h2>What is in the archive</h2>
+    <p class="manifest">
+      bin/100x &nbsp; the CLI, about 1,160 lines of bash<br>
+      pipeline/ &nbsp; the parallel runner, orchestrator, client and aggregator<br>
+      config/ &nbsp; hooks, the NASA Power of 10 eslint config, MCP setup<br>
+      scripts/ &nbsp; quality gate, pipeline and parallel agent runners<br>
+      docs/ &nbsp; instructions, runbook, CLAUDE.md<br>
+      docs/reports/ &nbsp; thirteen research and architecture documents<br>
+      START-HERE.txt<br>
+      LICENCE.txt
+    </p>
+    <p>Run <code>100x doctor</code> before anything else. It tells you what is missing rather than failing halfway through a run. Then set a low budget ceiling on your first run and read what it did before you raise it.</p>
+    <p>The core is MIT and it stays yours whatever happens to this purchase. The free clone lives at github.com/theluckystrike/100xagenticdev.</p>
   </div>
 
   <div class="card">
@@ -155,6 +166,11 @@ footer a{color:#6E6E6E}
       a.rel = "noopener";
       a.textContent = "Download " + (d.filename || "your archive");
       out.appendChild(a);
+
+      // Show only the panel for the product this receipt actually bought.
+      if (d.title) { document.getElementById("title").textContent = "Your copy of " + d.title; }
+      var panel = document.getElementById("panel-" + (d.sku || ""));
+      if (panel) { panel.hidden = false; }
       var n = document.createElement("p");
       n.className = "note";
       n.textContent = "Verified against your Stripe order.";
