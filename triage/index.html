@@ -185,5 +185,42 @@ footer a{color:#6E6E6E}
   </footer>
 
 </main>
+<script>
+/* First party counting. One request when the page opens, one when the checkout is
+   clicked. No cookies, no local storage, no identifier, no third party, and nothing
+   that survives the page. Endpoint is the same worker the /x/ hub reports to.
+   The campaign tag is triage so these rows never mix with the x-hub rows. */
+(function(){
+  var EP="https://microtools-licence.lipmichal.workers.dev/hit", P="ml0x", C="triage";
+  var sm=/[?&]s=(post|reply|profile|bio|dm|test)(?:&|$)/i.exec(location.search||"");
+  var s,m,t;
+  if(sm){ m=sm[1].toLowerCase(); s=(m==="test")?"test":"x"; t=m; }
+  else{
+    var r=document.referrer||"";
+    if(/^https?:\/\/([a-z0-9-]+\.)*(x\.com|twitter\.com|t\.co)\//i.test(r)){ s="x"; m="other"; t="none"; }
+    else if(/^https?:\/\/([a-z0-9-]+\.)*google\./i.test(r)){ s="search"; m="organic"; t="google"; }
+    else if(r){
+      s="ref"; m="direct";
+      var im=/^https?:\/\/(www\.)?ml0x\.com(\/([a-z0-9-]+))?/i.exec(r);
+      t=im?(im[3]?im[3]:"home"):"ext";
+    }
+    else{ s="direct"; m="direct"; t="none"; }
+  }
+  function hit(e,tt){
+    var u=EP+"?p="+P+"&e="+e+"&s="+s+"&m="+m+"&c="+C+"&t="+encodeURIComponent(tt||t);
+    try{ if(navigator.sendBeacon&&navigator.sendBeacon(u)){return;} }catch(x){}
+    try{ var i=new Image(); i.referrerPolicy="no-referrer"; i.src=u; }catch(x){}
+  }
+  hit("view");
+  /* The /x/ hub matches three product domains here, so a Stripe CTA would have counted
+     zero. This one matches the checkout host, which is where our buy button actually goes. */
+  document.addEventListener("click",function(ev){
+    var a=ev.target&&ev.target.closest?ev.target.closest("a"):null;
+    if(!a)return;
+    var h=a.getAttribute("href")||"";
+    if(/^https:\/\/buy\.stripe\.com\//.test(h)){ hit("cta","checkout"); }
+  },true);
+})();
+</script>
 </body>
 </html>
