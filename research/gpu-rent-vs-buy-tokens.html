@@ -101,8 +101,8 @@
     </div>
     <div class="stat-card">
       <div class="label">Cheapest fitting node</div>
-      <div class="value">$11,622</div>
-      <div class="stat-note">Per month, 8x MI300X at $1.99/GPU-hr x 730 hours.</div>
+      <div class="value">$17,462</div>
+      <div class="stat-note">Per month, 8x MI300X at $2.99/GPU-hr x 730 hours.</div>
     </div>
     <div class="stat-card">
       <div class="label">Kimi K3 size</div>
@@ -115,6 +115,52 @@
       <div class="stat-note">$20/M output self-hosted against $15/M list, at full utilization.</div>
     </div>
   </div>
+
+  <section class="section">
+    <h2 class="section-title">What is actually worth renting, and from where</h2>
+    <p>Re-verified on 2026-08-19 against live pricing pages and public catalogue endpoints. Rates on a marketplace move hourly, so medians are quoted rather than the single cheapest listing, which is usually one host in one region and gone by the time you read this.</p>
+
+    <div class="card-grid">
+      <div class="card">
+        <h3>1. Buy tokens before you rent anything</h3>
+        <p>DeepSeek V4-Flash off-peak runs $0.22 per million input and $0.66 per million output, with cache-hit input at $0.007. Peak covers only seven hours of the day, 01:00 to 04:00 and 06:00 to 10:00 UTC, so off-peak is the default state of the clock and the discount is exactly half. Nothing to provision, no idle burn, no minimum.</p>
+        <p><a href="https://api-docs.deepseek.com/quick_start/pricing" rel="nofollow noopener" target="_blank">DeepSeek pricing</a></p>
+      </div>
+      <div class="card">
+        <h3>2. If you must hold the weights, use the marketplace</h3>
+        <p>Vast.ai carries the cheapest verified route to a card you control: RTX 3090 at a $0.16 median, RTX 4090 at $0.36, and the 96GB RTX PRO 6000 WS at a $1.20 median against a $0.74 floor. That 96GB card is the only one here that holds a twenty-agent fleet with its context resident. Sort by price, then filter on host reliability, and note that several of the cheapest 4090 listings sit in China.</p>
+        <p><a href="https://cloud.vast.ai/create/" rel="nofollow noopener" target="_blank">Vast.ai</a></p>
+      </div>
+      <div class="card">
+        <h3>3. Pay a little more for a console that behaves</h3>
+        <p>RunPod Community publishes fixed rates: RTX 3090 at $0.22, RTX 4090 at $0.34, RTX PRO 6000 at $1.69. Roughly 35 to 40 percent above the marketplace median for identical silicon, which is a fair price for not running a host lottery. Watch the volume storage, which doubles to $0.20 per GB-month while a pod is stopped.</p>
+        <p><a href="https://www.runpod.io/pricing" rel="nofollow noopener" target="_blank">RunPod pricing</a></p>
+      </div>
+    </div>
+
+    <h3>Verified rates worth knowing</h3>
+    <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>Provider</th><th>What</th><th>Rate</th><th>Status</th></tr></thead>
+        <tbody>
+          <tr><td><a href="https://cloud.vast.ai/create/" rel="nofollow noopener" target="_blank">Vast.ai</a></td><td>RTX PRO 6000 WS 96GB</td><td>$0.74 floor, $1.20 median</td><td><span class="badge badge-green">Live API, today</span></td></tr>
+          <tr><td><a href="https://cloud.vast.ai/create/" rel="nofollow noopener" target="_blank">Vast.ai</a></td><td>RTX 5090 32GB</td><td>$0.29 floor, $0.47 median</td><td><span class="badge badge-green">Live API, today</span></td></tr>
+          <tr><td><a href="https://www.runpod.io/pricing" rel="nofollow noopener" target="_blank">RunPod</a></td><td>RTX PRO 6000 Community</td><td>$1.69/hr</td><td><span class="badge badge-green">Verified</span></td></tr>
+          <tr><td><a href="https://www.koyeb.com/pricing" rel="nofollow noopener" target="_blank">Koyeb</a></td><td>H200 141GB</td><td>$3.00/hr, scaling linearly to $24.00 for 8x</td><td><span class="badge badge-green">Verified</span></td></tr>
+          <tr><td><a href="https://hotaisle.xyz/pricing" rel="nofollow noopener" target="_blank">Hot Aisle</a></td><td>MI300X 192GB</td><td>$2.99/GPU-hr VM, $3.39 bare metal</td><td><span class="badge badge-orange">Price rose</span></td></tr>
+          <tr><td><a href="https://sfcompute.com/prices" rel="nofollow noopener" target="_blank">SF Compute</a></td><td>H100 clearing market</td><td>$2.13 average the day of writing</td><td><span class="badge badge-orange">Market, moves daily</span></td></tr>
+          <tr><td><a href="https://platform.kimi.ai/docs/pricing/chat-k3" rel="nofollow noopener" target="_blank">Moonshot</a></td><td>Kimi K3 tokens</td><td>$0.30 cache hit, $3.00 miss, $15.00 out</td><td><span class="badge badge-green">Verified</span></td></tr>
+          <tr><td><a href="https://lambda.ai/pricing" rel="nofollow noopener" target="_blank">Lambda</a></td><td>Cheapest 24GB card</td><td>$0.69/hr</td><td><span class="badge badge-red">4.3x the marketplace</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="note">
+      <p>Three things this re-check changed. Hot Aisle raised its MI300X rate from $1.99 to $2.99 per GPU-hour for new customers and grandfathered the old price for existing ones, which moves the cheapest fitting node from $11,622 to $17,462 a month. Prime Intellect was dropped: its public pricing block lists H200 four times at the wrong VRAM figure and quotes one identical rate across five different cards, and the live marketplace needs a login, so nothing there could be confirmed. And SF Compute is a clearing market whose seven-day average sat several percent below the day of writing, so it earns a link rather than a hardcoded number.</p>
+    </div>
+
+    <p>Two fees that do not appear in any hourly rate. OpenRouter adds 5.5 percent on card credit purchases with a $0.80 minimum, and its advertised cheapest endpoint is frequently deranked, meaning it will not actually serve your traffic. Moonshot quotes K3 excluding tax, which is added at checkout by jurisdiction.</p>
+  </section>
 
   <section class="section">
     <h2 class="section-title">The formula that decides it</h2>
@@ -143,7 +189,7 @@
       </table>
     </div>
     <p>vLLM's own recipe for Kimi K2 at FP8 states the minimum deployment unit is 16 GPUs, not eight. And Kimi K3, at 2.78T parameters and 1,561 GB even in its native MXFP4 form, needs more than 1.5TB before KV cache. It does not fit an 8x B200 node.</p>
-    <p>The memory-density argument favours AMD hard. Two AWS p5.48xlarge nodes (16x H100) run about $80,358 a month. One 8x MI300X node with 2.4x the HBM runs about $11,622. That is a 6.9x spread before InfiniBand and egress.</p>
+    <p>The memory-density argument favours AMD hard. Two AWS p5.48xlarge nodes (16x H100) run about $80,358 a month. One 8x MI300X node with 2.4x the HBM runs about $17,462. That is a 4.6x spread before InfiniBand and egress.</p>
   </section>
 
   <section class="section">
@@ -256,7 +302,8 @@
       <table class="data-table">
         <thead><tr><th>Claim as first researched</th><th>Verdict</th><th>Correction</th></tr></thead>
         <tbody>
-          <tr><td>Cheapest viable node is $9,986/mo at a named vendor</td><td><span class="badge badge-red">Failed</span></td><td>That vendor publishes no public pricing. The rate existed only in SEO aggregators, and two live price trackers list no such figure. Replaced with a verified $1.99/GPU-hr.</td></tr>
+          <tr><td>Cheapest viable node is $9,986/mo at a named vendor</td><td><span class="badge badge-red">Failed</span></td><td>That vendor publishes no public pricing. The rate existed only in SEO aggregators, and two live price trackers list no such figure. Replaced with a verified $1.99/GPU-hr, which a later re-check found had itself risen.</td></tr>
+          <tr><td>Cheapest fitting node costs $11,622/mo</td><td><span class="badge badge-orange">Corrected after publication</span></td><td>Hot Aisle raised its MI300X rate from $1.99 to $2.99 per GPU-hour for new customers, keeping $1.99 only for existing ones. The node figure is now $17,462. A price verified once is not verified forever.</td></tr>
           <tr><td>Cheapest 8x H200 is $28.16/hr</td><td><span class="badge badge-orange">Corrected</span></td><td>Real, but not cheapest. A verified $3.00/GPU-hr exists. All break-even figures recomputed.</td></tr>
           <tr><td>Opus 4.6 scores 44.9 in adaptive mode</td><td><span class="badge badge-red">Failed</span></td><td>No such figure exists. One variant is published, scoring 39, itself flagged an estimate.</td></tr>
           <tr><td>Qwen3.8-27B scores around 30</td><td><span class="badge badge-red">Failed</span></td><td>Wrong by 22 points. The measured value is 52, first of 135 open-weight models in its size class.</td></tr>
