@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Renting GPUs vs Buying Tokens: Measured Costs for Open-Weight LLM Inference | ml0x</title>
+<meta name="description" content="A measured cost study of running frontier open-weight models 24/7. Real GPU rental prices, break-even token volumes, why Kimi K3 fits no 8-GPU node, and why self-hosting it costs more than the vendor's own API.">
+<meta name="keywords" content="GPU rental cost, self-host LLM cost, open weight model hosting, Kimi K3 VRAM, DeepSeek V4 self hosting, LLM inference break-even, DGX Spark, vLLM cost per token, Qwen3.8-27B">
+<link rel="canonical" href="https://ml0x.com/research/gpu-rent-vs-buy-tokens.html">
+<link rel="alternate" hreflang="en" href="https://ml0x.com/research/gpu-rent-vs-buy-tokens.html">
+<link rel="alternate" hreflang="x-default" href="https://ml0x.com/research/gpu-rent-vs-buy-tokens.html">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Renting GPUs vs Buying Tokens: Measured Costs for Open-Weight LLM Inference">
+<meta property="og:description" content="Break-even math for 24/7 open-weight inference, with real rental prices and a measured 65.5B-token workload.">
+<meta property="og:url" content="https://ml0x.com/research/gpu-rent-vs-buy-tokens.html">
+<meta property="og:site_name" content="ml0x">
+<meta property="og:locale" content="en_US">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Renting GPUs vs Buying Tokens for Open-Weight LLM Inference">
+<meta name="twitter:description" content="Measured costs: why a 24/7 GPU needs billions of output tokens per month to beat an API.">
+<meta name="author" content="Michael Lip">
+<meta name="robots" content="index, follow">
+<link rel="stylesheet" href="/assets/ml0x.css">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Article",
+  "headline": "Renting GPUs vs Buying Tokens: Measured Costs for Open-Weight LLM Inference",
+  "description": "A measured cost study of running frontier open-weight models 24/7, covering GPU rental prices, break-even token volumes, VRAM requirements and quantization risk.",
+  "url": "https://ml0x.com/research/gpu-rent-vs-buy-tokens.html",
+  "author": {"@type": "Person", "name": "Michael Lip", "url": "https://github.com/theluckystrike"},
+  "publisher": {"@type": "Organization", "name": "ml0x", "url": "https://ml0x.com"},
+  "datePublished": "2026-08-19",
+  "dateModified": "2026-08-19"
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {"@type": "Question", "name": "How many tokens per month do you need before renting a GPU beats an API?", "acceptedAnswer": {"@type": "Answer", "text": "Break-even is monthly rent divided by the API price per million tokens. Throughput does not enter the formula; it only decides whether that volume is physically reachable. An 8x H200 node at 24 USD per hour costs 17,520 USD per month, so beating a 4 USD per million output token API needs about 4.4 billion output tokens per month. A developer generating continuously at 50 tokens per second for 8 hours a day produces about 32 million. That is roughly 140x short."}},
+    {"@type": "Question", "name": "Can you run Kimi K3 on a single 8-GPU node?", "acceptedAnswer": {"@type": "Answer", "text": "No. Kimi K3 is a 2.78 trillion parameter mixture-of-experts model and ships natively in MXFP4 at roughly 1,561 GB on disk. It needs more than 1.5 TB of VRAM before any KV cache is allocated. An 8x B200 node holds 1,440 GB, so it does not fit. K3 requires roughly 10 to 14 GPUs, meaning 8x MI355X or 8x B300 configurations at minimum."}},
+    {"@type": "Question", "name": "Is self-hosting an open-weight model cheaper than the vendor API?", "acceptedAnswer": {"@type": "Answer", "text": "Not always, and for the largest models it is usually worse. Kimi K3 on a verified on-demand 8x MI355X node works out near 20 USD per million output tokens against Moonshot's own list price of 15 USD per million, at 100 percent utilization. DeepSeek published production figures showing about 0.52 USD per million output tokens, but reached that with 226 nodes, custom kernels and 20 to 22 tokens per second per user."}},
+    {"@type": "Question", "name": "Does quantization hurt open-weight model quality?", "acceptedAnswer": {"@type": "Answer", "text": "It depends on the reference precision. FP8 lands within about 0.4 points of FP16 on MMLU-Pro and is effectively free. Vendor quantization-aware-trained INT4, such as Kimi's, is the reference checkpoint rather than a degradation. Community post-training INT4 on a large mixture-of-experts model is where damage appears, with one comparable evaluation showing MMLU-Pro down 1.6 points and HumanEval down 8 points, concentrated in code generation."}},
+    {"@type": "Question", "name": "What does 400 USD per month of GPU rental actually buy?", "acceptedAnswer": {"@type": "Answer", "text": "About 0.55 USD per hour over 730 hours, which on a marketplace buys one 32GB consumer card such as an RTX 5090 at roughly 216 to 293 USD per month. That runs a 27B class model comfortably. It does not run a frontier mixture-of-experts model: GLM-5.2 at FP8 is 756 GB and DeepSeek-V4-Pro is 893 GB, both far beyond a single card."}}
+  ]
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {"@type": "ListItem", "position": 1, "name": "Home", "item": "https://ml0x.com/"},
+    {"@type": "ListItem", "position": 2, "name": "Research", "item": "https://ml0x.com/research/"},
+    {"@type": "ListItem", "position": 3, "name": "GPU Rental vs Token Purchase"}
+  ]
+}
+</script>
+</head>
+<body>
+<a class="skip-link" href="#main">Skip to content</a>
+<header class="site-nav">
+  <div class="site-nav__inner">
+    <div class="site-nav__left">
+      <a class="site-nav__logo" href="/">ml0x</a>
+      <nav class="site-nav__links" aria-label="Main">
+        <a href="/tools/">Tools</a>
+        <a href="/calculators/">Calculators</a>
+        <a href="/guides/">Guides</a>
+        <a href="/answers/">Answers</a>
+        <a href="/research/" aria-current="page">Research</a>
+      </nav>
+    </div>
+    <a class="nav-cta" href="https://zovo.one/pricing?utm_source=ml0x&amp;utm_medium=nav&amp;utm_campaign=research-gpu-rent-vs-buy" target="_blank" rel="noopener">Full system, $99</a>
+  </div>
+</header>
+
+<main id="main" class="container">
+  <nav class="breadcrumb" aria-label="Breadcrumb">
+    <a href="/">Home</a> <span>&rsaquo;</span> <a href="/research/">Research</a> <span>&rsaquo;</span> GPU rental vs token purchase
+  </nav>
+
+  <div class="page-head">
+    <div class="eyebrow">Cost study &middot; measured, not modelled</div>
+    <h1>Renting GPUs vs buying tokens</h1>
+    <p class="subtitle">Frontier open-weight models are free to download and expensive to serve. Here is the arithmetic of running one 24/7: real rental prices, the VRAM that actually fits, and the token volume you must reach before owning the compute wins.</p>
+    <p class="last-updated">Prices verified 2026-08-19. This market re-prices weekly; re-check before committing money.</p>
+  </div>
+
+  <div class="stat-grid">
+    <div class="stat-card">
+      <div class="label">Break-even volume</div>
+      <div class="value">4.4B</div>
+      <div class="stat-note">Output tokens per month needed before an 8x H200 node beats a $4/M API.</div>
+    </div>
+    <div class="stat-card">
+      <div class="label">Cheapest node that fits a 1T MoE</div>
+      <div class="value">$11,622</div>
+      <div class="stat-note">Per month, 8x MI300X at $1.99/GPU-hr x 730 hours.</div>
+    </div>
+    <div class="stat-card">
+      <div class="label">Kimi K3 weights</div>
+      <div class="value warn">1,561 GB</div>
+      <div class="stat-note">Native MXFP4. Fits no 8-GPU NVIDIA node in existence.</div>
+    </div>
+    <div class="stat-card">
+      <div class="label">Self-hosting K3 vs its own API</div>
+      <div class="value neg">+34%</div>
+      <div class="stat-note">$20/M output self-hosted against $15/M list, at full utilization.</div>
+    </div>
+  </div>
+
+  <section class="section">
+    <h2 class="section-title">The formula that decides it</h2>
+    <p>A rented GPU bills 730 hours a month whether you send it traffic or not. So break-even does not depend on how fast the hardware is. It depends only on rent and the price of the tokens you would otherwise buy:</p>
+    <div class="note">
+      <p>break_even_output_tokens = monthly_rent &divide; api_price_per_million</p>
+      <p>Throughput never appears. It decides something else entirely: whether the required volume is physically reachable on that hardware.</p>
+    </div>
+    <p>An 8x H200 node at $24.00/hr, the cheapest verifiable rate found, is $17,520 a month. Against a $4.00/M output API that is 4.4 billion output tokens before the node is worth owning. Against a $0.66/M API it is 26.5 billion.</p>
+    <p>For scale, a developer whose agent generates continuously at 50 tokens per second, eight hours a day, twenty-two days a month, produces 31.7 million output tokens. That is roughly 140x short of the friendlier figure. Even running flat out 24/7 with no pauses, one stream at 50 tok/s yields 131 million a month, still 33x short.</p>
+  </section>
+
+  <section class="section">
+    <h2 class="section-title">The entry ticket is a node, not a GPU</h2>
+    <p>Every cheap-H100 headline is misleading for this workload, because a frontier open-weight model is a ~1T-parameter mixture of experts. At FP8 that is roughly 1TB of weights before any KV cache.</p>
+    <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>Node</th><th>Total HBM</th><th>Holds a ~1T MoE at FP8?</th></tr></thead>
+        <tbody>
+          <tr><td>8x H100 80GB</td><td>640 GB</td><td>No. Needs 4-bit, or two nodes.</td></tr>
+          <tr><td>8x H200 141GB</td><td>1,128 GB</td><td>Tightly, with thin KV headroom</td></tr>
+          <tr><td>8x B200 180GB</td><td>1,440 GB</td><td>Yes</td></tr>
+          <tr><td>8x MI300X 192GB</td><td>1,536 GB</td><td>Yes, with real KV headroom</td></tr>
+          <tr><td>8x MI355X 288GB</td><td>2,304 GB</td><td>Comfortably</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>vLLM's own recipe for Kimi K2 at FP8 states the minimum deployment unit is 16 GPUs, not eight. And Kimi K3, at 2.78T parameters and 1,561 GB even in its native MXFP4 form, needs more than 1.5TB before KV cache. It does not fit an 8x B200 node.</p>
+    <p>The memory-density argument favours AMD hard. Two AWS p5.48xlarge nodes (16x H100) run about $80,358 a month. One 8x MI300X node with 2.4x the HBM runs about $11,622. That is a 6.9x spread before InfiniBand and egress.</p>
+  </section>
+
+  <section class="section">
+    <h2 class="section-title">Which open-weight models clear a frontier bar</h2>
+    <p>Scores are the Artificial Analysis Intelligence Index, v4.1.1. Where a figure is an estimate rather than a measurement, it is marked, because the difference changes conclusions.</p>
+    <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>Model</th><th>AA Index</th><th>Active params</th><th>Shipped size</th><th>License</th></tr></thead>
+        <tbody>
+          <tr><td>Claude Opus 5 <span class="badge">closed</span></td><td>63</td><td>n/a</td><td>n/a</td><td>n/a</td></tr>
+          <tr><td><strong>Kimi K3</strong></td><td><strong>60</strong></td><td>104B</td><td>1,561 GB</td><td><span class="badge badge-orange">Custom, $20M MaaS gate</span></td></tr>
+          <tr><td>Qwen3.8-2.4T-A95B</td><td>58</td><td>95B</td><td>2,496 GB</td><td><span class="badge badge-orange">Custom</span></td></tr>
+          <tr><td>Claude Opus 4.8 <span class="badge">closed</span></td><td>57</td><td>n/a</td><td>n/a</td><td>n/a</td></tr>
+          <tr><td>GLM-5.2</td><td>53</td><td>~41B</td><td>756 GB</td><td><span class="badge badge-green">MIT</span></td></tr>
+          <tr><td>DeepSeek-V4-Pro-0813</td><td>53</td><td>49B</td><td>893 GB</td><td><span class="badge badge-green">MIT</span></td></tr>
+          <tr><td><strong>Qwen3.8-27B</strong></td><td><strong>52</strong></td><td>27.8B dense</td><td>17 GB at Q4</td><td><span class="badge badge-green">Apache-2.0</span></td></tr>
+          <tr><td>DeepSeek-V4-Flash-0731</td><td>52</td><td>13B</td><td>167 GB</td><td><span class="badge badge-green">MIT</span></td></tr>
+          <tr><td>Gemini 3.1 Pro <span class="badge">closed</span></td><td>48</td><td>n/a</td><td>n/a</td><td>n/a</td></tr>
+          <tr><td>Claude Opus 4.6 <span class="badge">closed</span></td><td>39 <span class="badge badge-orange">estimate</span></td><td>n/a</td><td>n/a</td><td>n/a</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="note">
+      <p>The ranking inverts when you pay for it. Active parameters drive FLOPs per token, and therefore serving cost. Ranked by index per billion active parameters: GLM-5.2 (1.28) &gt; DeepSeek-V4-Pro (1.09) &gt; Qwen3.8 (0.61) &gt; Kimi K3 (0.57). The two strongest models are the two worst values. If you self-host, DeepSeek-V4-Pro is the pragmatic pick; if you want K3, buy it from the people already running it.</p>
+    </div>
+    <p>A caution on a comparison currently circulating: Qwen3.8-27B is genuinely remarkable, ranked first of 135 open-weight models in the 4B&ndash;40B class against a class median of 9. But claims that it beats Opus 4.6 rest on an Opus figure that Artificial Analysis flags as an <em>estimate</em>, measured in <em>non-reasoning</em> mode. Comparing measured against measured, it is 52 against Opus 5 at 63.</p>
+  </section>
+
+  <section class="section">
+    <h2 class="section-title">What a real 24/7 workload looks like</h2>
+    <p>Most cost comparisons use a hypothetical user. This one uses a measured month: 1,039,011 assistant messages parsed from the session transcripts of a heavy agentic coding setup running fleets of parallel agents. The shape is the surprise.</p>
+    <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>Token class</th><th>30-day total</th><th>Share</th><th>What it costs to serve</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Cache read</strong></td><td>61,653,509,017</td><td><strong>94.1%</strong></td><td>Near zero. A prefix-cache hit skips prefill entirely.</td></tr>
+          <tr><td>Cache write</td><td>2,178,931,389</td><td>3.3%</td><td>Full prefill compute, paid once</td></tr>
+          <tr><td>Fresh input</td><td>1,306,389,888</td><td>2.0%</td><td>Full prefill compute</td></tr>
+          <tr><td>Output</td><td>362,119,058</td><td>0.6%</td><td>Decode. Memory-bandwidth bound.</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>Ninety-four percent of the volume is cache-read. That single fact reorders every provider comparison: rank by cache-read price, not by the headline input and output rates. Providers differ by more than 20x on that line while looking near-identical on their pricing pages. Anyone quoting dollars per million <em>output</em> tokens is pricing 0.6% of the bill.</p>
+    <div class="note">
+      <p>And it cuts both ways. Cache reads are near-free on a self-hosted server, but only if the cache fits in VRAM. A 24GB card leaves roughly 5.3 GB of pooled KV space after weights. Against a 61.7-billion-token working set, contexts cannot stay resident, so every turn re-prefills from scratch. At consumer scale, self-hosting converts the cheapest token class into the most expensive one. At 96GB it starts to work: that card holds about 2.3 million tokens of KV, enough for twenty agents at 110k context each.</p>
+    </div>
+  </section>
+
+  <section class="section">
+    <h2 class="section-title">Aggregate throughput is not what you feel</h2>
+    <p>Every impressive tokens-per-second figure in the literature is measured at low per-user interactivity. The trade is steep, and it is measured on identical hardware, DeepSeek R1 at FP8 on H200:</p>
+    <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>Interactivity per user</th><th>tok/s per GPU</th><th>Aggregate per 8-GPU node</th></tr></thead>
+        <tbody>
+          <tr><td>65 tok/s (sluggish)</td><td>1,035</td><td>8,280</td></tr>
+          <tr><td>99 tok/s</td><td>488</td><td>3,904</td></tr>
+          <tr><td>133 tok/s (comfortable)</td><td>264</td><td>2,112</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>Making the model 2.05x faster for the person using it costs 3.92x in aggregate throughput, and therefore 3.92x per token. A widely-quoted 13,860 tok/s peak on an 8x H200 corresponds to a mean time-per-output-token of 203 ms, which is 4.9 tok/s per user and unusable for interactive work.</p>
+    <p>Two published cost figures do not survive audit. The often-cited $0.21 per million for Kimi K2 counts only the decode GPUs and excludes the four prefill nodes; counting all 128 GPUs gives $0.284, and using today's cheapest on-demand H200 rate gives $0.435, about 2.07x the published number. A $0.33 per million H200 figure implies a GPU cost of $1.23/hr, which is an amortized ownership cost rather than a rental price.</p>
+    <p>The one figure that does survive is DeepSeek's own published production accounting: 226.75 nodes, 168 billion output tokens in 24 hours, $87,072 per day at a $2.00/GPU-hr internal cost, giving $0.518 per million output tokens at 20 to 22 tok/s per user. That is the floor a self-hoster is chasing, reached with 226 nodes and custom kernels.</p>
+  </section>
+
+  <section class="section">
+    <h2 class="section-title">Rent or buy</h2>
+    <p>The 2026 GPU market is inflated. The RTX 5090 launched at $1,999 and retails around $4,530, roughly 2.3x list. That inverts the usual advice: buying is weaker than it was, renting stronger.</p>
+    <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>Card</th><th>Marketplace rate</th><th>$/mo at 24/7</th><th>Buy price</th><th>Breakeven</th></tr></thead>
+        <tbody>
+          <tr><td>RTX 3090 24GB</td><td>$0.069&ndash;0.138/hr</td><td>$50&ndash;101</td><td>$1,500</td><td>117 months</td></tr>
+          <tr><td>RTX 4090 24GB</td><td>$0.135&ndash;0.336/hr</td><td>$99&ndash;245</td><td>$3,000</td><td>15 months</td></tr>
+          <tr><td>RTX 5090 32GB</td><td>$0.296&ndash;0.402/hr</td><td>$216&ndash;293</td><td>$4,530</td><td>19.5 months</td></tr>
+          <tr><td>RTX PRO 6000 96GB</td><td>$0.761&ndash;1.096/hr</td><td>$556&ndash;800</td><td>$15,017</td><td>19.6 months</td></tr>
+          <tr><td>RX 7900 XTX 24GB</td><td>n/a</td><td>n/a</td><td>$710</td><td>best bandwidth/$</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>Two findings worth more than the prices. Enterprise clouds are the wrong channel for this workload: one major provider lists no consumer cards at all, and its cheapest part that fits a 27B model costs about 5x the marketplace rate for identical silicon. And a 3090 bought to run 24/7 has a 117-month breakeven against marketplace rates, where European electricity alone nearly matches the rent.</p>
+    <p>For the buy-it-outright case, a pair of 128GB unified-memory desktop AI boxes lands near $8,000 and runs a 167 GB mixture-of-experts model at a measured 41 tok/s single-stream, 62 to 75 with speculative decoding, and about 350 tok/s aggregate at 32 concurrent streams. Against equivalent-capacity rental that pays back in 3.3 months, and break-even utilization is only about 3.3 hours a day.</p>
+    <div class="note">
+      <p>Then the API undercuts both. That same model sells for $0.28 per million output tokens. The owned pair, amortized over 24 months and running at its measured peak, works out to $0.437 per million, more expensive at 100% saturation, ignoring your time and all hardware risk. The amortized monthly cost buys 1.44 billion output tokens from the API; the hardware's physical ceiling is 920 million. Buying beats renting a node, and loses to the API. The decision is not financial. It is whether the workload must be local.</p>
+    </div>
+  </section>
+
+  <section class="section">
+    <h2 class="section-title">Quantization, and where the damage actually lands</h2>
+    <p>Four-bit is not automatically degradation. It depends entirely on the reference precision the vendor shipped.</p>
+    <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>Precision</th><th>Measured effect</th><th>Verdict</th></tr></thead>
+        <tbody>
+          <tr><td>FP8</td><td>Within ~0.4 points of FP16 on MMLU-Pro</td><td><span class="badge badge-green">Effectively free</span></td></tr>
+          <tr><td>Vendor QAT INT4</td><td>Trained as the reference checkpoint; ~2x speedup retained</td><td><span class="badge badge-green">Safe</span></td></tr>
+          <tr><td>NVFP4</td><td>Relative validation-loss error below 1% vs FP8</td><td><span class="badge badge-green">Close to free</span></td></tr>
+          <tr><td>Community post-training INT4</td><td>MMLU-Pro &minus;1.6, <strong>HumanEval &minus;8 points</strong></td><td><span class="badge badge-red">Damage lands on code</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>The trap is that post-training 4-bit is the only path that fits some models onto an 8x H100 node, which is exactly the configuration people price when they imagine self-hosting. Across 133 provider endpoints for twelve frontier models, 59 serve FP8, 23 serve FP4, 7 INT4, 3 MXFP4 and 38 do not declare. Roughly a quarter of frontier endpoints are 4-bit, and on aggregator routing, price sorting will silently send you to them. Pin providers explicitly.</p>
+  </section>
+
+  <section class="section">
+    <h2 class="section-title">What the adversarial audit removed</h2>
+    <p>This study was produced by parallel research agents and then handed to a separate reviewer whose only instruction was to refute them, defaulting to failure on anything it could not verify against a primary source. It killed five claims. They are listed because a cost study that hides its corrections should not be trusted with your money.</p>
+    <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>Claim as first researched</th><th>Verdict</th><th>Correction</th></tr></thead>
+        <tbody>
+          <tr><td>Cheapest viable node is $9,986/mo at a named vendor</td><td><span class="badge badge-red">Failed</span></td><td>That vendor publishes no public pricing. The rate existed only in SEO aggregators, and two live price trackers list no such figure. Replaced with a verified $1.99/GPU-hr.</td></tr>
+          <tr><td>Cheapest 8x H200 is $28.16/hr</td><td><span class="badge badge-orange">Corrected</span></td><td>Real, but not cheapest. A verified $3.00/GPU-hr exists. All break-even figures recomputed.</td></tr>
+          <tr><td>Opus 4.6 scores 44.9 in adaptive mode</td><td><span class="badge badge-red">Failed</span></td><td>No such figure exists. One variant is published, scoring 39, itself flagged an estimate.</td></tr>
+          <tr><td>Qwen3.8-27B scores around 30</td><td><span class="badge badge-red">Failed</span></td><td>Wrong by 22 points. The measured value is 52, first of 135 open-weight models in its size class.</td></tr>
+          <tr><td>Free EU supercomputing hours cover production use</td><td><span class="badge badge-orange">Corrected</span></td><td>Free access is scoped to innovation purposes; commercial production is a separate paid track.</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>One figure survives with a caveat attached rather than a correction. The claim that self-hosting Kimi K3 costs more than its own API rests on a published throughput number the auditor could not source. Both prices in that calculation are confirmed; the throughput is not. The direction holds regardless, because K3 needs ten to fourteen GPUs, but the exact figure should not be quoted as hard.</p>
+  </section>
+
+  <section class="section">
+    <h2 class="section-title">How to read this before spending</h2>
+    <div class="card-grid">
+      <div class="card">
+        <h3>Rent, do not buy, unless it must be local</h3>
+        <p>At 2.3x list prices, breakeven on a current-generation card is 15 to 20 months against marketplace rental. Data sensitivity is a far stronger argument for owning hardware than economics currently is.</p>
+      </div>
+      <div class="card">
+        <h3>Choose the model before the hardware</h3>
+        <p>Bandwidth-per-dollar and capacity-per-dollar point in opposite directions. A 32GB card is roughly ten times better on bandwidth per dollar; a 128GB box is two and a half times better on capacity. Which matters depends entirely on whether your model fits.</p>
+      </div>
+      <div class="card">
+        <h3>Price the cache, not the output</h3>
+        <p>On a cache-heavy agentic workload the cache-read rate is about 95% of the bill. Providers vary more than 20x on that line and look identical on the front page.</p>
+      </div>
+      <div class="card">
+        <h3>Spot is for training, not serving</h3>
+        <p>Preemption notice ranges from two minutes down to five seconds, and some marketplaces give none at all. A reliable endpoint needs a warm standby, which roughly doubles the effective rate and erases the discount.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <h2 class="section-title">Method</h2>
+    <p>Workload figures were produced by parsing the <code>usage</code> field of 1,039,011 assistant messages across 13,587 local session transcript files, covering 2026-07-18 to 2026-08-19. No personal or account-identifying data appears on this page.</p>
+    <p>Model sizes were computed by summing <code>.safetensors</code> byte counts from the Hugging Face model API, and architecture figures were read from each model's own <code>config.json</code> rather than from a summary. Prices were read from provider pricing pages and public unauthenticated catalogue endpoints on 2026-08-19. All cost arithmetic is shown inline so it can be checked.</p>
+    <p>Figures described as measured were produced by running code or reading a primary source. Figures marked as estimates were not. Five claims were corrected or removed by adversarial audit after first drafting, and all are disclosed above. GPU and token pricing in this market moves weekly; verify before committing money.</p>
+  </section>
+
+  <section class="section">
+    <h2 class="section-title">Related</h2>
+    <div class="related-grid">
+      <a class="related-card" href="/calculators/llm-memory-calculator.html">
+        <div class="link-card__title">LLM memory calculator</div>
+        <p class="link-card__desc">Work out whether a given model and context length fits the VRAM you actually have.</p>
+      </a>
+      <a class="related-card" href="/calculators/kv-cache-size-calculator.html">
+        <div class="link-card__title">KV cache size calculator</div>
+        <p class="link-card__desc">The KV arithmetic that decides how many concurrent agents a card can hold.</p>
+      </a>
+      <a class="related-card" href="/research/ml-cheatsheet.html">
+        <div class="link-card__title">ML cheatsheet</div>
+        <p class="link-card__desc">Algorithms, metrics and tuning in one page.</p>
+      </a>
+    </div>
+  </section>
+</main>
+<footer class="site-footer">
+  <nav class="footer-links-seo" aria-label="ML tools and content">
+    <a href="/tools/">ML tools</a>
+    <a href="/tools/learning-rate-finder.html">Learning rate finder</a>
+    <a href="/tools/confusion-matrix-calculator.html">Confusion matrix calculator</a>
+    <a href="/tools/neural-network-playground.html">Neural network playground</a>
+    <a href="/tools/attention-mechanism-visualizer.html">Attention visualizer</a>
+    <a href="/tools/dataset-splitter.html">Dataset splitter</a>
+    <a href="/calculators/kv-cache-size-calculator.html">KV cache calculator</a>
+    <a href="/calculators/llm-memory-calculator.html">LLM memory calculator</a>
+    <a href="/guides/">Guides</a>
+    <a href="/guides/gradient-descent-explained.html">Gradient descent</a>
+    <a href="/answers/">Answers</a>
+    <a href="/answers/ml-algorithm-comparison.html">Algorithm comparison</a>
+    <a href="/research/">Research</a>
+    <a href="/research/ml-cheatsheet.html">ML cheat sheet</a>
+    <a href="/about.html">About</a>
+  </nav>
+  <div class="site-footer__inner">
+    <div class="site-footer__brand">
+      <span class="site-footer__logo">ml0x</span>
+      <span class="site-footer__meta">by <a href="https://github.com/theluckystrike" target="_blank" rel="noopener">@theluckystrike</a></span>
+    </div>
+    <div class="site-footer__links">
+      <a href="https://github.com/theluckystrike/100xagenticdev" target="_blank" rel="noopener">GitHub</a>
+      <a href="/research/">Research</a>
+      <a href="https://twitter.com/_alphashark_" target="_blank" rel="noopener">X</a>
+    </div>
+  </div>
+  <nav class="zovo-network" aria-label="Zovo Tools Network">
+    <div class="zovo-network-inner">
+        <h3 class="zovo-network-title">Explore More Tools</h3>
+        <div class="zovo-network-links">
+            <a href="https://abwex.com">ABWex &middot; A/B Testing</a>
+            <a href="https://b2berp.com">B2BERP &middot; Business Tools</a>
+            <a href="https://bugbountyreality.com">BugBountyReality &middot; Security</a>
+            <a href="https://claudflow.com">ClaudFlow &middot; Workflows</a>
+            <a href="https://claudkit.com">ClaudKit &middot; API Tools</a>
+            <a href="https://dismissticket.com">DismissTicket &middot; Support</a>
+            <a href="https://enhio.com">Enhio &middot; Text Tools</a>
+            <a href="https://epochpilot.com">EpochPilot &middot; Timestamps</a>
+            <a href="https://gen8x.com">Gen8X &middot; Color Tools</a>
+            <a href="https://gpt0x.com">GPT0X &middot; AI Models</a>
+            <a href="https://heytensor.com">HeyTensor &middot; ML Tools</a>
+            <a href="https://ingredientcalculator.com">IngredientCalc &middot; Recipes</a>
+            <a href="https://invokebot.com">InvokeBot &middot; Webhooks</a>
+            <a href="https://kappafy.com">Kappafy &middot; JSON</a>
+            <a href="https://kappakit.com">KappaKit &middot; Dev Toolkit</a>
+            <a href="https://kickllm.com">KickLLM &middot; LLM Costs</a>
+            <a href="https://krzen.com">Krzen &middot; Image Tools</a>
+            <a href="https://lochbot.com">LochBot &middot; Security</a>
+            <a href="https://lockml.com">LockML &middot; ML Security</a>
+            <a href="https://ml3x.com">ML3X &middot; Matrix Math</a>
+            <a href="https://pictureeditor.net">PictureEditor &middot; Image Editing</a>
+            <a href="https://recipetool.net">RecipeTool &middot; Cooking</a>
+            <a href="https://viryd.com">Viryd &middot; Dev Tools</a>
+        </div>
+    </div>
+</nav>
+
+<div class="pow-strip">
+  <div class="pow-strip-inner">
+    <span class="pow-label">By the same builder:</span>
+    <a href="https://github.com/theluckystrike" rel="nofollow">GitHub &middot; theluckystrike</a>
+    <a href="https://www.belikenative.com" rel="nofollow">BeLikeNative &middot; Grammar AI</a>
+    <a href="https://earlythunder.com" rel="nofollow">EarlyThunder &middot; Dev Blog</a>
+    <a href="https://bugbountyreality.com" rel="nofollow">Bug Bounty Reality</a>
+    <a href="https://zovo.one/lifetime?utm_source=ml0x&amp;utm_medium=footer&amp;utm_campaign=research-gpu-rent-vs-buy" rel="nofollow">Zovo &middot; AI Dev Tools</a>
+  </div>
+</div>
+</footer>
+</body>
+</html>
