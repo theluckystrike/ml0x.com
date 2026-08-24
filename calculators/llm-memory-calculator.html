@@ -150,6 +150,10 @@
 <p>Kwon et al. put it plainly in the vLLM paper. The KV cache memory for each request is huge, and it grows and shrinks dynamically (<a href="https://arxiv.org/abs/2309.06180">arXiv 2309.06180</a>). So at long contexts the context length input moves your total more than any other field on this page. Sizing the cache precisely, per model and per quantization, is its own topic, and this site already covers it in depth. The <a href="/calculators/kv-cache-size-calculator.html">KV cache size calculator</a> goes further than the summary here.</p>
 </section>
 <section>
+<h2>Fine tuning with an adapter</h2>
+<p>The training figures above size a full fine tune, where every parameter carries a gradient and an Adam state. Most people fine tuning a model this size use a low rank adapter instead, which trains a small fraction of the parameters and leaves the base weights frozen. What that costs depends on the rank and on which projections you adapt, and it is not the same on two models of the same parameter count. The <a href="/calculators/lora-hyperparameters.html">LoRA hyperparameter planner</a> gives the exact trainable parameter count for a rank and target module set on 19 open models, and the training VRAM it implies.</p>
+</section>
+<section>
 <h2>Common questions</h2>
 <h3>Why another calculator shows a bigger KV cache</h3>
 <p>The other calculator probably multiplied by <code>num_attention_heads</code>. Grouped query attention stores keys and values for <code>num_key_value_heads</code> only, and the query heads share them (Pope et al., <a href="https://arxiv.org/abs/2211.05102">arXiv 2211.05102</a>). The over-report column in the table shows the gap per model.</p>

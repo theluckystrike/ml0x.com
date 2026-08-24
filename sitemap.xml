@@ -81,6 +81,11 @@
     <priority>0.7</priority>
   </url>
   <url>
+    <loc>https://ml0x.com/calculators/lora-hyperparameters.html</loc>
+    <lastmod>2026-08-24</lastmod>
+    <priority>0.7</priority>
+  </url>
+  <url>
     <loc>https://ml0x.com/calculators/kv-cache-size-calculator.html</loc>
     <lastmod>2026-07-27</lastmod>
     <priority>0.7</priority>
