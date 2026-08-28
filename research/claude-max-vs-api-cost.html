@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Claude Max vs API cost, measured on 33B tokens | ml0x</title>
+<meta name="description" content="We metered one month of agent traffic behind a $200 Claude Max plan. The same 33.3 billion tokens would cost $26,187 on the API. Full table, ten providers.">
+<meta name="keywords" content="Claude Max vs API cost, Claude Max 20x worth it, Claude Max token limit, API pricing agentic coding, cache read pricing, DeepSeek off-peak pricing, GLM coding plan, LLM subscription vs API">
+<link rel="canonical" href="https://ml0x.com/research/claude-max-vs-api-cost.html">
+<link rel="alternate" hreflang="en" href="https://ml0x.com/research/claude-max-vs-api-cost.html">
+<link rel="alternate" hreflang="x-default" href="https://ml0x.com/research/claude-max-vs-api-cost.html">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Claude Max vs API cost, measured on 33B tokens">
+<meta property="og:description" content="One metered month behind a $200 Max plan equals $26,187 of API traffic. What that means for every alternative, priced.">
+<meta property="og:url" content="https://ml0x.com/research/claude-max-vs-api-cost.html">
+<meta property="og:site_name" content="ml0x">
+<meta property="og:locale" content="en_US">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Claude Max vs API cost, measured on 33B tokens">
+<meta name="twitter:description" content="A $200 subscription absorbed a 33.3B-token month. The API would bill $26,187 for it. Ten alternatives, priced on real logs.">
+<meta name="author" content="Michael Lip">
+<meta name="date" content="2026-08-28">
+<meta name="robots" content="index, follow">
+<link rel="stylesheet" href="/assets/ml0x.css">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Article",
+  "headline": "Claude Max vs API cost, measured on a 33-billion-token month",
+  "description": "A metered cost study of one month of agentic coding traffic behind a Claude Max 20x plan, repriced across ten API, serverless and subscription alternatives.",
+  "url": "https://ml0x.com/research/claude-max-vs-api-cost.html",
+  "author": { "@type": "Person", "name": "Michael Lip", "url": "https://zovo.one" },
+  "publisher": { "@type": "Organization", "name": "ml0x", "url": "https://ml0x.com" },
+  "datePublished": "2026-08-28",
+  "dateModified": "2026-08-28",
+  "isBasedOn": [
+    { "@type": "CreativeWork", "name": "Anthropic API pricing", "url": "https://docs.anthropic.com/en/docs/about-claude/pricing" },
+    { "@type": "CreativeWork", "name": "DeepSeek API pricing", "url": "https://api-docs.deepseek.com/quick_start/pricing" },
+    { "@type": "CreativeWork", "name": "Z.ai API pricing", "url": "https://docs.z.ai/guides/overview/pricing" },
+    { "@type": "CreativeWork", "name": "Moonshot API pricing", "url": "https://platform.moonshot.ai/docs/pricing" }
+  ],
+  "speakable": { "@type": "SpeakableSpecification", "cssSelector": [".qas"] }
+}
+</script>
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Home","item":"https://ml0x.com/"},{"@type":"ListItem","position":2,"name":"Research","item":"https://ml0x.com/research/"},{"@type":"ListItem","position":3,"name":"Claude Max vs API cost"}]}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    { "@type": "Question", "name": "Is Claude Max 20x worth it for agentic coding?", "acceptedAnswer": { "@type": "Answer", "text": "At heavy agent volume, yes by a wide margin. Our metered month consumed 33.3 billion tokens that would bill $26,187 at Opus 5 API list prices, 131 times the $200 plan price. The plan beats pay-as-you-go once you pass roughly 255 million tokens a month at a 96% cache-hit mix." } },
+    { "@type": "Question", "name": "How many tokens do you get with Claude Max?", "acceptedAnswer": { "@type": "Answer", "text": "Anthropic doesn't publish the quota in tokens. Limits are a rolling 5-hour session cap plus a weekly cap. Our logs show one Max 20x seat absorbing 33.28 billion input tokens in 30 days, with 14 throttle events in the heaviest week." } },
+    { "@type": "Question", "name": "Is the API cheaper than a Claude subscription?", "acceptedAnswer": { "@type": "Answer", "text": "Only at low volume. At this workload's mix the API is cheaper below about 255 million tokens a month, roughly $200 of Opus 5 usage. Above that the subscription wins, and at swarm volume it isn't close." } },
+    { "@type": "Question", "name": "What is the cheapest API for high-volume coding agents?", "acceptedAnswer": { "@type": "Answer", "text": "For this measured month, Z.ai's GLM-5.3-Flash at $601 and DeepSeek V4 Flash at $699 were the two lowest totals, driven by cache-read prices of $0.015 and $0.007 per million tokens. Every other provider costs four figures or more at this volume." } }
+  ]
+}
+</script>
+</head>
+<body>
+<a class="skip-link" href="#main">Skip to content</a>
+<header class="site-nav">
+  <div class="site-nav__inner">
+    <div class="site-nav__left">
+      <a class="site-nav__logo" href="/">ml0x</a>
+      <nav class="site-nav__links" aria-label="Main">
+        <a href="/tools/">Tools</a>
+        <a href="/calculators/">Calculators</a>
+        <a href="/guides/">Guides</a>
+        <a href="/answers/">Answers</a>
+        <a href="/research/" aria-current="page">Research</a>
+      </nav>
+    </div>
+    <a class="nav-cta" href="https://zovo.one/pricing?utm_source=ml0x&amp;utm_medium=nav&amp;utm_campaign=research-claude-max-vs-api" target="_blank" rel="noopener">Full system, $99</a>
+  </div>
+</header>
+
+<main id="main" class="container">
+  <nav class="breadcrumb" aria-label="Breadcrumb">
+    <a href="/">Home</a> <span>&rsaquo;</span> <a href="/research/">Research</a> <span>&rsaquo;</span> Claude Max vs API cost
+  </nav>
+
+  <div class="page-head">
+    <div class="eyebrow">Cost audit &middot; observed, not estimated</div>
+    <h1>What $200 of Claude Max actually buys</h1>
+    <p class="subtitle">We metered one month of agent traffic behind a single Claude Max 20x seat. It came to 33.28 billion input tokens at a 96.4% cache-hit rate. Here's the same workload priced on ten alternatives, and why none of them fits in $200.</p>
+    <p class="last-updated">Usage measured 2026-07-29 to 2026-08-28 from local Claude Code logs. Prices verified 2026-08-28 against each vendor's own pricing page.</p>
+  </div>
+
+  <div class="note">
+    <p>Every number here comes from a validated audit run: 432 of 446 cited price and limit snippets were re-fetched and matched against vendor pages on publication day. The complete artifact, with every citation, scorecard and assumption, is published as <a href="/research/claude-max-vs-api-cost-data.html">the full dataset</a>. The measured workload is one seat's real traffic, so treat the totals as one data point, not a benchmark.</p>
+  </div>
+
+  <div class="stat-grid">
+    <div class="stat-card">
+      <div class="label">API-equivalent value</div>
+      <div class="value">$26,187</div>
+      <div class="stat-note">the metered month at Opus 5 API list prices</div>
+    </div>
+    <div class="stat-card">
+      <div class="label">Plan multiple</div>
+      <div class="value">131&times;</div>
+      <div class="stat-note">break-even is 255M tokens. The meter read 33,395M</div>
+    </div>
+    <div class="stat-card">
+      <div class="label">Cache-hit rate</div>
+      <div class="value">96.4%</div>
+      <div class="stat-note">32.1B of 33.3B input tokens were re-read context</div>
+    </div>
+    <div class="stat-card">
+      <div class="label">Cheapest full swap</div>
+      <div class="value warn">$601</div>
+      <div class="stat-note">GLM-5.3-Flash, the lowest pay-as-you-go total for the month</div>
+    </div>
+  </div>
+
+  <section class="section">
+    <h2 class="section-title">The measured month</h2>
+    <p class="qas" data-keyword="claude max token usage">One Claude Max 20x seat absorbed 33.28 billion input tokens and 122 million output tokens in 30 days, measured from local Claude Code session logs.</p>
+    <p>That's 207,516 deduplicated API messages across 14,973 session files. The parser summed the four billing components per model per day and dropped duplicate request ids, the same dedup rule ccusage applies.</p>
+    <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>Billing component</th><th>Tokens (30 days)</th><th>Share of input</th></tr></thead>
+        <tbody>
+          <tr><td>Cache reads</td><td>32,092M</td><td>96.4%</td></tr>
+          <tr><td>Cache writes</td><td>935M</td><td>2.8%</td></tr>
+          <tr><td>Fresh input</td><td>250M</td><td>0.8%</td></tr>
+          <tr><td>Output</td><td>122M</td><td>&ndash;</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="note"><p>Agent loops re-read the whole conversation prefix on every call. That's why cache reads are 96% of the bill's raw material, and why the cache-read price ends up deciding everything below.</p></div>
+  </section>
+
+  <section class="section">
+    <h2 class="section-title">The same month on ten providers</h2>
+    <p class="qas" data-keyword="cheapest api for coding agents">No pay-as-you-go option reproduces this workload for $200 a month; the floor is $601 on Z.ai's GLM-5.3-Flash, per 2026-08-28 vendor list prices.</p>
+    <p>Parity is what $200 buys as a share of the measured month. Below 1.0, the option can't replace the plan at the same money.</p>
+    <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>Option</th><th>Month, billed</th><th>Parity at $200</th><th>Reading</th></tr></thead>
+        <tbody>
+          <tr><td>Claude Max 20x (this seat)</td><td>$200</td><td>1.00</td><td>delivered the month, 14 throttle events</td></tr>
+          <tr><td>Anthropic API, Opus 5</td><td>$26,187</td><td>0.008</td><td>like-for-like model, 131&times; the plan price</td></tr>
+          <tr><td>Anthropic API, Sonnet 5</td><td>$10,475</td><td>0.019</td><td>cheaper sibling, still 52&times;</td></tr>
+          <tr><td>OpenAI API, GPT-5.6 Sol</td><td>$20,950</td><td>0.010</td><td>frontier peer, same order as Opus</td></tr>
+          <tr><td>Moonshot API, Kimi K3</td><td>$15,011</td><td>0.013</td><td>open-weight frontier, $15/M output</td></tr>
+          <tr><td>Z.ai API, GLM-5.3</td><td>$10,539</td><td>0.019</td><td>the $0.26 cache-read price is the story</td></tr>
+          <tr><td>DeepSeek API, V4 Pro</td><td>$2,137</td><td>0.094</td><td>$0.022 cache reads, off-peak weighted</td></tr>
+          <tr><td>Cloudflare Workers AI, GLM-5.3-Flash</td><td>$1,206</td><td>0.166</td><td>plus $5 Workers Paid, 20 requests/min cap</td></tr>
+          <tr><td>DeepSeek API, V4 Flash</td><td>$699</td><td>0.286</td><td>second-lowest total</td></tr>
+          <tr><td>Z.ai API, GLM-5.3-Flash</td><td>$601</td><td>0.333</td><td>lowest total that runs the whole month</td></tr>
+          <tr><td>Hybrid router, 95% Flash + 5% Opus</td><td>$1,973</td><td>0.101</td><td>LiteLLM budget caps, frontier fallback</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="note"><p>Modelled from the measured token mix and validated list prices. Cache writes bill at each vendor's write rate where one exists, at the input rate where it doesn't. DeepSeek rows carry the observed 23.6% peak-window weighting explained below.</p></div>
+  </section>
+
+  <section class="section">
+    <h2 class="section-title">Cache reads decide the bill</h2>
+    <p class="qas" data-keyword="llm cache read pricing comparison">Cache-read prices span 37-fold across providers, from DeepSeek V4 Pro's $0.022 to Fable 5's $1.00 per million tokens, and they price 96% of this workload.</p>
+    <p>Input and output list prices get all the attention. At agent volume they barely matter. Swap the cache-read price and the whole ranking reorders.</p>
+    <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>Model</th><th>Cache read, $/M</th><th>Fresh input, $/M</th><th>Output, $/M</th></tr></thead>
+        <tbody>
+          <tr><td>DeepSeek V4 Flash</td><td>$0.007</td><td>$0.22</td><td>$0.66</td></tr>
+          <tr><td>GLM-5.3-Flash</td><td>$0.015</td><td>$0.075</td><td>$0.25</td></tr>
+          <tr><td>DeepSeek V4 Pro</td><td>$0.022</td><td>$0.66</td><td>$1.98</td></tr>
+          <tr><td>GPT-5.3-codex</td><td>$0.175</td><td>$1.75</td><td>$14.00</td></tr>
+          <tr><td>GLM-5.3</td><td>$0.26</td><td>$1.40</td><td>$4.40</td></tr>
+          <tr><td>Kimi K3</td><td>$0.30</td><td>$3.00</td><td>$15.00</td></tr>
+          <tr><td>GPT-5.6 Sol</td><td>$0.40</td><td>$4.00</td><td>$20.00</td></tr>
+          <tr><td>Claude Opus 5</td><td>$0.50</td><td>$5.00</td><td>$25.00</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="section">
+    <h2 class="section-title">Price your own month</h2>
+    <p>Your mix won't match ours. Put in your own monthly volume and cache-hit rate, and the table reprices on 2026-08-28 list prices. Defaults are the measured month.</p>
+    <div class="card">
+      <div class="control-row">
+        <div class="form-group">
+          <label for="calc-input">Input tokens, millions per month</label>
+          <input id="calc-input" type="number" inputmode="decimal" min="0" max="1000000" step="1" value="33276">
+        </div>
+        <div class="form-group">
+          <label for="calc-hit">Cache-hit rate, %</label>
+          <input id="calc-hit" type="number" inputmode="decimal" min="0" max="100" step="0.1" value="96.4">
+        </div>
+        <div class="form-group">
+          <label for="calc-output">Output tokens, millions per month</label>
+          <input id="calc-output" type="number" inputmode="decimal" min="0" max="100000" step="1" value="122">
+        </div>
+      </div>
+      <div class="table-scroll">
+        <table class="data-table" id="calc-table">
+          <thead><tr><th>Provider and model</th><th>Your month, billed</th></tr></thead>
+          <tbody id="calc-body">
+            <tr><td>Z.ai GLM-5.3-Flash</td><td>$601</td></tr>
+            <tr><td>DeepSeek V4 Flash, off-peak list</td><td>$566</td></tr>
+            <tr><td>DeepSeek V4 Pro, off-peak list</td><td>$1,729</td></tr>
+            <tr><td>Z.ai GLM-5.3</td><td>$10,539</td></tr>
+            <tr><td>Moonshot Kimi K2.7-Code</td><td>$7,711</td></tr>
+            <tr><td>Moonshot Kimi K3</td><td>$15,011</td></tr>
+            <tr><td>OpenAI GPT-5.3-codex</td><td>$9,397</td></tr>
+            <tr><td>OpenAI GPT-5.6 Sol</td><td>$20,950</td></tr>
+            <tr><td>Anthropic Sonnet 5</td><td>$10,475</td></tr>
+            <tr><td>Anthropic Opus 5</td><td>$26,187</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="input-hint">Formula per provider: fresh input at the miss rate (or the cache-write rate where the vendor prices writes), cache reads at the hit rate, output at the output rate. DeepSeek rows show off-peak list; weekday peak hours bill 2&times;.</p>
+    </div>
+  </section>
+
+  <section class="section">
+    <h2 class="section-title">The subscription break-even</h2>
+    <p class="qas" data-keyword="claude max break even tokens">At this cache-heavy mix, Claude Max 20x beats the Anthropic API once monthly volume passes about 255 million tokens, roughly $200 of Opus 5 usage.</p>
+    <p>Under that line, pay-as-you-go with a spend cap is the better deal and the plan is overpriced for you. Over it, the plan wins. This seat ran 131 times over it.</p>
+  </section>
+
+  <section class="section">
+    <h2 class="section-title">DeepSeek's peak windows, weighted honestly</h2>
+    <p class="qas" data-keyword="deepseek off peak pricing hours">DeepSeek bills 2&times; list during weekday peak windows, 01:00 to 04:00 and 06:00 to 10:00 UTC, per its 2026-08-16 pricing change.</p>
+    <p>Only 23.6% of this month's tokens landed inside those windows, because agent swarms run nights and weekends too. That weighting puts the effective multiplier at 1.24&times; off-peak list, which the table above already includes. Shift batch work off-peak and it drops further.</p>
+  </section>
+
+  <section class="section">
+    <h2 class="section-title">What could flip this verdict</h2>
+    <p>Three live risks, in order of nearness.</p>
+    <div class="card-grid">
+      <div class="card">
+        <h3>The boost lapse</h3>
+        <p>Anthropic's +50% weekly usage boost for Claude Code ends 2026-08-31, per its help center. If delivered capacity drops in week 36, the 131&times; figure shrinks with it. That's days away, so measure again in September.</p>
+      </div>
+      <div class="card">
+        <h3>Quota opacity</h3>
+        <p>Max limits aren't published in tokens. A rolling 5-hour cap plus an unpublished weekly cap means the multiple can change without a price change. Our logs caught 14 throttle events in the heaviest week.</p>
+      </div>
+      <div class="card">
+        <h3>Thin alternatives</h3>
+        <p>Kimi's top coding tier paused new signups on 2026-07-20. Z.ai's GLM Coding Plan Max covers about 9% of this month in published credits. The escape hatches are narrower than the pricing pages suggest.</p>
+      </div>
+      <div class="card">
+        <h3>Your mix differs</h3>
+        <p>Everything above leans on a 96.4% cache-hit rate. Short sessions and single-shot prompts hit far less cache, and at 60% hit rates the API math moves several multiples in the API's favor.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <h2 class="section-title">How we measured this</h2>
+    <p>The workload comes from parsing 14,973 local Claude Code session files covering 2026-07-29 to 2026-08-28, deduplicated by request id, 4.7GB of logs in total. Prices come from each vendor's own pricing page, fetched on 2026-08-28; 432 of 446 evidence snippets re-matched on a second independent fetch the same day. Benchmarks referenced in the ranking are third-party only, from Terminal-Bench, SWE-bench Verified, and Artificial Analysis. A planned live bake-off was skipped because no funded API key was available on the machine, so capability claims rest on those public leaderboards.</p>
+    <p>One caveat worth repeating. The totals describe one seat's traffic, on one mix, in one month. The method transfers; the totals are yours to re-measure.</p>
+  </section>
+
+  <section class="section">
+    <h2 class="section-title">Frequently asked</h2>
+    <h3>Is Claude Max 20x worth it for agentic coding?</h3>
+    <p>At heavy agent volume, yes by a wide margin. This month's traffic would bill $26,187 at Opus 5 API list prices against a $200 flat fee. The plan beats the API once you pass roughly 255 million tokens a month at a cache-heavy mix.</p>
+    <h3>How many tokens do you get with Claude Max?</h3>
+    <p>Anthropic doesn't say. Limits are a rolling 5-hour session cap plus a weekly cap, neither published in tokens. Our meter shows what one seat absorbed in practice: 33.28 billion input tokens in 30 days, with throttling at the margin.</p>
+    <h3>Is the API cheaper than a Claude subscription?</h3>
+    <p>Below about 255 million tokens a month, yes, and you get hard spend caps with it. Above that line the subscription wins on price and keeps widening. Most casual users sit under the line; most swarm users sit far over it.</p>
+    <h3>What is the cheapest API for high-volume coding agents?</h3>
+    <p>On this measured month, GLM-5.3-Flash at $601 and DeepSeek V4 Flash at $699. Both owe the result to cache-read prices under two cents per million tokens. The frontier names cost 15 to 44 times more for the identical traffic.</p>
+  </section>
+
+  <section class="section">
+    <h2 class="section-title">Related</h2>
+    <div class="related-grid">
+      <a class="related-card" href="/research/gpu-rent-vs-buy-tokens.html">
+        <div class="link-card__title">Renting GPUs vs buying tokens</div>
+        <p class="link-card__desc">The self-hosting side of the same question, with measured rental prices and break-even volumes.</p>
+      </a>
+      <a class="related-card" href="/calculators/kv-cache-size-calculator.html">
+        <div class="link-card__title">KV cache size calculator</div>
+        <p class="link-card__desc">The memory arithmetic behind the cache reads that dominate this bill.</p>
+      </a>
+      <a class="related-card" href="/calculators/llm-memory-calculator.html">
+        <div class="link-card__title">LLM memory calculator</div>
+        <p class="link-card__desc">Whether a given model and context length fits the hardware you have.</p>
+      </a>
+      <a class="related-card" href="https://kickllm.com/tools/token-cost-calculator.html">
+        <div class="link-card__title">Token cost calculator</div>
+        <p class="link-card__desc">Per-request pricing across 13 hosted models, from our benchmarks site.</p>
+      </a>
+    </div>
+  </section>
+</main>
+
+<script>
+(function () {
+  "use strict";
+  var PROVIDERS = [
+    { name: "Z.ai GLM-5.3-Flash", pin: 0.075, phit: 0.015, pout: 0.25, pcw: null },
+    { name: "DeepSeek V4 Flash, off-peak list", pin: 0.22, phit: 0.007, pout: 0.66, pcw: null },
+    { name: "DeepSeek V4 Pro, off-peak list", pin: 0.66, phit: 0.022, pout: 1.98, pcw: null },
+    { name: "Z.ai GLM-5.3", pin: 1.4, phit: 0.26, pout: 4.4, pcw: null },
+    { name: "Moonshot Kimi K2.7-Code", pin: 0.95, phit: 0.19, pout: 4.0, pcw: null },
+    { name: "Moonshot Kimi K3", pin: 3.0, phit: 0.3, pout: 15.0, pcw: null },
+    { name: "OpenAI GPT-5.3-codex", pin: 1.75, phit: 0.175, pout: 14.0, pcw: null },
+    { name: "OpenAI GPT-5.6 Sol", pin: 4.0, phit: 0.4, pout: 20.0, pcw: 5.0 },
+    { name: "Anthropic Sonnet 5", pin: 2.0, phit: 0.2, pout: 10.0, pcw: 2.5 },
+    { name: "Anthropic Opus 5", pin: 5.0, phit: 0.5, pout: 25.0, pcw: 6.25 }
+  ];
+  var MAX_TOKENS_M = 1000000;
+
+  function clampNumber(raw, lo, hi, fallback) {
+    if (typeof lo !== "number" || typeof hi !== "number") { return fallback; }
+    var v = parseFloat(raw);
+    if (!isFinite(v)) { return fallback; }
+    return Math.min(hi, Math.max(lo, v));
+  }
+
+  function readWorkload(doc) {
+    if (!doc) { return null; }
+    var inEl = doc.getElementById("calc-input");
+    var hitEl = doc.getElementById("calc-hit");
+    var outEl = doc.getElementById("calc-output");
+    if (!inEl || !hitEl || !outEl) { return null; }
+    return {
+      inputM: clampNumber(inEl.value, 0, MAX_TOKENS_M, 0),
+      hit: clampNumber(hitEl.value, 0, 100, 0) / 100,
+      outputM: clampNumber(outEl.value, 0, MAX_TOKENS_M, 0)
+    };
+  }
+
+  function costFor(p, w) {
+    if (!p || !w) { return 0; }
+    if (w.inputM < 0 || w.outputM < 0) { return 0; }
+    var missRate = (p.pcw === null) ? p.pin : p.pcw;
+    var miss = w.inputM * (1 - w.hit) * missRate;
+    var hits = w.inputM * w.hit * p.phit;
+    var out = w.outputM * p.pout;
+    var total = miss + hits + out;
+    return isFinite(total) ? total : 0;
+  }
+
+  function formatUsd(v) {
+    if (!isFinite(v) || v < 0) { return "$0"; }
+    return "$" + Math.round(v).toLocaleString("en-US");
+  }
+
+  function render(doc) {
+    var body = doc ? doc.getElementById("calc-body") : null;
+    var w = readWorkload(doc);
+    if (!body || !w) { return false; }
+    var rows = [];
+    for (var i = 0; i < PROVIDERS.length && i < 20; i++) {
+      rows.push({ name: PROVIDERS[i].name, cost: costFor(PROVIDERS[i], w) });
+    }
+    rows.sort(function (a, b) { return a.cost - b.cost; });
+    while (body.firstChild) { body.removeChild(body.firstChild); }
+    for (var j = 0; j < rows.length && j < 20; j++) {
+      var tr = doc.createElement("tr");
+      var td1 = doc.createElement("td");
+      var td2 = doc.createElement("td");
+      td1.textContent = rows[j].name;
+      td2.textContent = formatUsd(rows[j].cost);
+      td2.style.fontVariantNumeric = "tabular-nums";
+      tr.appendChild(td1);
+      tr.appendChild(td2);
+      body.appendChild(tr);
+    }
+    return true;
+  }
+
+  function bind(doc) {
+    if (!doc) { return; }
+    var ids = ["calc-input", "calc-hit", "calc-output"];
+    for (var i = 0; i < ids.length && i < 5; i++) {
+      var el = doc.getElementById(ids[i]);
+      if (el) { el.addEventListener("input", function () { render(doc); }); }
+    }
+    render(doc);
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", function () { bind(document); });
+  } else {
+    bind(document);
+  }
+})();
+</script>
+
+<footer class="site-footer">
+  <nav class="footer-links-seo" aria-label="ML tools and content">
+    <a href="/tools/">ML tools</a>
+    <a href="/tools/learning-rate-finder.html">Learning rate finder</a>
+    <a href="/tools/confusion-matrix-calculator.html">Confusion matrix calculator</a>
+    <a href="/tools/neural-network-playground.html">Neural network playground</a>
+    <a href="/tools/attention-mechanism-visualizer.html">Attention visualizer</a>
+    <a href="/tools/dataset-splitter.html">Dataset splitter</a>
+    <a href="/calculators/kv-cache-size-calculator.html">KV cache calculator</a>
+    <a href="/calculators/llm-memory-calculator.html">LLM memory calculator</a>
+    <a href="/guides/">Guides</a>
+    <a href="/guides/gradient-descent-explained.html">Gradient descent</a>
+    <a href="/answers/">Answers</a>
+    <a href="/answers/ml-algorithm-comparison.html">Algorithm comparison</a>
+    <a href="/research/">Research</a>
+    <a href="/research/ml-cheatsheet.html">ML cheat sheet</a>
+    <a href="/about.html">About</a>
+  </nav>
+  <div class="site-footer__inner">
+    <div class="site-footer__brand">
+      <span class="site-footer__logo">ml0x</span>
+      <span class="site-footer__meta">by <a href="https://github.com/theluckystrike" target="_blank" rel="noopener">@theluckystrike</a></span>
+    </div>
+    <div class="site-footer__links">
+      <a href="https://github.com/theluckystrike/100xagenticdev" target="_blank" rel="noopener">GitHub</a>
+      <a href="/research/">Research</a>
+      <a href="https://twitter.com/_alphashark_" target="_blank" rel="noopener">X</a>
+    </div>
+  </div>
+  <nav class="zovo-network" aria-label="Zovo Tools Network">
+    <div class="zovo-network-inner">
+        <h3 class="zovo-network-title">Explore More Tools</h3>
+        <div class="zovo-network-links">
+            <a href="https://abwex.com">ABWex &middot; A/B Testing</a>
+            <a href="https://b2berp.com">B2BERP &middot; Business Tools</a>
+            <a href="https://bugbountyreality.com">BugBountyReality &middot; Security</a>
+            <a href="https://claudflow.com">ClaudFlow &middot; Workflows</a>
+            <a href="https://claudkit.com">ClaudKit &middot; API Tools</a>
+            <a href="https://dismissticket.com">DismissTicket &middot; Support</a>
+            <a href="https://enhio.com">Enhio &middot; Text Tools</a>
+            <a href="https://epochpilot.com">EpochPilot &middot; Timestamps</a>
+            <a href="https://gen8x.com">Gen8X &middot; Color Tools</a>
+            <a href="https://gpt0x.com">GPT0X &middot; AI Models</a>
+            <a href="https://heytensor.com">HeyTensor &middot; ML Tools</a>
+            <a href="https://ingredientcalculator.com">IngredientCalc &middot; Recipes</a>
+            <a href="https://invokebot.com">InvokeBot &middot; Webhooks</a>
+            <a href="https://kappafy.com">Kappafy &middot; JSON</a>
+            <a href="https://kappakit.com">KappaKit &middot; Dev Toolkit</a>
+            <a href="https://kickllm.com">KickLLM &middot; LLM Costs</a>
+            <a href="https://krzen.com">Krzen &middot; Image Tools</a>
+            <a href="https://lochbot.com">LochBot &middot; Security</a>
+            <a href="https://lockml.com">LockML &middot; ML Security</a>
+            <a href="https://ml3x.com">ML3X &middot; Matrix Math</a>
+            <a href="https://pictureeditor.net">PictureEditor &middot; Image Editing</a>
+            <a href="https://recipetool.net">RecipeTool &middot; Cooking</a>
+            <a href="https://viryd.com">Viryd &middot; Dev Tools</a>
+        </div>
+    </div>
+</nav>
+
+<div class="pow-strip">
+  <div class="pow-strip-inner">
+    <span class="pow-label">By the same builder:</span>
+    <a href="https://github.com/theluckystrike" rel="nofollow">GitHub &middot; theluckystrike</a>
+    <a href="https://www.belikenative.com" rel="nofollow">BeLikeNative &middot; Grammar AI</a>
+    <a href="https://earlythunder.com" rel="nofollow">EarlyThunder &middot; Dev Blog</a>
+    <a href="https://bugbountyreality.com" rel="nofollow">Bug Bounty Reality</a>
+    <a href="https://zovo.one/lifetime?utm_source=ml0x&amp;utm_medium=footer&amp;utm_campaign=research-gpu-rent-vs-buy" rel="nofollow">Zovo &middot; AI Dev Tools</a>
+  </div>
+</div>
+</footer>
+</body>
+</html>
