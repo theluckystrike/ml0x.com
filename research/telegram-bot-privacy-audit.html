@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>What a Telegram Bot Can and Cannot See: A Privacy Audit | ml0x</title>
+<meta name="description" content="We read Telegram's own bot API docs and three live bots' data models to answer one question: when a bot replies in your group, what does it actually see and store?">
+<meta name="keywords" content="telegram bot privacy, telegram bot privacy mode, telegram guest mode, what can a telegram bot see, telegram bot data storage, telegram bot mention without adding">
+<link rel="canonical" href="https://ml0x.com/research/telegram-bot-privacy-audit.html">
+<link rel="alternate" hreflang="en" href="https://ml0x.com/research/telegram-bot-privacy-audit.html">
+<link rel="alternate" hreflang="x-default" href="https://ml0x.com/research/telegram-bot-privacy-audit.html">
+<meta property="og:type" content="article">
+<meta property="og:title" content="What a Telegram Bot Can and Cannot See: A Privacy Audit">
+<meta property="og:description" content="Telegram's own docs plus three live bots' data models, read line by line. What privacy mode filters, what Guest Mode exposes, and what actually lands in a database.">
+<meta property="og:url" content="https://ml0x.com/research/telegram-bot-privacy-audit.html">
+<meta property="og:site_name" content="ml0x">
+<meta property="og:locale" content="en_US">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="What a Telegram Bot Can and Cannot See: A Privacy Audit">
+<meta name="twitter:description" content="Telegram's own docs plus three live bots' data models. What privacy mode filters, what Guest Mode exposes, and what lands in a database.">
+<meta name="author" content="Michael Lip">
+<meta name="date" content="2026-09-04">
+<meta name="robots" content="index, follow">
+<link rel="stylesheet" href="/assets/ml0x.css">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Article",
+  "headline": "What a Telegram Bot Can and Cannot See: A Privacy Audit",
+  "description": "An audit of Telegram's bot privacy mode and Guest Mode against three live bots' documented data models.",
+  "url": "https://ml0x.com/research/telegram-bot-privacy-audit.html",
+  "author": { "@type": "Person", "name": "Michael Lip", "url": "https://zovo.one" },
+  "publisher": { "@type": "Organization", "name": "ml0x", "url": "https://ml0x.com" },
+  "datePublished": "2026-09-04",
+  "dateModified": "2026-09-04",
+  "isBasedOn": [
+    { "@type": "CreativeWork", "name": "Telegram Bot FAQ", "url": "https://core.telegram.org/bots/faq" },
+    { "@type": "CreativeWork", "name": "Telegram Bot Features", "url": "https://core.telegram.org/bots/features" }
+  ]
+}
+</script>
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Home","item":"https://ml0x.com/"},{"@type":"ListItem","position":2,"name":"Research","item":"https://ml0x.com/research/"},{"@type":"ListItem","position":3,"name":"Telegram bot privacy audit"}]}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    { "@type": "Question", "name": "Can a Telegram bot read every message in my group?", "acceptedAnswer": { "@type": "Answer", "text": "Not by default. Privacy mode is on by default for every bot. With it on, a bot only receives messages that are explicitly meant for it: commands addressed to it, replies to its own messages, and any message once it was the last bot to speak in the group. Group admins can turn privacy mode off in BotFather, and only then does the bot see every message." } },
+    { "@type": "Question", "name": "What does a bot see when I @-mention it without adding it?", "acceptedAnswer": { "@type": "Answer", "text": "Telegram's Guest Mode sends the bot a single update containing the message that mentioned it, and the message it was replying to if there was one. Per Telegram's own documentation, Guest Mode does not grant access to the chat's message history or its participant list. Up to three guest bots can be mentioned in one message." } },
+    { "@type": "Question", "name": "Does a Telegram bot know who is in my group?", "acceptedAnswer": { "@type": "Answer", "text": "Only if it's been added as a member and privacy mode is off, or if a user directly interacts with it, generating a record of that one user. A bot mentioned through Guest Mode gets no participant list at all, by Telegram's own documented limit." } },
+    { "@type": "Question", "name": "What do anonymous-posting Telegram bots actually store?", "acceptedAnswer": { "@type": "Answer", "text": "It depends on the bot, and the honest way to check is its published data model, not its marketing copy. One example: AnonSayProBot stores the sender's id internally, hashed with a per-group salt, so an admin can use /reveal or /ban, but that id is never shown to other group members, and posts are purged after 30 days per its own documentation." } }
+  ]
+}
+</script>
+</head>
+<body>
+
+<a class="skip-link" href="#main">Skip to content</a>
+<header class="site-nav">
+  <div class="site-nav__inner">
+    <div class="site-nav__left">
+      <a class="site-nav__logo" href="/">ml0x</a>
+      <nav class="site-nav__links" aria-label="Main">
+        <a href="/tools/">Tools</a>
+        <a href="/calculators/">Calculators</a>
+        <a href="/guides/">Guides</a>
+        <a href="/answers/">Answers</a>
+        <a href="/research/" aria-current="page">Research</a>
+      </nav>
+    </div>
+    <a class="nav-cta" href="https://zovo.one/pricing?utm_source=ml0x&amp;utm_medium=nav&amp;utm_campaign=research-telegram-bot-privacy-audit" target="_blank" rel="noopener">Full system, $99</a>
+  </div>
+</header>
+
+<main id="main" class="container">
+  <nav class="breadcrumb" aria-label="Breadcrumb">
+    <a href="/">Home</a> <span>&rsaquo;</span> <a href="/research/">Research</a> <span>&rsaquo;</span> Telegram bot privacy audit
+  </nav>
+
+  <div class="page-head">
+    <div class="eyebrow">Privacy audit &middot; Telegram Bot API</div>
+    <h1>What a Telegram bot can and cannot see</h1>
+    <p class="subtitle">A bot answers in your group and you never added it. What did it just read? We checked Telegram's own bot documentation line by line, then checked three live bots' published data models against it.</p>
+    <p class="last-updated">Bot API behavior verified 2026-09-04 against core.telegram.org/bots/faq and core.telegram.org/bots/features. Bot data models sourced from each bot's own published documentation.</p>
+  </div>
+
+  <div class="note">
+    <p>This is not a review of any one bot's trustworthiness. It's a read of what the platform technically hands a bot in three situations, plus what three specific bots say they keep. The examples are three of nine live bots from <a href="https://tg.zovo.one/">Tiny Telegram Tools</a>, chosen because they all touch anonymity or private text, which is where "what does it see" matters most.</p>
+  </div>
+
+  <div class="stat-grid">
+    <div class="stat-card">
+      <div class="label">Default filter</div>
+      <div class="value">Privacy mode: ON</div>
+      <div class="stat-note">every new bot starts this way, per Telegram's own docs</div>
+    </div>
+    <div class="stat-card">
+      <div class="label">Guest Mode reply scope</div>
+      <div class="value">1 message</div>
+      <div class="stat-note">the mention itself, plus the message it replied to, if any</div>
+    </div>
+    <div class="stat-card">
+      <div class="label">Guest Mode history access</div>
+      <div class="value warn">None</div>
+      <div class="stat-note">no chat history, no member list, by documented design</div>
+    </div>
+    <div class="stat-card">
+      <div class="label">Bots mentioned per message</div>
+      <div class="value">3 max</div>
+      <div class="stat-note">the documented cap on simultaneous guest mentions</div>
+    </div>
+  </div>
+
+  <section class="section">
+    <h2 class="section-title">Privacy mode, the default filter</h2>
+    <p class="qas" data-keyword="telegram bot privacy mode">Every Telegram bot starts with privacy mode on. With it on, a bot in a group only receives commands addressed to it, replies to its own messages, and messages sent while it was the last bot to speak, not the group's general chatter.</p>
+    <p>Telegram's own FAQ spells out the exact list. With privacy mode enabled, a bot receives: commands explicitly meant for it (like <code>/command@this_bot</code>), a general command like <code>/start</code> if the bot was the last one to post in the group, messages sent through it (inline results, for example), and replies to anything the bot itself sent. On top of that, every bot, privacy mode or not, always gets service messages, everything from private chats with users, and everything from channels it belongs to. Bots never see each other's messages, in any mode.</p>
+    <p>Turning privacy mode off is a deliberate, admin-only action in BotFather. Only then does a bot see the full stream of a group's messages. Most single-purpose bots, including the ones checked below, have no reason to ask for that, and don't need it to run a command or answer a mention.</p>
+  </section>
+
+  <section class="section">
+    <h2 class="section-title">Guest Mode: answering without joining</h2>
+    <p class="qas" data-keyword="telegram guest mode privacy">Guest Mode lets a bot answer an @-mention in a group it was never added to. Telegram's own documentation states it sends the bot "a dedicated update that includes the summoning message and, when present, the specific message it was replying to," and explicitly, "Guest mode does not grant access to a chat's message history or participant list."</p>
+    <p>That's the whole payload: the one message that named the bot, and, if that message was itself a reply, the message underneath it. No scrollback, no roster of who else is in the chat, no standing membership that persists after the reply. Telegram also caps this at three guest bots mentioned in a single message. Telegram's docs draw a clean line between this and inline mode: inline mode is for fetching content a user then chooses to send themselves, one tap, no reply from the bot as itself; Guest Mode is the bot replying in the chat, as itself, off that single update.</p>
+    <p>Practically, that means a bot that only answers Guest Mode mentions and inline queries has no path to your group's history even if it wanted one. The platform doesn't hand it over. A step-by-step walkthrough of using Guest Mode as a group member, with a live example, is at <a href="https://tg.zovo.one/guides/telegram-guest-mode-without-adding-bot/">Tiny Telegram Tools' Guest Mode guide</a>.</p>
+  </section>
+
+  <section class="section">
+    <h2 class="section-title">Three access modes, side by side</h2>
+    <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>Mode</th><th>What the bot receives</th><th>Chat history</th><th>Member list</th></tr></thead>
+        <tbody>
+          <tr><td>Privacy mode on (default)</td><td>Commands addressed to it, replies to its own messages</td><td>No</td><td>No</td></tr>
+          <tr><td>Guest Mode mention (not added)</td><td>The mentioning message, plus the message it replied to</td><td>No, by documented design</td><td>No, by documented design</td></tr>
+          <tr><td>Privacy mode off (admin-enabled)</td><td>Every message in the group</td><td>Only from when it joined, going forward</td><td>Yes, standard membership API</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="note"><p>None of these modes give a bot access to messages sent before it started receiving them. Telegram doesn't back-fill history to a newly added or newly un-privacy'd bot.</p></div>
+  </section>
+
+  <section class="section">
+    <h2 class="section-title">What three live bots actually store</h2>
+    <p>Platform limits are one layer. What a bot's own backend keeps is a separate, bot-by-bot question, and the only honest way to answer it is to read that bot's published data model rather than take its word for it. Here's what three anonymity-adjacent bots from the same maker document about their own storage.</p>
+    <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>Bot</th><th>Stores</th><th>Documented limit</th></tr></thead>
+        <tbody>
+          <tr><td><a href="https://tg.zovo.one/bots/whisper/">WhisperLockBot</a></td><td>The locked message text, sender id and name, the tagged recipient, and a reveal count, so the card can be reopened later.</td><td>Only the addressed recipient and the sender can ever open the popup text; everyone else in the chat sees a sealed card, never the contents.</td></tr>
+          <tr><td><a href="https://tg.zovo.one/bots/anon/">AnonInboxProBot</a></td><td>Incoming anonymous messages (owner id, sender id, body), an open-session marker, a link-open counter, and a block list.</td><td>The sender's identity is never shown to the owner on the free tier; Pro adds limited hints, not the sender's full identity.</td></tr>
+          <tr><td><a href="https://tg.zovo.one/bots/anonsay/">AnonSayProBot</a></td><td>Each anonymous post (chat, message id, sender id, body), a per-group salt, a hashed-id cache for admin lookups, and a block list.</td><td>The sender's identity is hashed with a per-group salt and only surfaced to an admin via /reveal, never posted publicly; posts are purged after 30 days.</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="note"><p>Sender ids get stored even in "anonymous" flows, because someone has to be reachable if a reply or a ban needs to happen. What changes bot to bot is who that id is ever shown to, and for how long it's kept. AnonSayProBot's docs state a 30-day purge; WhisperLockBot's and AnonInboxProBot's published data models don't state a retention window, so that's a gap worth asking about rather than assuming either way.</p></div>
+  </section>
+
+  <section class="section">
+    <h2 class="section-title">What this audit doesn't cover</h2>
+    <div class="card-grid">
+      <div class="card">
+        <h3>Server-side logging</h3>
+        <p>Telegram's own server logs, and any hosting-platform logs a bot's backend runs on, sit outside what a bot's data model can tell you. This piece covers what the Bot API hands the bot and what the bot's documented schema keeps, not lower-level infrastructure logging.</p>
+      </div>
+      <div class="card">
+        <h3>Deleted messages</h3>
+        <p>If a bot already stored a message before you deleted it in Telegram, deleting it client-side doesn't retroactively remove it from that bot's database. Whether it does depends on the bot's own deletion logic, which its docs may or may not state.</p>
+      </div>
+      <div class="card">
+        <h3>Third-party bots generally</h3>
+        <p>The three bots checked here document their storage in detail because that's the standard we're holding them to. Most bots on Telegram publish no data model at all, which is itself the finding: read one before you trust a bot with anything you'd call private.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <h2 class="section-title">How we checked this</h2>
+    <p>Platform behavior (privacy mode, Guest Mode's scope, the three-bot mention cap) comes from Telegram's own <a href="https://core.telegram.org/bots/faq" target="_blank" rel="noopener">Bot FAQ</a> and <a href="https://core.telegram.org/bots/features" target="_blank" rel="noopener">Bot Features</a> pages, fetched and quoted directly on 2026-09-04. Bot-specific storage claims come from each bot's own published documentation on <a href="https://tg.zovo.one/">tg.zovo.one</a>, not from source code review or a data request to the operator. Where a bot's docs didn't state a retention period, we said so rather than filling the gap with an assumption.</p>
+  </section>
+
+  <section class="section">
+    <h2 class="section-title">Frequently asked</h2>
+    <h3>Can a Telegram bot read every message in my group?</h3>
+    <p>Not by default. Privacy mode is on until an admin turns it off, and while it's on, a bot only gets commands addressed to it and replies to its own messages.</p>
+    <h3>What does a bot see when I @-mention it without adding it?</h3>
+    <p>One update: the mentioning message, and the message it replied to, if any. No chat history, no participant list, per Telegram's own docs.</p>
+    <h3>Does a Telegram bot know who is in my group?</h3>
+    <p>Only as a full member with privacy mode off, admin-enabled, or through direct interaction with a user. A Guest Mode mention gives it neither.</p>
+    <h3>What do anonymous-posting Telegram bots actually store?</h3>
+    <p>Read the bot's own published data model. AnonSayProBot stores a hashed sender id per post and purges posts after 30 days; other bots' retention will differ.</p>
+  </section>
+
+  <section class="section">
+    <h2 class="section-title">Related</h2>
+    <div class="related-grid">
+      <a class="related-card" href="https://tg.zovo.one/guides/telegram-guest-mode-without-adding-bot/">
+        <div class="link-card__title">Using Guest Mode as a group member</div>
+        <p class="link-card__desc">A walkthrough of @-mentioning a bot that was never added, with a live example.</p>
+      </a>
+      <a class="related-card" href="https://tg.zovo.one/bots/whisper/">
+        <div class="link-card__title">WhisperLockBot</div>
+        <p class="link-card__desc">Locked messages only the named recipient can open, posted inline into any chat.</p>
+      </a>
+      <a class="related-card" href="https://tg.zovo.one/bots/anonsay/">
+        <div class="link-card__title">AnonSayProBot</div>
+        <p class="link-card__desc">Anonymous group posting with an admin-only, hashed /reveal safety valve.</p>
+      </a>
+      <a class="related-card" href="/research/claude-max-vs-api-cost.html">
+        <div class="link-card__title">What $200 of Claude Max actually buys</div>
+        <p class="link-card__desc">A metered-usage cost audit, same evidence-first method applied to token pricing.</p>
+      </a>
+    </div>
+  </section>
+</main>
+
+<footer class="site-footer">
+  <nav class="footer-links-seo" aria-label="ML tools and content">
+    <a href="/tools/">ML tools</a>
+    <a href="/tools/learning-rate-finder.html">Learning rate finder</a>
+    <a href="/tools/confusion-matrix-calculator.html">Confusion matrix calculator</a>
+    <a href="/tools/neural-network-playground.html">Neural network playground</a>
+    <a href="/tools/attention-mechanism-visualizer.html">Attention visualizer</a>
+    <a href="/tools/dataset-splitter.html">Dataset splitter</a>
+    <a href="/calculators/kv-cache-size-calculator.html">KV cache calculator</a>
+    <a href="/calculators/llm-memory-calculator.html">LLM memory calculator</a>
+    <a href="/guides/">Guides</a>
+    <a href="/guides/gradient-descent-explained.html">Gradient descent</a>
+    <a href="/answers/">Answers</a>
+    <a href="/answers/ml-algorithm-comparison.html">Algorithm comparison</a>
+    <a href="/research/">Research</a>
+    <a href="/research/ml-cheatsheet.html">ML cheat sheet</a>
+    <a href="/about.html">About</a>
+  </nav>
+  <div class="site-footer__inner">
+    <div class="site-footer__brand">
+      <span class="site-footer__logo">ml0x</span>
+      <span class="site-footer__meta">by <a href="https://github.com/theluckystrike" target="_blank" rel="noopener">@theluckystrike</a></span>
+    </div>
+    <div class="site-footer__links">
+      <a href="https://github.com/theluckystrike/100xagenticdev" target="_blank" rel="noopener">GitHub</a>
+      <a href="/research/">Research</a>
+      <a href="https://twitter.com/_alphashark_" target="_blank" rel="noopener">X</a>
+    </div>
+  </div>
+  <nav class="zovo-network" aria-label="Zovo Tools Network">
+    <div class="zovo-network-inner">
+        <h3 class="zovo-network-title">Explore More Tools</h3>
+        <div class="zovo-network-links">
+            <a href="https://abwex.com">ABWex &middot; A/B Testing</a>
+            <a href="https://b2berp.com">B2BERP &middot; Business Tools</a>
+            <a href="https://bugbountyreality.com">BugBountyReality &middot; Security</a>
+            <a href="https://claudflow.com">ClaudFlow &middot; Workflows</a>
+            <a href="https://claudkit.com">ClaudKit &middot; API Tools</a>
+            <a href="https://dismissticket.com">DismissTicket &middot; Support</a>
+            <a href="https://enhio.com">Enhio &middot; Text Tools</a>
+            <a href="https://epochpilot.com">EpochPilot &middot; Timestamps</a>
+            <a href="https://gen8x.com">Gen8X &middot; Color Tools</a>
+            <a href="https://gpt0x.com">GPT0X &middot; AI Models</a>
+            <a href="https://heytensor.com">HeyTensor &middot; ML Tools</a>
+            <a href="https://ingredientcalculator.com">IngredientCalc &middot; Recipes</a>
+            <a href="https://invokebot.com">InvokeBot &middot; Webhooks</a>
+            <a href="https://kappafy.com">Kappafy &middot; JSON</a>
+            <a href="https://kappakit.com">KappaKit &middot; Dev Toolkit</a>
+            <a href="https://kickllm.com">KickLLM &middot; LLM Costs</a>
+            <a href="https://krzen.com">Krzen &middot; Image Tools</a>
+            <a href="https://lochbot.com">LochBot &middot; Security</a>
+            <a href="https://lockml.com">LockML &middot; ML Security</a>
+            <a href="https://ml3x.com">ML3X &middot; Matrix Math</a>
+            <a href="https://pictureeditor.net">PictureEditor &middot; Image Editing</a>
+            <a href="https://recipetool.net">RecipeTool &middot; Cooking</a>
+            <a href="https://viryd.com">Viryd &middot; Dev Tools</a>
+        </div>
+    </div>
+</nav>
+
+<div class="pow-strip">
+  <div class="pow-strip-inner">
+    <span class="pow-label">By the same builder:</span>
+    <a href="https://github.com/theluckystrike" rel="nofollow">GitHub &middot; theluckystrike</a>
+    <a href="https://www.belikenative.com" rel="nofollow">BeLikeNative &middot; Grammar AI</a>
+    <a href="https://earlythunder.com" rel="nofollow">EarlyThunder &middot; Dev Blog</a>
+    <a href="https://bugbountyreality.com" rel="nofollow">Bug Bounty Reality</a>
+    <a href="https://zovo.one/lifetime?utm_source=ml0x&amp;utm_medium=footer&amp;utm_campaign=research-telegram-bot-privacy-audit" rel="nofollow">Zovo &middot; AI Dev Tools</a>
+  </div>
+</div>
+</footer>
+</body>
+</html>
