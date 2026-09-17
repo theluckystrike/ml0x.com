@@ -54,6 +54,15 @@
 </div>
 </div>
 
+<section class="card" id="biggest-win" style="margin:22px 0 8px">
+<h4>Biggest win</h4>
+<p>A full pipeline run on the tuned setup reached the human gate in 160 orchestration calls and $0.087 of real spend. The same morning, on the untuned setup, a comparable run on another site took 315 calls and $0.311. Behind that number sit three fixes: the cost ledger that had stopped Hermes three times was 17x above the real bill and is now within 1.1 percent, compaction fires at 51k tokens instead of 153k, and the median prompt fell from 89,965 to 32,707 tokens.</p>
+<div class="grid">
+<div class="tile"><div class="n">160</div><div class="l">orchestration calls to the human gate, against 315 that morning</div></div>
+<div class="tile"><div class="n">$0.087</div><div class="l">real spend for that run, against $0.311, catalog rates, same ledger</div></div>
+<div class="tile"><div class="n">51k</div><div class="l">tokens at which compaction now fires, against 153k before</div></div>
+<div class="tile"><div class="n">0</div><div class="l">cap stops after rebasing caps to real dollars, against 3 that morning</div></div>
+</div></section>
 <h2>The situation in numbers</h2>
 <p>Five Hermes Agent TUI sessions were running on one Mac, all talking to Nous through a local model-lock proxy that held the budget caps. At 05:11 UTC Hermes stopped with HTTP 402. The proxy's own $6 daily cap had fired, and it fired twice more that morning at $20 and $15. None of that money had been spent. Here is what the audit found before anything was changed.</p>
 <div class="grid">
