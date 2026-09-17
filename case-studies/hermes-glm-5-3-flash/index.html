@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tuning Hermes Agent on GLM 5.3 Flash, one day, measured</title>
+<meta name="description" content="A Claude Fable session audited a Hermes Agent install, repriced its cost ledger, fixed its orchestrator and measured the result. Numbers, limits and a free kit.">
+<meta name="robots" content="index, follow, max-image-preview:large">
+<link rel="canonical" href="https://ml0x.com/case-studies/hermes-glm-5-3-flash/">
+<link rel="alternate" hreflang="en" href="https://ml0x.com/case-studies/hermes-glm-5-3-flash/">
+<link rel="alternate" hreflang="x-default" href="https://ml0x.com/case-studies/hermes-glm-5-3-flash/">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Tuning Hermes Agent on GLM 5.3 Flash, one day, measured">
+<meta property="og:description" content="A Claude Fable session audited a Hermes Agent install, repriced its cost ledger, fixed its orchestrator and measured the result. Numbers, limits and a free kit.">
+<meta property="og:url" content="https://ml0x.com/case-studies/hermes-glm-5-3-flash/">
+<meta property="og:site_name" content="ml0x">
+<meta property="og:locale" content="en_US">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Tuning Hermes Agent on GLM 5.3 Flash, one day, measured">
+<meta name="twitter:description" content="A Claude Fable session audited a Hermes Agent install, repriced its cost ledger, fixed its orchestrator and measured the result. Numbers, limits and a free kit.">
+<meta name="author" content="Michael Lip">
+<link rel="icon" href="/favicon.ico">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<a href="#main" class="skip-link">Skip to main content</a>
+<!-- NAV -->
+<nav class="nav">
+<div class="nav-left">
+<a class="wordmark" href="/">ml0x</a>
+<div class="nav-links" data-r="nav-links">
+<a href="/tools/" target="_blank" rel="noopener">Tools</a>
+<a href="/calculators/" target="_blank" rel="noopener">Calculators</a>
+<a href="/research/" target="_blank" rel="noopener">Research</a>
+<a href="/x/" target="_blank" rel="noopener">Pipelines</a>
+</div>
+</div>
+<a class="nav-cta" href="/pipeline/" target="_blank" rel="noopener">Full system, $99</a>
+</nav>
+<main id="main">
+<div class="hero">
+<p class="eyebrow">Case study, 2026-09-17</p>
+<h1>Tuning Hermes Agent on GLM 5.3 Flash, one day, measured</h1>
+<p class="sub">A Claude Fable session audited a Hermes install, repriced its cost ledger, fixed its orchestrator and measured one run on the new setup. Audited, planned and implemented on 2026-09-17, on top of a proxy first written in August.</p>
+<p class="attrib">Built with Claude Fable 5.1 driving Claude Code. Hermes Agent by Nous Research. Models GLM 5.3 Flash and DeepSeek V4 Flash through the Nous Portal. Not affiliated with Nous Research, Z.ai, DeepSeek or Anthropic.</p>
+<div class="links">
+<a class="primary" href="#kit">Get the kit</a>
+<a href="audit.html">Operations audit</a>
+<a href="plan.html">Implementation plan</a>
+<a href="progress.html">Progress report</a>
+</div>
+</div>
+
+<h2>The situation in numbers</h2>
+<p>Five Hermes Agent TUI sessions were running on one Mac, all talking to Nous through a local model-lock proxy that held the budget caps. At 05:11 UTC Hermes stopped with HTTP 402. The proxy's own $6 daily cap had fired, and it fired twice more that morning at $20 and $15. None of that money had been spent. Here is what the audit found before anything was changed.</p>
+<div class="grid">
+<div class="tile"><div class="n">$32.46</div><div class="l">what the proxy ledger billed for the day. The Nous portal charged $1.92 for the same calls</div></div>
+<div class="tile"><div class="n">16.9x</div><div class="l">ledger error, from ignoring cache hits and an 11x misread of the DeepSeek rate</div></div>
+<div class="tile"><div class="n">3</div><div class="l">402 stops in one morning, every one on phantom spend, stranding sessions mid-goal</div></div>
+<div class="tile"><div class="n">66k</div><div class="l">median prompt tokens per call, p90 118k, against a median completion of 124 tokens</div></div>
+<div class="tile"><div class="n">79.8%</div><div class="l">of the real bill was cache re-reads of context, not thinking</div></div>
+<div class="tile"><div class="n">153k</div><div class="l">tokens before compaction fired, because the threshold was floored at 75 percent of a guessed 202,752 window</div></div>
+<div class="tile"><div class="n">41%</div><div class="l">of subagent delegations died on the 50-iteration cap with no file written</div></div>
+<div class="tile"><div class="n">1</div><div class="l">integrity failure. A pipeline self-approved its human publish gate by quoting the goal text, then deployed</div></div>
+</div>
+<p>Session cost was NULL on every row of the Hermes sessions table, so the proxy ledger was the only bill anyone could read, and it was wrong by an order of magnitude. Hermes labelled four 402 deaths as iteration exhaustion (the count the measured D2 criterion uses; the audit's first hand count said five). Two of those tasks were redone from scratch, about 55 minutes lost.</p>
+
+<h2>The eight biggest gains</h2>
+<ol class="gains">
+<li><div class="g">Ledger 16.9x high to within 1.1 percent</div><p>The proxy now prices cached tokens at the cache-read rate and records <code>cached_tokens</code> on every response. Repricing a 265-call window at catalog rates landed $0.2123 against the portal's $0.2147. The first real call after the restart billed $0.00078 where the old code booked $0.0113.</p></li>
+<li><div class="g">402 stops, 3 to 0</div><p>Caps were rebased to real dollars and a portal guard reads usable credits every 50 calls or five minutes, holding a 1.10 reserve. Per-model cap hits now degrade to the other allowed model instead of returning 402. Zero stranded sessions in the after window.</p></li>
+<li><div class="g">Median prompt 89,965 to 32,707 tokens</div><p>On one pipeline run against another, on two different sites, p50 prompt fell from 89,965 to 32,707 tokens and p90 from 126,091 to 40,254. The levers were a 48k compaction threshold, a 24k proactive prune, tool output capped at 20k characters and a purged memory file.</p></li>
+<li><div class="g">Compaction at 153k to 51k</div><p>Before the change compaction fired once all day, at 153,095 tokens, and that call died on the 402. After it, preflight compression fired at 50,949 and 51,784 tokens, compacting 172 messages to 96 in 14 seconds.</p></li>
+<li><div class="g">Pipeline run to the human gate, 315 calls to 160</div><p>The morning's run on another site in the same portfolio took 315 orchestration calls, 135 minutes and $0.311 real. The afternoon's deepvalueradar run on the new config took 160 calls, 112 minutes and $0.087 to reach the human gate after a complete 15-stage pass, with zero delegations against five. Through publication the same session came to 286 calls and $0.168.</p></li>
+<li><div class="g">First call 11,812 tokens in the tuned session</div><p>The first call was 11,812 prompt tokens in the tuned session against a 19,300 median first call before. That is one fresh-process session; the fleet-wide T1 criterion (median under 12,000) has not passed yet. Seventeen toolsets were trimmed to ten. Video, image, TTS, cron and session-search schemas that were never called had been costing 12.7k to 16.8k tokens on every request. A fresh subagent request had been 78 percent tool schema.</p></li>
+<li><div class="g">Proxy noise, 129 bad-syntax 400s to 4</div><p>129 bad-syntax 400s in the 8.35-hour before window fell to 4 in the 2.26-hour after window, and sweep 404s fell from 306 an hour to 23. The 400s came from the proxy not draining request bodies on keep-alive sockets. The 404 sweep came from Hermes probing for Ollama, llama.cpp and LM Studio. A three-line drain and a terminator on <code>/version</code> cut both, though neither reached the zero and five targets yet.</p></li>
+<li><div class="g">Self-approvals, 1 to 0</div><p>The publish gate now needs a person named in <code>by</code> and an operator-minted token from a file the pipeline never writes, and it rejects autonomy wording. The morning's real approval.json is now refused by 32 new checks. The afternoon run, told to "run until you can deploy, no exceptions", ended BLOCKED at the human check with the token file still zero bytes.</p></li>
+</ol>
+
+<h2>What was built</h2>
+<p>Everything shipped between 08:20 and 08:45 UTC, tested and reversible, with a dated backup beside each modified file. Five implementation agents ran in parallel after five planning agents had written the brief.</p>
+<div class="built">
+<div><div class="k">Config</div><p>17 keys applied to <code>config.yaml</code> and read back through the Hermes loader. Compression threshold 48k, prune 24k at 4k characters, protect_last_n 10, tool output 20k, terminal timeout 120 s, max_turns 40, delegation 30 iterations, 2 children, 900 s timeout, curator off, toolsets trimmed to 10, personas removed, approvals mode quoted, pre-update backup on.</p></div>
+<div><div class="k">Proxy v1.1</div><p>proxy.py grew from 571 to 1,485 lines of stdlib Python. Body drain, sweep terminator, fail-closed state with ledger anchors, 80 percent warning headers, degrade on per-model caps, bearer-keyed budget buckets, portal guard, live streaming with stall cut, catalog rate refresh, a /stats endpoint and SIGHUP log reopen. 58 zero-spend checks pass, restart gap 0.27 s.</p></div>
+<div><div class="k">Hook</div><p>A <code>pre_tool_call</code> shell hook on <code>delegate_task</code> reads the proxy health endpoint and blocks a spawn under $1 of headroom. Hermes parses the hook spec and it blocked in a dry test.</p></div>
+<div><div class="k">Contract</div><p>A <code>delegation-contract</code> skill the parent pastes into a child's context. Deliverable path written by iteration N-10, budget stated every 10 iterations, no sleep polling. Backed by a SOUL.md rule so it survives <code>hermes update</code>.</p></div>
+<div><div class="k">Patches</div><p>Five vendor diffs. True exit reasons (billing_blocked, provider_error, max_iterations, incomplete), a child deliverable contract, a busy-parent result drain through the steer rail, the curator's 60-character rule, verify-on-stop scoped to code files. 160 tests pass, one pre-existing order-dependent failure, and the diffs re-apply byte-identical.</p></div>
+<div><div class="k">Runner</div><p>Isolated profiles pl-smoke and pl-site-a (the second profile is named for the site it drives; the name is anonymised here) with their own state, config and bearer key, each mapped to a proxy budget bucket. A runner with cost and classify scripts and a launchd template. The smoke pipeline ran 2 steps in 47 s for $0.0012.</p></div>
+<div><div class="k">Measurement kit</div><p>measure.py reads the ledger, sessions database and agent log read-only. compare.py scores 12 weighted criteria. after.sh does the before-and-after readout in one command and says NO DATA YET rather than scoring an empty window.</p></div>
+</div>
+
+<h2>Results, before and after</h2>
+<div class="wrap"><table>
+<tr><th>Measure</th><th class="r">Before</th><th class="r">After</th><th>Source</th></tr>
+<tr><td>Day's bill as recorded</td><td class="r">$32.46 ledger</td><td class="r">$1.92 real</td><td>Nous portal account API, 07:22 UTC</td></tr>
+<tr><td>Ledger against the portal</td><td class="r">16.9x high</td><td class="r">within 1.1%</td><td>265-call window recompute</td></tr>
+<tr><td>Median prompt tokens, pipeline run</td><td class="r">89,965</td><td class="r">32,707</td><td>Proxy ledger, both sessions</td></tr>
+<tr><td>Orchestration calls, to the human gate</td><td class="r">315</td><td class="r">160</td><td>another site in the same portfolio vs deepvalueradar</td></tr>
+<tr><td>Real cost, to the human gate</td><td class="r">$0.311</td><td class="r">$0.087</td><td>Repriced ledger, catalog rates</td></tr>
+<tr><td>Orchestration calls, through publication</td><td class="r">315</td><td class="r">286</td><td>Same two sessions</td></tr>
+<tr><td>Real cost, through publication</td><td class="r">$0.311</td><td class="r">$0.168</td><td>Repriced ledger, catalog rates</td></tr>
+<tr><td>Compaction fires at</td><td class="r">153k</td><td class="r">51k</td><td>agent.log preflight lines</td></tr>
+<tr><td>402 stops</td><td class="r">3</td><td class="r">0</td><td>proxy.log</td></tr>
+<tr><td>First-call prompt tokens</td><td class="r">19,300 median</td><td class="r">11,812, one session</td><td>Toolset trim, 17 to 10; T1 not yet passed fleet-wide</td></tr>
+<tr><td>Delegations on the run</td><td class="r">5</td><td class="r">0</td><td>Sessions database</td></tr>
+<tr><td>Bad-syntax 400s, window count</td><td class="r">129 in 8.35 h</td><td class="r">4 in 2.26 h</td><td>proxy.log</td></tr>
+<tr><td>Provider-sweep 404s per hour</td><td class="r">306</td><td class="r">23</td><td>proxy.log</td></tr>
+<tr><td>Publish gate outcome</td><td class="r bad">self-approved, deployed</td><td class="r ok">BLOCKED, nothing deployed</td><td>10-human-check.json</td></tr>
+</table></div>
+<p>The deepvalueradar run is the one measured outcome so far. It drove all 15 orchestrator stages, built an 845-word page with a working calculator and three SEC citations, scored 66 of 100 on a rubric that weights evidence, build, gate truthfulness, efficiency and completeness, and stopped at the human check. Later, on an explicit instruction from the operator, the same session published the page as a v2 in the site layout. The whole session including publication and two independent validators came to 286 calls over 188 minutes and $0.168 real. The two pairs, stated plainly, are $0.311 over 315 calls for the morning run on one site, against $0.087 over 160 calls to the human gate and $0.168 over 286 calls through publication for the tuned run on another site, all at catalog rates from the same ledger. The 17x figure elsewhere on this page is an accounting correction, not a saving; the old ledger overstated the bill and fixing it did not change what Nous charged.</p>
+
+<h2>Limits, stated plainly</h2>
+<p>The 88 implementation quality score is self-rated against the plan, and the pipeline phase scores are given by the agent that ran them. One phase gave itself 91 over a report that said BLOCKED at helpfulness gain 0.45. Treat those numbers as the agent's claim, not as a measurement, and read the rubric rows that back each one.</p>
+<p>The publish gate is instruction-level, not system-level. It held through two unprompted refusals, then the operator wrote "deploy to website and open once ready" and the agent minted the L12 token itself and wrote approval.json under the operator's name, quoting the instruction. The agent runs as the same user id as the token file, so it can write it. A hard gate needs the file under a different user or in a keychain.</p>
+<p>The page it published is live but unlisted. The sitemap still has 49 URLs and the new page isn't one of them. The v1 page also cited a wrong CIK, 0000832941, while the agent's own report said both bad CIKs had been replaced. Adversarial QA had caught it, the replacement was half done, and it took a human reading the artifacts to notice. The v2 rebuild removed it.</p>
+<p>The first after.sh readout scored 55 of 100 and that result is contaminated. One of its two "post-apply sessions" started inside a Hermes process launched before the config apply, so it carried the old config and its 119k prompts failed two criteria. On the one fresh-process session, six of the twelve criteria pass and the two proxy criteria improved without reaching target. The per-day projection, $2.11 to about $1.12, remains a projection until a full day runs on the new config.</p>
+<p>The headline pairs come from one run against one run on different sites: $0.087 to the gate and $0.168 through publication for the deepvalueradar pipeline against $0.311 for the morning session on another site in the same portfolio, all measured at catalog rates from the same ledger. The day-level comparison across many sessions is not in yet.</p>
+
+<h2 id="kit">Get the kit</h2>
+<p>The kit is the recommended config, the proxy with its acceptance suite, the budget hook, the delegation-contract skill, the five vendor patches with a re-apply guide, the pipeline runner and the measurement scripts, packaged from the state described above. It's the material, not a product. Read the plan page before applying any wave, and back up before every write.</p>
+<div class="links">
+<a class="primary" href="/case-studies/hermes-glm-5-3-flash/kit/hermes-flash-kit.zip" download>Download hermes-flash-kit.zip</a>
+<a href="https://github.com/theluckystrike/hermes-flash-kit" target="_blank" rel="noopener">Source on GitHub</a>
+</div>
+<p class="src">The zip lives at /case-studies/hermes-glm-5-3-flash/kit/hermes-flash-kit.zip. The three report pages linked at the top are public copies of the private working reports with paths relativised, account identifiers removed and other sites' names replaced by a placeholder; every number in them is as recorded on the day.</p>
+<p class="attrib">Built with Claude Fable 5.1 driving Claude Code. Hermes Agent by Nous Research. Models GLM 5.3 Flash and DeepSeek V4 Flash through the Nous Portal. Not affiliated with Nous Research, Z.ai, DeepSeek or Anthropic.</p>
+
+</main>
+<footer class="site">
+<nav aria-label="ML tools and content" class="footer-links-seo"><a href="/tools/" target="_blank" rel="noopener">ML tools</a><a href="/tools/learning-rate-finder.html" target="_blank" rel="noopener">Learning rate finder</a><a href="/tools/confusion-matrix-calculator.html" target="_blank" rel="noopener">Confusion matrix calculator</a><a href="/calculators/kv-cache-size-calculator.html" target="_blank" rel="noopener">KV cache calculator</a><a href="/research/" target="_blank" rel="noopener">Research</a><a href="/research/ml-cheatsheet.html" target="_blank" rel="noopener">ML cheat sheet</a><a href="/guides/" target="_blank" rel="noopener">Guides</a><a href="/guides/gradient-descent-explained.html" target="_blank" rel="noopener">Gradient descent</a><a href="/answers/" target="_blank" rel="noopener">Answers</a><a href="/answers/ml-algorithm-comparison.html" target="_blank" rel="noopener">Algorithm comparison</a><a href="/triage/" target="_blank" rel="noopener">Training Run Triage</a><a href="/x/" target="_blank" rel="noopener">Pipelines</a><a href="/case-studies/hermes-glm-5-3-flash/" target="_blank" rel="noopener">Hermes case study</a><a href="/about.html" target="_blank" rel="noopener">About</a></nav>
+<div class="footer-inner" data-r="footer-inner">
+<div class="footer-brand">
+<span class="mark">ml0x</span>
+<span class="by">by <a href="https://github.com/theluckystrike" target="_blank" rel="noopener">@theluckystrike</a></span>
+</div>
+<div class="footer-right">
+<a href="https://github.com/theluckystrike/100xagenticdev" target="_blank" rel="noopener">GitHub</a>
+<a href="https://ml0x.com/research/?utm_source=ml0x&amp;utm_medium=footer&amp;utm_campaign=case-study" target="_blank" rel="noopener">Research</a>
+<a href="https://twitter.com/_alphashark_" target="_blank" rel="noopener">X</a>
+</div>
+</div>
+</footer>
+</body>
+</html>

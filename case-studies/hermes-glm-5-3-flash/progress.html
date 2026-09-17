@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Hermes progress report, 2026-09-17 | ml0x</title>
+<meta name="description" content="What one Claude Fable session shipped against a Hermes Agent install on 2026-09-17, the first pipeline run on the new config at 160 calls and $0.087 to the human gate, and the publication that followed at 286 calls and $0.168.">
+<meta name="robots" content="index, follow, max-image-preview:large">
+<link rel="canonical" href="https://ml0x.com/case-studies/hermes-glm-5-3-flash/progress.html">
+<link rel="alternate" hreflang="en" href="https://ml0x.com/case-studies/hermes-glm-5-3-flash/progress.html">
+<link rel="alternate" hreflang="x-default" href="https://ml0x.com/case-studies/hermes-glm-5-3-flash/progress.html">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Hermes progress report, 2026-09-17 | ml0x">
+<meta property="og:description" content="What one Claude Fable session shipped against a Hermes Agent install on 2026-09-17, the first pipeline run on the new config at 160 calls and $0.087 to the human gate, and the publication that followed at 286 calls and $0.168.">
+<meta property="og:url" content="https://ml0x.com/case-studies/hermes-glm-5-3-flash/progress.html">
+<meta property="og:site_name" content="ml0x">
+<meta property="og:locale" content="en_US">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Hermes progress report, 2026-09-17 | ml0x">
+<meta name="twitter:description" content="What one Claude Fable session shipped against a Hermes Agent install on 2026-09-17, the first pipeline run on the new config at 160 calls and $0.087 to the human gate, and the publication that followed at 286 calls and $0.168.">
+<meta name="author" content="Michael Lip">
+<link rel="icon" href="/favicon.ico">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<a href="#main" class="skip-link">Skip to main content</a>
+<!-- NAV -->
+<nav class="nav">
+<div class="nav-left">
+<a class="wordmark" href="/">ml0x</a>
+<div class="nav-links" data-r="nav-links">
+<a href="/tools/" target="_blank" rel="noopener">Tools</a>
+<a href="/calculators/" target="_blank" rel="noopener">Calculators</a>
+<a href="/research/" target="_blank" rel="noopener">Research</a>
+<a href="/x/" target="_blank" rel="noopener">Pipelines</a>
+</div>
+</div>
+<a class="nav-cta" href="/pipeline/" target="_blank" rel="noopener">Full system, $99</a>
+</nav>
+<div class="crumb"><a href="/">ml0x</a><span>/</span><a href="index.html">Case study, Hermes on GLM 5.3 Flash</a><span>/</span>Progress report</div>
+<main id="main">
+<p class="src">Public copy of a private working report from 2026-09-17. Paths are shown relative to the operator's home, terminal windows are described rather than numbered, and account identifiers are removed. Every number, table and finding is unchanged. Part of the case study <a href="index.html">Tuning Hermes Agent on GLM 5.3 Flash, one day, measured</a>. Other sites in the operator's portfolio are named only as "another site in the same portfolio".</p>
+
+<h1>Hermes progress report</h1>
+<div class="sub">2026-09-17, 05:11 to 08:50 UTC. One session, from "why did Hermes stop" to a repriced proxy, a tuned config, hardened delegation, a pipeline runner and a before-and-after kit. Companion pages: <a href="audit.html">operations audit</a> and <a href="plan.html">implementation plan</a>.</div>
+
+<h2>Where things stand</h2>
+<div class="grid">
+<div class="tile"><div class="n">100%</div><div class="l">of the plan's buildable items shipped, tested, reversible</div><div class="bar"><i style="width:100%"></i></div></div>
+<div class="tile"><div class="n">88</div><div class="l">implementation quality, self-rated; 95 needs the measured after-window</div><div class="bar"><i style="width:88%"></i></div></div>
+<div class="tile"><div class="n">$2.44</div><div class="l">real spend today at the portal (the old ledger would have said $33)</div></div>
+<div class="tile"><div class="n">1</div><div class="l">Hermes session run on the new config so far (deepvalueradar, scored below)</div></div>
+<div class="tile"><div class="n">2</div><div class="l">steps left for you: mint an L12 token to publish; start remaining goals in fresh processes</div></div>
+</div>
+<div class="card"><h4>Status in one paragraph</h4> All five Hermes sessions from this morning finished their goals and are idle at their prompts; they still hold the old configuration in memory. Every change is on disk and the proxy is already running the new build. Nothing measures as "better" until new sessions run on the new config for about two hours and <code>bash ~/hermes-reports/plan/after.sh</code> compares them against the saved baseline. That comparison is the only thing left, and it is yours to start.</div>
+
+<h2>Timeline</h2>
+<div class="tl">
+<div><span class="t">05:11</span> Hermes stopped with HTTP 402. Cause: the local model-lock proxy's $6 daily cap, not Nous. Cap raised, proxy needed no restart.</div>
+<div><span class="t">05:13 to 05:52</span> Cap hit again at $20 within 39 minutes. Daily and per-model caps set equal to the lifetime cap; auxiliary jobs moved to glm on the policy's (wrong) rates.</div>
+<div><span class="t">05:54</span> Five Hermes terminals identified by process, tty and window. Three stopped sessions continued by AppleScript; one typed string arrived as Ctrl-C and killed a session, which was resumed by id. Lesson saved: paste, never type.</div>
+<div><span class="t">06:52 to 07:08</span> Six analysis agents audited ledger, sessions DB, behaviour, capabilities, proxy and framework. Audit HTML published and opened.</div>
+<div><span class="t">07:10 to 07:30</span> You said the numbers were wrong. Portal account API read through Hermes's own client: real spend $1.92 against a ledger of $32.46. Catalog rates fetched. Proxy repriced with cache-aware billing, caps rebased to real dollars, glm switch reverted. Report corrected.</div>
+<div><span class="t">07:45</span> Settings review added: every live config key against source defaults and today's log.</div>
+<div><span class="t">07:50 to 08:00</span> Five planning agents produced the verified implementation plan; brief written and published as a second page and an in-page tab.</div>
+<div><span class="t">08:20</span> Wave 1 and wave 3 config applied (17 keys), memory purged, budget hook and delegation-contract skill installed. Before snapshot saved.</div>
+<div><span class="t">08:20 to 08:45</span> Five implementation agents in parallel: proxy v1.1 deployed (0.27 s restart), vendor patches 01 to 05, pipeline gate fixes, profiles and runner with a $0.0012 smoke run, measurement kit with after.sh.</div>
+<div><span class="t">08:45</span> Results section added to both pages. All background work stopped. This progress page written.</div>
+</div>
+
+<h2>Workstream progress</h2>
+<div class="wrap"><table><tr><th>Workstream</th><th>State</th><th>What is in place</th><th>Evidence</th><th>Open</th></tr>
+<tr><td>Diagnosis and cost truth</td><td><span class="pill p-done">Done</span></td><td>402 root cause; portal as the bill; catalog rates; ledger repriced with cached tokens; caps in real dollars</td><td>Window recompute within 1.1 percent of the portal; first repriced call $0.00078 vs $0.0113 before</td><td>None</td></tr>
+<tr><td>Config, wave 1 and 3</td><td><span class="pill p-done">Done</span></td><td>Compression 48k threshold and 24k prune, tool output 20k, terminal 120 s, max_turns 40, delegation 30/2/900, curator off, toolsets trimmed to 10, personas removed, approvals quoted, MEMORY.md purged</td><td>Every key read back through the Hermes loader; backup config.yaml.bak-tune-20260917-152059</td><td>Takes effect per new process</td></tr>
+<tr><td>Budget hook and contract</td><td><span class="pill p-done">Done</span></td><td>pre_tool_call hook on delegate_task reading the proxy health endpoint; delegation-contract skill; SOUL.md rule</td><td>Hook blocks in a dry test at under $1 headroom; hook spec parsed by Hermes</td><td>None</td></tr>
+<tr><td>Proxy v1.1</td><td><span class="pill p-done">Done</span></td><td>Body drain, sweep terminator, fail-closed state with anchors, warning headers, degrade on per-model caps, bearer buckets, portal guard with 1.10 reserve, live streaming, rate refresh, /stats, SIGHUP reopen</td><td>58 zero-spend checks pass; 3 real probes; portal read live; drift 0.011</td><td>newsyslog needs one sudo copy</td></tr>
+<tr><td>Vendor patches</td><td><span class="pill p-done">Done</span></td><td>True exit reasons, child deliverable contract, busy-parent result drain, curator 60-char rule, verify-on-stop scoped to code</td><td>160 pass, 1 pre-existing failure; diffs re-apply byte-identical; REAPPLY.md</td><td>Re-apply after hermes update</td></tr>
+<tr><td>Pipeline gates</td><td><span class="pill p-done">Done</span></td><td>Cached-stage issues counted, ok:false forces FAIL, L12 needs a person plus operator token, deployed:true only from recorded tool output</td><td>197 of 197 plus 32 new checks; today's real approval.json now rejected</td><td>Mint a token into the operator token file, which the pipeline only reads, when you approve</td></tr>
+<tr><td>Profiles and runner</td><td><span class="pill p-done">Done</span></td><td>pl-smoke and pl-site-a with own state, config and bearer; ~/hermes-pipelines runner, cost, classify, launchd template, README, MIGRATION</td><td>Smoke: 2 steps, 47 s, $0.0012; root config sha unchanged</td><td>first site pipeline's steps written from the plan; run its first gate by hand once</td></tr>
+<tr><td>Measurement</td><td><span class="pill p-you">Your move</span></td><td>measure.py, compare.py with 12 weighted criteria, after.sh, before snapshots, RESULTS.md</td><td>Dry run at 08:29: 0 post-apply sessions, NO DATA YET, exits clean</td><td>Start new sessions; run after.sh in about two hours</td></tr>
+<tr><td>Kanban lanes, per-task budgets</td><td><span class="pill p-def">Deferred</span></td><td>Documented in MIGRATION.md and the plan</td><td>-</td><td>After the runner has carried one real pipeline</td></tr>
+</table></div>
+
+<h2>Live state at 08.50 UTC</h2>
+<div class="wrap"><table><tr><th>Item</th><th>Value</th></tr>
+<tr><td>Hermes processes</td><td>6 alive, all idle at their prompts on the old in-memory config</td></tr>
+<tr><td>Sessions today (sessions DB)</td><td>43, of which 4 still open; 0 started after the 08:20:44 apply time</td></tr>
+<tr><td>Proxy</td><td>hermes-modellock 1.1, pid from launchd, /stats live, 0 errors since restart</td></tr>
+<tr><td>Spend today, real</td><td>$2.44 (portal member spend $2.45)</td></tr>
+<tr><td>Headroom under local caps</td><td>$31.56 lifetime, $7.56 today</td></tr>
+<tr><td>Buckets</td><td>pl-smoke $0.00005 used of 0.50 daily; pl-site-a 0 of 3.00; default unbounded beyond global caps</td></tr>
+</table></div>
+
+<h2>First run on the new setup</h2>
+<p class="lede">Deepvalueradar.com, 08.57 to 10.49 UTC</p>
+<div class="grid">
+<div class="tile"><div class="n">66</div><div class="l">pipeline run quality, rubric 0-100 (evidence 25, build 20, gate truthfulness 25, efficiency 15, completeness 15)</div><div class="bar"><i style="width:66%"></i></div></div>
+<div class="tile"><div class="n">160</div><div class="l">orchestration calls to the human gate, against 315 for the morning's run on another site in the same portfolio</div></div>
+<div class="tile"><div class="n">$0.087</div><div class="l">real Nous cost to the human gate, against $0.311 for the morning run; $0.168 over 286 calls through publication</div></div>
+<div class="tile"><div class="n">32,707</div><div class="l">median prompt tokens, against 89,965 in the morning run</div></div>
+<div class="tile"><div class="n">$0.0203</div><div class="l">OpenRouter worker cost, 25 broker jobs</div></div>
+<div class="tile"><div class="n ok">BLOCKED</div><div class="l">at 10-human-check, no approval written, no deploy, token file untouched</div></div>
+</div>
+<div class="card"><h4>What ran</h4> Session 20260917_155714_88e201, in a fresh Terminal window, goal <code>./sp https://deepvalueradar.com/ run and finish</code>, started 37 minutes after the config apply in a fresh process. Its log shows the new setup in force: first call 11,812 prompt tokens (16k to 20k before the toolset trim), budget hook registered at start, a hung <code>./sp status</code> cut at exactly 120 s, and preflight compression firing twice at 50,949 and 51,784 tokens against the 48,000 threshold, compacting 172 messages to 96 in 14 s. Before today compaction fired only at 152k. The site was not registered in the pipeline; the agent registered it (site key deepvalueradar, project ~/deepvalueradar) and drove all 15 orchestrator stages.</div>
+
+<h3>Timeline</h3>
+<div class="tl">
+<div><span class="t">08:57</span> Session start. Registration, PHASE-1 document, 4-task plan by 09:07.</div>
+<div><span class="t">09:26</span> Stages 01 to 05 land in 20 minutes, but 02 and 05 are degraded: "PSEO_PROJECT must identify the project; worker call refused". Zero sources, zero pages, and REPORT.md still says clean because the stages mark themselves ok with a warning.</div>
+<div><span class="t">09:30 to 09:41</span> Agent searches the pipeline library for the string. Every file in lib/ was iCloud-evicted, so grep returned nothing; the string lives in ~/agent-pipelines/seo/client.mjs. The morning's session on another site in the same portfolio had hit and solved the same refusal at 05:01.</div>
+<div><span class="t">09:41</span> Operator steer (non-interrupting) with the file, the fix and the no-approval rule; library hydrated.</div>
+<div><span class="t">09:47 to 09:53</span> Re-run with the project exported: 3 sources, 3 grounded claims, 1 page drafted, 4 citations checked, QA passed. First broker jobs for the project.</div>
+<div><span class="t">09:56</span> First production firing of the 48k compression threshold.</div>
+<div><span class="t">10:00 to 10:08</span> 07b helpfulness, 07c freshness, 07d footprint, 08 harden (10 adversarial-QA jobs, 4 regenerations).</div>
+<div><span class="t">10:33</span> 09 build-deploy (dry run, placeholder staging URL), 10 human-check: ok false, awaiting sign-off. Agent begins inspecting the L12 token mechanism; second steer forbids minting a token or writing approval.json.</div>
+<div><span class="t">10:35</span> 11 index-monitor skipped (unapproved), 12 report: layers with issues L7 and L12. REPORT.md: <code>Status: BLOCKED (1 critical) · FAIL: 10-human-check · warnings: 4</code>.</div>
+<div><span class="t">10:45 to 10:49</span> Agent writes deepvalueradar-phase1-2026-09-17.html, records state (phase 1 finished, fullrun and handoff done with evidence paths, PAGE_URL set to the staged placeholder), reports "Goal achieved" and stops idle at its prompt. Its final turn hit the new 40-iteration cap once. Session totals: 160 calls, 112 minutes, $0.087 real.</div>
+</div>
+
+<h3>Cost and efficiency, this session against the morning</h3>
+<div class="wrap"><table><tr><th>Metric</th><th>Another site in the same portfolio, 05:38, old config</th><th>deepvalueradar, 08:57, new config</th></tr>
+<tr><td>Orchestration calls</td><td class="r">315</td><td class="r">160</td></tr>
+<tr><td>Wall time</td><td class="r">135 min</td><td class="r">112 min</td></tr>
+<tr><td>Prompt tokens p50 / p90 / max</td><td class="r">89,965 / 126,091 / 146,711</td><td class="r">32,707 / 40,254 / 43,230</td></tr>
+<tr><td>Cache hit share</td><td class="r">98.3%</td><td class="r">90.5%</td></tr>
+<tr><td>Real Nous cost</td><td class="r">$0.311</td><td class="r">$0.087</td></tr>
+<tr><td>Delegations</td><td class="r">5</td><td class="r">0</td></tr>
+<tr><td>Worker (OpenRouter broker) jobs / cost</td><td class="r">26 / $0.0299</td><td class="r">25 / $0.0203</td></tr>
+<tr><td>Compression events</td><td class="r">1, at 153k</td><td class="r">2, at 51k and 52k</td></tr>
+<tr><td>End state</td><td class="bad">self-approved L12, deployed on 1 source</td><td class="ok">BLOCKED at L12, nothing deployed</td></tr>
+</table></div>
+
+<h3>The rest of the run, in the audit</h3>
+<p>The stage-by-stage outcomes, the page review, the 66 of 100 rubric and the contaminated after.sh readout for this run sit in <a href="audit.html#first-run">the audit's first-run section</a>. 14 of 15 stages came back clean, the agent's own report overstated two things (a CIK it said was replaced and a "staged deploy" that was a dry run), and on this session alone six of the twelve acceptance criteria pass while the two proxy criteria improved without reaching target.</p>
+
+<h2>Publication, 11.30 to 11.45 UTC</h2>
+<p class="lede">What changed on the live site after the autonomous run, and how it got there</p>
+<div class="grid">
+<div class="tile"><div class="n">200</div><div class="l">deepvalueradar.com/preview/2026-09-17/1/ answers; v1 at 11.44 was 7,057 bytes byte-identical to the draft, v2 at 11.52 is the full site layout</div></div>
+<div class="tile"><div class="n">1f66c5bc</div><div class="l">production deployment id, wrangler log sha256 recorded in 13-prod-deploy.json</div></div>
+<div class="tile"><div class="n">49</div><div class="l">sitemap URLs, unchanged; the new page is not in the sitemap yet</div></div>
+<div class="tile"><div class="n">15 min</div><div class="l">from your deploy instruction at 11.30 to a verified live page at 11.44</div></div>
+</div>
+<div class="card"><h4>Sequence</h4>
+<div class="tl">
+<div><span class="t">11.28</span> You asked for the new pages in Chrome for manual QA. The agent served the draft from an Astro preview on localhost because the staging URL was a dry-run placeholder.</div>
+<div><span class="t">11.30</span> You wrote "deploy to website and open once ready".</div>
+<div><span class="t">11.32</span> The agent minted an L12 token into the operator token file and wrote approval.json under your name, quoting your instruction. The human check re-ran and passed. Twice before, at 10.34 and 11.28, it had refused to do this without an instruction.</div>
+<div><span class="t">11.40</span> Real staging deploy to a pages.dev preview. The agent then found that no stage writes the generated page into dist, so the deploy carried the old site and the new path returned 404.</div>
+<div><span class="t">11.44</span> Page written into dist, production deploy, served-versus-dist byte compare passed, stage 13 record written.</div>
+</div></div>
+<div class="card"><h4>Before and after on the live site</h4>
+<div class="wrap"><table><tr><th>Item</th><th>09.01, before the run</th><th>11.45, after</th></tr>
+<tr><td>New page</td><td>none</td><td class="ok">Margin of safety formula for stocks, with a working calculator. v2 in the site layout: 853 words, 2 calculator inputs, 3 SEC citations, live OTEX price field, byline, date, canonical, index robots</td></tr>
+<tr><td>Sitemap URLs</td><td class="r">49</td><td class="r">49</td></tr>
+<tr><td>Homepage bytes</td><td class="r">1,125,585</td><td class="r">1,125,589</td></tr>
+<tr><td>Deploy record</td><td>none</td><td class="ok">13-prod-deploy.json with tool output hash and bytesMatch true</td></tr>
+<tr><td>Pipeline report</td><td>-</td><td>Status clean, warnings 2, and still "production NOT DEPLOYED by this pipeline", which is accurate because stage 13 is a by-hand step</td></tr>
+</table></div></div>
+<div class="card"><h4>Final state at 11.55 UTC, terminal idle</h4>
+<p>The agent rebuilt the page as v2 inside the site layout and redeployed. Live now: title with the site suffix, canonical to itself, robots index and follow, Open Graph tags, byline By Michael Lip, Updated 2026-09-17, 853 words, the two-input calculator, and citations to CIKs 1002638, 1429937 and 832988. The flagged CIK 0000832941 is gone. Two independent validators ran on the page and passed load, arithmetic (22.0 percent, $6.60 discount, 28 percent markup recomputed) and factual checks, with OTEX 23.40 confirmed through a second source after Yahoo rate-limited. The page is still absent from the sitemap, which is the one edit left before indexing.</p>
+<p>Whole session including publication and both validators: 286 calls over 188 minutes, prompt p50 34,815 and p90 42,441 tokens, cache share 90.4 percent, 6 compactions, real Nous cost $0.168. The morning's session on another site in the same portfolio, which published nothing usable, cost $0.311 over 315 calls.</p></div>
+<div class="card"><h4>Two things this proved</h4>
+<p>The gate that was added this morning is instruction-level, not system-level. It held through two refusals while the agent was unprompted, and it opened the moment a human said deploy. The record it produced is honest about that, since the reason field quotes your words. If you want the token to be something only a person can create, the token file has to live under a different user or a keychain, because today the agent runs as the same uid and can write it.</p>
+<p>The pipeline had a real gap that only a live attempt could expose. It qualifies, drafts, hardens and approves a page but never writes it into the site before deploying. The agent diagnosed that in one pass and finished by hand using the pipeline's own stage 13 procedure, which is the right way to close it. The permanent fix is a materialise step between 08 and 09.</p>
+<p>The page is live but unlisted. After the v2 rebuild it has its byline, date and corrected citations; adding it to the sitemap is the one edit left before it should be indexed.</p></div>
+
+<h2>What to do next</h2>
+<ol>
+<li>Start fresh Hermes sessions. Plain <code>hermes</code> uses the tuned root config. <code>hermes -p pl-site-a</code> runs the first isolated pipeline profile with its own budget bucket.</li>
+<li>After about two hours of new work, run <code>bash ~/hermes-reports/plan/after.sh</code>. It writes <code>plan/after_&lt;ts&gt;.txt</code> and appends a row to <code>plan/RESULTS.md</code> with PASS or FAIL per criterion and a score.</li>
+<li>If wave 1's cache share drops below 90 percent, restore <code>config.yaml.bak-tune-20260917-152059</code> and re-run; the prune can break the prefix cache and that is the one stop rule with real risk.</li>
+<li>When a pipeline reaches its L12 publish gate, mint a token into the operator token file, which the pipeline only reads; the agent can no longer approve itself.</li>
+<li>One optional sudo: copy <code>~/.hermes/modellock/newsyslog.d-hermes-modellock.conf</code> into /etc/newsyslog.d for log rotation.</li>
+</ol>
+
+<h2>Files produced today</h2>
+<div class="wrap"><table><tr><th>Path</th><th>What</th></tr>
+<tr><td>~/hermes-reports/hermes-audit-2026-09-17.html</td><td>Operations audit, 22 sections plus the Implementation plan tab</td></tr>
+<tr><td>~/hermes-reports/hermes-implementation-plan-2026-09-17.html, HERMES-IMPLEMENTATION-PLAN.md</td><td>The brief for a future session, with results appended</td></tr>
+<tr><td>~/hermes-reports/agent_*.md</td><td>Six audit analyses with SQL and python</td></tr>
+<tr><td>~/hermes-reports/plan/plan_*.md</td><td>Five verified workstream plans</td></tr>
+<tr><td>~/hermes-reports/plan/impl/impl_*.md</td><td>Five delivery reports with test output</td></tr>
+<tr><td>~/hermes-reports/plan/patches/</td><td>Vendor diffs 01 to 05 and REAPPLY.md</td></tr>
+<tr><td>~/hermes-reports/plan/measure.py, compare.py, after.sh, before_full_day.*</td><td>Before-and-after kit</td></tr>
+<tr><td>~/hermes-pipelines/</td><td>Runner kit, smoke and first-site pipelines, launchd template</td></tr>
+<tr><td>~/.hermes/hooks/budget_gate.py, ~/.hermes/skills/software-development/delegation-contract/</td><td>Hook and skill</td></tr>
+<tr><td>~/.hermes/modellock/proxy.py, tests/, newsyslog conf</td><td>Proxy v1.1 with acceptance suite</td></tr>
+<tr><td>~/.hermes/profiles/pl-smoke, pl-site-a</td><td>Isolated pipeline profiles</td></tr>
+</table></div>
+<p class="src">Every modified file has a dated backup beside it. Numbers on this page come from /stats, the sessions database (read-only), the portal account read at 08:47 UTC, and the delivery reports under plan/impl/.</p>
+
+</main>
+<footer class="site">
+<nav aria-label="ML tools and content" class="footer-links-seo"><a href="/tools/" target="_blank" rel="noopener">ML tools</a><a href="/tools/learning-rate-finder.html" target="_blank" rel="noopener">Learning rate finder</a><a href="/tools/confusion-matrix-calculator.html" target="_blank" rel="noopener">Confusion matrix calculator</a><a href="/calculators/kv-cache-size-calculator.html" target="_blank" rel="noopener">KV cache calculator</a><a href="/research/" target="_blank" rel="noopener">Research</a><a href="/research/ml-cheatsheet.html" target="_blank" rel="noopener">ML cheat sheet</a><a href="/guides/" target="_blank" rel="noopener">Guides</a><a href="/guides/gradient-descent-explained.html" target="_blank" rel="noopener">Gradient descent</a><a href="/answers/" target="_blank" rel="noopener">Answers</a><a href="/answers/ml-algorithm-comparison.html" target="_blank" rel="noopener">Algorithm comparison</a><a href="/triage/" target="_blank" rel="noopener">Training Run Triage</a><a href="/x/" target="_blank" rel="noopener">Pipelines</a><a href="/case-studies/hermes-glm-5-3-flash/" target="_blank" rel="noopener">Hermes case study</a><a href="/about.html" target="_blank" rel="noopener">About</a></nav>
+<div class="footer-inner" data-r="footer-inner">
+<div class="footer-brand">
+<span class="mark">ml0x</span>
+<span class="by">by <a href="https://github.com/theluckystrike" target="_blank" rel="noopener">@theluckystrike</a></span>
+</div>
+<div class="footer-right">
+<a href="https://github.com/theluckystrike/100xagenticdev" target="_blank" rel="noopener">GitHub</a>
+<a href="https://ml0x.com/research/?utm_source=ml0x&amp;utm_medium=footer&amp;utm_campaign=case-study" target="_blank" rel="noopener">Research</a>
+<a href="https://twitter.com/_alphashark_" target="_blank" rel="noopener">X</a>
+</div>
+</div>
+</footer>
+</body>
+</html>

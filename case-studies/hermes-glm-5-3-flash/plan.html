@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Hermes implementation plan, 2026-09-17 | ml0x</title>
+<meta name="description" content="Four-wave brief for tuning a Hermes Agent install on GLM 5.3 Flash: context hygiene, proxy hardening, agent behaviour, budgets and a runner, with acceptance rows and the shipped results.">
+<meta name="robots" content="index, follow, max-image-preview:large">
+<link rel="canonical" href="https://ml0x.com/case-studies/hermes-glm-5-3-flash/plan.html">
+<link rel="alternate" hreflang="en" href="https://ml0x.com/case-studies/hermes-glm-5-3-flash/plan.html">
+<link rel="alternate" hreflang="x-default" href="https://ml0x.com/case-studies/hermes-glm-5-3-flash/plan.html">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Hermes implementation plan, 2026-09-17 | ml0x">
+<meta property="og:description" content="Four-wave brief for tuning a Hermes Agent install on GLM 5.3 Flash: context hygiene, proxy hardening, agent behaviour, budgets and a runner, with acceptance rows and the shipped results.">
+<meta property="og:url" content="https://ml0x.com/case-studies/hermes-glm-5-3-flash/plan.html">
+<meta property="og:site_name" content="ml0x">
+<meta property="og:locale" content="en_US">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Hermes implementation plan, 2026-09-17 | ml0x">
+<meta name="twitter:description" content="Four-wave brief for tuning a Hermes Agent install on GLM 5.3 Flash: context hygiene, proxy hardening, agent behaviour, budgets and a runner, with acceptance rows and the shipped results.">
+<meta name="author" content="Michael Lip">
+<link rel="icon" href="/favicon.ico">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<a href="#main" class="skip-link">Skip to main content</a>
+<!-- NAV -->
+<nav class="nav">
+<div class="nav-left">
+<a class="wordmark" href="/">ml0x</a>
+<div class="nav-links" data-r="nav-links">
+<a href="/tools/" target="_blank" rel="noopener">Tools</a>
+<a href="/calculators/" target="_blank" rel="noopener">Calculators</a>
+<a href="/research/" target="_blank" rel="noopener">Research</a>
+<a href="/x/" target="_blank" rel="noopener">Pipelines</a>
+</div>
+</div>
+<a class="nav-cta" href="/pipeline/" target="_blank" rel="noopener">Full system, $99</a>
+</nav>
+<div class="crumb"><a href="/">ml0x</a><span>/</span><a href="index.html">Case study, Hermes on GLM 5.3 Flash</a><span>/</span>Implementation plan</div>
+<main id="main">
+<p class="src">Public copy of a private working report from 2026-09-17. Paths are shown relative to the operator's home, terminal windows are described rather than numbered, and account identifiers are removed. Every number, table and finding is unchanged. Part of the case study <a href="index.html">Tuning Hermes Agent on GLM 5.3 Flash, one day, measured</a>. Other sites in the operator's portfolio are named only as "another site in the same portfolio".</p>
+
+<h1>Hermes implementation plan</h1>
+<div class="sub">Instruction for a future Fable session, derived from the <a href="audit.html">Hermes operations audit</a> of 2026-09-17.</div>
+<section class="panel on">
+<div class="sub">The same text as <code>~/hermes-reports/HERMES-IMPLEMENTATION-PLAN.md</code>, the instruction for a future Fable session. Workstream detail, helpers and measure.py are under <code>~/hermes-reports/plan/</code>. Nothing here has been applied.</div>
+<h1 class="ptitle">Hermes tuning</h1>
+<p class="lede">Implementation brief for a Fable session</p>
+<p>Written 2026-09-17 08:00 UTC from the audit at <code>~/hermes-reports/hermes-audit-2026-09-17.html</code>.
+This file is the instruction. The five workstream files under <code>~/hermes-reports/plan/</code> hold the
+verified line references, code and tests; read the one for the wave you are executing before touching anything.</p>
+<h2>0. Ground truth you must not re-derive</h2>
+<ul>
+<li>Nous bills through the Portal at catalog rates: glm-5.3-flash 0.075 / 0.25 per M, deepseek-v4-flash-0731 0.04 / 0.10 per M, cache read 0.01 on both. The old ledger was 12x to 17x high. Real spend today: $2.11 for 2,549 calls. Real burn: $0.40 per wall-clock hour, $0.18 per session-hour.</li>
+<li>96.5 percent of prompt tokens are cache hits. 79.8 percent of the real bill is cache re-reads of context (p50 prompt 66k, p90 118k). Context size is the cost lever; model choice is not.</li>
+<li>Every 402 today came from the local proxy <code>~/.hermes/modellock</code> on phantom spend, never from Nous. The proxy was repriced at 07:23 UTC (cache-aware <code>price()</code>, <code>cached_tokens</code> in the ledger, caps rebased to real dollars: total 34, daily 10). Policy hot-reloads per request; proxy.py changes need <code>launchctl kickstart -k gui/$(id -u)/com.&lt;user&gt;.hermes-modellock</code>.</li>
+<li>Truth endpoint for the credit balance: <code>GET https://portal.nousresearch.com/api/oauth/account</code>, the undocumented endpoint Hermes's own account client uses, so it may change. Send the bearer from <code>~/.hermes/auth.json</code> <code>providers.nous.access_token</code>. Hermes rotates it hourly; never call the refresh endpoint yourself, because the comments in Hermes's own auth code say refresh tokens are single-use and revoke the session.</li>
+<li>Hermes config: <code>~/.hermes/config.yaml</code> (299 lines, <code>_config_version: 33</code>). Most keys are copied at process start; only <code>delegation.*</code>, <code>agent.verify_on_stop</code>, <code>updates.pre_update_backup</code> and the approval policy are hot-read. <code>/new</code> does not reload config.</li>
+<li>Five TUI sessions may be live in Terminal.app. Never send keystrokes to them (a typed string arrived as Ctrl-C once and killed a session). Never drive Chrome by "front window": another automation navigates it; use DevTools targets on the dedicated remote-debugging port, addressed by target id.</li>
+</ul>
+<h2>1. Rules for the implementing agent</h2>
+<ol>
+<li>Back up before every write: <code>cp &lt;file&gt; &lt;file&gt;.bak-&lt;tag&gt;-$(date +%Y%m%d-%H%M%S)</code>. Vendor files under <code>~/.hermes/hermes-agent</code> get a <code>.diff</code> saved to <code>~/hermes-reports/plan/patches/</code> because <code>hermes update</code> stashes local edits.</li>
+<li>Read-only on <code>~/.hermes/state.db</code> (<code>?mode=ro</code>). Never run <code>hermes</code> interactively; the only permitted Hermes invocations are the smoke tests named in wave 4, which cost under $0.01.</li>
+<li>No paid API beyond: the two 5-token proxy probes in the proxy acceptance script, the portal account GET, and the catalog GET. State the call budget before any subagent is spawned; forbid paid APIs in its brief.</li>
+<li>Measure before and after every wave with <code>python3 ~/hermes-reports/plan/measure.py --since &lt;apply-time-ISO&gt;</code>; the before snapshot is <code>plan/baseline_run2.txt</code>. A wave passes only when its acceptance rows pass; on the stop rule, roll back that wave and record why.</li>
+<li>Apply waves in order. Waves 1 and 3 are config-only and are what stretch the credit runway; do not let the proxy or runner builds delay them.</li>
+<li>Report in the format of section 6, with numbers from measure.py, never from memory.</li>
+</ol>
+<h2>2. Wave 1</h2>
+<p class="lede">Context hygiene (config.yaml, 10 min apply, 2 h measure, runs with goals live)</p>
+<p>Detail: <code>plan/plan_config.md</code> steps 1 to 8; helper <code>plan/apply_tuning.py</code> (ruamel round-trip, keeps comments) or <code>plan/setkey.py key value</code>.</p>
+<div class="wrap"><table>
+<thead>
+<tr>
+<th>Key</th>
+<th>Set to</th>
+<th>Why (measured)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>compression.threshold_tokens</td>
+<td>48000</td>
+<td>floor put compaction at 152,064 on the hardcoded 202,752 window; fired 5 times all day</td>
+</tr>
+<tr>
+<td>compression.proactive_prune_tokens</td>
+<td>24000</td>
+<td>deterministic prune, no model call</td>
+</tr>
+<tr>
+<td>compression.proactive_prune_min_result_chars</td>
+<td>4000</td>
+<td>51k-char reads inlined</td>
+</tr>
+<tr>
+<td>compression.protect_last_n</td>
+<td>10</td>
+<td>20 protected messages is 50k untouchable</td>
+</tr>
+<tr>
+<td>compression.summary_model</td>
+<td>delete</td>
+<td>dead key since migration v17</td>
+</tr>
+<tr>
+<td>tool_output.max_bytes</td>
+<td>20000</td>
+<td>default 50,000 chars</td>
+</tr>
+<tr>
+<td>terminal.timeout</td>
+<td>120</td>
+<td>23 exit-124 today; reaches the tool only via TERMINAL_TIMEOUT env bridge at process start</td>
+</tr>
+<tr>
+<td>agent.max_turns</td>
+<td>40</td>
+<td>150/150 exhausted once; goal loop re-enters anyway</td>
+</tr>
+<tr>
+<td>updates.pre_update_backup</td>
+<td>true</td>
+<td>14 agent-written skills at stake</td>
+</tr>
+<tr>
+<td>approvals.mode</td>
+<td>'off' quoted</td>
+<td>bare off parses as boolean False; works by accident today</td>
+</tr>
+</tbody>
+</table></div>
+<p>Then purge <code>~/.hermes/memories/MEMORY.md</code> under its flock (procedure in plan_config.md step 8; 1,836 bytes of August notes injected into every prompt).
+Takes effect per session at its next start; do not restart live goals, let them finish. Acceptance (plan_acceptance.md C1 to C4, T3): prompt p90 under 60k within 2 h of the first new session, compaction 2 to 20 per 1,000 calls, cache-hit share stays above 90 percent (prune can break the prefix cache; that is the stop rule), exit-124 under 3 per hour.</p>
+<h2>3. Wave 2</h2>
+<p class="lede">Proxy hardening (proxy.py + policy.json, one restart in a 10 min quiet window, 4 h soak)</p>
+<p>Detail: <code>plan/plan_proxy.md</code>, in this order, shipped as one restart.</p>
+<ol>
+<li>Step 0: env overrides MODELLOCK_ROOT / MODELLOCK_PORT / MODELLOCK_AUTH_JSON so the acceptance script runs a second instance on 8799 against a scratch copy.</li>
+<li>Drain the request body on unrecognised POSTs (the 94 "Bad request syntax" 400s a day) and terminate Hermes's provider sweep with a 200 on <code>/version</code> carrying a <code>version</code> key. Do NOT answer <code>/api/tags</code> with a <code>models</code> key: Hermes would classify the proxy as Ollama and start <code>/api/show</code> probes.</li>
+<li>Fail-closed <code>load_state()</code>: write a ledger <code>anchor</code> event at startup and on SIGHUP, rebuild from the last anchor on a corrupt state.json, 503 when no anchor exists, never zeros. Run <code>--anchor</code> once at deploy because the 07:30 rebase left no anchor row.</li>
+<li>Warning headers <code>X-ModelLock-Remaining-USD</code> and <code>X-ModelLock-Warning</code> at 80 percent of any cap, plus a WARN line to <code>~/.hermes/modellock/warn.log</code>.</li>
+<li>Degrade instead of 402 when only a per-model cap is hit: rewrite to the other allowed model and overwrite the <code>reasoning</code> field with the target's override (glm rejects <code>effort: none</code> with HTTP 400). Global and bucket caps still 402.</li>
+<li><code>/stats</code> JSON endpoint and SIGHUP log reopen (launchd holds the fd; a plain newsyslog rename leaves an empty file).</li>
+</ol>
+<p>Acceptance (P1 to P7): zero bad-syntax 400s, sweep 404s per hour under 5 excluding <code>/api/v1/models</code>, state.json survives a deliberate corruption test on the scratch instance, two real 5-token calls cost under $0.0005 each with <code>cached_tokens</code> present. Rollback: restore <code>proxy.py.bak-*</code> and kickstart.</p>
+<h2>4. Wave 3</h2>
+<p class="lede">Agent behaviour (config plus one hook, one working day to measure 20 tasks)</p>
+<p>Detail: <code>plan/plan_delegation.md</code>. Config and hook first, vendor patches last.</p>
+<ol>
+<li><code>delegation.max_iterations: 30</code>, <code>max_concurrent_children: 2</code>, <code>child_timeout_seconds: 900</code> (hot-read).</li>
+<li><code>skills.creation_nudge_interval: 0</code> (curator becomes opt-in; 48 skill_manage errors today were 60-char description refusals) and <code>memory.nudge_interval: 30</code>.</li>
+<li><code>platform_toolsets.cli</code>: drop bfl, image_gen, tts, computer_use, session_search (about 6k tokens per call; <code>delegate_task</code> has no toolsets argument, so this is the only lever). Needs per-tab restarts at goal boundaries.</li>
+<li>Pre-spawn budget hook: a <code>pre_tool_call</code> shell hook in config.yaml <code>hooks:</code> matched to <code>delegate_task</code> that GETs <code>http://127.0.0.1:8788/healthz</code> (already serves <code>spent_today_usd</code> and <code>caps</code>) and blocks the spawn under a reserve. Script text is in plan_delegation.md step 2.</li>
+<li>Delegation contract as a skill named <code>delegation-contract</code> the parent pastes into <code>context</code>: deliverable path written by iteration N-10, budget stated every 10 iterations, no sleep polling. Survives <code>hermes update</code>.</li>
+<li><code>agent.verify_on_stop: false</code> in pipeline profiles only (or <code>HERMES_VERIFY_ON_STOP=0</code>); 18 verification_required finishes and 243 s npm test runs after JSON edits.</li>
+<li>Vendor patches, each saved as a .diff: exit reasons <code>billing_blocked</code> / <code>provider_error</code> / <code>max_iterations</code> / <code>incomplete</code> in <code>tools/delegate_tool.py</code> (the child already carries <code>failure_reason: billing</code>, never read); busy-parent drain of completed delegations through the steer rail (delivery lag p50 15 min is the parent's turn length); curator prompt states the 60-char limit.</li>
+<li>Operator pipeline fixes in the operator's SEO pipeline repo: orchestrator.mjs must push cached-stage issues into <code>allIssues</code> (REPORT.md said clean over an <code>ok:false</code> human check); L12 sign-off requires a person in <code>by</code> and an operator-minted token, rejects autonomy wording; <code>deployed:true</code> only from a <code>13-prod-deploy.json</code> written from real wrangler output.</li>
+</ol>
+<p>Acceptance (D1 to D4, S1, T1): max_iterations share under 15 percent over 20 tasks, zero 402 deaths labelled max_iterations, delivery lag p50 under 3 min, first-call prompt under 12k tokens, skill_manage errors zero.</p>
+<h2>5. Wave 4</h2>
+<p class="lede">Budgets, portal guard, runner (live, one pipeline per quiet hour)</p>
+<p>Detail: <code>plan/plan_proxy.md</code> steps 5 to 9 and <code>plan/plan_runner.md</code>.</p>
+<ol>
+<li>Proxy buckets: the inbound bearer value (<code>NOUS_API_KEY=pl-&lt;name&gt;</code> per profile) becomes the budget key; <code>buckets:</code> section in policy.json; <code>bucket</code> field in the ledger. Unknown bearer falls into <code>default</code>.</li>
+<li>Portal guard: every 50 calls or 5 minutes, curl <code>-K -</code> (token off argv) to <code>/api/oauth/account</code>, store credits and member spend in <code>state["portal"]</code>, cap on <code>total_usable_credits - spent_since_read &lt;= 1.10</code>. On 401 or expiry fall back to local caps, log drift, never rebase automatically.</li>
+<li>Live streaming relay: keep curl, <code>Popen</code> with <code>-N --speed-limit 1 --speed-time &lt;stall&gt; --max-time &lt;per-model&gt;</code>, price partials fail-high as <code>partial_estimate</code>.</li>
+<li>Runner at <code>~/hermes-pipelines/</code>: use <code>hermes -p pl-&lt;name&gt; chat -q "&lt;step&gt;" -Q --yolo --max-turns N --skills ... --usage-file ...</code>, not <code>-z</code> (<code>-z</code> ignores <code>--skills</code>, has a fixed 90-iteration cap and exits 0 on partial runs). Profiles via <code>hermes profile create pl-&lt;name&gt; --clone --no-alias</code>; each profile <code>.env</code> carries its own <code>NOUS_API_KEY=pl-&lt;name&gt;</code> and <code>HERMES_VERIFY_ON_STOP=0</code>. Classify outcomes from usage.json plus the ledger bucket, resume on 402 with <code>--resume &lt;session_id&gt;</code>, back off 30 to 600 s on 502, exit 75 for the launchd tick. Smoke test: the 2-step /tmp write-and-verify, about $0.002.</li>
+<li>Migration order: the first site pipeline (4 phases map to steps), then the other site pipelines, then the two non-site pipelines as single-step pipelines. Kanban lanes afterwards: <code>hermes kanban create --assignee pl-&lt;name&gt; --max-runtime --max-retries</code>, dispatcher in the gateway.</li>
+</ol>
+<p>Acceptance (P4 to P9, R1 to R3): zero 402 while usable credits exceed the reserve, per-bucket cost visible in <code>/stats</code>, smoke pipeline completes twice with cost under $0.006, no session ever needs a keystroke to resume.</p>
+<h2>6. Report format when done (per wave)</h2>
+<ul>
+<li>Applied: file, key or function, backup name.</li>
+<li>measure.py before and after: the ACCEPTANCE table rows for this wave, pass or fail each.</li>
+<li>Real spend during the wave from state.json and the portal account GET (two numbers, and the drift between them).</li>
+<li>Anything skipped and why. Anything that regressed and what was rolled back.</li>
+</ul>
+<p>Projection to hold yourself to (plan_acceptance.md section 5): $2.11 a day today; $1.33 to $1.64 after waves 1 and 2; about $1.12 after waves 3 and 4. Runway on the spendable balance: 83 h today, about 119 h after waves 1 and 2, 157 h after all four.</p>
+<h2>Implementation results, 08.45 UTC</h2>
+<p class="lede">All four waves shipped</p>
+<div class="grid">
+<div class="tile"><div class="n">88</div><div class="l">Implementation quality, self-rated against the plan (95 needs the measured after-window, see below)</div><div class="bar"><i style="width:88%"></i></div></div>
+<div class="tile"><div class="n">17</div><div class="l">config keys applied and verified through the Hermes loader</div></div>
+<div class="tile"><div class="n">58 / 0</div><div class="l">proxy acceptance checks pass / fail, zero-spend suite</div></div>
+<div class="tile"><div class="n">160 / 1</div><div class="l">vendor tests pass / fail after patches (the 1 is pre-existing, order-dependent)</div></div>
+<div class="tile"><div class="n">197 / 197</div><div class="l">pipeline tests pass, plus 32 new gate checks</div></div>
+<div class="tile"><div class="n">$0.0012</div><div class="l">smoke pipeline, 2 steps, 47 s, isolated profile</div></div>
+</div>
+<div class="card"><h4>What the operator does now</h4> Every Hermes session from before 08:20 UTC has finished its goal and sits idle; all five carry the old config in memory. Start new sessions (<code>hermes</code>, or <code>hermes -p pl-site-a</code> for the first pipeline) and let them work for two hours. Then run:
+<pre>bash ~/hermes-reports/plan/after.sh</pre>
+It prints the before-and-after table with PASS or FAIL per criterion and a score. The apply time it compares against is 2026-09-17T08:20:44Z. Until then this section is the delivery record, not the outcome.</div>
+<h3>Shipped, by wave</h3>
+<div class="wrap"><table><tr><th>Wave</th><th>Shipped</th><th>Evidence</th><th>Rollback</th></tr>
+<tr><td>1 Context hygiene</td><td>compression threshold 48k, prune 24k at 4k chars, protect_last_n 10, dead summary_model removed, tool output 20k, terminal timeout 120, max_turns 40, personas removed, pre-update backup on, approvals mode quoted; MEMORY.md purged (5 stale entries)</td><td>Loader readback of every key; purge under the memory lock</td><td>config.yaml.bak-tune-20260917-152059; memories/MEMORY.md.bak.*</td></tr>
+<tr><td>2 Proxy</td><td>proxy.py 571 to 1,485 lines: body drain and sweep terminator, fail-closed state with ledger anchors, 80 percent warning headers and warn.log, degrade to the other model on per-model caps with reasoning rewrite, bearer-keyed buckets (pl-smoke 0.50, pl-site-a 3.00), portal-truth guard with 1.10 reserve, live streaming with stall cut and fail-high partial pricing, <code>--refresh-rates</code>, /stats, SIGHUP log reopen, newsyslog conf</td><td>58 zero-spend checks pass; 3 real 5-token probes; restart gap 0.27 s; first portal read: drift 0.011 vs ledger</td><td>proxy.py / policy.json / state.json .bak-impl-20260917-083237 plus kickstart</td></tr>
+<tr><td>3 Behaviour</td><td>delegation 30 / 2 / 900 s, curator off, memory nudge 30, toolsets trimmed to 10, budget-gate hook on the proxy health endpoint, delegation-contract skill plus SOUL.md rule; vendor patches 01-05: true exit reasons, child deliverable contract, busy-parent result drain through the steer rail, curator 60-char rule, verify-on-stop scoped to code files</td><td>Hook blocks at under $1 headroom in a dry test; delegate tests 70 pass; drain tests 9 pass; patches re-apply byte-identical onto a clean export</td><td>plan/patches/*.diff and REAPPLY.md; git checkout of the vendor tree</td></tr>
+<tr><td>3 Pipeline gates</td><td>Cached-stage issues counted, any ok:false stage forces FAIL, evidence counts from real stage outputs; L12 sign-off needs a person, an operator token in a file the pipeline only reads, and no autonomy wording; deployed:true only from a recorded wrangler output hash plus served-vs-dist compare; PHASE-4 docs rewritten to stop at the gate</td><td>197 of 197 existing tests plus 18 gate and 14 status checks; today's real approval.json is now rejected</td><td>*.bak-gate-* beside each file</td></tr>
+<tr><td>4 Runner</td><td>Profiles pl-smoke and pl-site-a (own state.db, config, bearer key, verify-on-stop off); ~/hermes-pipelines with runner.sh, cost.py, classify.py, prompts, launchd template (not loaded), README and MIGRATION</td><td>Smoke: 2 steps, 47 s, $0.001211 for 5 calls, root config sha unchanged</td><td>Delete the two profile dirs and ~/hermes-pipelines</td></tr>
+<tr><td>Measure</td><td>measure.py with sessions-started-after and bucket split, compare.py with 12 weighted criteria, after.sh one-command readout, before snapshots saved</td><td>Dry run on an empty after window exits 0 and says so; synthetic split proves the scoring path</td><td>-</td></tr>
+</table></div>
+<h3>Skipped or deferred, stated plainly</h3>
+<ul>
+<li>newsyslog rotation needs one <code>sudo cp</code> of <code>~/.hermes/modellock/newsyslog.d-hermes-modellock.conf</code> into /etc/newsyslog.d; not run.</li>
+<li>Per-task iteration budget and a toolsets argument on delegate_task (plan 1d, 3b) were not built; the config-level caps and the trimmed toolset cover the measured problem.</li>
+<li>Kanban lanes are documented in MIGRATION.md but not enabled; the runner comes first by design.</li>
+<li>The first site pipeline's step file was written from the plan because every phase document on the iCloud Desktop was dataless during the build; run its first gate by hand once before trusting it.</li>
+<li><code>--usage-file</code> turned out to be oneshot-only, so chat-mode steps get their usage synthesized from the profile's session row plus the ledger window; it matched the ledger exactly on the smoke run.</li>
+<li>Catalog rate refresh is a manual command, not scheduled.</li>
+</ul>
+<h3>Why 88 and not 95</h3>
+<div class="card">Everything in the plan that could be built without a live after-window is built, tested and reversible, and the two integrity bugs are closed. The seven points withheld are the ones only measurement can award: the compaction threshold and prune have never run under real load (the cache-share stop rule in wave 1 is a real risk), the busy-parent drain has unit tests but no production delivery yet, and the first site pipeline's steps are unverified against their source documents. Run after.sh once two hours of new sessions exist; if C1 to C4 and D1 to D3 pass, the setup is at the 95 mark.</div>
+<p class="src">Sources: plan/impl/impl_proxy.md, impl_vendor.md, impl_pipeline.md, impl_runner.md, impl_measure.md; backups named per row. Live proxy stats at http://127.0.0.1:8788/stats.</p>
+
+</section>
+
+</main>
+<footer class="site">
+<nav aria-label="ML tools and content" class="footer-links-seo"><a href="/tools/" target="_blank" rel="noopener">ML tools</a><a href="/tools/learning-rate-finder.html" target="_blank" rel="noopener">Learning rate finder</a><a href="/tools/confusion-matrix-calculator.html" target="_blank" rel="noopener">Confusion matrix calculator</a><a href="/calculators/kv-cache-size-calculator.html" target="_blank" rel="noopener">KV cache calculator</a><a href="/research/" target="_blank" rel="noopener">Research</a><a href="/research/ml-cheatsheet.html" target="_blank" rel="noopener">ML cheat sheet</a><a href="/guides/" target="_blank" rel="noopener">Guides</a><a href="/guides/gradient-descent-explained.html" target="_blank" rel="noopener">Gradient descent</a><a href="/answers/" target="_blank" rel="noopener">Answers</a><a href="/answers/ml-algorithm-comparison.html" target="_blank" rel="noopener">Algorithm comparison</a><a href="/triage/" target="_blank" rel="noopener">Training Run Triage</a><a href="/x/" target="_blank" rel="noopener">Pipelines</a><a href="/case-studies/hermes-glm-5-3-flash/" target="_blank" rel="noopener">Hermes case study</a><a href="/about.html" target="_blank" rel="noopener">About</a></nav>
+<div class="footer-inner" data-r="footer-inner">
+<div class="footer-brand">
+<span class="mark">ml0x</span>
+<span class="by">by <a href="https://github.com/theluckystrike" target="_blank" rel="noopener">@theluckystrike</a></span>
+</div>
+<div class="footer-right">
+<a href="https://github.com/theluckystrike/100xagenticdev" target="_blank" rel="noopener">GitHub</a>
+<a href="https://ml0x.com/research/?utm_source=ml0x&amp;utm_medium=footer&amp;utm_campaign=case-study" target="_blank" rel="noopener">Research</a>
+<a href="https://twitter.com/_alphashark_" target="_blank" rel="noopener">X</a>
+</div>
+</div>
+</footer>
+</body>
+</html>
