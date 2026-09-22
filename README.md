@@ -50,6 +50,10 @@ MEMORY          Conversations → Daily Logs → Wiki → Next Session
 
 All pipeline code, configs, scripts, and research: **[theluckystrike/100xagenticdev](https://github.com/theluckystrike/100xagenticdev)**
 
+## More Tools
+
+Free Telegram utilities (countdown timers, reminders, habit streaks): **[tg.zovo.one](https://tg.zovo.one/)**
+
 ## License
 
 MIT
