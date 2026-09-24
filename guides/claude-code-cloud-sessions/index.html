@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>How to set up Claude Code cloud sessions and use the $250 credit | ml0x</title>
+<meta name="description" content="Step-by-step setup for Claude Code cloud sessions, tested on Claude Code 2.1.281. Claim the $100 or $250 credit, connect GitHub, start your first session from the terminal, and fix the errors people hit.">
+<link rel="canonical" href="https://ml0x.com/guides/claude-code-cloud-sessions/">
+<link rel="alternate" hreflang="en" href="https://ml0x.com/guides/claude-code-cloud-sessions/">
+<link rel="alternate" hreflang="x-default" href="https://ml0x.com/guides/claude-code-cloud-sessions/">
+<meta property="og:type" content="article">
+<meta property="og:title" content="How to set up Claude Code cloud sessions and use the $250 credit">
+<meta property="og:description" content="Claim the credit, connect GitHub, run your first cloud session from the terminal, and fix the errors people hit. Tested on Claude Code 2.1.281.">
+<meta property="og:url" content="https://ml0x.com/guides/claude-code-cloud-sessions/">
+<meta property="og:site_name" content="ml0x">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://ml0x.com/og/claude-code-cloud-sessions.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Claude Code cloud sessions setup guide">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="How to set up Claude Code cloud sessions and use the $250 credit">
+<meta name="twitter:description" content="Claim the credit, connect GitHub, run your first cloud session from the terminal, and fix the errors people hit.">
+<meta name="twitter:image" content="https://ml0x.com/og/claude-code-cloud-sessions.png">
+<meta name="author" content="Michael Lip">
+<meta name="robots" content="index, follow">
+<link rel="stylesheet" href="/assets/ml0x.css">
+<style>
+.ccs-quick { margin: 8px 0 0; }
+.ccs-quick pre { margin: 0; }
+.ccs-steps { list-style: none; padding: 0; margin: 0 0 16px; counter-reset: none; }
+.ccs-steps > li { margin: 0 0 8px; }
+.ccs-step-no { font-family: var(--font-mono); font-size: 11px; font-weight: 500; color: var(--ink-muted); text-transform: uppercase; letter-spacing: 0.8px; margin: 48px 0 4px; }
+.ccs-step-no + h2 { margin-top: 0; }
+.ccs-status { display: inline-block; font-family: var(--font-mono); font-size: 11px; padding: 2px 8px; border-radius: var(--radius-pill); border: 1px solid var(--line-strong); color: var(--ink-2); white-space: nowrap; }
+.ccs-status.is-ok { color: var(--ok); border-color: var(--ok); }
+.ccs-status.is-warn { color: var(--warn); border-color: var(--warn); }
+.ccs-planner .control-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px; }
+.ccs-planner .control-group { margin-bottom: 0; }
+.ccs-planner input, .ccs-planner select { font-size: 16px; min-height: 44px; }
+.ccs-planner .stat-grid { margin: 8px 0 0; }
+.ccs-table td code { white-space: normal; word-break: break-word; }
+.ccs-table td:first-child { min-width: 220px; }
+.explainer-section pre code, .ccs-quick pre code { background: none; color: inherit; padding: 0; font-size: inherit; }
+.hero p.eyebrow { font-family: var(--font-mono); font-size: 11px; color: var(--ink-muted); margin: 0 0 10px; }
+.explainer-section p.ccs-step-no { color: var(--ink-muted); }
+.data-table td { vertical-align: top; }
+.ccs-table { max-width: 760px; margin: 24px auto; }
+.ccs-lede-after { margin: 16px 0 0; color: var(--ink-muted); font-size: 15px; max-width: 62ch; }
+@media (max-width: 767px) {
+  .stat-card { padding: 16px; }
+  .stat-card .value { font-size: 20px; }
+  .ccs-planner .stat-card:last-child { grid-column: 1 / -1; }
+  .ccs-stack thead { display: none; }
+  .ccs-stack tr { display: block; border-bottom: 1px solid var(--line); padding: 6px 0; }
+  .ccs-stack tr:last-child { border-bottom: 0; }
+  .ccs-stack td { display: block; border-bottom: 0; padding: 6px 16px; }
+  .ccs-stack td:first-child { min-width: 0; font-weight: 600; color: var(--ink); }
+  .ccs-stack td:not(:first-child)::before { content: attr(data-label); display: block; font-family: var(--font-mono); font-size: 11px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.8px; color: var(--ink-muted); margin-bottom: 2px; }
+  tbody tr:hover td { background: none; }
+}
+</style>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "TechArticle",
+  "headline": "How to set up Claude Code cloud sessions and use the $250 credit",
+  "description": "Step-by-step setup for Claude Code cloud sessions, tested on Claude Code 2.1.281: claim the credit, connect GitHub, configure the environment, start and steer a session, and fix common errors.",
+  "author": {"@type": "Person", "name": "Michael Lip", "url": "https://github.com/theluckystrike"},
+  "publisher": {"@type": "Organization", "name": "ml0x", "url": "https://ml0x.com"},
+  "datePublished": "2026-09-24",
+  "dateModified": "2026-09-24",
+  "proficiencyLevel": "Beginner",
+  "dependencies": "Claude Pro or Max plan, a GitHub account, Claude Code CLI",
+  "image": "https://ml0x.com/og/claude-code-cloud-sessions.png",
+  "mainEntityOfPage": {"@type": "WebPage", "@id": "https://ml0x.com/guides/claude-code-cloud-sessions/"},
+  "url": "https://ml0x.com/guides/claude-code-cloud-sessions/"
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {"@type": "ListItem", "position": 1, "name": "Home", "item": "https://ml0x.com/"},
+    {"@type": "ListItem", "position": 2, "name": "Guides", "item": "https://ml0x.com/guides/"},
+    {"@type": "ListItem", "position": 3, "name": "Claude Code cloud sessions"}
+  ]
+}
+</script>
+</head>
+<body>
+
+<a class="skip-link" href="#main">Skip to content</a>
+<header class="site-nav">
+  <div class="site-nav__inner">
+    <div class="site-nav__left">
+      <a class="site-nav__logo" href="/">ml0x</a>
+      <nav class="site-nav__links" aria-label="Main">
+        <a href="/tools/">Tools</a>
+        <a href="/calculators/">Calculators</a>
+        <a href="/guides/" aria-current="page">Guides</a>
+        <a href="/answers/">Answers</a>
+        <a href="/research/">Research</a>
+      </nav>
+    </div>
+    <a class="nav-cta" href="https://zovo.one/pricing?utm_source=ml0x&amp;utm_medium=nav&amp;utm_campaign=guides-claude-code-cloud-sessions" target="_blank" rel="noopener">Zovo browser extensions</a>
+  </div>
+</header>
+
+<main id="main" class="container">
+  <div class="breadcrumb">
+    <a href="/">Home</a> <span>&rsaquo;</span> <a href="/guides/">Guides</a> <span>&rsaquo;</span> Claude Code cloud sessions
+  </div>
+
+  <div class="hero">
+    <p class="eyebrow">Guide &middot; tested on Claude Code 2.1.281 &middot; 24 September 2026</p>
+    <h1>Set up Claude Code <span>cloud sessions</span></h1>
+    <p>Claude Code can now run on a virtual machine Anthropic hosts instead of your laptop. That's a cloud session. It clones your GitHub repo and keeps working on its own branch after you close the lid. Pro and Max subscribers also got a one-time credit that cloud sessions spend before they touch your plan's usage.</p>
+  </div>
+
+  <div class="stat-grid" aria-label="Key numbers">
+    <div class="stat-card"><div class="value">$250 / $100</div><div class="label">Credit on Max / Pro</div></div>
+    <div class="stat-card"><div class="value">Oct 7</div><div class="label">Last day to claim</div></div>
+    <div class="stat-card"><div class="value">Nov 4</div><div class="label">Expires 11:59 PM Pacific</div></div>
+    <div class="stat-card"><div class="value">4 / 16 / 30</div><div class="label">vCPU / GB RAM / GB disk</div></div>
+  </div>
+
+  <div class="ccs-quick">
+    <p class="eyebrow">The short version</p>
+<pre><code># 1. check your tools (this guide used 2.1.281)
+claude --version
+gh auth status
+
+# 2. inside Claude Code, claim the credit and connect GitHub
+claude
+/claim-credit
+/web-setup
+
+# 3. from your repo, start a cloud session
+cd ~/code/your-repo
+git push
+claude --cloud "Fix the failing tests"</code></pre>
+    <p class="ccs-lede-after">I ran every step below on a Max account from a Mac terminal, and copied the commands and the messages they print from that run. If you already use Claude Code with a GitHub CLI login, the whole setup fits in the block above.</p>
+  </div>
+
+  <section class="explainer-section">
+
+    <h2>Before you start</h2>
+    <p>You need four things. Check them now and the later steps won't stall.</p>
+    <ul>
+      <li>A Claude Pro, Max or Team plan, or an Enterprise premium or Chat + Claude Code seat. Organizations with Zero Data Retention can't use cloud sessions. The credit was offered to Pro and Max subscribers only.</li>
+      <li>Claude Code signed in with your claude.ai account, not an API key. Run <code>/status</code> inside <code>claude</code> to see which one you're using. If it shows an API key, run <code>/login</code>.</li>
+      <li>A GitHub account, with the code you want to work on in a GitHub repository. A folder that only exists on your disk can't be cloned into a cloud session.</li>
+      <li>For the terminal route, the GitHub CLI (<code>gh</code>) installed and logged in. On a Mac that's <code>brew install gh</code> and then <code>gh auth login</code>. You can skip <code>gh</code> entirely and connect GitHub in the browser instead, as step 2 shows.</li>
+    </ul>
+    <p>Update Claude Code first with <code>claude update</code>. The <code>--cloud</code> flag and <code>/claim-credit</code> are in 2.1.281, and older versions may not have them.</p>
+
+    <p class="ccs-step-no">Step 1</p>
+    <h2>Claim the credit</h2>
+    <p>Open Claude Code and type <code>/claim-credit</code>. You can also open <a href="https://claude.ai/code" target="_blank" rel="noopener">claude.ai/code</a>, where a claim prompt appears on accounts that still have one. The deadline to claim is the end of 7 October 2026, US Pacific time.</p>
+    <p>If you've claimed it already, the command tells you so and links to your offer page. Here's the exact output from my account.</p>
+<pre><code>&gt; /claim-credit
+  &#9151;  You've already claimed this offer. See the offer at https://claude.ai/code/claim-credit/6</code></pre>
+    <p>The number at the end can differ from the public link, so open the one your own terminal prints. Your balance shows on claude.ai as a card titled Cloud session credits, which reads "Applies automatically to cloud sessions. After it's used or expires, your plan's regular usage applies." Mine said "$250 of $250 left" with an expiry of November 5 at 2:59 PM GMT+7. That's 11:59 PM Pacific on November 4, because US daylight saving time ends on November 1 and the Pacific offset becomes UTC&minus;8.</p>
+    <p>The CLI's <code>/usage</code> screen doesn't show this credit. Its "Usage credits" line is paid extra usage, which is a separate setting.</p>
+
+    <p class="ccs-step-no">Step 2</p>
+    <h2>Connect GitHub</h2>
+    <p>There are two ways in. Pick the terminal one if <code>gh</code> already works on your machine, since it takes ten seconds.</p>
+
+    <h3>From the terminal with /web-setup</h3>
+    <p>Start <code>claude</code> in any folder and run <code>/web-setup</code>. It reads the token that <code>gh auth token</code> prints and asks you to confirm. Then it sends the token to Anthropic, which stores it encrypted against your claude.ai account. Cloud sessions then use it to clone and push. You'll see this prompt.</p>
+<pre><code>Connect cloud sessions to GitHub?
+Cloud sessions require connecting to your GitHub account to clone and push code on your behalf.
+Your local credentials are used to authenticate with GitHub
+&#10095; 1. Continue
+  2. Cancel</code></pre>
+    <p>Choose Continue. On my machine it printed one line and opened claude.ai/code in the browser.</p>
+<pre><code>&#9151;  Connected as theluckystrike. Opened https://claude.ai/code</code></pre>
+    <p>Two details matter here. The command only works in an interactive session, so <code>claude -p "/web-setup"</code> fails with "/web-setup isn't available in this environment." And the cloud can reach exactly what your <code>gh</code> token can reach. If you plan to let Claude edit GitHub Actions files, add the workflow scope first with <code>gh auth refresh -s workflow</code> and then run <code>/web-setup</code> again. To remove the token later, disconnect GitHub at <a href="https://claude.ai/customize/connectors" target="_blank" rel="noopener">claude.ai/customize/connectors</a>.</p>
+
+    <h3>From the browser with the Claude GitHub App</h3>
+    <p>Open <a href="https://claude.ai/code" target="_blank" rel="noopener">claude.ai/code</a> and follow the GitHub prompt. It asks you to authorize Claude on GitHub, then offers to install the Claude GitHub App. You can skip the install and add it later. Public repos work straight away. A private repo only shows up once the app is installed on that repo or on the organization that owns it.</p>
+    <p>Organization repos are where most people get stuck. Go to <a href="https://github.com/settings/applications" target="_blank" rel="noopener">github.com/settings/applications</a>, open the Claude entry, and click Grant next to the organization under Organization access. If the button says Request instead, an admin of that GitHub organization has to approve it. If the organization uses single sign-on, each member has to authorize the app for it separately. On Team and Enterprise plans, an Owner may also need to switch on the GitHub connector in the admin settings before anyone sees a sign-in button.</p>
+
+    <p class="ccs-step-no">Step 3</p>
+    <h2>Check the environment</h2>
+    <p>Every cloud session runs inside an environment, which sets its network access, environment variables and optional setup script. Pro and Max accounts get one called Default during onboarding. It starts with no variables or script and uses Trusted network access. Trusted allows package registries and a list of approved domains, nothing else.</p>
+    <p>Trusted is fine for most JavaScript and Python work. Change it when an install fails with a 403, or when the task needs an API that isn't on the list. You edit environments in the claude.ai/code interface. The four levels are below.</p>
+    <div class="table-scroll">
+      <table class="data-table ccs-stack">
+        <thead><tr><th>Level</th><th>What the session can reach</th><th>Use it when</th></tr></thead>
+        <tbody>
+          <tr><td data-label="Level">None</td><td data-label="What the session can reach">No outbound internet. GitHub and the Anthropic API still work through their own proxies.</td><td data-label="Use it when">The code must not phone home, or the job needs no downloads</td></tr>
+          <tr><td data-label="Level">Trusted</td><td data-label="What the session can reach">Package registries and an approved domain list</td><td data-label="Use it when">Most work. It's the default</td></tr>
+          <tr><td data-label="Level">Full</td><td data-label="What the session can reach">Any domain</td><td data-label="Use it when">Builds that fetch from arbitrary hosts, such as release assets or SDK installers</td></tr>
+          <tr><td data-label="Level">Custom</td><td data-label="What the session can reach">Your own allowlist</td><td data-label="Use it when">You want Full's reach for three domains and no more</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>Environment variables use <code>.env</code> format, one <code>KEY=value</code> per line. Anyone who can use the environment can read them, so keep real secrets out of there. On Pro and Max, add those as API credentials on the environment instead. A proxy attaches them to matching requests, and Claude never sees the key. A setup script is a bash script that runs before Claude Code starts. It gets about five minutes and must exit with code 0. Later sessions reuse the cached filesystem it leaves behind for around seven days. Put machine-level installs there. Project steps such as <code>npm ci</code> belong in a SessionStart hook in the repo, which runs at the start of every session, local or cloud.</p>
+<pre><code>// .claude/settings.json in your repo
+{
+  "hooks": {
+    "SessionStart": [
+      { "matcher": "startup|resume",
+        "hooks": [ { "type": "command",
+        "command": "if [ \"$CLAUDE_CODE_REMOTE\" = \"true\" ]; then npm ci; fi" } ] }
+    ]
+  }
+}</code></pre>
+    <p><code>CLAUDE_CODE_REMOTE</code> is set to <code>true</code> inside cloud sessions, so the hook above installs dependencies in the cloud and leaves your laptop alone.</p>
+    <p>The machine itself has 4 vCPUs, 16 GB of RAM and 30 GB of disk. It comes with Python 3 (pip, uv, poetry, pytest, ruff), Node 20 to 22 (npm, pnpm, yarn, bun), Ruby, PHP 8.3, Java 21, Go, Rust, and C and C++. Docker, PostgreSQL 16 and Redis 7 are installed too, along with the usual command-line tools including <code>git</code>, <code>gh</code>, <code>jq</code> and <code>ripgrep</code>.</p>
+
+    <h3>What carries over from your machine</h3>
+    <p>Less than you'd expect. Your personal <code>~/.claude/settings.json</code>, your user-level hooks and your user-scope MCP servers stay on your laptop. A cloud session reads the <code>.claude/settings.json</code> committed in the repo, plus any settings your organization manages on the server. Anything the session needs has to live in the repo or in the environment.</p>
+    <p>The CLI sends sessions to your default environment. Run <code>/remote-env</code> inside <code>claude</code> to pick a different one.</p>
+
+    <p class="ccs-step-no">Step 4</p>
+    <h2>Start your first session</h2>
+    <p>From the terminal, <code>cd</code> into a local clone of a GitHub repo and pass the task to <code>--cloud</code>. What the session starts from depends on the Claude GitHub App. If the app is installed on the repo, the session clones the GitHub copy of your current branch, so push first. If it isn't, even after <code>/web-setup</code>, the CLI uploads your local repo as a bundle instead, uncommitted changes to tracked files included. Install the app on the repo if you want the GitHub route every time.</p>
+<pre><code>cd ~/code/your-repo
+git push
+claude --cloud "Read README.md and reply with its first heading. Do not change any files."</code></pre>
+    <p>That's the smoke test I ran. The terminal came back with this.</p>
+<pre><code>Created cloud session: README smoke test
+View: https://claude.ai/code/session_013RJsJUzfWs11NhuKnFaKr2?from=cli&amp;m=0
+Resume with: claude --teleport session_013RJsJUzfWs11NhuKnFaKr2</code></pre>
+    <p>The session read the file on Anthropic's machine and answered "Codebase licensing checklist", which is the right heading. My local clone stayed untouched. A read-only task is the cheapest way to prove the whole chain works before you hand it something real.</p>
+    <p>You don't need a terminal at all. The same session starts from <a href="https://claude.ai/code" target="_blank" rel="noopener">claude.ai/code</a> in a browser, from the Code tab in the Claude app on iPhone or Android, or from the desktop app by picking Cloud instead of Local. You choose the repo and type the task.</p>
+    <div class="note">
+      <p>You can force the bundle route with <code>CCR_FORCE_BUNDLE=1 claude --cloud "..."</code>, which is how a GitLab or Bitbucket repo gets into a cloud session. Bundles leave out untracked files and files that look like credentials, such as <code>.env</code> and <code>*.pem</code>. Keep them under 100 MB. A bigger repo is retried with only the current branch, then as a squashed snapshot. A bundle session can push back only to a GitHub remote your connection can write to.</p>
+    </div>
+
+    <p class="ccs-step-no">Step 5</p>
+    <h2>Follow and steer it</h2>
+    <p>The View link is the main window onto a running session. It shows every tool call, and you can type follow-ups there, from any device. In the terminal you have two more options.</p>
+<pre><code># send a follow-up message to a running session
+claude -p "Also update the changelog." --cloud session_013RJsJUzfWs11NhuKnFaKr2
+
+# pull the whole session down to your machine and keep working locally
+claude --teleport session_013RJsJUzfWs11NhuKnFaKr2</code></pre>
+    <p>What doesn't work, at least on my account, is attaching to a session interactively. <code>claude --cloud session_...</code> without <code>-p</code> returned "Error: Attaching to an existing cloud session is not enabled for your account." Use the web link or one of the two commands above.</p>
+    <p>Cloud sessions offer three permission modes, which are Auto, Accept edits and Plan. There's no manual approval mode and no bypass. In Accept edits, Claude pushes its branch without stopping to ask, so use Plan when you want to read the approach first.</p>
+    <p>Be careful with sharing. On Pro and Max, setting a session's visibility to Public lets any logged-in claude.ai user open it, and a session can contain private code and credentials.</p>
+    <p>Teleport has conditions of its own. It needs the same claude.ai account that started the session and a checkout of the same repo, not a fork. The session's branch must already be pushed, and if your working tree has changes it offers to stash them. After you teleport, new turns run locally in their own copy of the session. Treat them as local usage.</p>
+
+    <p class="ccs-step-no">Step 6</p>
+    <h2>Review and merge the work</h2>
+    <p>A session started in the browser begins from the repo's default branch unless you name another one. From the CLI it begins from the branch you're on. Either way it commits to a branch prefixed <code>claude/</code>. The session page shows a counter such as +42 &minus;18. Click it to open the diff and comment on individual lines. Your comments go back with your next message. When you're happy, click Create PR and choose a full PR, a draft, or GitHub's compose page with a generated title and description.</p>
+    <p>Commits made in a cloud session carry a <code>Claude-Session:</code> trailer with the session URL, and PR bodies include the link too. To leave it out, commit <code>"attribution": {"sessionUrl": false}</code> to the repo's <code>.claude/settings.json</code>. Your personal <code>~/.claude/settings.json</code> doesn't reach the cloud.</p>
+
+    <h2>Plan the credit so none of it expires</h2>
+    <p>Whatever is left on November 4 is gone. The planner divides your remaining balance by the days left, so you can see what a day's worth of cloud work should cost. The first figures below assume 24 September. The page recomputes them from your own clock when it loads.</p>
+  </section>
+
+  <div class="tool-card ccs-planner" id="planner">
+    <h3>Credit planner</h3>
+    <div class="control-row">
+      <div class="control-group">
+        <label for="ccsPlan">Plan</label>
+        <select id="ccsPlan">
+          <option value="250" selected>Max ($250 credit)</option>
+          <option value="100">Pro ($100 credit)</option>
+        </select>
+      </div>
+      <div class="control-group">
+        <label for="ccsLeft">Credit left ($)</label>
+        <input type="number" id="ccsLeft" value="250" min="0" max="250" step="1" inputmode="decimal">
+      </div>
+      <div class="control-group">
+        <label for="ccsPerDay">Sessions per day</label>
+        <input type="number" id="ccsPerDay" value="3" min="1" max="50" step="1" inputmode="numeric">
+      </div>
+    </div>
+    <div class="stat-grid" aria-live="polite">
+      <div class="stat-card"><div class="value" id="ccsDays">41.8</div><div class="label">Days left</div></div>
+      <div class="stat-card"><div class="value" id="ccsDaily">$5.98</div><div class="label">To spend per day</div></div>
+      <div class="stat-card"><div class="value" id="ccsSession">$1.99</div><div class="label">Per session</div></div>
+    </div>
+    <p class="stat-note" id="ccsNote">As of 24 September 2026 at 12:00 UTC. The deadline used is 5 November 2026 07:59 UTC, which is 11:59 PM Pacific on 4 November. Figures are rounded to the cent.</p>
+  </div>
+
+  <section class="explainer-section">
+    <p>Anthropic's own clarification is that the credit is "an optional one-time credit that your cloud sessions spend first, before falling back onto your normal plan usage." Cloud sessions themselves don't cost extra. Anthropic's docs say they share your plan's rate limits and carry no separate charge for the virtual machine.</p>
+
+    <h3>What the credit is good for</h3>
+    <p>Long jobs that shouldn't depend on your laptop staying awake are the obvious fit. A dependency upgrade across a repo qualifies, and so does a migration or a loop of running the tests, fixing and running them again. Parallel work fits too. Each session is its own VM with its own copy of the repo, so five sessions on five repos don't fight over one working tree. And you can start or check a session from your phone.</p>
+    <p>Some things don't move to the cloud. A session can't see files that exist only on your disk or drive a browser that's logged in on your machine. Interactive logins such as AWS SSO won't finish either. If a job depends on any of those, keep it local.</p>
+
+    <h3>What's official and what's only reported</h3>
+    <div class="table-scroll">
+      <table class="data-table ccs-stack">
+        <thead><tr><th>Claim</th><th>Status</th><th>Source</th></tr></thead>
+        <tbody>
+          <tr><td data-label="Claim">$250 on Max, $100 on Pro, one-time, existing subscribers</td><td data-label="Status"><span class="ccs-status is-ok">Official</span></td><td data-label="Source"><a href="https://x.com/ClaudeDevs/status/2102871550974427462" target="_blank" rel="noopener">@ClaudeDevs announcement</a></td></tr>
+          <tr><td data-label="Claim">Claim with <code>/claim-credit</code> or the link, by the end of 7 October, Pacific</td><td data-label="Status"><span class="ccs-status is-ok">Official</span></td><td data-label="Source"><a href="https://x.com/ClaudeDevs/status/2102871555244257518" target="_blank" rel="noopener">@ClaudeDevs follow-up</a>, command present in 2.1.281</td></tr>
+          <tr><td data-label="Claim">Spent before your plan's usage, no extra cost for cloud sessions</td><td data-label="Status"><span class="ccs-status is-ok">Official</span></td><td data-label="Source"><a href="https://x.com/ClaudeDevs/status/2102940480736821610" target="_blank" rel="noopener">@ClaudeDevs clarification</a></td></tr>
+          <tr><td data-label="Claim">Expires 11:59 PM Pacific on 4 November 2026</td><td data-label="Status"><span class="ccs-status is-ok">Seen on an account</span></td><td data-label="Source">Credit card on a Max account, shown as Nov 5 2:59 PM GMT+7</td></tr>
+          <tr><td data-label="Claim">Balance not shown in the CLI's <code>/usage</code></td><td data-label="Status"><span class="ccs-status is-ok">Tested</span></td><td data-label="Source">Checked in 2.1.281</td></tr>
+          <tr><td data-label="Claim">Team and Enterprise plans get it</td><td data-label="Status"><span class="ccs-status is-warn">Not in the offer</span></td><td data-label="Source">The announcement names Pro and Max only</td></tr>
+          <tr><td data-label="Claim">Not usable for Routines or Projects</td><td data-label="Status"><span class="ccs-status is-warn">Reported only</span></td><td data-label="Source">Third-party write-ups, no official page found</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h2>When something goes wrong</h2>
+    <p>The errors below come up most often. I collected them from my own run, the official docs and open issues on the Claude Code GitHub repo.</p>
+  </section>
+
+  <div class="table-scroll ccs-table">
+    <table class="data-table ccs-stack">
+      <thead><tr><th>What you see</th><th>Why</th><th>Fix</th></tr></thead>
+      <tbody>
+        <tr><td data-label="What you see"><code>/web-setup isn't available in this environment.</code></td><td data-label="Why">You ran it through <code>claude -p</code></td><td data-label="Fix">Start <code>claude</code> interactively and type <code>/web-setup</code> there</td></tr>
+        <tr><td data-label="What you see"><code>/web-setup</code> shows Unknown command, or Not signed in to Claude</td><td data-label="Why">API-key or third-party-provider login. On Team and Enterprise, the Quick web setup toggle is off until an Owner enables it, and an organization policy can disable cloud sessions</td><td data-label="Fix">Run <code>/login</code> with your claude.ai account, confirm with <code>/status</code></td></tr>
+        <tr><td data-label="What you see"><code>Attaching to an existing cloud session is not enabled for your account.</code></td><td data-label="Why">Interactive attach isn't available on every account</td><td data-label="Fix">Use the View link, <code>claude -p "..." --cloud &lt;id&gt;</code>, or <code>claude --teleport &lt;id&gt;</code></td></tr>
+        <tr><td data-label="What you see">Private or organization repos missing from the list</td><td data-label="Why">The GitHub App isn't installed there, the organization hasn't been granted, or SSO needs its own approval</td><td data-label="Fix">Install the app on the repo or organization, then click Grant at github.com/settings/applications</td></tr>
+        <tr><td data-label="What you see">Pushes that touch <code>.github/workflows</code> are rejected</td><td data-label="Why">The <code>gh</code> token has no workflow scope</td><td data-label="Fix"><code>gh auth refresh -s workflow</code>, then <code>/web-setup</code> again</td></tr>
+        <tr><td data-label="What you see"><code>npm</code>, <code>pip</code>, <code>cargo</code> or <code>dotnet</code> installs fail with 403</td><td data-label="Why">The Trusted network level blocks that host</td><td data-label="Fix">Switch the environment to Full or add the domain to a Custom list. Some hosts are reported blocked even on Full, so check the open issues if that fails too</td></tr>
+        <tr><td data-label="What you see">Setup script failed, or setup hangs</td><td data-label="Why">A command exited non-zero, or the script ran past about five minutes</td><td data-label="Fix">Add <code>set -x</code> to find the line, add <code>|| true</code> to optional steps, move project installs into a SessionStart hook</td></tr>
+        <tr><td data-label="What you see">Environment variables are empty inside the setup script</td><td data-label="Why">Reported in the issue tracker. Variables arrive when the session starts</td><td data-label="Fix">Read them in a SessionStart hook instead</td></tr>
+        <tr><td data-label="What you see">The cloud session doesn't see your latest changes</td><td data-label="Why">The GitHub App is installed, so it cloned the GitHub copy of your branch</td><td data-label="Fix"><code>git push</code> before <code>--cloud</code>, or use <code>CCR_FORCE_BUNDLE=1</code></td></tr>
+        <tr><td data-label="What you see">Teleport says Error loading Claude Code sessions</td><td data-label="Why">You're signed in with an API key, or your stored account details are stale</td><td data-label="Fix">Run <code>/login</code> with the claude.ai account that started the session</td></tr>
+        <tr><td data-label="What you see">Every session fails with an authentication error</td><td data-label="Why">Your organization has IP allowlisting turned on</td><td data-label="Fix">Ask Anthropic support to exempt Anthropic-hosted services</td></tr>
+        <tr><td data-label="What you see">Environment expired</td><td data-label="Why">The session sat idle and its VM was reclaimed</td><td data-label="Fix">Reopen it from claude.ai/code. You get a fresh VM with the conversation restored, but running background jobs are lost</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <section class="faq-section">
+    <h2>Questions people ask</h2>
+    <details>
+      <summary>Do cloud sessions cost extra now?</summary>
+      <p>No. They run on your Pro or Max plan and share its rate limits, with no separate charge for the virtual machine. The credit is a one-time credit that cloud sessions spend before they touch your plan's usage. After it's used or expires, your plan's regular usage applies.</p>
+    </details>
+    <details>
+      <summary>Is it November 4 or November 5?</summary>
+      <p>Both, depending on where you are. My account showed November 5 at 2:59 PM GMT+7, which is 07:59 UTC on November 5 and 11:59 PM Pacific on November 4. Plan around the night of the 4th in the US.</p>
+    </details>
+    <details>
+      <summary>Where do I see how much credit is left?</summary>
+      <p>On claude.ai, in the Cloud session credits card, which shows the amount left and the expiry. <code>/claim-credit</code> in the CLI links to your offer page. The CLI's <code>/usage</code> screen doesn't show this credit.</p>
+    </details>
+    <details>
+      <summary>Why doesn't a cloud session see my local edits?</summary>
+      <p>When the Claude GitHub App is installed on the repo, the session clones your branch from GitHub, so commit and push before you start. Without the app, the CLI uploads a bundle of your local repo instead, which does include uncommitted changes to tracked files but leaves out untracked ones.</p>
+    </details>
+    <details>
+      <summary>Can I use it with GitLab or Bitbucket?</summary>
+      <p>Only as a bundle. The session can change the code but can't push to a non-GitHub remote, and teleport needs a pushed branch, so plan to copy the result out by hand.</p>
+    </details>
+    <details>
+      <summary>Is it safe to hand my GitHub token to /web-setup?</summary>
+      <p>The token goes to Anthropic and is stored encrypted against your claude.ai account. Inside the session, git credentials stay outside the sandbox and a proxy signs requests on the session's behalf. The token can still do whatever your <code>gh</code> login can do, so if you want narrower access, use the GitHub App and install it only on the repos you choose.</p>
+    </details>
+    <details>
+      <summary>How many sessions can I run at once?</summary>
+      <p>Each session is a separate VM with its own clone, so you can run several in parallel. They all draw on the same account, and parallel work uses up the credit and your limits faster in proportion.</p>
+    </details>
+  </section>
+
+  <section class="explainer-section">
+    <h2>Sources</h2>
+    <ul>
+      <li><a href="https://code.claude.com/docs/en/claude-code-on-the-web" target="_blank" rel="noopener">Use Claude Code in the cloud</a>, Anthropic docs</li>
+      <li><a href="https://code.claude.com/docs/en/web-quickstart" target="_blank" rel="noopener">Get started with Claude Code in the cloud</a>, Anthropic docs</li>
+      <li><a href="https://code.claude.com/docs/en/cloud-environments" target="_blank" rel="noopener">Configure cloud environments</a>, Anthropic docs</li>
+      <li><a href="https://support.claude.com/en/articles/10167454-use-the-github-integration" target="_blank" rel="noopener">Use the GitHub integration</a>, Claude help center</li>
+      <li><a href="https://github.com/anthropics/claude-code/issues" target="_blank" rel="noopener">anthropics/claude-code issues</a>, for the 403 and setup-script reports</li>
+    </ul>
+  </section>
+
+  <p class="last-updated">Last verified 24 September 2026 on Claude Code 2.1.281, macOS, Max plan.</p>
+
+  <div class="related-grid">
+    <a href="/calculators/llm-memory-calculator.html" class="related-card">
+      <div class="related-title">LLM memory calculator</div>
+      <div class="related-desc">Weights, KV cache and optimizer memory for 19 open models, recomputed from each model's own config.</div>
+    </a>
+    <a href="/calculators/kv-cache-size-calculator.html" class="related-card">
+      <div class="related-title">KV cache size calculator</div>
+      <div class="related-desc">Bytes per token and GQA ratio per model, from live Hugging Face configs.</div>
+    </a>
+    <a href="/guides/" class="related-card">
+      <div class="related-title">All guides</div>
+      <div class="related-desc">Interactive explainers on training, validation and optimization.</div>
+    </a>
+  </div>
+</main>
+<footer class="site-footer">
+  <nav class="footer-links-seo" aria-label="ML tools and content"><a href="https://mcp.zovo.one" target="_blank" rel="noopener">MCP servers for Claude</a>
+    <a href="/tools/">ML tools</a>
+    <a href="/tools/learning-rate-finder.html">Learning rate finder</a>
+    <a href="/tools/confusion-matrix-calculator.html">Confusion matrix calculator</a>
+    <a href="/tools/neural-network-playground.html">Neural network playground</a>
+    <a href="/tools/attention-mechanism-visualizer.html">Attention visualizer</a>
+    <a href="/tools/dataset-splitter.html">Dataset splitter</a>
+    <a href="/calculators/kv-cache-size-calculator.html">KV cache calculator</a>
+    <a href="/calculators/llm-memory-calculator.html">LLM memory calculator</a>
+    <a href="/guides/">Guides</a>
+    <a href="/guides/gradient-descent-explained.html">Gradient descent</a>
+    <a href="/answers/">Answers</a>
+    <a href="/answers/ml-algorithm-comparison.html">Algorithm comparison</a>
+    <a href="/research/">Research</a>
+    <a href="/research/ml-cheatsheet.html">ML cheat sheet</a>
+    <a href="/about.html">About</a>
+  </nav>
+  <div class="site-footer__inner">
+    <div class="site-footer__brand">
+      <span class="site-footer__logo">ml0x</span>
+      <span class="site-footer__meta">by <a href="https://github.com/theluckystrike" target="_blank" rel="noopener">@theluckystrike</a></span>
+    </div>
+    <div class="site-footer__links">
+      <a href="https://github.com/theluckystrike/100xagenticdev" target="_blank" rel="noopener">GitHub</a>
+      <a href="/research/">Research</a>
+      <a href="https://twitter.com/_alphashark_" target="_blank" rel="noopener">X</a>
+    </div>
+  </div>
+
+<nav class="zovo-network" aria-label="Zovo Tools Network">
+    <div class="zovo-network-inner">
+        <h3 class="zovo-network-title">Explore More Tools</h3>
+        <div class="zovo-network-links">
+            <a href="https://abwex.com">ABWex — A/B Testing</a>
+            <a href="https://b2berp.com">B2BERP — Business Tools</a>
+            <a href="https://bugbountyreality.com">BugBountyReality — Security</a>
+            <a href="https://claudflow.com">ClaudFlow — Workflows</a>
+            <a href="https://claudkit.com">ClaudKit — API Tools</a>
+            <a href="https://dismissticket.com">DismissTicket — Support</a>
+            <a href="https://enhio.com">Enhio — Text Tools</a>
+            <a href="https://epochpilot.com">EpochPilot — Timestamps</a>
+            <a href="https://gen8x.com">Gen8X — Color Tools</a>
+            <a href="https://gpt0x.com">GPT0X — AI Models</a>
+            <a href="https://heytensor.com">HeyTensor — ML Tools</a>
+            <a href="https://ingredientcalculator.com">IngredientCalc — Recipes</a>
+            <a href="https://invokebot.com">InvokeBot — Webhooks</a>
+            <a href="https://kappafy.com">Kappafy — JSON</a>
+            <a href="https://kappakit.com">KappaKit — Dev Toolkit</a>
+            <a href="https://kickllm.com">KickLLM — LLM Costs</a>
+            <a href="https://krzen.com">Krzen — Image Tools</a>
+            <a href="https://lochbot.com">LochBot — Security</a>
+            <a href="https://lockml.com">LockML — ML Security</a>
+            <a href="https://ml3x.com">ML3X — Matrix Math</a>
+            <a href="https://pictureeditor.net">PictureEditor — Image Editing</a>
+            <a href="https://recipetool.net">RecipeTool — Cooking</a>
+            <a href="https://viryd.com">Viryd — Dev Tools</a>
+        </div>
+    </div>
+</nav>
+
+<div class="pow-strip">
+  <div class="pow-strip-inner">
+    <span class="pow-label">By the same builder:</span>
+    <a href="https://github.com/theluckystrike" rel="nofollow">GitHub — theluckystrike</a>
+    <a href="https://www.belikenative.com" rel="nofollow">BeLikeNative — Grammar AI</a>
+    <a href="https://earlythunder.com" rel="nofollow">EarlyThunder — Dev Blog</a>
+    <a href="https://bugbountyreality.com" rel="nofollow">Bug Bounty Reality</a>
+    <a href="https://zovo.one/lifetime?utm_source=ml0x&amp;utm_medium=footer&amp;utm_campaign=guides-claude-code-cloud-sessions" rel="nofollow">Zovo — AI Dev Tools</a>
+  </div>
+</div>
+<a class="h57e0e31" href="https://tg.zovo.one" style="font-family: 'Inter', sans-serif; font-size: 11px; color: #8a8a8a; text-decoration: none;" target="_blank" rel="noopener">Tiny Telegram Tools</a>
+</footer>
+<script>
+(function () {
+  'use strict';
+  var DEADLINE_MS = Date.UTC(2026, 10, 5, 7, 59, 0);
+  var DAY_MS = 86400000;
+  function $(id) { return document.getElementById(id); }
+  var plan = $('ccsPlan'), left = $('ccsLeft'), perDay = $('ccsPerDay');
+  var outDays = $('ccsDays'), outDaily = $('ccsDaily'), outSession = $('ccsSession'), note = $('ccsNote');
+  if (!plan || !left || !perDay || !outDays || !outDaily || !outSession || !note) return;
+
+  function clamp(v, lo, hi) { return isFinite(v) ? Math.min(hi, Math.max(lo, v)) : lo; }
+  function money(v) { return '$' + v.toFixed(2); }
+
+  function render() {
+    var now = Date.now();
+    var days = (DEADLINE_MS - now) / DAY_MS;
+    var rawCredit = parseFloat(left.value), rawSessions = parseFloat(perDay.value);
+    if (!isFinite(rawCredit) || !isFinite(rawSessions)) {
+      outDaily.textContent = '\u2013';
+      outSession.textContent = '\u2013';
+      note.textContent = 'Enter the credit you have left and how many sessions you run a day.';
+      return;
+    }
+    var cap = parseFloat(plan.value) || 250;
+    var credit = clamp(rawCredit, 0, cap);
+    if (rawCredit !== credit) left.value = String(credit);
+    var sessions = Math.round(clamp(rawSessions, 1, 50));
+    if (days <= 0) {
+      outDays.textContent = '0';
+      outDaily.textContent = '$0.00';
+      outSession.textContent = '$0.00';
+      note.textContent = 'The credit expired at 11:59 PM Pacific on 4 November 2026. Cloud sessions now draw on your plan usage.';
+      return;
+    }
+    var daily = credit / Math.max(days, 1);
+    outDays.textContent = days.toFixed(1);
+    outDaily.textContent = money(daily);
+    outSession.textContent = money(daily / sessions);
+    note.textContent = 'As of ' + new Date(now).toUTCString().replace(' GMT', ' UTC') +
+      '. The deadline used is 5 November 2026 07:59 UTC, which is 11:59 PM Pacific on 4 November. Figures are rounded to the cent.';
+  }
+
+  plan.addEventListener('change', function () {
+    left.max = plan.value;
+    var cur = left.value.trim();
+    if (cur === '' || cur === '250' || cur === '100' || parseFloat(cur) > parseFloat(plan.value)) left.value = plan.value;
+    render();
+  });
+  left.addEventListener('input', render);
+  perDay.addEventListener('input', render);
+  render();
+})();
+</script>
+</body>
+</html>
