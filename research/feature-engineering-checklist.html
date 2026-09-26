@@ -17,7 +17,7 @@
 <meta property="og:locale" content="en_US">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="Feature Engineering Checklist — Interactive Guide with Data Type Detector">
-<meta name="twitter:description" content="Interactive feature engineering checklist with progress tracking. Paste data to get suggestions. No data leaves your browser.">
+<meta name="twitter:description" content="Interactive feature engineering checklist with progress tracking. Paste data to get suggestions. Your data never leaves your browser.">
 <meta name="author" content="Michael Lip">
 <meta name="robots" content="index, follow">
 <link rel="stylesheet" href="/assets/ml0x.css">
@@ -59,6 +59,7 @@
   ]
 }
 </script>
+<script src="/site-analytics.js" defer></script>
 </head>
 <body>
 <a class="skip-link" href="#main">Skip to content</a>
@@ -100,7 +101,7 @@
 
   <div class="tool-card" style="margin-top:24px;">
     <h3>Data Type Detector</h3>
-    <p style="color:var(--ink-2);font-size:14px;margin-bottom:12px;">Paste a sample of your data (CSV format, first row = headers) and we will detect column types and suggest relevant feature engineering steps. No data leaves your browser.</p>
+    <p style="color:var(--ink-2);font-size:14px;margin-bottom:12px;">Paste a sample of your data (CSV format, first row = headers) and we will detect column types and suggest relevant feature engineering steps. The data you paste never leaves your browser.</p>
     <textarea id="dataInput" style="width:100%;height:120px;background:#fff;border:1px solid var(--line-strong);border-radius:var(--radius-sm);color:var(--ink);padding:12px;font-family:var(--font-mono);font-size:16px;resize:vertical;" placeholder="name,age,salary,signup_date,city,description&#10;Alice,30,75000,2024-01-15,New York,Loves hiking&#10;Bob,25,55000,2024-03-22,Boston,Enjoys cooking"></textarea>
     <button class="btn" id="detectBtn" style="margin-top:8px;">Detect Types & Get Suggestions</button>
     <div id="detectionResults" style="margin-top:16px;"></div>
@@ -186,7 +187,7 @@
 
   <section class="explainer-section">
     <h2>About the Author</h2>
-    <p><strong>Michael Lip</strong> builds open-source ML tools and developer utilities at <a href="https://zovo.one/lifetime?utm_source=ml0x&amp;utm_medium=inline&amp;utm_campaign=research-feature-engineering-checklist">zovo.one</a>. ml0x is part of the Zovo Tools network, a collection of free, privacy-first tools for developers and data scientists. No tracking, no accounts required, no data leaves your browser.</p>
+    <p><strong>Michael Lip</strong> builds open-source ML tools and developer utilities at <a href="https://zovo.one/lifetime?utm_source=ml0x&amp;utm_medium=inline&amp;utm_campaign=research-feature-engineering-checklist">zovo.one</a>. ml0x is part of the Zovo Tools network, a collection of free, privacy-first tools for developers and data scientists. No accounts required, and nothing you type into a tool leaves your browser.</p>
   </section>
 
   <p class="last-updated">Last updated: May 25, 2026</p>
@@ -219,6 +220,8 @@
       <a href="https://github.com/theluckystrike/100xagenticdev" target="_blank" rel="noopener">GitHub</a>
       <a href="/research/">Research</a>
       <a href="https://twitter.com/_alphashark_" target="_blank" rel="noopener">X</a>
+      <a href="/privacy/">Privacy</a>
+      <a href="/privacy/#analytics" data-mr-consent-open>Cookie settings</a>
     </div>
   </div>
   <nav class="zovo-network" aria-label="Zovo Tools Network">

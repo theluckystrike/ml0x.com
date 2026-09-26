@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Privacy and analytics at ml0x</title>
+<meta name="description" content="How ml0x.com uses Google Analytics 4, which cookies it sets, how consent works in the EEA, the UK and Switzerland, and how to switch it off.">
+<link rel="canonical" href="https://ml0x.com/privacy/">
+<link rel="alternate" hreflang="en" href="https://ml0x.com/privacy/">
+<link rel="alternate" hreflang="x-default" href="https://ml0x.com/privacy/">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Privacy and analytics at ml0x">
+<meta property="og:description" content="How ml0x.com uses Google Analytics 4 and how to switch it off.">
+<meta property="og:url" content="https://ml0x.com/privacy/">
+<meta property="og:site_name" content="ml0x">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Privacy and analytics at ml0x">
+<meta name="twitter:description" content="How ml0x.com uses Google Analytics 4 and how to switch it off.">
+<link rel="stylesheet" href="/assets/ml0x.css">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Home","item":"https://ml0x.com/"},{"@type":"ListItem","position":2,"name":"Privacy"}]}
+</script>
+<script src="/site-analytics.js" defer></script>
+</head>
+<body>
+<a class="skip-link" href="#main">Skip to content</a>
+<header class="site-nav">
+  <div class="site-nav__inner">
+    <div class="site-nav__left">
+      <a class="site-nav__logo" href="/">ml0x</a>
+      <nav class="site-nav__links" aria-label="Main">
+        <a href="/tools/">Tools</a>
+        <a href="/calculators/">Calculators</a>
+        <a href="/guides/">Guides</a>
+        <a href="/answers/">Answers</a>
+        <a href="/research/">Research</a>
+      </nav>
+    </div>
+    <a class="nav-cta" href="https://zovo.one/pricing?utm_source=ml0x&amp;utm_medium=nav&amp;utm_campaign=privacy" target="_blank" rel="noopener">Zovo browser extensions</a>
+  </div>
+</header>
+
+<main id="main" class="container">
+<div class="prose">
+  <div class="breadcrumb"><a href="/">Home</a> <span>/</span> Privacy</div>
+  <section class="page-head">
+    <h1>Privacy</h1>
+  </section>
+  <p>ml0x is run by Michael Lip. This page explains how the site uses Google Analytics and how you can switch it off. Last updated 26 September 2026.</p>
+
+  <h2 id="analytics">Analytics and cookies</h2>
+  <p>I use Google Analytics 4 to learn which channels bring people to ml0x.com, such as X, LinkedIn, Reddit, GitHub or a search engine, and what they do once they're here. It shows me which posts and pages are worth the time. I don't use it for ads, and I never sell what it collects.</p>
+  <p>With analytics on, the page sends Google the pages you view, the link or campaign tag that brought you, your device type, browser, screen size and language, and an approximate location. Google's built-in measurement also notes how far you scroll, links you click to other sites, files you download and when you start filling in a form. The site counts a couple of actions of its own too, like opening an FAQ answer or clicking a checkout link. And it notes when someone lands back on the welcome page after a purchase.</p>
+  <p>Before any page address goes to Google, the page strips every query parameter except the <code>utm_</code> campaign tags and Google's own <code>gclid</code> ad-click tag, so no checkout or order reference reaches Google. Nothing you type into a calculator or tool is sent to Google either. Google works out your country and city from your IP address and then drops the address. GA4 doesn't log or store IP addresses, and I never send Google your name or email address.</p>
+  <p>Two first-party cookies let GA4 recognize a repeat visit from the same browser. They hold random IDs and nothing else about you.</p>
+  <table>
+    <thead><tr><th scope="col">Name</th><th scope="col">What it holds</th><th scope="col">Kept for</th></tr></thead>
+    <tbody>
+      <tr><td><code>_ga</code></td><td>A random ID for your browser</td><td>13 months from your last visit</td></tr>
+      <tr><td><code>_ga_&lt;container-id&gt;</code></td><td>Your current session and visit count on ml0x.com</td><td>13 months from your last visit</td></tr>
+      <tr><td><code>mr_consent_v1</code> (browser storage, not a cookie)</td><td>Your answer in the cookie banner and when you gave it</td><td>Until you change it or clear site data. I ask again after 13 months.</td></tr>
+    </tbody>
+  </table>
+  <p>In the EEA, the UK and Switzerland, nothing loads from Google until you press Accept in the banner. Google's tag doesn't load before then, and it never loads if you decline. In those countries I rely on your consent (Art. 6(1)(a) GDPR). The cookie rules ask for the same consent, under Art. 5(3) of the ePrivacy Directive and the national laws that implement it, and under the UK's PECR. I ask in Switzerland too.</p>
+  <p>Everywhere else, analytics is on when the page loads. I rely on my legitimate interest in knowing which channels work (Art. 6(1)(f) GDPR, where it applies), and you can switch it off at any time. To decide whether to show the banner, the page asks Cloudflare, which already sits in front of the site, which country your connection comes from. That answer isn't stored.</p>
+  <p>If your browser sends Global Privacy Control or Do Not Track, Google's tag never loads here, wherever you are.</p>
+  <p>Google LLC, and Google Ireland Limited where Google's terms name it, process this data for me as a processor under the Google Ads Data Processing Terms. Google signals and advertising features are switched off, so analytics data isn't linked to Google accounts or used for ads. GA4 deletes event data after 14 months.</p>
+  <p>Google may process the data in the United States. Google LLC is certified under the EU-US Data Privacy Framework, and Google's terms also include the European Commission's standard contractual clauses.</p>
+  <p>You can change your choice at any time with <a href="#analytics" data-mr-consent-open>Cookie settings</a>, here or at the foot of any page. If you switch analytics off, the page stops sending anything to Google and deletes the <code>_ga</code> cookies from your browser, and Google's tag won't load on later visits. Data sent before that stays in GA4 until its 14 months run out. You can also block Google Analytics on every site with Google's opt-out add-on at <a href="https://tools.google.com/dlpage/gaoptout" rel="noopener noreferrer">tools.google.com/dlpage/gaoptout</a>, or block cookies in your browser.</p>
+
+  <h2 id="contact">Contact</h2>
+  <p>Questions about this page go to Michael Lip at <a href="mailto:lipmichal@gmail.com">lipmichal@gmail.com</a>.</p>
+</div>
+</main>
+
+<footer class="site-footer">
+  <nav class="footer-links-seo" aria-label="ML tools and content"><a href="https://mcp.zovo.one" target="_blank" rel="noopener">MCP servers for Claude</a>
+    <a href="/tools/">ML tools</a>
+    <a href="/tools/learning-rate-finder.html">Learning rate finder</a>
+    <a href="/tools/confusion-matrix-calculator.html">Confusion matrix calculator</a>
+    <a href="/tools/neural-network-playground.html">Neural network playground</a>
+    <a href="/tools/attention-mechanism-visualizer.html">Attention visualizer</a>
+    <a href="/tools/dataset-splitter.html">Dataset splitter</a>
+    <a href="/calculators/kv-cache-size-calculator.html">KV cache calculator</a>
+    <a href="/calculators/llm-memory-calculator.html">LLM memory calculator</a>
+    <a href="/guides/">Guides</a>
+    <a href="/guides/gradient-descent-explained.html">Gradient descent</a>
+    <a href="/answers/">Answers</a>
+    <a href="/answers/ml-algorithm-comparison.html">Algorithm comparison</a>
+    <a href="/research/">Research</a>
+    <a href="/research/ml-cheatsheet.html">ML cheat sheet</a>
+    <a href="/about.html">About</a>
+  </nav>
+  <div class="site-footer__inner">
+    <div class="site-footer__brand">
+      <span class="site-footer__logo">ml0x</span>
+      <span class="site-footer__meta">by <a href="https://github.com/theluckystrike" target="_blank" rel="noopener">@theluckystrike</a></span>
+    </div>
+    <div class="site-footer__links">
+      <a href="https://github.com/theluckystrike/100xagenticdev" target="_blank" rel="noopener">GitHub</a>
+      <a href="/research/">Research</a>
+      <a href="https://twitter.com/_alphashark_" target="_blank" rel="noopener">X</a>
+      <a href="/privacy/">Privacy</a>
+      <a href="/privacy/#analytics" data-mr-consent-open>Cookie settings</a>
+    </div>
+  </div>
+
+<nav class="zovo-network" aria-label="Zovo Tools Network">
+    <div class="zovo-network-inner">
+        <h3 class="zovo-network-title">Explore More Tools</h3>
+        <div class="zovo-network-links">
+            <a href="https://abwex.com">ABWex — A/B Testing</a>
+            <a href="https://b2berp.com">B2BERP — Business Tools</a>
+            <a href="https://bugbountyreality.com">BugBountyReality — Security</a>
+            <a href="https://claudflow.com">ClaudFlow — Workflows</a>
+            <a href="https://claudkit.com">ClaudKit — API Tools</a>
+            <a href="https://dismissticket.com">DismissTicket — Support</a>
+            <a href="https://enhio.com">Enhio — Text Tools</a>
+            <a href="https://epochpilot.com">EpochPilot — Timestamps</a>
+            <a href="https://gen8x.com">Gen8X — Color Tools</a>
+            <a href="https://gpt0x.com">GPT0X — AI Models</a>
+            <a href="https://heytensor.com">HeyTensor — ML Tools</a>
+            <a href="https://ingredientcalculator.com">IngredientCalc — Recipes</a>
+            <a href="https://invokebot.com">InvokeBot — Webhooks</a>
+            <a href="https://kappafy.com">Kappafy — JSON</a>
+            <a href="https://kappakit.com">KappaKit — Dev Toolkit</a>
+            <a href="https://kickllm.com">KickLLM — LLM Costs</a>
+            <a href="https://krzen.com">Krzen — Image Tools</a>
+            <a href="https://lochbot.com">LochBot — Security</a>
+            <a href="https://lockml.com">LockML — ML Security</a>
+            <a href="https://ml3x.com">ML3X — Matrix Math</a>
+            <a href="https://pictureeditor.net">PictureEditor — Image Editing</a>
+            <a href="https://recipetool.net">RecipeTool — Cooking</a>
+            <a href="https://viryd.com">Viryd — Dev Tools</a>
+        </div>
+    </div>
+</nav>
+
+<div class="pow-strip">
+  <div class="pow-strip-inner">
+    <span class="pow-label">By the same builder:</span>
+    <a href="https://github.com/theluckystrike" rel="nofollow">GitHub — theluckystrike</a>
+    <a href="https://www.belikenative.com" rel="nofollow">BeLikeNative — Grammar AI</a>
+    <a href="https://earlythunder.com" rel="nofollow">EarlyThunder — Dev Blog</a>
+    <a href="https://bugbountyreality.com" rel="nofollow">Bug Bounty Reality</a>
+    <a href="https://zovo.one/lifetime?utm_source=ml0x&amp;utm_medium=footer&amp;utm_campaign=privacy" rel="nofollow">Zovo — AI Dev Tools</a>
+  </div>
+</div>
+<a class="h57e0e31" href="https://tg.zovo.one" style="font-family: 'Inter', sans-serif; font-size: 11px; color: #8a8a8a; text-decoration: none;" target="_blank" rel="noopener">Tiny Telegram Tools</a>
+</footer>
+</body>
+</html>

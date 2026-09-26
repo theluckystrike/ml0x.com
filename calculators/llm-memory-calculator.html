@@ -55,6 +55,7 @@
 <script type="application/ld+json">
 {"@context":"https://schema.org","@graph":[{"@type":"Article","@id":"#article","headline":"LLM memory calculator","description":"Size weights, KV cache, gradients, optimizer states and activations for inference and training, with exact fetched parameter counts and a KV cache sized by num_key_value_heads.","author":{"@id":"https://zovo.one#michael-lip"},"datePublished":"2026-07-12","dateModified":"2026-07-13","publisher":{"@type":"Organization","name":"ml0x","url":"https://ml0x.com/"},"mainEntityOfPage":{"@id":"#webpage"}},{"@type":"Person","@id":"https://zovo.one#michael-lip","name":"Michael Lip","url":"https://zovo.one","description":"Builds open-source ML tools and developer utilities at zovo.one. ml0x is part of the Zovo Tools network, a collection of free, privacy-first tools for developers and data scientists."},{"@type":"WebPage","@id":"#webpage","name":"LLM memory calculator","url":"https://ml0x.com/calculators/llm-memory-calculator.html","breadcrumb":{"@id":"#breadcrumb"}},{"@type":"BreadcrumbList","@id":"#breadcrumb","itemListElement":[{"@type":"ListItem","position":1,"name":"ml0x","item":"https://ml0x.com/"},{"@type":"ListItem","position":2,"name":"Calculators","item":"https://ml0x.com/calculators/"},{"@type":"ListItem","position":3,"name":"LLM memory calculator"}]}]}
 </script>
+<script src="/site-analytics.js" defer></script>
 </head>
 <body>
 <a class="skip-link" href="#main">Skip to content</a>
@@ -111,7 +112,7 @@
 <table><thead><tr><th>Line</th><th>Memory</th><th>How the number is computed</th></tr></thead><tbody id="out"></tbody></table>
 </div>
 <p class="note">For a model outside the list, pick Custom and copy <code>num_hidden_layers</code>, <code>num_key_value_heads</code> and <code>head_dim</code> from its config.json. When <code>head_dim</code> is not published, divide <code>hidden_size</code> by <code>num_attention_heads</code>. Qwen2.5 7B, for instance, publishes <code>"hidden_size": 3584</code> alongside its 28 attention heads, and the head dimension follows from that division.</p>
-<p class="disclaimer">All computation runs client side. No data leaves your browser.</p>
+<p class="disclaimer">All computation runs client side. Nothing you enter leaves your browser.</p>
 </section>
 <section>
 <h2>Every preset, sized from its fetched count</h2>
@@ -185,9 +186,9 @@
 <ul>
 <li>Estimates use standard scaling formulas. Real workloads vary with fused kernels, sharding, and precision.</li>
 <li>This tool is for planning and teaching. Verify against a profiler run before committing a hardware budget.</li>
-<li>All computation runs client side. No data leaves your browser.</li>
+<li>All computation runs client side. Nothing you enter leaves your browser.</li>
 </ul>
-<p class="boilerplate">ml0x publishes free machine learning calculators and explainers. Every number on this page is computed in your browser from the inputs you enter. Nothing is sent to a server. Written by Michael Lip, part of the Zovo Tools network.</p>
+<p class="boilerplate">ml0x publishes free machine learning calculators and explainers. Every number on this page is computed in your browser from the inputs you enter, and your inputs are never sent to a server. Written by Michael Lip, part of the Zovo Tools network.</p>
 </section>
 <section aria-label="Related tools">
 <h2>Related tools</h2>
@@ -302,6 +303,8 @@ run();
       <a href="https://github.com/theluckystrike/100xagenticdev" target="_blank" rel="noopener">GitHub</a>
       <a href="/research/">Research</a>
       <a href="https://twitter.com/_alphashark_" target="_blank" rel="noopener">X</a>
+      <a href="/privacy/">Privacy</a>
+      <a href="/privacy/#analytics" data-mr-consent-open>Cookie settings</a>
     </div>
   </div>
 <a class="h57e0e31" href="https://tg.zovo.one" style="font-family: 'Inter', sans-serif; font-size: 11px; color: #8a8a8a; text-decoration: none;" target="_blank" rel="noopener">Tiny Telegram Tools</a>
