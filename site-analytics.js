@@ -339,3 +339,36 @@ var MR_CONSENT_MODE = 'basic'; // 'basic' | 'advanced'
     d.addEventListener(t, function (e) { try { onMedia(e); } catch (err) {} }, true);
   });
 })();
+
+/* Paid-offer visibility funnel v1. Counts a visible purchase CTA, once per product/placement/page. */
+(function () {
+  'use strict';
+  if (navigator.globalPrivacyControl || navigator.doNotTrack === '1' ||
+      new URLSearchParams(location.search).get('roi_qa') === '1' ||
+      typeof window.mrTrack !== 'function' || !('IntersectionObserver' in window)) return;
+  var products = {'28E3cw8My2Bq0tvgjj43S0t':'ml0x_pipeline','bJe00kbYK4Jyccd8QR43S0s':'training_run_triage'};
+  var seen = Object.create(null);
+  document.querySelectorAll('a[href^="https://buy.stripe.com/"]').forEach(function (a) {
+    var href = a.href || '', product = '';
+    Object.keys(products).some(function (key) {
+      if (href.indexOf(key) >= 0) { product = products[key]; return true; }
+      return false;
+    });
+    if (!product) return;
+    var container = a.closest('[data-mr-placement],section[id],aside[id],article[id]');
+    var placement = container && (container.getAttribute('data-mr-placement') || container.id) ||
+      (location.pathname === '/' ? 'home' : location.pathname.replace(/[^a-z0-9]+/gi, '_').slice(0,70));
+    var key = product + '|' + placement;
+    var observer = new IntersectionObserver(function (entries) {
+      if (seen[key] || !entries.some(function (entry) { return entry.intersectionRatio >= 0.25; })) return;
+      if (getComputedStyle(a).visibility === 'hidden' || getComputedStyle(a).display === 'none') return;
+      seen[key] = true;
+      window.mrTrack('offer_view', {
+        site_id: 'ml0x.com', product_id: product, placement: placement,
+        event_schema_version: '1', qa: false
+      });
+      observer.disconnect();
+    }, { threshold: 0.25 });
+    observer.observe(a);
+  });
+})();
