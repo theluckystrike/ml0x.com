@@ -21,6 +21,17 @@ var MR_CONSENT_MODE = 'basic'; // 'basic' | 'advanced'
   var REGION = ('AT BE BG HR CY CZ DK EE FI FR DE GR IE IT LV LT LU MT NL PL PT RO SK SI ES SE ' +
     'IS LI NO GB CH AX GF GP MQ RE YT MF').split(' ');
   var VALUE = { weekly: 9.99, lifetime: 199 };
+  /* ml0x paid products, keyed by Stripe payment-link slug. Prices match the live links (USD 99.00 each on 2026-09-29).
+     SKU maps the delivery worker's verified sku to the same slug. */
+  var ITEMS = {
+    '28E3cw8My2Bq0tvgjj43S0t': { item_id: 'ml0x_pipeline', item_name: 'ml0x Pipeline', price: 99 },
+    'bJe00kbYK4Jyccd8QR43S0s': { item_id: 'ml0x_triage', item_name: 'Training Run Triage', price: 99 }
+  };
+  var SKU = { pipeline: '28E3cw8My2Bq0tvgjj43S0t', triage: 'bJe00kbYK4Jyccd8QR43S0s' };
+  function itemFor(href) {
+    var m = /^https:\/\/buy\.stripe\.com\/([A-Za-z0-9]+)/.exec(href || '');
+    return m && ITEMS.hasOwnProperty(m[1]) ? ITEMS[m[1]] : null;
+  }
 
   function get(k) { try { return w.localStorage.getItem(k); } catch (e) { return null; } }
   function put(k, v) { try { w.localStorage.setItem(k, v); } catch (e) {} }
@@ -86,18 +97,41 @@ var MR_CONSENT_MODE = 'basic'; // 'basic' | 'advanced'
   }
   w.mrTrack = function (name, p) { if (typeof name === 'string' && name) track(name, p || {}); };
 
-  /* Stripe success_url is /welcome/?session_id=cs_... The page can't verify payment, so this is a return signal only.
-     The session id never leaves the browser; a local hash dedupes reloads. */
-  var sid = (/[?&]session_id=(cs_[A-Za-z0-9_]{8,300})/.exec(location.search) || [])[1];
-  if (sid && /^\/welcome(\/|\/index\.html)?$/.test(location.pathname)) {
+  function hid(s) { // short local hash so storage keys never hold the raw session id
     var h1 = 0x811c9dc5, h2 = 0x01000193 ^ 0x5bd1e995;
-    for (var i = 0; i < sid.length; i++) {
-      h1 = Math.imul(h1 ^ sid.charCodeAt(i), 16777619) >>> 0;
-      h2 = Math.imul(h2 ^ sid.charCodeAt(i), 2246822507) >>> 0;
+    for (var i = 0; i < s.length; i++) {
+      h1 = Math.imul(h1 ^ s.charCodeAt(i), 16777619) >>> 0;
+      h2 = Math.imul(h2 ^ s.charCodeAt(i), 2246822507) >>> 0;
     }
-    var rk = 'mr_ret_' + h1.toString(16) + h2.toString(16);
+    return h1.toString(16) + h2.toString(16);
+  }
+  /* Stripe payment links redirect to /welcome/#s=cs_... (older form: ?session_id=). checkout_return is only a return
+     signal, sent without the id; a local hash dedupes reloads. */
+  var sid = (/[?&]session_id=(cs_[A-Za-z0-9_]{8,300})/.exec(location.search) ||
+    /[#&]s=(cs_[A-Za-z0-9_]{8,300})/.exec(location.hash) || [])[1];
+  if (sid && /^\/welcome(\/|\/index\.html)?$/.test(location.pathname)) {
+    var rk = 'mr_ret_' + hid(sid);
     if (!get(rk)) track('checkout_return', { has_session: true }, function () { put(rk, '1'); });
   }
+
+  /* purchase: the welcome page calls this only after the delivery worker has checked the session with Stripe
+     (paid, right payment link and price). Live ids only, once per id: mr_buy_<hash> is written after the hit is sent,
+     and a page-level guard stops a double call before consent. transaction_id is the Stripe checkout session id. */
+  var bought = {};
+  function purchase(id, sku) {
+    var it = SKU.hasOwnProperty(sku) ? ITEMS[SKU[sku]] : null;
+    if (!it || typeof id !== 'string' || id.length > 300 || !/^cs_(live|test)_[A-Za-z0-9]+$/.test(id)) return false;
+    if (id.indexOf('cs_test_') === 0) return false; // test checkouts never reach GA
+    var k = 'mr_buy_' + hid(id);
+    if (bought[k] || get(k)) return false;
+    bought[k] = 1;
+    track('purchase', { transaction_id: id, currency: 'USD', value: it.price, items: [ext(it, { quantity: 1 })] },
+      function () { put(k, '1'); });
+    return true;
+  }
+  var pq = w.mrPurchaseQ; // calls queued by the page before this script ran
+  w.mrPurchaseQ = { push: function (x) { try { return purchase(x && x[0], x && x[1]); } catch (e) { return false; } } };
+  if (pq && pq.length) for (var qi = 0; qi < pq.length && qi < 5; qi++) w.mrPurchaseQ.push(pq[qi]);
 
   /* ---------- consent banner ---------- */
   var cc; // country from /cdn-cgi/trace for this page view only; undefined until known, null when unknown
@@ -298,8 +332,8 @@ var MR_CONSENT_MODE = 'basic'; // 'basic' | 'advanced'
       return;
     }
     if (STRIPE.test(href) || a.hasAttribute('data-mr-checkout')) {
-      var plan = planOf(a, href), cp = { plan: plan, currency: 'USD', placement: placement(a) };
-      if (VALUE[plan]) cp.value = VALUE[plan];
+      var it = itemFor(href), plan = it ? it.item_id : planOf(a, href), cp = { plan: plan, currency: 'USD', placement: placement(a) };
+      if (it) { cp.value = it.price; cp.items = [ext(it, { quantity: 1 })]; } else if (VALUE[plan]) cp.value = VALUE[plan];
       track('begin_checkout', cp);
       return;
     }

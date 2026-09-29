@@ -46,12 +46,12 @@
   <section class="page-head">
     <h1>Privacy</h1>
   </section>
-  <p>ml0x is run by Michael Lip. This page explains how the site uses Google Analytics and how you can switch it off. Last updated 26 September 2026.</p>
+  <p>ml0x is run by Michael Lip. This page explains how the site uses Google Analytics and how you can switch it off. Last updated 29 September 2026.</p>
 
   <h2 id="analytics">Analytics and cookies</h2>
   <p>I use Google Analytics 4 to learn which channels bring people to ml0x.com, such as X, LinkedIn, Reddit, GitHub or a search engine, and what they do once they're here. It shows me which posts and pages are worth the time. I don't use it for ads, and I never sell what it collects.</p>
-  <p>With analytics on, the page sends Google the pages you view, the link or campaign tag that brought you, your device type, browser, screen size and language, and an approximate location. Google's built-in measurement also notes how far you scroll, links you click to other sites, files you download and when you start filling in a form. The site counts a couple of actions of its own too, like opening an FAQ answer or clicking a checkout link. And it notes when someone lands back on the welcome page after a purchase.</p>
-  <p>Before any page address goes to Google, the page strips every query parameter except the <code>utm_</code> campaign tags and Google's own <code>gclid</code> ad-click tag, so no checkout or order reference reaches Google. Nothing you type into a calculator or tool is sent to Google either. Google works out your country and city from your IP address and then drops the address. GA4 doesn't log or store IP addresses, and I never send Google your name or email address.</p>
+  <p>With analytics on, the page sends Google the pages you view, the link or campaign tag that brought you, your device type, browser, screen size and language, and an approximate location. Google's built-in measurement also notes how far you scroll, links you click to other sites, files you download and when you start filling in a form. The site counts a couple of actions of its own too, like opening an FAQ answer or clicking a checkout link. When you buy something, the welcome page first checks your receipt with Stripe. Once it matches, the page tells Google which product sold and for how much, along with Stripe's checkout reference so I can match the sale to the order.</p>
+  <p>Before any page address goes to Google, the page strips every query parameter except the <code>utm_</code> campaign tags and Google's own <code>gclid</code> ad-click tag, so nothing else in the address reaches Google. That checkout reference for a confirmed sale is the only order detail Google gets. Nothing you type into a calculator or tool is sent to Google either. Google works out your country and city from your IP address and then drops the address. GA4 doesn't log or store IP addresses, and I never send Google your name or email address.</p>
   <p>Two first-party cookies let GA4 recognize a repeat visit from the same browser. They hold random IDs and nothing else about you.</p>
   <table>
     <thead><tr><th scope="col">Name</th><th scope="col">What it holds</th><th scope="col">Kept for</th></tr></thead>
@@ -59,6 +59,7 @@
       <tr><td><code>_ga</code></td><td>A random ID for your browser</td><td>13 months from your last visit</td></tr>
       <tr><td><code>_ga_&lt;container-id&gt;</code></td><td>Your current session and visit count on ml0x.com</td><td>13 months from your last visit</td></tr>
       <tr><td><code>mr_consent_v1</code> (browser storage, not a cookie)</td><td>Your answer in the cookie banner and when you gave it</td><td>Until you change it or clear site data. I ask again after 13 months.</td></tr>
+      <tr><td><code>mr_buy_&lt;code&gt;</code> (browser storage, not a cookie)</td><td>A note that your purchase was already counted, so reloading the welcome page doesn't count it twice</td><td>Until you clear site data</td></tr>
     </tbody>
   </table>
   <p>In the EEA, the UK and Switzerland, nothing loads from Google until you press Accept in the banner. Google's tag doesn't load before then, and it never loads if you decline. In those countries I rely on your consent (Art. 6(1)(a) GDPR). The cookie rules ask for the same consent, under Art. 5(3) of the ePrivacy Directive and the national laws that implement it, and under the UK's PECR. I ask in Switzerland too.</p>

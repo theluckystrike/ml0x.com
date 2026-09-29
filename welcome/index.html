@@ -172,6 +172,8 @@ footer a{color:#6E6E6E}
       if (d.title) { document.getElementById("title").textContent = "Your copy of " + d.title; }
       var panel = document.getElementById("panel-" + (d.sku || ""));
       if (panel) { panel.hidden = false; }
+      // The worker checked this session with Stripe, so count the sale once (site-analytics.js dedupes by session).
+      try { (window.mrPurchaseQ = window.mrPurchaseQ || []).push([sid, d.sku]); } catch (e) { /* analytics is optional */ }
       var n = document.createElement("p");
       n.className = "note";
       n.textContent = "Verified against your Stripe order.";
