@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Embedding cost calculator, chunk count and vector storage for 8 models | ml0x</title>
+<meta name="description" content="Compute the chunk count, embedding API cost, vector storage size and monthly vector database cost for 8 published embedding models, with the fp32-vs-binary storage gap and an index overhead control.">
+<meta name="robots" content="index, follow, max-image-preview:large">
+<link rel="canonical" href="https://ml0x.com/calculators/embeddings-cost-calculator/">
+<link rel="alternate" hreflang="en" href="https://ml0x.com/calculators/embeddings-cost-calculator/">
+<link rel="alternate" hreflang="x-default" href="https://ml0x.com/calculators/embeddings-cost-calculator/">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Embedding cost calculator, chunk count and vector storage for 8 models">
+<meta property="og:description" content="Compute the chunk count, embedding API cost, vector storage size and monthly vector database cost for 8 published embedding models, with the fp32-vs-binary storage gap and an index overhead control.">
+<meta property="og:url" content="https://ml0x.com/calculators/embeddings-cost-calculator/">
+<meta property="og:site_name" content="ml0x">
+<meta property="og:locale" content="en_US">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Embedding cost calculator, chunk count and vector storage for 8 models">
+<meta name="twitter:description" content="Compute the chunk count, embedding API cost, vector storage size and monthly vector database cost for 8 published embedding models, with the fp32-vs-binary storage gap and an index overhead control.">
+<meta name="author" content="Michael Lip">
+<link rel="stylesheet" href="/assets/ml0x.css">
+<style>
+.emb-calc{max-width:880px;margin:0 auto;padding:8px 0}
+.emb-calc nav[aria-label="Breadcrumb"]{font-family:var(--font-mono);font-size:12px;color:var(--ink-faint);padding:24px 0 0;margin:0 0 8px}
+.emb-calc nav[aria-label="Breadcrumb"] a{color:var(--ink-faint)}
+.emb-calc nav[aria-label="Breadcrumb"] a:hover{color:var(--ink)}
+.emb-calc table{display:block;overflow-x:auto;margin:24px 0}
+.emb-calc td{white-space:nowrap}
+.emb-calc select,.emb-calc input[type="number"]{max-width:440px}
+.emb-calc fieldset{border:1px solid var(--line);border-radius:var(--radius);padding:6px 20px 18px;margin:24px 0;background:var(--surface)}
+.emb-calc legend{font-family:var(--font-mono);font-size:11px;font-weight:500;text-transform:uppercase;letter-spacing:1px;color:var(--ink-muted);padding:0 6px}
+.emb-calc #emb-out{background:var(--surface-2);border:1px solid var(--line);border-left:3px solid var(--ink);border-radius:var(--radius-sm);padding:18px 20px;margin:24px 0;min-height:104px;font-variant-numeric:tabular-nums}
+.emb-calc #emb-out p{margin:0 0 10px}
+.emb-calc .muted-note{font-family:var(--font-mono);font-size:11px;color:var(--ink-faint);max-width:70ch}
+</style>
+</head>
+<body><a class="skip-link" href="#main">Skip to content</a>
+<header class="site-nav">
+  <div class="site-nav__inner">
+    <div class="site-nav__left">
+      <a class="site-nav__logo" href="/">ml0x</a>
+      <nav class="site-nav__links" aria-label="Main">
+        <a href="/tools/">Tools</a>
+        <a href="/calculators/" aria-current="page">Calculators</a>
+        <a href="/guides/">Guides</a>
+        <a href="/answers/">Answers</a>
+        <a href="/research/">Research</a>
+      </nav>
+    </div>
+    <a class="nav-cta" href="https://zovo.one/pricing?utm_source=ml0x&amp;utm_medium=nav&amp;utm_campaign=calculators-embeddings-cost-calculator" target="_blank" rel="noopener">Zovo browser extensions</a>
+  </div>
+</header>
+
+<main id="main" class="container">
+<article class="emb-calc"><nav aria-label="Breadcrumb"><a href="/">ml0x</a> / <a href="/calculators/">Calculators</a> / <span>Embedding cost calculator</span></nav>
+<h1>Embedding cost calculator</h1>
+<p>By Michael Lip. Enter a document set and this page computes the chunk count after overlap, the one-off embedding API bill at published list prices, the raw vector store size in fp32 and in binary quantization, and a monthly hosting estimate. The per-model prices and dimensions below are published values read from the vendors' own pricing and model pages; the chunk and storage arithmetic runs in your browser and nothing is sent to a server.</p>
+
+<h2>Estimate an embedding pipeline</h2>
+<div id="emb-calc-box">
+<fieldset>
+<legend>Corpus</legend>
+<label>Documents <input id="docs" type="number" min="1" max="100000000" step="1" value="10000"></label>
+<label>Words per document <input id="wpd" type="number" min="1" step="1" value="800" max="100000"></label>
+<label>Chunk size in tokens <input id="chunk" type="number" min="32" step="1" value="512" max="100000"></label>
+<label>Chunk overlap in tokens <input id="overlap" type="number" min="0" step="1" value="64" max="100000"></label>
+</fieldset>
+<fieldset>
+<legend>Model</legend>
+<label>Embedding model <select id="model">
+<option value="oai_small">text-embedding-3-small, $0.02, 1536d</option>
+<option value="oai_large">text-embedding-3-large, $0.13, 3072d</option>
+<option value="voyage35">voyage-3.5, $0.06, 1024d</option>
+<option value="voyage35lite">voyage-3.5-lite, $0.02, 1024d</option>
+<option value="voyage4large">voyage-4-large, $0.12, 1024d</option>
+<option value="cohere">embed-v4.0, $0.12, 1536d</option>
+<option value="gemini">gemini-embedding-001, $0.15, 3072d</option>
+</select></label>
+<label>Dimensions used (truncatable via MRL) <input id="dims" type="number" min="64" step="1" value="1536" max="3072"></label>
+<label>Batch discount (OpenAI Batch API only) <select id="batch"><option value="1">none</option><option value="0.5">50% (Batch API)</option></select></label>
+</fieldset>
+<fieldset>
+<legend>Storage and queries</legend>
+<label>Precision <select id="prec"><option value="4">fp32, 4 bytes</option><option value="2">fp16, 2 bytes</option><option value="1">int8, 1 byte</option><option value="0.125">binary, 1 bit (0.125 bytes)</option></select></label>
+<label>Index overhead factor (HNSW graph) <input id="overhead" type="number" min="1" step="0.1" value="1.5" max="8"></label>
+<label>Vector database <select id="vdb">
+<option value="pinecone">Pinecone serverless, $0.33/GB/mo storage</option>
+<option value="qdrant">Qdrant Cloud, ~$57/GB RAM/mo standard</option>
+<option value="pgvector">pgvector on your Postgres, RAM-bound, $0 incremental</option>
+<option value="none">no managed DB (own disk)</option>
+</select></label>
+<label>Query reads per month (in millions) <input id="reads" type="number" min="0" step="1" value="1" max="1000000"></label>
+</fieldset>
+<p><button id="go" type="button">Compute</button></p>
+</div>
+<div id="emb-out" class="readout" aria-live="polite"></div>
+<noscript><p style="max-width:62ch">The interactive estimator needs JavaScript. The model price table below is static and still fully readable without it.</p></noscript>
+
+<h2>Published prices and dimensions</h2>
+<p class="muted-note">Prices are published list prices per 1M input tokens, checked against the vendors' own pages on 2026-09-28 (Jina publishes no per-token price for jina-embeddings-v4 on its site, so it is not listed). Dimensions are the exact published defaults; Voyage and Cohere accept only specific dimension sizes, while OpenAI and gemini-embedding-001 truncate to smaller prefixes via Matryoshka training. Cohere's embed-v4.0 also supports dimensionality reduction below its listed set. Batch pricing: OpenAI's Batch API halves the list price for asynchronous jobs.</p>
+<table id="price-table">
+<thead><tr><th>Model</th><th>$/1M tokens</th><th>Default dims</th><th>MRL range</th><th>Max input tokens</th><th>Source</th></tr></thead>
+<tbody>
+<tr><td>text-embedding-3-small</td><td>$0.02</td><td>1536</td><td>256–1536</td><td>8191</td><td><a href="https://developers.openai.com/api/docs/models/text-embedding-3-small" target="_blank" rel="noopener">OpenAI</a></td></tr>
+<tr><td>text-embedding-3-large</td><td>$0.13</td><td>3072</td><td>256–3072</td><td>8191</td><td><a href="https://developers.openai.com/api/docs/models/text-embedding-3-large" target="_blank" rel="noopener">OpenAI</a></td></tr>
+<tr><td>voyage-3.5</td><td>$0.06</td><td>1024</td><td>256, 512, 1024, 2048</td><td>32000</td><td><a href="https://docs.voyageai.com/docs/pricing" target="_blank" rel="noopener">Voyage</a></td></tr>
+<tr><td>voyage-3.5-lite</td><td>$0.02</td><td>1024</td><td>256, 512, 1024, 2048</td><td>32000</td><td><a href="https://docs.voyageai.com/docs/pricing" target="_blank" rel="noopener">Voyage</a></td></tr>
+<tr><td>voyage-4-large</td><td>$0.12</td><td>1024</td><td>256, 512, 1024, 2048</td><td>32000</td><td><a href="https://docs.voyageai.com/docs/pricing" target="_blank" rel="noopener">Voyage</a></td></tr>
+<tr><td>embed-v4.0</td><td>$0.12</td><td>1536</td><td>256, 512, 1024, 1536</td><td>128000</td><td><a href="https://docs.cohere.com/docs/cohere-embed" target="_blank" rel="noopener">Cohere</a></td></tr>
+<tr><td>gemini-embedding-001</td><td>$0.15</td><td>3072</td><td>128–3072 (recommended 768, 1536, 3072)</td><td>2048</td><td><a href="https://ai.google.dev/gemini-api/docs/models/gemini-embedding-001" target="_blank" rel="noopener">Google</a></td></tr>
+</tbody>
+</table>
+
+<h2>Where the money actually goes</h2>
+<p>For a typical corpus the one-off embedding bill is small next to what hosting the vectors costs every month. One million 1536-dimension fp32 vectors are 6.1 GB before any index overhead, which puts a Pinecone serverless namespace at about $2/GB-month territory once read units are counted, and makes binary quantization (1 bit per dimension, 32x smaller than fp32 at 1536d) the difference between a hobby project and a line item. The overlap control matters more than people expect: 64 tokens of overlap on 512-token chunks re-embeds 12.5% of the corpus, and that cost is paid on every re-index.</p>
+
+<h2>Formula notes</h2>
+<p>Chunk count is computed with the standard sliding-window formula: chunks = ceil((tokens - overlap) / (chunk - overlap)) per document, where tokens are estimated at 1.33 tokens per word, the ratio OpenAI publishes for English prose. Billing counts actual window lengths, including overlap on every window but never padding beyond the document's estimated tokens. Bytes per vector is dimensions times the precision width (binary is ceil(dimensions/8) packed bytes), multiplied by the index overhead factor for graph-based indexes. The storage figure is the raw vector payload, a floor rather than a provider bill: real invoices also include IDs, metadata, graph memory, retained originals and each provider's minimum resource sizes, and the Qdrant and pgvector figures assume standard tiers and spare instance capacity respectively. Prices are list prices without negotiated discounts, and vector database pricing changes often, so treat the monthly hosting figures as estimates and check the linked price pages.</p>
+<h2>How we measured this</h2>
+<p>Every price and dimension in the table above was read from the vendor's own documentation on 2026-09-28: OpenAI's model pages, Voyage AI's published pricing page, Cohere's embed documentation and Google's gemini-embedding-001 page. The chunk and storage arithmetic is plain JavaScript that runs in this browser tab; no number on this page comes from a server call. Michael Lip maintains this page as part of the ml0x calculator set.</p>
+</article>
+</main>
+
+<footer class="site-footer">
+  <nav class="footer-links-seo" aria-label="ML tools and content"><a href="https://mcp.zovo.one" target="_blank" rel="noopener">MCP servers for Claude</a>
+    <a href="/tools/">ML tools</a>
+    <a href="/tools/learning-rate-finder.html">Learning rate finder</a>
+    <a href="/tools/confusion-matrix-calculator.html">Confusion matrix calculator</a>
+    <a href="/tools/neural-network-playground.html">Neural network playground</a>
+    <a href="/tools/attention-mechanism-visualizer.html">Attention visualizer</a>
+    <a href="/tools/dataset-splitter.html">Dataset splitter</a>
+    <a href="/calculators/kv-cache-size-calculator.html">KV cache calculator</a>
+    <a href="/calculators/llm-memory-calculator.html">LLM memory calculator</a>
+    <a href="/calculators/quantization-calculator.html">Quantization calculator</a>
+    <a href="/guides/">Guides</a>
+    <a href="/guides/gradient-descent-explained.html">Gradient descent</a>
+    <a href="/answers/">Answers</a>
+    <a href="/answers/ml-algorithm-comparison.html">Algorithm comparison</a>
+    <a href="/research/">Research</a>
+    <a href="/research/ml-cheatsheet.html">ML cheat sheet</a>
+    <a href="/about.html">About</a>
+  </nav>
+  <div class="site-footer__inner">
+    <div class="site-footer__brand">
+      <span class="site-footer__logo">ml0x</span>
+      <span class="site-footer__meta">by <a href="https://github.com/theluckystrike" target="_blank" rel="noopener">@theluckystrike</a></span>
+    </div>
+    <div class="site-footer__links">
+      <a href="https://github.com/theluckystrike/100xagenticdev" target="_blank" rel="noopener">GitHub</a>
+      <a href="/research/">Research</a>
+      <a href="https://twitter.com/_alphashark_" target="_blank" rel="noopener">X</a>
+    </div>
+  </div>
+</footer>
+<script src="/assets/offer-events.js" defer></script>
+<script>
+"use strict";
+var MODELS={
+ oai_small:{price:0.02,dims:1536,mrl:[256,1536],ctx:8191,name:"text-embedding-3-small"},
+ oai_large:{price:0.13,dims:3072,mrl:[256,3072],ctx:8191,name:"text-embedding-3-large"},
+ voyage35:{price:0.06,dims:1024,dset:[256,512,1024,2048],ctx:32000,name:"voyage-3.5"},
+ voyage35lite:{price:0.02,dims:1024,dset:[256,512,1024,2048],ctx:32000,name:"voyage-3.5-lite"},
+ voyage4large:{price:0.12,dims:1024,dset:[256,512,1024,2048],ctx:32000,name:"voyage-4-large"},
+ cohere:{price:0.12,dims:1536,dset:[256,512,1024,1536],ctx:128000,name:"embed-v4.0"},
+ gemini:{price:0.15,dims:3072,mrl:[128,3072],ctx:2048,name:"gemini-embedding-001"}
+};
+var VDB={
+ pinecone:{name:"Pinecone serverless",storage:0.33,reads:16,unit:"GB",note:"$0.33/GB/mo storage; reads billed as read units at $16-$18 per million"},
+ qdrant:{name:"Qdrant Cloud",storage:57,reads:0,unit:"GB RAM",note:"~$57/GB RAM/mo standard tier, reads included"},
+ pgvector:{name:"pgvector (your Postgres)",storage:0,reads:0,unit:"GB",note:"no incremental DB cost; you already pay for the instance"},
+ none:{name:"own disk",storage:0,reads:0,unit:"GB",note:"no managed database cost"}
+};
+function fmt(n,dp){return n.toLocaleString("en-US",{maximumFractionDigits:dp===undefined?2:dp});}
+function run(){
+ var docs=parseFloat(document.getElementById("docs").value);
+ var wpd=parseFloat(document.getElementById("wpd").value);
+ var chunk=parseFloat(document.getElementById("chunk").value);
+ var overlap=parseFloat(document.getElementById("overlap").value);
+ var m=MODELS[document.getElementById("model").value];
+ var dims=parseFloat(document.getElementById("dims").value);
+ var batch=parseFloat(document.getElementById("batch").value);
+ var bytesPer=parseFloat(document.getElementById("prec").value);
+ var overhead=parseFloat(document.getElementById("overhead").value);
+ var vdb=VDB[document.getElementById("vdb").value];
+ var reads=parseFloat(document.getElementById("reads").value);
+ var outEl=document.getElementById("emb-out");if(!outEl){return;}var out=outEl;
+ var frac=!(docs===Math.floor(docs)&&wpd===Math.floor(wpd)&&chunk===Math.floor(chunk)&&overlap===Math.floor(overlap)&&dims===Math.floor(dims)&&reads===Math.floor(reads)&&overhead*10===Math.floor(overhead*10));
+ docs=Math.min(Math.max(docs,1),100000000);wpd=Math.min(Math.max(wpd,1),100000);chunk=Math.min(Math.max(chunk,1),100000);overlap=Math.min(Math.max(overlap,0),100000);dims=Math.min(Math.max(dims,1),3072);overhead=Math.min(Math.max(overhead,1),8);reads=Math.min(Math.max(reads,0),1000000);if(!(isFinite(docs)&&isFinite(wpd)&&isFinite(chunk)&&isFinite(overlap)&&isFinite(dims)&&isFinite(overhead)&&isFinite(reads))){out.innerHTML="<p>Enter positive document, word, chunk and dimension counts to estimate a pipeline.</p>";return;}
+ if(frac){out.innerHTML="<p>Documents, words, chunk size, overlap, dimensions and reads must be whole numbers, and the index overhead factor at most one decimal place.</p>";return;}
+ if(overlap>=chunk){out.innerHTML="<p>Overlap must be smaller than the chunk size, or every window is nothing but overlap.</p>";return;}
+ if(m.dset){if(m.dset.indexOf(dims)===-1){out.innerHTML="<p>"+m.name+" supports only these dimension sizes: "+m.dset.join(", ")+". Using "+fmt(dims,0)+" would be a different model.</p>";return;}}
+ else if(dims<m.mrl[0]||dims>m.mrl[1]){out.innerHTML="<p>"+m.name+" publishes dimensions between "+m.mrl[0]+" and "+m.mrl[1]+". Using "+fmt(dims,0)+" would be a different model.</p>";return;}
+ if(chunk>m.ctx){out.innerHTML="<p>"+m.name+" accepts at most "+fmt(m.ctx,0)+" input tokens per request; a "+fmt(chunk,0)+"-token window exceeds that ceiling.</p>";return;}
+ var tokens=docs*wpd*1.33;
+ var effective=chunk-overlap;
+ var perDoc=Math.max(1,Math.ceil((wpd*1.33-overlap)/effective));
+ var chunks=perDoc*docs;
+ /* Bill actual window lengths: full windows of chunk tokens except the last, which is at most chunk (no padding). */
+ var lastLen=wpd*1.33-overlap-(perDoc-1)*effective;
+ if(lastLen>chunk){lastLen=chunk;}
+ if(lastLen<1){lastLen=1;}
+ var tokensEmbedded=(perDoc-1)*chunk+Math.ceil(lastLen);
+ tokensEmbedded*=docs;
+ var isOai=document.getElementById("model").value==="oai_small"||document.getElementById("model").value==="oai_large";var batchEff=isOai?batch:1;var cost=tokensEmbedded/1e6*m.price*batchEff;
+ var packed=bytesPer===0.125?Math.ceil(dims/8):dims*bytesPer;
+ var vecBytes=chunks*packed*overhead;
+ var fp32Bytes=chunks*dims*4*overhead;
+ var gb=vecBytes/1e9;
+ var monthly=gb*vdb.storage;
+ var readCost=vdb.reads*reads; /* reads input is in millions, vdb.reads is $ per million reads */
+ var totalMonthly=monthly+readCost;
+ var bits="";
+ if(bytesPer===0.125){bits="Binary stores 1 bit per dimension, packed as "+fmt(packed,0)+" bytes for "+fmt(dims,0)+" dimensions: "+fmt(fp32Bytes/vecBytes,0)+"x smaller than fp32 at this dimension count.";}
+ out.innerHTML="<p>"+fmt(chunks,0)+" chunks from "+fmt(docs,0)+" documents (about "+fmt(tokens/1e6,1)+"M source tokens, "+fmt(tokensEmbedded/1e6,2)+"M tokens billed including overlap, "+fmt(perDoc,0)+" chunks per document at "+fmt(chunk,0)+"-token windows with "+fmt(overlap,0)+" overlap).</p>"
+ +"<p>One-off embedding cost: $"+fmt(cost,batchEff<1?3:2)+" ("+fmt(tokensEmbedded/1e6,2)+"M tokens x $"+fmt(m.price,2)+"/1M"+(batchEff<1?" at the OpenAI Batch API 50% rate":"")+")."+(batchEff<1?" Batch API jobs are asynchronous with a 24-hour turnaround, at most 50,000 embedding inputs and 200 MB per input file, so large corpora must be split across batches.":"")+"</p>"
+ +"<p>Vector store: "+(gb>0?fmt(gb,2)+" GB":"under 0.01 GB")+" at "+fmt(dims,0)+"d, "+(bytesPer===0.125?"binary":bytesPer===1?"int8":bytesPer===2?"fp16":"fp32")+" with a "+fmt(overhead,1)+"x index overhead. The same vectors in fp32 would be "+fmt(fp32Bytes/1e9,2)+" GB. This is the raw vector payload only; provider billing also counts IDs, metadata, graph memory and minimum resource sizes, so treat it as a floor.</p>"
+ +"<p>Monthly hosting estimate: $"+fmt(totalMonthly,2)+" on "+vdb.name+" ("+vdb.note+").</p>"
+ +(bits?"<p>"+bits+"</p>":"");
+}
+function syncDims(){var m=MODELS[document.getElementById("model").value];document.getElementById("dims").value=m.dims;}
+document.getElementById("go").addEventListener("click",run);
+document.getElementById("model").addEventListener("change",function(){syncDims();run();});
+document.getElementById("vdb").addEventListener("change",run);
+document.getElementById("batch").addEventListener("change",run);
+document.getElementById("prec").addEventListener("change",run);
+document.getElementById("reads").addEventListener("change",run);
+document.getElementById("overhead").addEventListener("change",run);
+document.getElementById("docs").addEventListener("change",run);
+document.getElementById("wpd").addEventListener("change",run);
+document.getElementById("chunk").addEventListener("change",run);
+document.getElementById("overlap").addEventListener("change",run);
+document.getElementById("dims").addEventListener("change",run);
+syncDims();run();
+</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"Article","headline":"Embedding cost calculator, chunk count and vector storage for 8 models","author":{"@type":"Person","name":"Michael Lip","url":"https://zovo.one","description":"Builds open-source ML tools and developer utilities at zovo.one. ml0x is part of the Zovo Tools network, a collection of free, privacy-first tools for developers and data scientists."},"datePublished":"2026-09-28","dateModified":"2026-09-28","publisher":{"@type":"Organization","name":"ml0x"}},{"@type":"Dataset","name":"Published embedding model prices and dimensions, checked 2026-09-28","description":"List prices per 1M input tokens, default dimensions, Matryoshka ranges and context windows for seven published embedding models, read from each vendor's own pricing and model documentation pages.","creator":{"@type":"Organization","name":"ml0x"},"isAccessibleForFree":true},{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Calculators","item":"https://ml0x.com/calculators/"},{"@type":"ListItem","position":2,"name":"Embedding cost calculator","item":"https://ml0x.com/calculators/embeddings-cost-calculator/"}]}]}</script></body>
+</html>
